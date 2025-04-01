@@ -7,13 +7,14 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+from queries.routes import routes as queries_routes
 from rest_framework.routers import DefaultRouter
 from users.routes import routes as users_routes
 
 
 router = DefaultRouter()
 
-routes = users_routes
+routes = users_routes + queries_routes
 for route in routes:
     router.register(route["regex"], route["viewset"], basename=route["basename"])
 
