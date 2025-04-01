@@ -4,7 +4,6 @@ import type { CancelablePromise } from "./core/CancelablePromise";
 import { OpenAPI } from "./core/OpenAPI";
 import { request as __request } from "./core/request";
 import type {
-  RestRestCheckRetrieveResponse,
   UsersListData,
   UsersListResponse,
   UsersCreateData,
@@ -19,17 +18,11 @@ import type {
   UsersDestroyResponse,
 } from "./types.gen";
 
-export class RestService {
   /**
-   * Check REST API
-   * This endpoint checks if the REST API is working.
-   * @returns Message
    * @throws ApiError
    */
-  public static restRestCheckRetrieve(): CancelablePromise<RestRestCheckRetrieveResponse> {
     return __request(OpenAPI, {
       method: "GET",
-      url: "/api/rest/rest-check/",
     });
   }
 }

@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.urls import include, path
 
 import django_js_reverse.views
-from common.routes import routes as common_routes
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -14,7 +13,7 @@ from users.routes import routes as users_routes
 
 router = DefaultRouter()
 
-routes = common_routes + users_routes
+routes = users_routes
 for route in routes:
     router.register(route["regex"], route["viewset"], basename=route["basename"])
 

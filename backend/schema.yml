@@ -4,13 +4,8 @@ info:
   version: 0.1.0
   description: A Django project boilerplate with Vinta's best practices
 paths:
-  /api/rest/rest-check/:
     get:
-      operationId: rest_rest_check_retrieve
-      description: This endpoint checks if the REST API is working.
-      summary: Check REST API
       tags:
-      - rest
       security:
       - cookieAuth: []
       - {}
@@ -19,13 +14,6 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Message'
-              examples:
-                SuccessfulResponse:
-                  value:
-                    message: This message comes from the backend. If you're seeing
-                      this, the REST API is working!
-                  summary: Successful Response
           description: ''
   /api/users/:
     get:
@@ -176,18 +164,15 @@ paths:
       - users
       security:
       - cookieAuth: []
+      - {}
       responses:
         '204':
           description: No response body
 components:
   schemas:
-    Message:
       type: object
       properties:
-        message:
           type: string
-      required:
-      - message
     PaginatedUserList:
       type: object
       required:
