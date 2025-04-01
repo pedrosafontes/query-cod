@@ -43,7 +43,7 @@ export type PatchedUser = {
 
 export type Query = {
   readonly id: number;
-  text?: string;
+  text: string;
   readonly created: string;
   readonly modified: string;
 };
@@ -97,7 +97,7 @@ export type QueriesListData = {
 export type QueriesListResponse = PaginatedQueryList;
 
 export type QueriesCreateData = {
-  requestBody?: Query;
+  requestBody: Query;
 };
 
 export type QueriesCreateResponse = Query;
@@ -116,7 +116,7 @@ export type QueriesUpdateData = {
    * A unique integer value identifying this query.
    */
   id: number;
-  requestBody?: Query;
+  requestBody: Query;
 };
 
 export type QueriesUpdateResponse = Query;
@@ -145,7 +145,6 @@ export type QueriesExecutionsCreateData = {
    * A unique integer value identifying this query.
    */
   id: number;
-  requestBody?: Query;
 };
 
 export type QueriesExecutionsCreateResponse = QueryExecution;

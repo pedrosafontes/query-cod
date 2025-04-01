@@ -147,7 +147,7 @@ export const $Query = {
       readOnly: true,
     },
   },
-  required: ["created", "id", "modified"],
+  required: ["created", "id", "modified", "text"],
 } as const;
 
 export const $QueryExecution = {

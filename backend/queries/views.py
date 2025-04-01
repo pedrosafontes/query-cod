@@ -13,6 +13,7 @@ class QueryViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.AllowAny]
 
     @extend_schema(
+        request=None,
         responses=QueryExecutionSerializer,
     )
     @action(detail=True, methods=['post'], url_path='executions')

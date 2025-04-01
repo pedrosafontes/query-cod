@@ -60,7 +60,7 @@ export class QueriesService {
    * @throws ApiError
    */
   public static queriesCreate(
-    data: QueriesCreateData = {},
+    data: QueriesCreateData,
   ): CancelablePromise<QueriesCreateResponse> {
     return __request(OpenAPI, {
       method: "POST",
@@ -151,7 +151,6 @@ export class QueriesService {
   /**
    * @param data The data for the request.
    * @param data.id A unique integer value identifying this query.
-   * @param data.requestBody
    * @returns QueryExecution
    * @throws ApiError
    */
@@ -164,8 +163,6 @@ export class QueriesService {
       path: {
         id: data.id,
       },
-      body: data.requestBody,
-      mediaType: "application/json",
     });
   }
 }

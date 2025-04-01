@@ -47,6 +47,7 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/Query'
+        required: true
       security:
       - cookieAuth: []
       - {}
@@ -101,6 +102,7 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/Query'
+        required: true
       security:
       - cookieAuth: []
       - {}
@@ -172,17 +174,6 @@ paths:
         required: true
       tags:
       - queries
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Query'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Query'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Query'
       security:
       - cookieAuth: []
       - {}
@@ -463,6 +454,7 @@ components:
       - created
       - id
       - modified
+      - text
     QueryExecution:
       type: object
       properties:
