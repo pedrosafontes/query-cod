@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/react";
 import cookie from "cookie";
 
 import { OpenAPI } from "./api";
-import Home from "./pages/Home";
+import QueriesExplorer from "./pages/QueriesExplorer";
 
 OpenAPI.interceptors.request.use((request) => {
   const { csrftoken } = cookie.parse(document.cookie);
@@ -14,7 +14,7 @@ OpenAPI.interceptors.request.use((request) => {
 
 const App = () => (
   <Sentry.ErrorBoundary fallback={<p>An error has occurred</p>}>
-    <Home />
+    <QueriesExplorer />
   </Sentry.ErrorBoundary>
 );
 
