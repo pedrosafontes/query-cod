@@ -40,7 +40,7 @@ const QueriesExplorer = () => {
       </div>
       <Tabs className="mb-3" id="queries">
         {queries &&
-          queries.results.map((query: Query) => (
+          queries.map((query: Query) => (
             <Tab key={query.id} eventKey={query.id} title={query.id}>
               <QueryExplorer query={query} />
             </Tab>

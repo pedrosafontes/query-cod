@@ -218,6 +218,8 @@ CSP_SCRIPT_SRC = [
     # drf-spectacular UI (Swagger and ReDoc)
     "https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/",
     "https://cdn.jsdelivr.net/npm/redoc@latest/",
+    # Monaco Editor
+    "https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/",
     "blob:",
 ] + [f"*{host}" if host.startswith(".") else host for host in ALLOWED_HOSTS]
 CSP_CONNECT_SRC = [
@@ -231,12 +233,16 @@ CSP_STYLE_SRC = [
     "https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/",
     "https://cdn.jsdelivr.net/npm/redoc@latest/",
     "https://fonts.googleapis.com",
+    # Monaco Editor
+    "https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/",
 ]
 CSP_FONT_SRC = [
     "'self'",
     "'unsafe-inline'",
     # drf-spectacular UI (Swagger and ReDoc)
     "https://fonts.gstatic.com",
+    # Monaco Editor
+    "https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/",
 ] + [f"*{host}" if host.startswith(".") else host for host in ALLOWED_HOSTS]
 CSP_IMG_SRC = [
     "'self'",

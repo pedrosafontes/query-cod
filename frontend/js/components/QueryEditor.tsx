@@ -1,14 +1,14 @@
-import { useState } from "react";
-import AceEditor from "react-ace";
-import "ace-builds/src-noconflict/mode-mysql";
-import "ace-builds/src-noconflict/theme-tomorrow";
+import { useEffect, useRef, useState } from "react";
+import MonacoEditor, { Monaco, loader } from "@monaco-editor/react";
 
-import { QueriesService, Query } from "../api";
+import { QueriesService, Query, QueryError } from "../api";
 import { useAutosave } from "../hooks/useAutosave";
 
 const QueryEditor = ({ query }: { query: Query }) => {
   const [text, setText] = useState<string>(query.text);
-  const [error, setError] = useState<string | undefined>(undefined);
+  const [errors, setErrors] = useState<QueryError[]>([]);
+  const monacoRef = useRef<Monaco | null>(null);
+  const editorRef = useRef<any>(null);
 
   const updateQuery = async (queryText: string): Promise<void> => {
     try {
@@ -18,11 +18,41 @@ const QueryEditor = ({ query }: { query: Query }) => {
           text: queryText,
         },
       });
-      setError(result.error);
-    } catch (error) {
-      console.error("Error updating query:", error);
+
+      if (result.errors) {
+        setErrors(result.errors);
+      }
+    } catch (err) {
+      console.error("Error updating query:", err);
     }
   };
+
+  const updateErrorMarkers = () => {
+    if (!monacoRef.current || !editorRef.current) return;
+    
+    const model = editorRef.current.getModel();
+    if (!model) return;
+    
+    if (errors.length > 0) {
+      const markers = errors.map((error) => {
+        return {
+          startLineNumber: error.line,
+          endLineNumber: error.line,
+          startColumn: error.start_col,
+          endColumn: error.end_col,
+          message: error.message,
+          severity: monacoRef.current!.MarkerSeverity.Error
+        }
+      })
+      monacoRef.current.editor.setModelMarkers(model, "autosave-feedback", markers);
+    } else {
+      monacoRef.current.editor.setModelMarkers(model, "autosave-feedback", []);
+    }
+  };
+
+  useEffect(() => {
+    updateErrorMarkers();
+  }, [errors]);
 
   const status = useAutosave({ data: text, onSave: updateQuery });
 
@@ -35,34 +65,33 @@ const QueryEditor = ({ query }: { query: Query }) => {
       default:
         return <span className="text-success">Saved!</span>;
     }
-  }
+  };
 
   return (
     <>
-      <AceEditor
-        highlightActiveLine
-        mode="mysql"
-        name="query_explorer"
-        placeholder="Enter your SQL query here..."
-        setOptions={{
-          showLineNumbers: true,
-          tabSize: 2,
-        }}
-        showGutter
-        showPrintMargin
-        theme="tomorrow"
+      <MonacoEditor
+        height="400px"
+        defaultLanguage="sql"
         value={text}
-        width="100%"
-        onChange={(newText: string) => setText(newText)}
+        onChange={(value) => setText(value || "")}
+        theme="vs-dark"
+        onMount={(editor, monaco) => {
+          editorRef.current = editor;
+          monacoRef.current = monaco;
+          updateQuery(text)
+        }}
+        options={{
+          fontSize: 14,
+          minimap: { enabled: false },
+          scrollBeyondLastLine: false,
+          wordWrap: "on",
+          tabSize: 2,
+          lineNumbers: "on",
+          formatOnType: true,
+          formatOnPaste: true,
+        }}
       />
-      <div className="text-sm">
-        {renderStatus()}
-      </div>
-      {error && (
-        <div className="text-danger mt-2">
-          {error}
-        </div>
-      )}
+      <div className="text-sm mt-2">{renderStatus()}</div>
     </>
   );
 };
