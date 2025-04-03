@@ -24,7 +24,7 @@ export default function QueryTabs({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="sticky top-0 z-10 mb-3 bg-white">
+      <div className="mb-3 px-2">
         <Button
           variant="outline"
           onClick={onCreate}
@@ -35,7 +35,7 @@ export default function QueryTabs({
         </Button>
       </div>
 
-      <div className="overflow-y-auto flex-1 pr-1">
+      <div className="overflow-y-auto flex-1 px-2">
         <div className="flex flex-col gap-1">
           {queries.map((query) => (
             <Button
