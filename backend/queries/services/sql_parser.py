@@ -1,4 +1,5 @@
 from django.db import DatabaseError, connection
+
 from sqlglot import ParseError, parse_one
 
 
@@ -43,7 +44,7 @@ def parse_sql(query_text, dialect='postgres'):
             return {
                 'valid': False,
                 'errors': [{
-                    'message': f'Semantic error: {str(e)}',
+                    'message': f'Semantic error: {e!s}',
                     'line': 1,
                     'start_col': 1,
                     'end_col': 7,

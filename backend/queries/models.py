@@ -1,7 +1,8 @@
 from django.db import connection, models
 
-from .services.sql_parser import parse_sql
 from common.models import IndexedTimeStampedModel
+
+from .services.sql_parser import parse_sql
 
 
 class Query(IndexedTimeStampedModel):
