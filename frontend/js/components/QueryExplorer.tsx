@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Button, Table } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 
 import { QueriesService, Query, QueryResultData } from "../api";
 
 import QueryEditor from "./QueryEditor";
+import QueryResult from "./QueryResult";
 
 const QueryExplorer = ({ query }: { query: Query }) => {
   const [queryResult, setQueryResult] = useState<QueryResultData>();
+  const [success, setSuccess] = useState<boolean>(true);
 
   const handleExecuteQuery = async (): Promise<void> => {
     try {
@@ -15,6 +17,7 @@ const QueryExplorer = ({ query }: { query: Query }) => {
       });
 
       setQueryResult(execution.results);
+      setSuccess(execution.success);
     } catch (error) {
       console.error("Error executing query:", error);
     }
@@ -22,7 +25,7 @@ const QueryExplorer = ({ query }: { query: Query }) => {
 
   return (
     <div className="row">
-      <div className="col-3">
+      <div className="col-3 border-end">
         <div className="d-flex justify-content-end mb-2">
           <Button
             size="sm"
@@ -34,27 +37,8 @@ const QueryExplorer = ({ query }: { query: Query }) => {
         </div>
         <QueryEditor query={query} />
       </div>
-      <div className="col">
-        {queryResult && (
-          <Table responsive>
-            <thead>
-              <tr>
-                {queryResult.columns.map((column: string, index: number) => (
-                  <th key={column}>{column}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {queryResult.rows.map((row, index: number) => (
-                <tr key={index}>
-                  {row.map((cell: string | null, cellIndex: number) => (
-                    <td key={`${index}-${cellIndex}`}>{cell}</td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
+      <div className="col p-3 d-flex flex-column justify-content-end">
+        <QueryResult success={success} result={queryResult} />
       </div>
     </div>
   );
