@@ -4,7 +4,6 @@ import type { CancelablePromise } from "./core/CancelablePromise";
 import { OpenAPI } from "./core/OpenAPI";
 import { request as __request } from "./core/request";
 import type {
-  QueriesListData,
   QueriesListResponse,
   QueriesCreateData,
   QueriesCreateResponse,
@@ -34,22 +33,13 @@ import type {
 
 export class QueriesService {
   /**
-   * @param data The data for the request.
-   * @param data.limit Number of results to return per page.
-   * @param data.offset The initial index from which to return the results.
-   * @returns PaginatedQueryList
+   * @returns Query
    * @throws ApiError
    */
-  public static queriesList(
-    data: QueriesListData = {},
-  ): CancelablePromise<QueriesListResponse> {
+  public static queriesList(): CancelablePromise<QueriesListResponse> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/queries/",
-      query: {
-        limit: data.limit,
-        offset: data.offset,
-      },
     });
   }
 

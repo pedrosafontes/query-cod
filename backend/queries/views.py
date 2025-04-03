@@ -11,6 +11,7 @@ class QueryViewSet(viewsets.ModelViewSet):
     queryset = Query.objects.all()
     serializer_class = QuerySerializer
     permission_classes = [permissions.AllowAny] # noqa: RUF012
+    pagination_class = None
 
     @extend_schema(
         request=QuerySerializer,
@@ -21,7 +22,7 @@ class QueryViewSet(viewsets.ModelViewSet):
         query = self.get_object()
         return Response({
             'query': base_response.data,
-            'error': query.parse().get('error'),
+            'errors': query.parse().get('errors'),
         })
 
     @extend_schema(

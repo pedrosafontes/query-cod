@@ -38,11 +38,18 @@ class QueryExecutionSerializer(serializers.Serializer):
         help_text="Indicates if the query execution was successful"
     )
 
+class QueryErrorSerializer(serializers.Serializer):
+    message = serializers.CharField()
+    line = serializers.IntegerField()
+    start_col = serializers.IntegerField()
+    end_col = serializers.IntegerField()
+
 class QueryPartialUpdateSerializer(serializers.Serializer):
     query = QuerySerializer(
         help_text="The updated query object after partial update."
     )
-    error = serializers.CharField(
+    errors = serializers.ListField(
         required=False,
-        help_text="Error message, if any occurred during update."
+        help_text="Errors, if any, that occurred during update.",
+        child = QueryErrorSerializer()
     )
