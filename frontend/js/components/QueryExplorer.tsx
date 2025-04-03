@@ -29,7 +29,7 @@ const QueryExplorer = ({ query }: { query: Query }) => {
         <div className="flex justify-end mb-3 w-full">
           <Button
             size="sm"
-            variant="outline"
+            variant="default"
             onClick={() => handleExecuteQuery()}
           >
             Execute
