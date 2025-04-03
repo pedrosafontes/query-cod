@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import MonacoEditor, { Monaco, loader } from "@monaco-editor/react";
+import MonacoEditor, { Monaco } from "@monaco-editor/react";
 
 import { QueriesService, Query, QueryError } from "../api";
 import { useAutosave } from "../hooks/useAutosave";
@@ -59,22 +59,22 @@ const QueryEditor = ({ query }: { query: Query }) => {
   const renderStatus = () => {
     switch (status) {
       case "saving":
-        return <span className="text-muted">Saving...</span>;
+        return <span className="text-slate-400">Saving...</span>;
       case "error":
-        return <span className="text-danger">Error saving</span>;
+        return <span className="text-red-500">Error saving</span>;
       default:
-        return <span className="text-success">Saved!</span>;
+        return <span className="text-slate-500">Saved!</span>;
     }
   };
 
   return (
     <>
       <MonacoEditor
-        height="400px"
+        height="500px"
         defaultLanguage="sql"
         value={text}
         onChange={(value) => setText(value || "")}
-        theme="vs-dark"
+        theme="vs-light"
         onMount={(editor, monaco) => {
           editorRef.current = editor;
           monacoRef.current = monaco;
@@ -89,9 +89,12 @@ const QueryEditor = ({ query }: { query: Query }) => {
           lineNumbers: "on",
           formatOnType: true,
           formatOnPaste: true,
+          lineNumbersMinChars: 2
         }}
       />
-      <div className="text-sm mt-2">{renderStatus()}</div>
+      <div className="flex justify-end text-xs mt-2">
+        {renderStatus()}
+      </div>
     </>
   );
 };
