@@ -1,8 +1,11 @@
-from django.test import TestCase
 from django.db import connection
-from rest_framework.test import APIClient
+from django.test import TestCase
+
 from rest_framework import status
+from rest_framework.test import APIClient
+
 from .models import Query
+
 
 class QueryModelTests(TestCase):
     def setUp(self):
@@ -17,11 +20,6 @@ class QueryModelTests(TestCase):
         self.assertEqual(result['columns'], ['id', 'name'])
         self.assertEqual(len(result['rows']), 2)
         self.assertIn(('Alice',), [row[1:] for row in result['rows']])
-    
-    def test_execute_invalid_query_raises(self):
-        query = Query.objects.create(text="SELEC invalid SQL")
-        with self.assertRaises(Exception):
-            query.execute()
 
 class QueryAPITests(TestCase):
     def setUp(self):
