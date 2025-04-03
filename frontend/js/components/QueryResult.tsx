@@ -1,45 +1,49 @@
 import { QueryResultData } from "js/api";
-import { Alert, Table } from "react-bootstrap";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { useEffect } from "react";
+import { ColumnDef } from "@tanstack/react-table";
+import { DataTable } from "./DataTable";
 
 const QueryResult = ({ success, result }: { success: boolean; result: QueryResultData | undefined }) => {
-  if (!success) {
-    return (
-      <Alert variant="danger" className="mb-0">
-        Query execution failed.
-      </Alert>
-    );
-  } else if (result) {
-    if (result.columns.length == 0) {
-      return (
-        <Alert variant="warning" className="mb-0">
-          No results found.
-        </Alert>
-      );
-    }
+  const { toast } = useToast();
 
-    return (
-      <div className="rounded border overflow-hidden">
-        <Table responsive className="mb-0">
-          <thead>
-            <tr>
-              {result.columns.map((column: string, index: number) => (
-                <th key={column}>{column}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {result.rows.map((row, index: number) => (
-              <tr key={index}>
-                {row.map((cell: string | null, cellIndex: number) => (
-                  <td key={`${index}-${cellIndex}`}>{cell}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </div>
-    );
+  useEffect(() => {
+    if (!success) {
+      toast({ description: "Query execution failed." });
+    } else if (result && result.columns.length === 0) {
+      toast({ description: "No results found." });
+    }
+  }, [success, result, toast]);
+
+  if (!success || !result || result.columns.length === 0) {
+    return null;
   }
+
+  const columns: ColumnDef<Record<string, string | null>>[] = result.columns.map(
+    (col) => ({
+      accessorKey: col,
+      header: col,
+    })
+  );
+
+  const data = result.rows.map((row) =>
+    Object.fromEntries(row.map((cell, i) => [result.columns[i], cell]))
+  );
+
+  return (
+    <div className="[&_table]:text-xs [&_td]:px-2 [&_td]:py-1 [&_th]:px-3 [&_th]:py-2 [&_th]:h-auto">
+      <DataTable columns={columns} data={data} />
+    </div>
+  );
 };
 
 export default QueryResult;
