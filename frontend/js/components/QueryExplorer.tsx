@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Button } from "react-bootstrap";
 
 import { QueriesService, Query, QueryResultData } from "../api";
 
 import QueryEditor from "./QueryEditor";
 import QueryResult from "./QueryResult";
+import { Button } from "@/components/ui/button";
 
 const QueryExplorer = ({ query }: { query: Query }) => {
   const [queryResult, setQueryResult] = useState<QueryResultData>();
@@ -24,12 +24,12 @@ const QueryExplorer = ({ query }: { query: Query }) => {
   };
 
   return (
-    <div className="row">
-      <div className="col-3 border-end">
-        <div className="d-flex justify-content-end mb-2">
+    <div className="grid grid-cols-3 gap-4 h-full">
+      <div className="col-span-1 px-3 py-5 border-r">
+        <div className="flex justify-end mb-3 w-full">
           <Button
             size="sm"
-            variant="primary"
+            variant="outline"
             onClick={() => handleExecuteQuery()}
           >
             Execute
@@ -37,7 +37,7 @@ const QueryExplorer = ({ query }: { query: Query }) => {
         </div>
         <QueryEditor query={query} />
       </div>
-      <div className="col p-3 d-flex flex-column justify-content-end">
+      <div className="col-span-2 px-3 py-5 flex flex-col justify-end h-full">
         <QueryResult success={success} result={queryResult} />
       </div>
     </div>
