@@ -40,7 +40,7 @@ const QueryResult = ({ success, result }: { success: boolean; result: QueryResul
   );
 
   return (
-    <div className="[&_table]:text-xs [&_td]:px-2 [&_td]:py-1 [&_th]:px-3 [&_th]:py-2 [&_th]:h-auto">
+    <div className="[&_table]:text-xs [&_td]:px-3 [&_td]:py-2 [&_th]:px-3 [&_th]:py-2 [&_th]:h-auto">
       <DataTable columns={columns} data={data} />
     </div>
   );
