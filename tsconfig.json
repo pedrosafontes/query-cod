@@ -10,7 +10,10 @@
     "jsx": "react-jsx",
     "moduleResolution": "node",
     "noEmit": true,
-    "paths": { "*": ["./frontend/*", "./frontend/js/*"] },
+    "paths": {
+      "*": ["./frontend/*", "./frontend/js/*"],
+      "@/*": ["./frontend/js/*"]
+    },
     "skipLibCheck": true,
     "strict": true,
     "types": ["node", "jest", "@testing-library/jest-dom"]
