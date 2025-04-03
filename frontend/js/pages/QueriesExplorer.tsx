@@ -34,7 +34,6 @@ const QueriesExplorer = () => {
   return (
     <div className="container">
       <div className="d-flex justify-content-between align-items-center my-2">
-        <h5>Query Explorer</h5>
         <Button size="sm" variant="primary" onClick={createQuery}>
           New Query
         </Button>
