@@ -1,7 +1,8 @@
 // components/QueryTabs.tsx
+import { useEffect } from "react";
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useEffect } from "react";
 
 type QueryTabsProps = {
   queries: { id: number }[];
@@ -26,10 +27,10 @@ export default function QueryTabs({
     <div className="flex flex-col h-full">
       <div className="mb-3 px-2">
         <Button
+          className="w-full"
+          size="sm"
           variant="outline"
           onClick={onCreate}
-          size="sm"
-          className="w-full"
         >
           New Query
         </Button>
@@ -40,15 +41,13 @@ export default function QueryTabs({
           {queries.map((query) => (
             <Button
               key={query.id}
-              variant="ghost"
-              size="sm"
-              onClick={() => onSelect(query.id.toString())}
               className={cn(
                 "w-full justify-start",
-                currentQueryId === query.id.toString()
-                  ? "bg-gray-100"
-                  : ""
+                currentQueryId === query.id.toString() ? "bg-gray-100" : "",
               )}
+              size="sm"
+              variant="ghost"
+              onClick={() => onSelect(query.id.toString())}
             >
               Query {query.id}
             </Button>

@@ -1,9 +1,10 @@
 import * as Sentry from "@sentry/react";
 import cookie from "cookie";
 
+import { Toaster } from "@/components/ui/toaster";
+
 import { OpenAPI } from "./api";
 import QueriesExplorer from "./pages/QueriesExplorer";
-import { Toaster } from "@/components/ui/toaster"
 
 OpenAPI.interceptors.request.use((request) => {
   const { csrftoken } = cookie.parse(document.cookie);

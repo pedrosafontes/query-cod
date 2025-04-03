@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
 import debounce from "lodash.debounce";
+import { useEffect, useRef, useState } from "react";
 
 type Status = "idle" | "saving" | "saved" | "error";
 
@@ -39,7 +39,7 @@ export function useAutosave({
     if (current.current !== lastSaved.current) {
       setStatus("saving");
     }
-    
+
     debouncedSave();
     return () => debouncedSave.cancel();
   }, [data, debouncedSave]);

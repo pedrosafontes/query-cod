@@ -1,10 +1,11 @@
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+
 import { QueriesService, Query, QueryResultData } from "../api";
 
 import QueryEditor from "./QueryEditor";
 import QueryResult from "./QueryResult";
-import { Button } from "@/components/ui/button";
 
 const QueryExplorer = ({ query }: { query: Query }) => {
   const [queryResult, setQueryResult] = useState<QueryResultData>();
@@ -38,7 +39,7 @@ const QueryExplorer = ({ query }: { query: Query }) => {
         <QueryEditor query={query} />
       </div>
       <div className="col-span-2 px-3 py-5 flex flex-col justify-end h-full">
-        <QueryResult success={success} result={queryResult} />
+        <QueryResult result={queryResult} success={success} />
       </div>
     </div>
   );

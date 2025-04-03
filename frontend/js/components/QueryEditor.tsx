@@ -1,15 +1,16 @@
-import { useEffect, useRef, useState } from "react";
 import MonacoEditor, { Monaco } from "@monaco-editor/react";
+import { editor } from "monaco-editor";
+import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { QueriesService, Query, QueryError } from "../api";
 import { useAutosave } from "../hooks/useAutosave";
-import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 
 const QueryEditor = ({ query }: { query: Query }) => {
   const [text, setText] = useState<string>(query.text);
   const [errors, setErrors] = useState<QueryError[]>([]);
   const monacoRef = useRef<Monaco | null>(null);
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
   const updateQuery = async (queryText: string): Promise<void> => {
     try {
@@ -28,10 +29,10 @@ const QueryEditor = ({ query }: { query: Query }) => {
 
   const updateErrorMarkers = () => {
     if (!monacoRef.current || !editorRef.current) return;
-    
+
     const model = editorRef.current.getModel();
     if (!model) return;
-    
+
     if (errors.length > 0) {
       const markers = errors.map((error) => {
         return {
@@ -40,10 +41,14 @@ const QueryEditor = ({ query }: { query: Query }) => {
           startColumn: error.start_col,
           endColumn: error.end_col,
           message: error.message,
-          severity: monacoRef.current!.MarkerSeverity.Error
-        }
-      })
-      monacoRef.current.editor.setModelMarkers(model, "autosave-feedback", markers);
+          severity: monacoRef.current!.MarkerSeverity.Error,
+        };
+      });
+      monacoRef.current.editor.setModelMarkers(
+        model,
+        "autosave-feedback",
+        markers,
+      );
     } else {
       monacoRef.current.editor.setModelMarkers(model, "autosave-feedback", []);
     }
@@ -84,16 +89,8 @@ const QueryEditor = ({ query }: { query: Query }) => {
   return (
     <>
       <MonacoEditor
-        height="500px"
         defaultLanguage="sql"
-        value={text}
-        onChange={(value) => setText(value || "")}
-        theme="vs-light"
-        onMount={(editor, monaco) => {
-          editorRef.current = editor;
-          monacoRef.current = monaco;
-          updateQuery(text)
-        }}
+        height="500px"
         options={{
           fontSize: 14,
           minimap: { enabled: false },
@@ -103,12 +100,18 @@ const QueryEditor = ({ query }: { query: Query }) => {
           lineNumbers: "on",
           formatOnType: true,
           formatOnPaste: true,
-          lineNumbersMinChars: 2
+          lineNumbersMinChars: 2,
+        }}
+        theme="vs-light"
+        value={text}
+        onChange={(value) => setText(value || "")}
+        onMount={(editor, monaco) => {
+          editorRef.current = editor;
+          monacoRef.current = monaco;
+          updateQuery(text);
         }}
       />
-      <div className="flex justify-end text-xs mt-2">
-        {renderStatus()}
-      </div>
+      <div className="flex justify-end text-xs mt-2">{renderStatus()}</div>
     </>
   );
 };

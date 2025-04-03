@@ -7,10 +7,12 @@ import QueryTabs from "../components/QueryTabs";
 const QueriesExplorer = () => {
   const [queries, setQueries] =
     useState<Awaited<ReturnType<typeof QueriesService.queriesList>>>();
-  const [currentQueryId, setCurrentQueryId] = useState<string | undefined>(undefined);
+  const [currentQueryId, setCurrentQueryId] = useState<string | undefined>(
+    undefined,
+  );
 
   const query = queries?.find(
-    (query) => query.id.toString() === currentQueryId
+    (query) => query.id.toString() === currentQueryId,
   );
 
   const fetchQueries = async () => {
@@ -42,15 +44,15 @@ const QueriesExplorer = () => {
         <div className="col-span-1 overflow-auto px-3 border-r py-5">
           {queries && (
             <QueryTabs
-              queries={queries}
               currentQueryId={currentQueryId}
-              onSelect={setCurrentQueryId}
+              queries={queries}
               onCreate={createQuery}
+              onSelect={setCurrentQueryId}
             />
           )}
         </div>
         <div className="col-span-7">
-          {query && <QueryExplorer query={query} key={query.id} />}
+          {query && <QueryExplorer key={query.id} query={query} />}
         </div>
       </div>
     </div>

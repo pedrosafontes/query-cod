@@ -1,19 +1,18 @@
-import { QueryResultData } from "js/api";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
+import { useEffect } from "react";
+
+import { useToast } from "@/hooks/use-toast";
+import { QueryResultData } from "js/api";
+
 import { DataTable } from "./DataTable";
 
-const QueryResult = ({ success, result }: { success: boolean; result: QueryResultData | undefined }) => {
+const QueryResult = ({
+  success,
+  result,
+}: {
+  success: boolean;
+  result: QueryResultData | undefined;
+}) => {
   const { toast } = useToast();
 
   useEffect(() => {
@@ -28,15 +27,14 @@ const QueryResult = ({ success, result }: { success: boolean; result: QueryResul
     return null;
   }
 
-  const columns: ColumnDef<Record<string, string | null>>[] = result.columns.map(
-    (col) => ({
+  const columns: ColumnDef<Record<string, string | null>>[] =
+    result.columns.map((col) => ({
       accessorKey: col,
       header: col,
-    })
-  );
+    }));
 
   const data = result.rows.map((row) =>
-    Object.fromEntries(row.map((cell, i) => [result.columns[i], cell]))
+    Object.fromEntries(row.map((cell, i) => [result.columns[i], cell])),
   );
 
   return (

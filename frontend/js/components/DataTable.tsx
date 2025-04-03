@@ -4,8 +4,9 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   useReactTable,
-} from "@tanstack/react-table"
- 
+} from "@tanstack/react-table";
+
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -13,14 +14,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
- 
+} from "@/components/ui/table";
+
 interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
 }
- 
+
 export function DataTable<TData, TValue>({
   columns,
   data,
@@ -35,8 +35,8 @@ export function DataTable<TData, TValue>({
         pageSize: 5,
       },
     },
-  })
- 
+  });
+
   return (
     <div>
       <div className="rounded-md border">
@@ -51,10 +51,10 @@ export function DataTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext()
+                            header.getContext(),
                           )}
                     </TableHead>
-                  )
+                  );
                 })}
               </TableRow>
             ))}
@@ -68,14 +68,20 @@ export function DataTable<TData, TValue>({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  className="h-24 text-center"
+                  colSpan={columns.length}
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -85,22 +91,22 @@ export function DataTable<TData, TValue>({
       </div>
       <div className="flex items-center justify-end space-x-2 pt-4">
         <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
+          size="sm"
+          variant="outline"
+          onClick={() => table.previousPage()}
         >
           Previous
         </Button>
         <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
+          size="sm"
+          variant="outline"
+          onClick={() => table.nextPage()}
         >
           Next
         </Button>
       </div>
     </div>
-  )
+  );
 }
