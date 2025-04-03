@@ -35,6 +35,11 @@ export function useAutosave({
 
   useEffect(() => {
     current.current = data;
+
+    if (current.current !== lastSaved.current) {
+      setStatus("saving");
+    }
+    
     debouncedSave();
     return () => debouncedSave.cancel();
   }, [data, debouncedSave]);
