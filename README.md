@@ -65,12 +65,6 @@ Also, includes a Render.com `render.yaml` and a working Django `production.py` s
 -   `django-defender` for blocking brute force attacks against login
 -   `whitenoise` and `brotlipy` for serving static assets
 
-## Share your project!
-
-Several people have leveraged our boilerplate to start spinoffs or to boost their efforts in the challenging pursuit of securing funding. Starting with a solid foundation allows you to create more resilient products and focus on what really matters: discovering and delivering value to your customers. If you are one of those people, we're eager to help you even more! We can spread the word about your project across our social media platforms, giving you access to a broader audience.
-
-Send us an email at contact@vintasoftware.com telling us a bit more about how our boilerplate helped you boost your project.
-
 ## Running
 
 ### Tools
@@ -206,17 +200,6 @@ We use the [`openapi-ts`](https://heyapi.vercel.app/openapi-ts/get-started.html)
 > [!NOTE]
 > If `pre-commit` is properly enabled, it will automatically update both schema and client before each commit whenever necessary.
 
-## Github Actions
-
-To enable Continuous Integration through Github Actions, we provide a `proj_main.yml` file. To connect it to Github you need to rename it to `main.yml` and move it to the `.github/workflows/` directory.
-
-You can do it with the following commands:
-
-```bash
-mkdir -p .github/workflows
-mv proj_main.yml .github/workflows/main.yml
-```
-
 ## Production Deployment
 
 ### Setup
@@ -334,15 +317,3 @@ In this project, we have defined several CSP settings that define the sources fr
 - To load images from an external source, such as https://example.com, you would add this source to `CSP_IMG_SRC`.
 
 Please note that you should only add trusted sources to these settings to maintain the security of your site. For more details, please refer to the [Django-CSP documentation](https://django-csp.readthedocs.io/en/latest/).
-
-## Contributing
-
-If you wish to contribute to this project, please first discuss the change you wish to make via an [issue](https://github.com/vintasoftware/django-react-boilerplate/issues).
-
-Check our [contributing guide](https://github.com/vintasoftware/django-react-boilerplate/blob/main/CONTRIBUTING.md) to learn more about our development process and how you can test your changes to the boilerplate.
-
-## Commercial Support
-
-[![alt text](https://avatars2.githubusercontent.com/u/5529080?s=80&v=4 "Vinta Logo")](https://www.vinta.com.br/)
-
-This project is maintained by [Vinta Software](https://www.vinta.com.br/) and is used in products of Vinta's clients. We are always looking for exciting work! If you need any commercial support, feel free to get in touch: contact@vinta.com.br
