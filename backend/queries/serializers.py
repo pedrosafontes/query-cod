@@ -6,7 +6,7 @@ from .models import Query
 class QuerySerializer(serializers.ModelSerializer):
     # This field is required to be present in the request payload,
     # but it can be an empty string (i.e., blank=True at the model level).
-    text = serializers.CharField(required=True)
+    text = serializers.CharField(required=True, allow_blank=True)
     class Meta:
         model = Query
         fields = [  # noqa: RUF012
@@ -30,4 +30,19 @@ class QueryResultDataSerializer(serializers.Serializer):
     )
 
 class QueryExecutionSerializer(serializers.Serializer):
-    results = QueryResultDataSerializer()
+    results = QueryResultDataSerializer(
+        required=False,
+        help_text="Query result data if the query execution was successful"
+    )
+    success = serializers.BooleanField(
+        help_text="Indicates if the query execution was successful"
+    )
+
+class QueryPartialUpdateSerializer(serializers.Serializer):
+    query = QuerySerializer(
+        help_text="The updated query object after partial update."
+    )
+    error = serializers.CharField(
+        required=False,
+        help_text="Error message, if any occurred during update."
+    )

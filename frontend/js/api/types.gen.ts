@@ -49,7 +49,25 @@ export type Query = {
 };
 
 export type QueryExecution = {
-  results: QueryResultData;
+  /**
+   * Query result data if the query execution was successful
+   */
+  results?: QueryResultData;
+  /**
+   * Indicates if the query execution was successful
+   */
+  success: boolean;
+};
+
+export type QueryPartialUpdate = {
+  /**
+   * The updated query object after partial update.
+   */
+  query: Query;
+  /**
+   * Error message, if any occurred during update.
+   */
+  error?: string;
 };
 
 export type QueryResultData = {
@@ -129,7 +147,7 @@ export type QueriesPartialUpdateData = {
   requestBody?: PatchedQuery;
 };
 
-export type QueriesPartialUpdateResponse = Query;
+export type QueriesPartialUpdateResponse = QueryPartialUpdate;
 
 export type QueriesDestroyData = {
   /**
@@ -237,7 +255,7 @@ export type $OpenApiTs = {
     patch: {
       req: QueriesPartialUpdateData;
       res: {
-        200: Query;
+        200: QueryPartialUpdate;
       };
     };
     delete: {

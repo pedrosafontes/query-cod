@@ -113,7 +113,7 @@ export class QueriesService {
    * @param data The data for the request.
    * @param data.id A unique integer value identifying this query.
    * @param data.requestBody
-   * @returns Query
+   * @returns QueryPartialUpdate
    * @throws ApiError
    */
   public static queriesPartialUpdate(

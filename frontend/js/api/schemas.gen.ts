@@ -154,10 +154,38 @@ export const $QueryExecution = {
   type: "object",
   properties: {
     results: {
-      $ref: "#/components/schemas/QueryResultData",
+      allOf: [
+        {
+          $ref: "#/components/schemas/QueryResultData",
+        },
+      ],
+      description: "Query result data if the query execution was successful",
+    },
+    success: {
+      type: "boolean",
+      description: "Indicates if the query execution was successful",
     },
   },
-  required: ["results"],
+  required: ["success"],
+} as const;
+
+export const $QueryPartialUpdate = {
+  type: "object",
+  properties: {
+    query: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/Query",
+        },
+      ],
+      description: "The updated query object after partial update.",
+    },
+    error: {
+      type: "string",
+      description: "Error message, if any occurred during update.",
+    },
+  },
+  required: ["query"],
 } as const;
 
 export const $QueryResultData = {
