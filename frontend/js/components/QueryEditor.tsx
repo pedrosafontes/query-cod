@@ -3,6 +3,7 @@ import MonacoEditor, { Monaco } from "@monaco-editor/react";
 
 import { QueriesService, Query, QueryError } from "../api";
 import { useAutosave } from "../hooks/useAutosave";
+import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
 
 const QueryEditor = ({ query }: { query: Query }) => {
   const [text, setText] = useState<string>(query.text);
@@ -19,9 +20,7 @@ const QueryEditor = ({ query }: { query: Query }) => {
         },
       });
 
-      if (result.errors) {
-        setErrors(result.errors);
-      }
+      setErrors(result.errors ? result.errors : []);
     } catch (err) {
       console.error("Error updating query:", err);
     }
@@ -59,11 +58,26 @@ const QueryEditor = ({ query }: { query: Query }) => {
   const renderStatus = () => {
     switch (status) {
       case "saving":
-        return <span className="text-slate-400">Saving...</span>;
+        return (
+          <span className="inline-flex items-center gap-1 text-gray-400 animate-pulse">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Saving...
+          </span>
+        );
       case "error":
-        return <span className="text-red-500">Error saving</span>;
+        return (
+          <span className="inline-flex items-center gap-1 text-red-500">
+            <AlertTriangle className="h-3 w-3" />
+            Error saving
+          </span>
+        );
       default:
-        return <span className="text-slate-500">Saved!</span>;
+        return (
+          <span className="inline-flex items-center gap-1 text-green-600">
+            <CheckCircle className="h-3 w-3" />
+            Saved!
+          </span>
+        );
     }
   };
 
