@@ -10,7 +10,7 @@ from .serializers import QueryExecutionSerializer, QueryPartialUpdateSerializer,
 class QueryViewSet(viewsets.ModelViewSet):
     queryset = Query.objects.all()
     serializer_class = QuerySerializer
-    permission_classes = [permissions.AllowAny] # noqa: RUF012
+    permission_classes = [permissions.AllowAny]  # noqa: RUF012
     pagination_class = None
 
     @extend_schema(
@@ -20,10 +20,12 @@ class QueryViewSet(viewsets.ModelViewSet):
     def partial_update(self, request, *args, **kwargs):
         base_response = super().partial_update(request, *args, **kwargs)
         query = self.get_object()
-        return Response({
-            'query': base_response.data,
-            'errors': query.parse().get('errors'),
-        })
+        return Response(
+            {
+                'query': base_response.data,
+                'errors': query.parse().get('errors'),
+            }
+        )
 
     @extend_schema(
         request=None,
@@ -33,10 +35,9 @@ class QueryViewSet(viewsets.ModelViewSet):
     def run(self, request, pk=None):
         query = self.get_object()
         if not query.parse()['valid']:
-            return Response({
-                'success': False,
-            })
-        return Response({
-            'success': True,
-            'results': query.execute()
-        })
+            return Response(
+                {
+                    'success': False,
+                }
+            )
+        return Response({'success': True, 'results': query.execute()})

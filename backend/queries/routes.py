@@ -2,5 +2,5 @@ from .views import QueryViewSet
 
 
 routes = [
-    {"regex": r"queries", "viewset": QueryViewSet, "basename": "query"},
+    {'regex': r'queries', 'viewset': QueryViewSet, 'basename': 'query'},
 ]

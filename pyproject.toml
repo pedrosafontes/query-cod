@@ -97,6 +97,7 @@ exclude = [
     "node_modules",
     "venv",
     "virtualenvs",
+    "migrations"
 ]
 ignore = [
   # Disable eradicate (commented code removal)
@@ -146,6 +147,9 @@ lines-after-imports = 2
 "**/*test*.py" = ["E402", "F403", "F405", "S", "N802"]
 "**/{settings}/*" = ["E402", "F403", "F405"]
 "**/migrations/*" = ["RUF", "I"]
+
+[tool.ruff.format]
+quote-style = "single"
 
 [tool.coverage.run]
 branch = true

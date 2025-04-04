@@ -16,24 +16,24 @@ router = DefaultRouter()
 
 routes = users_routes + queries_routes
 for route in routes:
-    router.register(route["regex"], route["viewset"], basename=route["basename"])
+    router.register(route['regex'], route['viewset'], basename=route['basename'])
 
 urlpatterns = [
-    path("", include("common.urls"), name="common"),
-    path("admin/", admin.site.urls, name="admin"),
-    path("admin/defender/", include("defender.urls")),
-    path("jsreverse/", django_js_reverse.views.urls_js, name="js_reverse"),
-    path("api/", include(router.urls), name="api"),
+    path('', include('common.urls'), name='common'),
+    path('admin/', admin.site.urls, name='admin'),
+    path('admin/defender/', include('defender.urls')),
+    path('jsreverse/', django_js_reverse.views.urls_js, name='js_reverse'),
+    path('api/', include(router.urls), name='api'),
     # drf-spectacular
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path(
-        "api/schema/swagger-ui/",
-        SpectacularSwaggerView.as_view(url_name="schema"),
-        name="swagger-ui",
+        'api/schema/swagger-ui/',
+        SpectacularSwaggerView.as_view(url_name='schema'),
+        name='swagger-ui',
     ),
     path(
-        "api/schema/redoc/",
-        SpectacularRedocView.as_view(url_name="schema"),
-        name="redoc",
+        'api/schema/redoc/',
+        SpectacularRedocView.as_view(url_name='schema'),
+        name='redoc',
     ),
 ]

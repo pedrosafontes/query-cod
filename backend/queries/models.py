@@ -13,10 +13,7 @@ class Query(IndexedTimeStampedModel):
             cursor.execute(self.text)
             rows = cursor.fetchall()
             columns = [col[0] for col in cursor.description]
-        return {
-            'columns': columns,
-            'rows': rows
-        }
-    
+        return {'columns': columns, 'rows': rows}
+
     def parse(self):
         return parse_sql(self.text)
