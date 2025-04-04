@@ -17,15 +17,19 @@ export function useAutosave({
   const current = useRef<string>(data);
 
   const save = async () => {
-    if (current.current === lastSaved.current) return;
+    const valueToSave = current.current;
+
+    if (valueToSave === lastSaved.current) return;
 
     setStatus("saving");
     try {
-      await onSave(current.current);
-      lastSaved.current = current.current;
-      setStatus("saved");
+      await onSave(valueToSave);
 
-      setTimeout(() => setStatus("idle"), 1500); // reset after 1.5s
+      // eslint-disable-next-line require-atomic-updates
+      lastSaved.current = valueToSave;
+
+      setStatus("saved");
+      setTimeout(() => setStatus("idle"), 1500);
     } catch (e) {
       setStatus("error");
     }
