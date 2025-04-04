@@ -45,15 +45,13 @@ module.exports = (env, argv) => {
           use: [
             isDev && "style-loader",
             !isDev && MiniCssExtractPlugin.loader,
-            "css-loader",
             {
-              loader: "postcss-loader",
+              loader: "css-loader",
               options: {
-                postcssOptions: {
-                  plugins: [["postcss-preset-env"]],
-                },
+                importLoaders: 1,
               },
             },
+            "postcss-loader",
           ].filter(Boolean),
         },
         {
@@ -64,7 +62,13 @@ module.exports = (env, argv) => {
             // Optimizes CSS in chunks
             !isDev && MiniCssExtractPlugin.loader,
             // Translates CSS into CommonJS
-            "css-loader",
+            {
+              loader: "css-loader",
+              options: {
+                importLoaders: 1,
+              },
+            },
+            "postcss-loader",
             // Compiles Sass to CSS
             "sass-loader",
           ].filter(Boolean),
@@ -95,6 +99,9 @@ module.exports = (env, argv) => {
     resolve: {
       modules: [nodeModulesDir, path.resolve(__dirname, "frontend/js/")],
       extensions: [".js", ".jsx", ".ts", ".tsx"],
+      alias: {
+        '@': path.resolve(__dirname, 'frontend/js/')
+      }
     },
     optimization: {
       minimize: !isDev,
