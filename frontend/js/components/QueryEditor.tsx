@@ -1,6 +1,6 @@
 import MonacoEditor, { Monaco } from "@monaco-editor/react";
-import { editor } from "monaco-editor";
 import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { editor } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
 import { QueriesService, Query, QueryError } from "../api";
