@@ -21,7 +21,7 @@ const QueryEditor = ({ query }: { query: Query }) => {
         },
       });
 
-      setErrors(result.errors ? result.errors : []);
+      setErrors(result?.errors ?? []);
     } catch (err) {
       console.error("Error updating query:", err);
     }
