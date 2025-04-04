@@ -5,6 +5,8 @@ module.exports = {
   parser: "@typescript-eslint/parser",
   extends: ["vinta/recommended-typescript"],
   rules: {
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "error",
     "import/extensions": [
       "error",
       "ignorePackages",
@@ -53,6 +55,13 @@ module.exports = {
           "error",
           { devDependencies: true },
         ],
+      },
+    },
+    {
+      files: ['**/components/ui/*.tsx'], 
+      rules: {
+        'react/prop-types': [2, { ignore: ['className'] }],
+        'react-refresh/only-export-components': 'off',
       },
     },
   ],
