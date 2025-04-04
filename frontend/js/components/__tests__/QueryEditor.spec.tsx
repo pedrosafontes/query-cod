@@ -1,18 +1,26 @@
+import { EditorProps } from "@monaco-editor/react";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import QueryEditor from "../QueryEditor";
+import type { editor } from "monaco-editor";
+
 import { QueriesService } from "js/api";
 import { useAutosave } from "js/hooks/useAutosave";
-import { useEffect } from "react";
+
+import QueryEditor from "../QueryEditor";
 
 // Mock MonacoEditor
 jest.mock("@monaco-editor/react", () => ({
   __esModule: true,
-  default: ({ onChange, value }: any) => {
+  default: ({ onChange, value }: EditorProps) => {
     return (
       <textarea
         data-testid="monaco-editor"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) =>
+          onChange?.(
+            e.target.value ?? "",
+            {} as editor.IModelContentChangedEvent,
+          )
+        }
       />
     );
   },
@@ -40,7 +48,7 @@ describe("QueryEditor", () => {
     jest.clearAllMocks();
   });
 
-  it("renders the editor with initial text", async () => {
+  test("renders the editor with initial text", async () => {
     (useAutosave as jest.Mock).mockReturnValue("saved");
 
     render(<QueryEditor query={fakeQuery} />);
@@ -51,7 +59,7 @@ describe("QueryEditor", () => {
     expect(screen.getByText("Saved!")).toBeInTheDocument();
   });
 
-  it("calls autosave on change", async () => {
+  test("calls autosave on change", async () => {
     (useAutosave as jest.Mock).mockImplementation(({ onSave }) => {
       onSave("SELECT 1");
       return "saving";
@@ -72,7 +80,7 @@ describe("QueryEditor", () => {
     expect(screen.getByText(/Saving/i)).toBeInTheDocument();
   });
 
-  it("displays error status on autosave failure", async () => {
+  test("displays error status on autosave failure", async () => {
     (useAutosave as jest.Mock).mockReturnValue("error");
 
     render(<QueryEditor query={fakeQuery} />);
