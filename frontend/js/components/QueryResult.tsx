@@ -1,4 +1,4 @@
-import { ColumnDef } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
 import { useEffect } from "react";
 
 import { useToast } from "@/hooks/use-toast";
