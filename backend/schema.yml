@@ -4,11 +4,72 @@ info:
   version: 0.1.0
   description: A Django project boilerplate with Vinta's best practices
 paths:
-  /api/queries/:
+  /api/projects/:
     get:
-      operationId: queries_list
+      operationId: projects_list
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
       tags:
-      - queries
+      - projects
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProjectList'
+          description: ''
+    post:
+      operationId: projects_create
+      tags:
+      - projects
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Project'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Project'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+          description: ''
+  /api/projects/{project_pk}/queries/:
+    get:
+      operationId: projects_queries_list
+      parameters:
+      - in: path
+        name: project_pk
+        schema:
+          type: integer
+        description: ID of the parent project
+        required: true
+      tags:
+      - projects
       security:
       - cookieAuth: []
       - {}
@@ -22,9 +83,16 @@ paths:
                   $ref: '#/components/schemas/Query'
           description: ''
     post:
-      operationId: queries_create
+      operationId: projects_queries_create
+      parameters:
+      - in: path
+        name: project_pk
+        schema:
+          type: integer
+        description: ID of the parent project
+        required: true
       tags:
-      - queries
+      - projects
       requestBody:
         content:
           application/json:
@@ -48,27 +116,6 @@ paths:
                 $ref: '#/components/schemas/Query'
           description: ''
   /api/queries/{id}/:
-    get:
-      operationId: queries_retrieve
-      parameters:
-      - in: path
-        name: id
-        schema:
-          type: integer
-        description: A unique integer value identifying this query.
-        required: true
-      tags:
-      - queries
-      security:
-      - cookieAuth: []
-      - {}
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Query'
-          description: ''
     put:
       operationId: queries_update
       parameters:
@@ -76,7 +123,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this query.
+        description: ID of the query
         required: true
       tags:
       - queries
@@ -109,7 +156,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this query.
+        description: ID of the query
         required: true
       tags:
       - queries
@@ -141,7 +188,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this query.
+        description: ID of the query
         required: true
       tags:
       - queries
@@ -159,7 +206,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: A unique integer value identifying this query.
+        description: ID of the query
         required: true
       tags:
       - queries
@@ -327,6 +374,29 @@ paths:
           description: No response body
 components:
   schemas:
+    PaginatedProjectList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
     PaginatedUserList:
       type: object
       required:
@@ -356,6 +426,9 @@ components:
         id:
           type: integer
           readOnly: true
+        name:
+          type: string
+          maxLength: 255
         text:
           type: string
         created:
@@ -400,12 +473,30 @@ components:
           type: string
           format: date-time
           nullable: true
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        database:
+          type: integer
+      required:
+      - database
+      - id
+      - name
     Query:
       type: object
       properties:
         id:
           type: integer
           readOnly: true
+        name:
+          type: string
+          maxLength: 255
         text:
           type: string
         created:
@@ -420,6 +511,7 @@ components:
       - created
       - id
       - modified
+      - name
       - text
     QueryError:
       type: object

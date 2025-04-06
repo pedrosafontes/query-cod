@@ -4,11 +4,14 @@ import type { CancelablePromise } from "./core/CancelablePromise";
 import { OpenAPI } from "./core/OpenAPI";
 import { request as __request } from "./core/request";
 import type {
-  QueriesListResponse,
-  QueriesCreateData,
-  QueriesCreateResponse,
-  QueriesRetrieveData,
-  QueriesRetrieveResponse,
+  ProjectsListData,
+  ProjectsListResponse,
+  ProjectsCreateData,
+  ProjectsCreateResponse,
+  ProjectsQueriesListData,
+  ProjectsQueriesListResponse,
+  ProjectsQueriesCreateData,
+  ProjectsQueriesCreateResponse,
   QueriesUpdateData,
   QueriesUpdateResponse,
   QueriesPartialUpdateData,
@@ -31,30 +34,39 @@ import type {
   UsersDestroyResponse,
 } from "./types.gen";
 
-export class QueriesService {
+export class ProjectsService {
   /**
-   * @returns Query
+   * @param data The data for the request.
+   * @param data.limit Number of results to return per page.
+   * @param data.offset The initial index from which to return the results.
+   * @returns PaginatedProjectList
    * @throws ApiError
    */
-  public static queriesList(): CancelablePromise<QueriesListResponse> {
+  public static projectsList(
+    data: ProjectsListData = {},
+  ): CancelablePromise<ProjectsListResponse> {
     return __request(OpenAPI, {
       method: "GET",
-      url: "/api/queries/",
+      url: "/api/projects/",
+      query: {
+        limit: data.limit,
+        offset: data.offset,
+      },
     });
   }
 
   /**
    * @param data The data for the request.
    * @param data.requestBody
-   * @returns Query
+   * @returns Project
    * @throws ApiError
    */
-  public static queriesCreate(
-    data: QueriesCreateData,
-  ): CancelablePromise<QueriesCreateResponse> {
+  public static projectsCreate(
+    data: ProjectsCreateData,
+  ): CancelablePromise<ProjectsCreateResponse> {
     return __request(OpenAPI, {
       method: "POST",
-      url: "/api/queries/",
+      url: "/api/projects/",
       body: data.requestBody,
       mediaType: "application/json",
     });
@@ -62,25 +74,48 @@ export class QueriesService {
 
   /**
    * @param data The data for the request.
-   * @param data.id A unique integer value identifying this query.
+   * @param data.projectPk ID of the parent project
    * @returns Query
    * @throws ApiError
    */
-  public static queriesRetrieve(
-    data: QueriesRetrieveData,
-  ): CancelablePromise<QueriesRetrieveResponse> {
+  public static projectsQueriesList(
+    data: ProjectsQueriesListData,
+  ): CancelablePromise<ProjectsQueriesListResponse> {
     return __request(OpenAPI, {
       method: "GET",
-      url: "/api/queries/{id}/",
+      url: "/api/projects/{project_pk}/queries/",
       path: {
-        id: data.id,
+        project_pk: data.projectPk,
       },
     });
   }
 
   /**
    * @param data The data for the request.
-   * @param data.id A unique integer value identifying this query.
+   * @param data.projectPk ID of the parent project
+   * @param data.requestBody
+   * @returns Query
+   * @throws ApiError
+   */
+  public static projectsQueriesCreate(
+    data: ProjectsQueriesCreateData,
+  ): CancelablePromise<ProjectsQueriesCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/projects/{project_pk}/queries/",
+      path: {
+        project_pk: data.projectPk,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+}
+
+export class QueriesService {
+  /**
+   * @param data The data for the request.
+   * @param data.id ID of the query
    * @param data.requestBody
    * @returns Query
    * @throws ApiError
@@ -101,7 +136,7 @@ export class QueriesService {
 
   /**
    * @param data The data for the request.
-   * @param data.id A unique integer value identifying this query.
+   * @param data.id ID of the query
    * @param data.requestBody
    * @returns QueryPartialUpdate
    * @throws ApiError
@@ -122,7 +157,7 @@ export class QueriesService {
 
   /**
    * @param data The data for the request.
-   * @param data.id A unique integer value identifying this query.
+   * @param data.id ID of the query
    * @returns void No response body
    * @throws ApiError
    */
@@ -140,7 +175,7 @@ export class QueriesService {
 
   /**
    * @param data The data for the request.
-   * @param data.id A unique integer value identifying this query.
+   * @param data.id ID of the query
    * @returns QueryExecution
    * @throws ApiError
    */

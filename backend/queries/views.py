@@ -1,17 +1,54 @@
-from drf_spectacular.utils import extend_schema
-from rest_framework import permissions, viewsets
+from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework import permissions, viewsets, mixins
 from rest_framework.decorators import action
 from rest_framework.response import Response
+
+from projects.models import Project
 
 from .models import Query
 from .serializers import QueryExecutionSerializer, QueryPartialUpdateSerializer, QuerySerializer
 
+from drf_spectacular.utils import OpenApiParameter
 
-class QueryViewSet(viewsets.ModelViewSet):
-    queryset = Query.objects.all()
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name='project_pk',
+            type=int,
+            location=OpenApiParameter.PATH,
+            description='ID of the parent project',
+        )
+    ]
+)
+class ProjectQueryViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = QuerySerializer
     permission_classes = [permissions.AllowAny]  # noqa: RUF012
     pagination_class = None
+
+    def get_queryset(self):
+        return Query.objects.filter(project__id=self.kwargs['project_pk'])
+
+    def perform_create(self, serializer):
+        project = get_object_or_404(Project, id=self.kwargs['project_pk'])
+        serializer.save(project=project)
+
+
+@extend_schema(
+    parameters=[
+        OpenApiParameter(
+            name='id',
+            type=int,
+            location=OpenApiParameter.PATH,
+            description='ID of the query',
+        )
+    ]
+)
+class QueryViewSet(mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
+    queryset = Query.objects.all()
+    serializer_class = QuerySerializer
+    permission_classes = [permissions.AllowAny]  # noqa: RUF012
 
     @extend_schema(
         request=QuerySerializer,

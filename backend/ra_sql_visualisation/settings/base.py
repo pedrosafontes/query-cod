@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'common',
     'users',
     'queries',
+    'projects',
+    'databases',
 ]
 
 MIDDLEWARE = [
