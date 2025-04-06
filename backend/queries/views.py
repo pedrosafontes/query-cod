@@ -28,6 +28,7 @@ class ProjectQueryViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewse
     pagination_class = None
 
     def get_queryset(self):
+        get_object_or_404(Project, id=self.kwargs['project_pk'])
         return Query.objects.filter(project__id=self.kwargs['project_pk'])
 
     def perform_create(self, serializer):
