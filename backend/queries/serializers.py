@@ -12,6 +12,7 @@ class QuerySerializer(serializers.ModelSerializer):
         model = Query
         fields = [  # noqa: RUF012
             'id',
+            'name',
             'text',
             'created',
             'modified',
