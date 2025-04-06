@@ -1,5 +1,7 @@
-from django.db import connection, models
+from django.db import models
 
+from databases.utils.conversion import from_model
+from databases.services.execution import execute_sql
 from common.models import IndexedTimeStampedModel
 from projects.models import Project
 
@@ -12,11 +14,7 @@ class Query(IndexedTimeStampedModel):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='queries')
 
     def execute(self):
-        with connection.cursor() as cursor:
-            cursor.execute(self.text)
-            rows = cursor.fetchall()
-            columns = [col[0] for col in cursor.description]
-        return {'columns': columns, 'rows': rows}
+        return execute_sql(self.text, from_model(self.project.database))
 
     def parse(self):
-        return parse_sql(self.text)
+        return parse_sql(self.text, from_model(self.project.database))
