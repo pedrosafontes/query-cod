@@ -1,29 +1,34 @@
 import { useEffect, useState } from "react";
 
-import { QueriesService, Query } from "../api";
+import { ProjectsService, Query } from "../api";
 import QueryExplorer from "../components/QueryExplorer";
 import QueryTabs from "../components/QueryTabs";
+import { useParams } from "react-router";
 
 const QueriesExplorer = () => {
   const [queries, setQueries] =
-    useState<Awaited<ReturnType<typeof QueriesService.queriesList>>>();
+    useState<Awaited<ReturnType<typeof ProjectsService.projectsQueriesList>>>();
   const [currentQueryId, setCurrentQueryId] = useState<string | undefined>(
     undefined,
   );
+  const { projectId } = useParams<{ projectId: string }>();
+  const projectPk = Number(projectId);
 
   const query = queries?.find(
     (query) => query.id.toString() === currentQueryId,
   );
 
   const fetchQueries = async () => {
-    const result = await QueriesService.queriesList();
+    const result = await ProjectsService.projectsQueriesList({ projectPk: projectPk });
     setQueries(result);
   };
 
   const createQuery = async (): Promise<void> => {
     try {
-      await QueriesService.queriesCreate({
+      await ProjectsService.projectsQueriesCreate({
+        projectPk: projectPk,
         requestBody: {
+          name: "Query",
           text: "",
         } as Query,
       });
