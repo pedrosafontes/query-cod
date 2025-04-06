@@ -1,4 +1,5 @@
 from django.db import models
+from dataclasses import dataclass
 
 
 class Database(models.Model):
@@ -16,3 +17,13 @@ class Database(models.Model):
         choices=DatabaseType.choices,
         default=DatabaseType.POSTGRESQL,
     )
+
+
+@dataclass
+class DatabaseConnectionInfo:
+    type: str
+    host: str
+    port: int
+    user: str
+    password: str
+    name: str
