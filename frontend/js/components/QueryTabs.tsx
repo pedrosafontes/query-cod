@@ -3,11 +3,12 @@ import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Query } from "js/api";
 
 type QueryTabsProps = {
-  queries: { id: number }[];
-  currentQueryId?: string;
-  onSelect: (id: string) => void;
+  queries: Query[];
+  currentQueryId?: number;
+  onSelect: (id: number) => void;
   onCreate: () => void;
 };
 
@@ -19,7 +20,7 @@ export default function QueryTabs({
 }: QueryTabsProps) {
   useEffect(() => {
     if (!currentQueryId && queries.length > 0) {
-      onSelect(queries[0].id.toString());
+      onSelect(queries[0].id);
     }
   }, [queries, currentQueryId, onSelect]);
 
@@ -43,13 +44,13 @@ export default function QueryTabs({
               key={query.id}
               className={cn(
                 "w-full justify-start",
-                currentQueryId === query.id.toString() ? "bg-gray-100" : "",
+                currentQueryId === query.id ? "bg-gray-100" : "",
               )}
               size="sm"
               variant="ghost"
-              onClick={() => onSelect(query.id.toString())}
+              onClick={() => onSelect(query.id)}
             >
-              Query {query.id}
+              {query.name} ({query.id})
             </Button>
           ))}
         </div>

@@ -8,14 +8,14 @@ import { useParams } from "react-router";
 const QueriesExplorer = () => {
   const [queries, setQueries] =
     useState<Awaited<ReturnType<typeof ProjectsService.projectsQueriesList>>>();
-  const [currentQueryId, setCurrentQueryId] = useState<string | undefined>(
+  const [currentQueryId, setCurrentQueryId] = useState<number | undefined>(
     undefined,
   );
   const { projectId } = useParams<{ projectId: string }>();
   const projectPk = Number(projectId);
 
   const query = queries?.find(
-    (query) => query.id.toString() === currentQueryId,
+    (query) => query.id === currentQueryId,
   );
 
   const fetchQueries = async () => {
