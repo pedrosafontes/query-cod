@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { z } from "zod";
 
 import { AuthService } from "@/api";
@@ -42,7 +42,7 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-sm mx-auto py-10">
-      <h1 className="text-2xl font-semibold mb-6 text-center">Login</h1>
+      <h1 className="text-xl font-semibold mb-3 text-center">Log in</h1>
       <Form {...form}>
         <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
@@ -80,10 +80,16 @@ export default function LoginPage() {
             disabled={form.formState.isSubmitting}
             type="submit"
           >
-            {form.formState.isSubmitting ? "Logging in..." : "Login"}
+            {form.formState.isSubmitting ? "Logging in..." : "Log in"}
           </Button>
         </form>
       </Form>
+      <p className="text-sm text-center mt-4">
+        Don't have an account?{" "}
+        <Link to="/signup" className="hover:underline">
+          Sign up
+        </Link>
+      </p>
     </div>
   );
 }
