@@ -8,6 +8,7 @@ module.exports = {
   theme: {
   	extend: {
   		colors: {
+        destructive: colors.red[600],
         background: colors.white,
   			primary: colors.gray[950],
   			'primary-foreground': colors.white,
