@@ -8,9 +8,7 @@ from .models import Project
 
 class ProjectSerializer(serializers.ModelSerializer):
     database_id = serializers.PrimaryKeyRelatedField(
-        queryset=Database.objects.all(),
-        source='database',
-        write_only=True
+        queryset=Database.objects.all(), source='database', write_only=True
     )
     database = DatabaseSerializer(read_only=True)
     queries = QuerySerializer(many=True, read_only=True)

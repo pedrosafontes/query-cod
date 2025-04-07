@@ -8,6 +8,7 @@ from .serializers import ProjectSerializer
 
 from drf_spectacular.utils import OpenApiParameter
 
+
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
