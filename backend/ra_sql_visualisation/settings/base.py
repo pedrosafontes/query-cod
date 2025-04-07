@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'queries',
     'projects',
     'databases',
+    'djoser',
 ]
 
 MIDDLEWARE = [
@@ -259,3 +260,13 @@ DEFENDER_LOGIN_FAILURE_LIMIT = 3
 DEFENDER_COOLOFF_TIME = 300  # 5 minutes
 DEFENDER_LOCKOUT_TEMPLATE = 'defender/lockout.html'
 DEFENDER_REDIS_URL = config('REDIS_URL')
+
+# Djoser
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'USER_ID_FIELD': 'id',
+    'SERIALIZERS': {
+        'user': 'users.serializers.UserSerializer',
+        'current_user': 'users.serializers.UserSerializer',
+    },
+}

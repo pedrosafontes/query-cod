@@ -9,10 +9,15 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [  # noqa: RUF012
             'id',
             'email',
-            'is_active',
-            'is_staff',
-            'is_superuser',
             'created',
             'modified',
-            'last_login',
         ]
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(style={'input_type': 'password'})
+
+
+class LogoutSerializer(serializers.Serializer):
+    pass

@@ -9,4 +9,3 @@ from .serializers import ProjectSerializer
 class ProjectViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-    permission_classes = [permissions.AllowAny]  # noqa: RUF012

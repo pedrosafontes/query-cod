@@ -24,7 +24,6 @@ from drf_spectacular.utils import OpenApiParameter
 )
 class ProjectQueryViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = QuerySerializer
-    permission_classes = [permissions.AllowAny]  # noqa: RUF012
     pagination_class = None
 
     def get_queryset(self):
@@ -49,7 +48,6 @@ class ProjectQueryViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewse
 class QueryViewSet(mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Query.objects.all()
     serializer_class = QuerySerializer
-    permission_classes = [permissions.AllowAny]  # noqa: RUF012
 
     @extend_schema(
         request=QuerySerializer,

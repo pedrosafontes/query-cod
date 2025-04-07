@@ -8,14 +8,13 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 from rest_framework.routers import DefaultRouter
-from users.routes import routes as users_routes
 from projects.routes import routes as projects_routes
 from queries.routes import routes as queries_routes, nested_routes as project_queries_routes
 from rest_framework_nested.routers import NestedDefaultRouter
 
 router = DefaultRouter()
 
-routes = users_routes + projects_routes + queries_routes
+routes = projects_routes + queries_routes
 for route in routes:
     router.register(route['regex'], route['viewset'], basename=route['basename'])
 
@@ -35,6 +34,8 @@ urlpatterns = [
     path('jsreverse/', django_js_reverse.views.urls_js, name='js_reverse'),
     path('api/', include(router.urls), name='api'),
     path('api/', include(projects_router.urls)),
+    path('api/auth/', include('djoser.urls')),
+    path('api/auth/', include('users.urls')),
     # drf-spectacular
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path(
