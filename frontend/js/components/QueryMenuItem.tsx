@@ -58,7 +58,7 @@ const QueryMenuItem = ({
         >
           <span className="truncate">{name}</span>
           <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger asChild>
               <Button
                 className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
                 size="icon"
