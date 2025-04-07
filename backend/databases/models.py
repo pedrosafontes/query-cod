@@ -1,8 +1,9 @@
 from django.db import models
 from dataclasses import dataclass
 
+from common.models import IndexedTimeStampedModel
 
-class Database(models.Model):
+class Database(IndexedTimeStampedModel):
     class DatabaseType(models.TextChoices):
         POSTGRESQL = 'postgresql', 'PostgreSQL'
 
