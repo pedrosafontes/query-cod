@@ -4,6 +4,43 @@ import type { CancelablePromise } from "./core/CancelablePromise";
 import { OpenAPI } from "./core/OpenAPI";
 import { request as __request } from "./core/request";
 import type {
+  AuthLoginCreateData,
+  AuthLoginCreateResponse,
+  AuthLogoutCreateResponse,
+  AuthUsersListData,
+  AuthUsersListResponse,
+  AuthUsersCreateData,
+  AuthUsersCreateResponse,
+  AuthUsersRetrieveData,
+  AuthUsersRetrieveResponse,
+  AuthUsersUpdateData,
+  AuthUsersUpdateResponse,
+  AuthUsersPartialUpdateData,
+  AuthUsersPartialUpdateResponse,
+  AuthUsersDestroyData,
+  AuthUsersDestroyResponse,
+  AuthUsersActivationCreateData,
+  AuthUsersActivationCreateResponse,
+  AuthUsersMeRetrieveResponse,
+  AuthUsersMeUpdateData,
+  AuthUsersMeUpdateResponse,
+  AuthUsersMePartialUpdateData,
+  AuthUsersMePartialUpdateResponse,
+  AuthUsersMeDestroyResponse,
+  AuthUsersResendActivationCreateData,
+  AuthUsersResendActivationCreateResponse,
+  AuthUsersResetEmailCreateData,
+  AuthUsersResetEmailCreateResponse,
+  AuthUsersResetEmailConfirmCreateData,
+  AuthUsersResetEmailConfirmCreateResponse,
+  AuthUsersResetPasswordCreateData,
+  AuthUsersResetPasswordCreateResponse,
+  AuthUsersResetPasswordConfirmCreateData,
+  AuthUsersResetPasswordConfirmCreateResponse,
+  AuthUsersSetEmailCreateData,
+  AuthUsersSetEmailCreateResponse,
+  AuthUsersSetPasswordCreateData,
+  AuthUsersSetPasswordCreateResponse,
   ProjectsListData,
   ProjectsListResponse,
   ProjectsCreateData,
@@ -20,19 +57,344 @@ import type {
   QueriesDestroyResponse,
   QueriesExecutionsCreateData,
   QueriesExecutionsCreateResponse,
-  UsersListData,
-  UsersListResponse,
-  UsersCreateData,
-  UsersCreateResponse,
-  UsersRetrieveData,
-  UsersRetrieveResponse,
-  UsersUpdateData,
-  UsersUpdateResponse,
-  UsersPartialUpdateData,
-  UsersPartialUpdateResponse,
-  UsersDestroyData,
-  UsersDestroyResponse,
 } from "./types.gen";
+
+export class AuthService {
+  /**
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns Login
+   * @throws ApiError
+   */
+  public static authLoginCreate(
+    data: AuthLoginCreateData,
+  ): CancelablePromise<AuthLoginCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/auth/login/",
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @returns unknown No response body
+   * @throws ApiError
+   */
+  public static authLogoutCreate(): CancelablePromise<AuthLogoutCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/auth/logout/",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.limit Number of results to return per page.
+   * @param data.offset The initial index from which to return the results.
+   * @returns PaginatedUserList
+   * @throws ApiError
+   */
+  public static authUsersList(
+    data: AuthUsersListData = {},
+  ): CancelablePromise<AuthUsersListResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/auth/users/",
+      query: {
+        limit: data.limit,
+        offset: data.offset,
+      },
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns UserCreate
+   * @throws ApiError
+   */
+  public static authUsersCreate(
+    data: AuthUsersCreateData,
+  ): CancelablePromise<AuthUsersCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/auth/users/",
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this user.
+   * @returns User
+   * @throws ApiError
+   */
+  public static authUsersRetrieve(
+    data: AuthUsersRetrieveData,
+  ): CancelablePromise<AuthUsersRetrieveResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/auth/users/{id}/",
+      path: {
+        id: data.id,
+      },
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this user.
+   * @param data.requestBody
+   * @returns User
+   * @throws ApiError
+   */
+  public static authUsersUpdate(
+    data: AuthUsersUpdateData,
+  ): CancelablePromise<AuthUsersUpdateResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/auth/users/{id}/",
+      path: {
+        id: data.id,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this user.
+   * @param data.requestBody
+   * @returns User
+   * @throws ApiError
+   */
+  public static authUsersPartialUpdate(
+    data: AuthUsersPartialUpdateData,
+  ): CancelablePromise<AuthUsersPartialUpdateResponse> {
+    return __request(OpenAPI, {
+      method: "PATCH",
+      url: "/api/auth/users/{id}/",
+      path: {
+        id: data.id,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this user.
+   * @returns void No response body
+   * @throws ApiError
+   */
+  public static authUsersDestroy(
+    data: AuthUsersDestroyData,
+  ): CancelablePromise<AuthUsersDestroyResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/auth/users/{id}/",
+      path: {
+        id: data.id,
+      },
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns Activation
+   * @throws ApiError
+   */
+  public static authUsersActivationCreate(
+    data: AuthUsersActivationCreateData,
+  ): CancelablePromise<AuthUsersActivationCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/auth/users/activation/",
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @returns User
+   * @throws ApiError
+   */
+  public static authUsersMeRetrieve(): CancelablePromise<AuthUsersMeRetrieveResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/auth/users/me/",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns User
+   * @throws ApiError
+   */
+  public static authUsersMeUpdate(
+    data: AuthUsersMeUpdateData,
+  ): CancelablePromise<AuthUsersMeUpdateResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/auth/users/me/",
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns User
+   * @throws ApiError
+   */
+  public static authUsersMePartialUpdate(
+    data: AuthUsersMePartialUpdateData = {},
+  ): CancelablePromise<AuthUsersMePartialUpdateResponse> {
+    return __request(OpenAPI, {
+      method: "PATCH",
+      url: "/api/auth/users/me/",
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @returns void No response body
+   * @throws ApiError
+   */
+  public static authUsersMeDestroy(): CancelablePromise<AuthUsersMeDestroyResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
+      url: "/api/auth/users/me/",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns SendEmailReset
+   * @throws ApiError
+   */
+  public static authUsersResendActivationCreate(
+    data: AuthUsersResendActivationCreateData,
+  ): CancelablePromise<AuthUsersResendActivationCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/auth/users/resend_activation/",
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns SendEmailReset
+   * @throws ApiError
+   */
+  public static authUsersResetEmailCreate(
+    data: AuthUsersResetEmailCreateData,
+  ): CancelablePromise<AuthUsersResetEmailCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/auth/users/reset_email/",
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns UsernameResetConfirm
+   * @throws ApiError
+   */
+  public static authUsersResetEmailConfirmCreate(
+    data: AuthUsersResetEmailConfirmCreateData,
+  ): CancelablePromise<AuthUsersResetEmailConfirmCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/auth/users/reset_email_confirm/",
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns SendEmailReset
+   * @throws ApiError
+   */
+  public static authUsersResetPasswordCreate(
+    data: AuthUsersResetPasswordCreateData,
+  ): CancelablePromise<AuthUsersResetPasswordCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/auth/users/reset_password/",
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns PasswordResetConfirm
+   * @throws ApiError
+   */
+  public static authUsersResetPasswordConfirmCreate(
+    data: AuthUsersResetPasswordConfirmCreateData,
+  ): CancelablePromise<AuthUsersResetPasswordConfirmCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/auth/users/reset_password_confirm/",
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns SetUsername
+   * @throws ApiError
+   */
+  public static authUsersSetEmailCreate(
+    data: AuthUsersSetEmailCreateData,
+  ): CancelablePromise<AuthUsersSetEmailCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/auth/users/set_email/",
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.requestBody
+   * @returns SetPassword
+   * @throws ApiError
+   */
+  public static authUsersSetPasswordCreate(
+    data: AuthUsersSetPasswordCreateData,
+  ): CancelablePromise<AuthUsersSetPasswordCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/auth/users/set_password/",
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+}
 
 export class ProjectsService {
   /**
@@ -185,123 +547,6 @@ export class QueriesService {
     return __request(OpenAPI, {
       method: "POST",
       url: "/api/queries/{id}/executions/",
-      path: {
-        id: data.id,
-      },
-    });
-  }
-}
-
-export class UsersService {
-  /**
-   * @param data The data for the request.
-   * @param data.limit Number of results to return per page.
-   * @param data.offset The initial index from which to return the results.
-   * @returns PaginatedUserList
-   * @throws ApiError
-   */
-  public static usersList(
-    data: UsersListData = {},
-  ): CancelablePromise<UsersListResponse> {
-    return __request(OpenAPI, {
-      method: "GET",
-      url: "/api/users/",
-      query: {
-        limit: data.limit,
-        offset: data.offset,
-      },
-    });
-  }
-
-  /**
-   * @param data The data for the request.
-   * @param data.requestBody
-   * @returns User
-   * @throws ApiError
-   */
-  public static usersCreate(
-    data: UsersCreateData,
-  ): CancelablePromise<UsersCreateResponse> {
-    return __request(OpenAPI, {
-      method: "POST",
-      url: "/api/users/",
-      body: data.requestBody,
-      mediaType: "application/json",
-    });
-  }
-
-  /**
-   * @param data The data for the request.
-   * @param data.id A unique integer value identifying this user.
-   * @returns User
-   * @throws ApiError
-   */
-  public static usersRetrieve(
-    data: UsersRetrieveData,
-  ): CancelablePromise<UsersRetrieveResponse> {
-    return __request(OpenAPI, {
-      method: "GET",
-      url: "/api/users/{id}/",
-      path: {
-        id: data.id,
-      },
-    });
-  }
-
-  /**
-   * @param data The data for the request.
-   * @param data.id A unique integer value identifying this user.
-   * @param data.requestBody
-   * @returns User
-   * @throws ApiError
-   */
-  public static usersUpdate(
-    data: UsersUpdateData,
-  ): CancelablePromise<UsersUpdateResponse> {
-    return __request(OpenAPI, {
-      method: "PUT",
-      url: "/api/users/{id}/",
-      path: {
-        id: data.id,
-      },
-      body: data.requestBody,
-      mediaType: "application/json",
-    });
-  }
-
-  /**
-   * @param data The data for the request.
-   * @param data.id A unique integer value identifying this user.
-   * @param data.requestBody
-   * @returns User
-   * @throws ApiError
-   */
-  public static usersPartialUpdate(
-    data: UsersPartialUpdateData,
-  ): CancelablePromise<UsersPartialUpdateResponse> {
-    return __request(OpenAPI, {
-      method: "PATCH",
-      url: "/api/users/{id}/",
-      path: {
-        id: data.id,
-      },
-      body: data.requestBody,
-      mediaType: "application/json",
-    });
-  }
-
-  /**
-   * @param data The data for the request.
-   * @param data.id A unique integer value identifying this user.
-   * @returns void No response body
-   * @throws ApiError
-   */
-  public static usersDestroy(
-    data: UsersDestroyData,
-  ): CancelablePromise<UsersDestroyResponse> {
-    return __request(OpenAPI, {
-      method: "DELETE",
-      url: "/api/users/{id}/",
       path: {
         id: data.id,
       },
