@@ -1,7 +1,6 @@
 import { LogOut, Network } from "lucide-react";
 import { useNavigate, useLocation } from "react-router";
 
-import { AuthService } from "@/api";
 import {
   Sidebar,
   SidebarContent,
@@ -13,17 +12,16 @@ import {
   SidebarGroupContent,
 } from "@/components/ui/sidebar";
 
+import { useAuth } from "../contexts/AuthContext";
+
 const AppSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { logout } = useAuth();
 
   const handleLogout = async () => {
-    try {
-      await AuthService.authLogoutCreate();
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
+    await logout();
+    navigate("/login");
   };
 
   const isActive = (path: string) => location.pathname.startsWith(path);

@@ -6,7 +6,9 @@ import { Toaster } from "@/components/ui/toaster";
 
 import { OpenAPI } from "./api";
 import AuthenticatedLayout from "./components/AuthenticatedLayout";
+import AuthRoute from "./components/AuthRoute";
 import PrivateRoute from "./components/PrivateRoute";
+import { AuthProvider } from "./contexts/AuthContext";
 import LoginPage from "./pages/LoginPage";
 import ProjectPage from "./pages/ProjectPage";
 import ProjectsPage from "./pages/ProjectsPage";
@@ -23,17 +25,21 @@ OpenAPI.interceptors.request.use((request) => {
 const App = () => (
   <Sentry.ErrorBoundary fallback={<p>An error has occurred</p>}>
     <BrowserRouter>
-      <Routes>
-        <Route element={<LoginPage />} path="/login" />
-        <Route element={<SignupPage />} path="/signup" />
-        <Route element={<PrivateRoute />}>
-          <Route element={<AuthenticatedLayout />}>
-            <Route element={<ProjectsPage />} path="/projects" />
-            <Route element={<ProjectPage />} path="/projects/:projectId" />
+      <AuthProvider>
+        <Routes>
+          <Route element={<AuthRoute />}>
+            <Route element={<LoginPage />} path="/login" />
+            <Route element={<SignupPage />} path="/signup" />
           </Route>
-        </Route>
-      </Routes>
-      <Toaster />
+          <Route element={<PrivateRoute />}>
+            <Route element={<AuthenticatedLayout />}>
+              <Route element={<ProjectsPage />} path="/projects" />
+              <Route element={<ProjectPage />} path="/projects/:projectId" />
+            </Route>
+          </Route>
+        </Routes>
+        <Toaster />
+      </AuthProvider>
     </BrowserRouter>
   </Sentry.ErrorBoundary>
 );

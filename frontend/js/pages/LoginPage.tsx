@@ -3,8 +3,7 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { z } from "zod";
 
-import { AuthService } from "@/api";
-import type { Login } from "@/api/types.gen";
+import type { Login } from "../api";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -16,6 +15,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+import { useAuth } from "../contexts/AuthContext";
+
 type LoginFormValues = Login;
 
 const loginSchema = z.object({
@@ -25,15 +26,16 @@ const loginSchema = z.object({
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { username: "", password: "" },
   });
 
-  const onSubmit = async (values: LoginFormValues) => {
+  const onSubmit = async ({ username, password }: LoginFormValues) => {
     try {
-      await AuthService.authLoginCreate({ requestBody: values });
+      await login(username, password);
       navigate("/projects");
     } catch (err) {
       form.setError("password", { message: "Invalid credentials" });
@@ -85,8 +87,8 @@ export default function LoginPage() {
         </form>
       </Form>
       <p className="text-sm text-center mt-4">
-        Don't have an account?{" "}
-        <Link to="/signup" className="hover:underline">
+        {"Don't have an account? "}
+        <Link className="hover:underline" to="/signup">
           Sign up
         </Link>
       </p>

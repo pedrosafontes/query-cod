@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { AuthService, UserCreate } from "../api";
+import { useAuth } from "../contexts/AuthContext";
 
 type SignupFormValues = Omit<UserCreate, "id"> & {
   confirmPassword: string;
@@ -33,21 +34,23 @@ const signupSchema = z
 
 const SignupPage = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: { email: "", password: "", confirmPassword: "" },
   });
 
-  const onSubmit = async (values: SignupFormValues) => {
+  const onSubmit = async ({ email, password }: SignupFormValues) => {
     try {
       await AuthService.authUsersCreate({
         requestBody: {
-          email: values.email,
-          password: values.password,
+          email,
+          password,
         } as UserCreate,
       });
-      navigate("/login");
+      login(email, password);
+      navigate("/projects");
     } catch (err) {
       form.setError("email", { message: "Signup failed." });
     }
@@ -112,7 +115,7 @@ const SignupPage = () => {
       </Form>
       <p className="text-sm text-center mt-4">
         Already have an account?{" "}
-        <Link to="/login" className="hover:underline">
+        <Link className="hover:underline" to="/login">
           Log in
         </Link>
       </p>
