@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -15,7 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Spinner } from "@/components/ui/spinner";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -28,7 +28,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   pageSize,
-  loading
+  loading,
 }: DataTableProps<TData, TValue>) {
   const paginationEnabled = !!pageSize;
 
@@ -97,7 +97,7 @@ export function DataTable<TData, TValue>({
                   className="h-24 text-center"
                   colSpan={columns.length}
                 >
-                  {loading ? <Spinner size="small" />: "No results."}
+                  {loading ? <Spinner size="small" /> : "No results."}
                 </TableCell>
               </TableRow>
             )}

@@ -1,11 +1,12 @@
 import MonacoEditor, { Monaco } from "@monaco-editor/react";
-import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { AlertTriangle, CheckCircle } from "lucide-react";
 import { editor } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
+import { Spinner } from "@/components/ui/spinner";
+
 import { QueriesService, Query, QueryError } from "../api";
 import { useAutosave } from "../hooks/useAutosave";
-import { Spinner } from "@/components/ui/spinner";
 
 const QueryEditor = ({ query }: { query: Query }) => {
   const [text, setText] = useState<string>(query.text);
