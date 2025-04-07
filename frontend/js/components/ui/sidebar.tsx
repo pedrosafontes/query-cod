@@ -67,7 +67,6 @@ const SidebarProvider = React.forwardRef<
       open: openProp,
       onOpenChange: setOpenProp,
       className,
-      // eslint-disable-next-line react/prop-types
       style,
       children,
       ...props
@@ -281,7 +280,6 @@ Sidebar.displayName = "Sidebar";
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
-  // eslint-disable-next-line react/prop-types
 >(({ className, onClick, ...props }, ref) => {
   const { toggleSidebar } = useSidebar();
 
