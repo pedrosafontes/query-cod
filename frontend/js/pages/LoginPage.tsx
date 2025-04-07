@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { z } from "zod";
 
-import type { Login } from "../api";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
+import type { Login } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 
 type LoginFormValues = Login;
