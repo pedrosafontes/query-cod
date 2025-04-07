@@ -481,6 +481,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/SetPassword'
           description: ''
+  /api/databases/:
+    get:
+      operationId: databases_list
+      tags:
+      - databases
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Database'
+          description: ''
   /api/projects/:
     get:
       operationId: projects_list
@@ -700,6 +716,18 @@ components:
       required:
       - token
       - uid
+    Database:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+      required:
+      - id
+      - name
     Login:
       type: object
       properties:
@@ -812,6 +840,9 @@ components:
         id:
           type: integer
           readOnly: true
+        database_id:
+          type: integer
+          writeOnly: true
         database:
           type: string
           readOnly: true
@@ -820,12 +851,23 @@ components:
           items:
             $ref: '#/components/schemas/Query'
           readOnly: true
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+        modified:
+          type: string
+          format: date-time
+          readOnly: true
         name:
           type: string
           maxLength: 255
       required:
+      - created
       - database
+      - database_id
       - id
+      - modified
       - name
       - queries
     Query:

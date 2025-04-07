@@ -41,6 +41,7 @@ import type {
   AuthUsersSetEmailCreateResponse,
   AuthUsersSetPasswordCreateData,
   AuthUsersSetPasswordCreateResponse,
+  DatabasesListResponse,
   ProjectsListData,
   ProjectsListResponse,
   ProjectsCreateData,
@@ -392,6 +393,19 @@ export class AuthService {
       url: "/api/auth/users/set_password/",
       body: data.requestBody,
       mediaType: "application/json",
+    });
+  }
+}
+
+export class DatabasesService {
+  /**
+   * @returns Database
+   * @throws ApiError
+   */
+  public static databasesList(): CancelablePromise<DatabasesListResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/databases/",
     });
   }
 }

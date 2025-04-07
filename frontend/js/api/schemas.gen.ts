@@ -13,6 +13,21 @@ export const $Activation = {
   required: ["token", "uid"],
 } as const;
 
+export const $Database = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    name: {
+      type: "string",
+      maxLength: 255,
+    },
+  },
+  required: ["id", "name"],
+} as const;
+
 export const $Login = {
   type: "object",
   properties: {
@@ -159,6 +174,10 @@ export const $Project = {
       type: "integer",
       readOnly: true,
     },
+    database_id: {
+      type: "integer",
+      writeOnly: true,
+    },
     database: {
       type: "string",
       readOnly: true,
@@ -170,12 +189,30 @@ export const $Project = {
       },
       readOnly: true,
     },
+    created: {
+      type: "string",
+      format: "date-time",
+      readOnly: true,
+    },
+    modified: {
+      type: "string",
+      format: "date-time",
+      readOnly: true,
+    },
     name: {
       type: "string",
       maxLength: 255,
     },
   },
-  required: ["database", "id", "name", "queries"],
+  required: [
+    "created",
+    "database",
+    "database_id",
+    "id",
+    "modified",
+    "name",
+    "queries",
+  ],
 } as const;
 
 export const $Query = {

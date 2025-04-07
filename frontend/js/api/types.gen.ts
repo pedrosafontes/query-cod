@@ -5,6 +5,11 @@ export type Activation = {
   token: string;
 };
 
+export type Database = {
+  readonly id: number;
+  name: string;
+};
+
 export type Login = {
   username: string;
   password: string;
@@ -47,8 +52,11 @@ export type PatchedUser = {
 
 export type Project = {
   readonly id: number;
+  database_id: number;
   readonly database: string;
   readonly queries: Array<Query>;
+  readonly created: string;
+  readonly modified: string;
   name: string;
 };
 
@@ -259,6 +267,8 @@ export type AuthUsersSetPasswordCreateData = {
 };
 
 export type AuthUsersSetPasswordCreateResponse = SetPassword;
+
+export type DatabasesListResponse = Array<Database>;
 
 export type ProjectsListData = {
   /**
@@ -486,6 +496,13 @@ export type $OpenApiTs = {
       req: AuthUsersSetPasswordCreateData;
       res: {
         200: SetPassword;
+      };
+    };
+  };
+  "/api/databases/": {
+    get: {
+      res: {
+        200: Array<Database>;
       };
     };
   };
