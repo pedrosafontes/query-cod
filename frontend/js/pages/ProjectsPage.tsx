@@ -45,7 +45,7 @@ const ProjectsPage = () => {
     {
       accessorKey: "database",
       header: "Database",
-      cell: ({ row }) => <span>{row.original.database}</span>,
+      cell: ({ row }) => <span>{row.original.database.name}</span>,
     },
     {
       id: "actions",

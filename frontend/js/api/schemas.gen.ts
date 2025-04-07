@@ -115,6 +115,49 @@ export const $PasswordResetConfirm = {
   required: ["new_password", "token", "uid"],
 } as const;
 
+export const $PatchedProject = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    database_id: {
+      type: "integer",
+      writeOnly: true,
+    },
+    database: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/Database",
+        },
+      ],
+      readOnly: true,
+    },
+    queries: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/Query",
+      },
+      readOnly: true,
+    },
+    created: {
+      type: "string",
+      format: "date-time",
+      readOnly: true,
+    },
+    modified: {
+      type: "string",
+      format: "date-time",
+      readOnly: true,
+    },
+    name: {
+      type: "string",
+      maxLength: 255,
+    },
+  },
+} as const;
+
 export const $PatchedQuery = {
   type: "object",
   properties: {
@@ -179,7 +222,11 @@ export const $Project = {
       writeOnly: true,
     },
     database: {
-      type: "string",
+      allOf: [
+        {
+          $ref: "#/components/schemas/Database",
+        },
+      ],
       readOnly: true,
     },
     queries: {

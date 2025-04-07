@@ -48,6 +48,12 @@ import type {
   ProjectsCreateResponse,
   ProjectsRetrieveData,
   ProjectsRetrieveResponse,
+  ProjectsUpdateData,
+  ProjectsUpdateResponse,
+  ProjectsPartialUpdateData,
+  ProjectsPartialUpdateResponse,
+  ProjectsDestroyData,
+  ProjectsDestroyResponse,
   ProjectsQueriesCreateData,
   ProjectsQueriesCreateResponse,
   QueriesUpdateData,
@@ -459,6 +465,66 @@ export class ProjectsService {
   ): CancelablePromise<ProjectsRetrieveResponse> {
     return __request(OpenAPI, {
       method: "GET",
+      url: "/api/projects/{id}/",
+      path: {
+        id: data.id,
+      },
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this project.
+   * @param data.requestBody
+   * @returns Project
+   * @throws ApiError
+   */
+  public static projectsUpdate(
+    data: ProjectsUpdateData,
+  ): CancelablePromise<ProjectsUpdateResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/projects/{id}/",
+      path: {
+        id: data.id,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this project.
+   * @param data.requestBody
+   * @returns Project
+   * @throws ApiError
+   */
+  public static projectsPartialUpdate(
+    data: ProjectsPartialUpdateData,
+  ): CancelablePromise<ProjectsPartialUpdateResponse> {
+    return __request(OpenAPI, {
+      method: "PATCH",
+      url: "/api/projects/{id}/",
+      path: {
+        id: data.id,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this project.
+   * @returns void No response body
+   * @throws ApiError
+   */
+  public static projectsDestroy(
+    data: ProjectsDestroyData,
+  ): CancelablePromise<ProjectsDestroyResponse> {
+    return __request(OpenAPI, {
+      method: "DELETE",
       url: "/api/projects/{id}/",
       path: {
         id: data.id,

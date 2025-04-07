@@ -35,6 +35,16 @@ export type PasswordResetConfirm = {
   new_password: string;
 };
 
+export type PatchedProject = {
+  readonly id?: number;
+  database_id?: number;
+  readonly database?: Database;
+  readonly queries?: Array<Query>;
+  readonly created?: string;
+  readonly modified?: string;
+  name?: string;
+};
+
 export type PatchedQuery = {
   readonly id?: number;
   name?: string;
@@ -53,7 +63,7 @@ export type PatchedUser = {
 export type Project = {
   readonly id: number;
   database_id: number;
-  readonly database: string;
+  readonly database: Database;
   readonly queries: Array<Query>;
   readonly created: string;
   readonly modified: string;
@@ -298,6 +308,35 @@ export type ProjectsRetrieveData = {
 
 export type ProjectsRetrieveResponse = Project;
 
+export type ProjectsUpdateData = {
+  /**
+   * A unique integer value identifying this project.
+   */
+  id: number;
+  requestBody: Project;
+};
+
+export type ProjectsUpdateResponse = Project;
+
+export type ProjectsPartialUpdateData = {
+  /**
+   * A unique integer value identifying this project.
+   */
+  id: number;
+  requestBody?: PatchedProject;
+};
+
+export type ProjectsPartialUpdateResponse = Project;
+
+export type ProjectsDestroyData = {
+  /**
+   * A unique integer value identifying this project.
+   */
+  id: number;
+};
+
+export type ProjectsDestroyResponse = void;
+
 export type ProjectsQueriesCreateData = {
   /**
    * ID of the parent project
@@ -525,6 +564,27 @@ export type $OpenApiTs = {
       req: ProjectsRetrieveData;
       res: {
         200: Project;
+      };
+    };
+    put: {
+      req: ProjectsUpdateData;
+      res: {
+        200: Project;
+      };
+    };
+    patch: {
+      req: ProjectsPartialUpdateData;
+      res: {
+        200: Project;
+      };
+    };
+    delete: {
+      req: ProjectsDestroyData;
+      res: {
+        /**
+         * No response body
+         */
+        204: void;
       };
     };
   };
