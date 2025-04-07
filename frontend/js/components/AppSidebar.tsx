@@ -1,4 +1,3 @@
-// frontend/js/components/AppSidebar.tsx
 import { LogOut, Network } from "lucide-react";
 import { useNavigate, useLocation } from "react-router";
 
