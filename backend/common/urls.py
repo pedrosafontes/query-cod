@@ -5,4 +5,8 @@ from . import views
 
 app_name = 'common'
 # Routes supported by the React frontend
-urlpatterns = [path('projects/<int:project_id>/', views.IndexView.as_view(), name='project-detail')]
+react_view = views.IndexView.as_view()
+urlpatterns = [
+    path('projects/', react_view, name='project-list'),
+    path('projects/<int:project_id>/', react_view, name='project-detail'),
+]

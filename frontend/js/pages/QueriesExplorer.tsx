@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router";
 
 import { ProjectsService, Query } from "../api";
 import QueryExplorer from "../components/QueryExplorer";
 import QueryTabs from "../components/QueryTabs";
-import { useParams } from "react-router";
 
 const QueriesExplorer = () => {
   const [queries, setQueries] =
@@ -14,19 +14,19 @@ const QueriesExplorer = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const projectPk = Number(projectId);
 
-  const query = queries?.find(
-    (query) => query.id === currentQueryId,
-  );
+  const query = queries?.find((query) => query.id === currentQueryId);
 
   const fetchQueries = async () => {
-    const result = await ProjectsService.projectsQueriesList({ projectPk: projectPk });
+    const result = await ProjectsService.projectsQueriesList({
+      projectPk,
+    });
     setQueries(result);
   };
 
   const createQuery = async (): Promise<void> => {
     try {
       await ProjectsService.projectsQueriesCreate({
-        projectPk: projectPk,
+        projectPk,
         requestBody: {
           name: "Query",
           text: "",
@@ -44,7 +44,7 @@ const QueriesExplorer = () => {
   }, []);
 
   return (
-    <div className="w-screen h-screen">
+    <div className="w-full h-full">
       <div className="grid grid-cols-8 gap-4 h-full">
         <div className="col-span-1 overflow-auto px-3 border-r py-5">
           {queries && (

@@ -18,6 +18,9 @@ class Database(models.Model):
         default=DatabaseType.POSTGRESQL,
     )
 
+    def __str__(self):
+        return f'{self.name}'
+
 
 @dataclass
 class DatabaseConnectionInfo:
