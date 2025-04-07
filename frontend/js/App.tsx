@@ -8,8 +8,8 @@ import { OpenAPI } from "./api";
 import AuthenticatedLayout from "./components/AuthenticatedLayout";
 import PrivateRoute from "./components/PrivateRoute";
 import LoginPage from "./pages/LoginPage";
-import ProjectsPage from "./pages/ProjectsPage";
 import ProjectPage from "./pages/ProjectPage";
+import ProjectsPage from "./pages/ProjectsPage";
 import SignupPage from "./pages/SignupPage";
 
 OpenAPI.interceptors.request.use((request) => {
