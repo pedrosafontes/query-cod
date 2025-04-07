@@ -31,16 +31,6 @@ class ProjectQueryViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
         serializer.save(project=project)
 
 
-@extend_schema(
-    parameters=[
-        OpenApiParameter(
-            name='id',
-            type=int,
-            location=OpenApiParameter.PATH,
-            description='ID of the query',
-        )
-    ]
-)
 class QueryViewSet(mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet):
     queryset = Query.objects.all()
     serializer_class = QuerySerializer

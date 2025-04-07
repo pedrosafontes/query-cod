@@ -690,7 +690,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: ID of the query
+        description: A unique integer value identifying this query.
         required: true
       tags:
       - queries
@@ -722,7 +722,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: ID of the query
+        description: A unique integer value identifying this query.
         required: true
       tags:
       - queries
@@ -753,7 +753,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: ID of the query
+        description: A unique integer value identifying this query.
         required: true
       tags:
       - queries
@@ -770,7 +770,7 @@ paths:
         name: id
         schema:
           type: integer
-        description: ID of the query
+        description: A unique integer value identifying this query.
         required: true
       tags:
       - queries

@@ -349,7 +349,7 @@ export type ProjectsQueriesCreateResponse = Query;
 
 export type QueriesUpdateData = {
   /**
-   * ID of the query
+   * A unique integer value identifying this query.
    */
   id: number;
   requestBody: Query;
@@ -359,7 +359,7 @@ export type QueriesUpdateResponse = Query;
 
 export type QueriesPartialUpdateData = {
   /**
-   * ID of the query
+   * A unique integer value identifying this query.
    */
   id: number;
   requestBody?: PatchedQuery;
@@ -369,7 +369,7 @@ export type QueriesPartialUpdateResponse = QueryPartialUpdate;
 
 export type QueriesDestroyData = {
   /**
-   * ID of the query
+   * A unique integer value identifying this query.
    */
   id: number;
 };
@@ -378,7 +378,7 @@ export type QueriesDestroyResponse = void;
 
 export type QueriesExecutionsCreateData = {
   /**
-   * ID of the query
+   * A unique integer value identifying this query.
    */
   id: number;
 };

@@ -557,7 +557,7 @@ export class ProjectsService {
 export class QueriesService {
   /**
    * @param data The data for the request.
-   * @param data.id ID of the query
+   * @param data.id A unique integer value identifying this query.
    * @param data.requestBody
    * @returns Query
    * @throws ApiError
@@ -578,7 +578,7 @@ export class QueriesService {
 
   /**
    * @param data The data for the request.
-   * @param data.id ID of the query
+   * @param data.id A unique integer value identifying this query.
    * @param data.requestBody
    * @returns QueryPartialUpdate
    * @throws ApiError
@@ -599,7 +599,7 @@ export class QueriesService {
 
   /**
    * @param data The data for the request.
-   * @param data.id ID of the query
+   * @param data.id A unique integer value identifying this query.
    * @returns void No response body
    * @throws ApiError
    */
@@ -617,7 +617,7 @@ export class QueriesService {
 
   /**
    * @param data The data for the request.
-   * @param data.id ID of the query
+   * @param data.id A unique integer value identifying this query.
    * @returns QueryExecution
    * @throws ApiError
    */
