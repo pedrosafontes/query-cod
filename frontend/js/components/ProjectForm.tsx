@@ -151,16 +151,17 @@ const ProjectForm = ({ onSuccess, project }: ProjectFormProps) => {
             {form.formState.errors.root.message}
           </div>
         )}
-
-        <Button disabled={form.formState.isSubmitting} type="submit">
-          {form.formState.isSubmitting
-            ? project
-              ? "Updating..."
-              : "Creating..."
-            : project
-              ? "Update Project"
-              : "Create Project"}
-        </Button>
+        <div className="flex justify-end">
+          <Button disabled={form.formState.isSubmitting} type="submit">
+            {form.formState.isSubmitting
+              ? project
+                ? "Updating..."
+                : "Creating..."
+              : project
+                ? "Update Project"
+                : "Create Project"}
+          </Button>
+        </div>
       </form>
     </Form>
   );
