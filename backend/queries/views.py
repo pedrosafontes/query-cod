@@ -22,13 +22,9 @@ from drf_spectacular.utils import OpenApiParameter
         )
     ]
 )
-class ProjectQueryViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
+class ProjectQueryViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = QuerySerializer
     pagination_class = None
-
-    def get_queryset(self):
-        get_object_or_404(Project, id=self.kwargs['project_pk'])
-        return Query.objects.filter(project__id=self.kwargs['project_pk'])
 
     def perform_create(self, serializer):
         project = get_object_or_404(Project, id=self.kwargs['project_pk'])

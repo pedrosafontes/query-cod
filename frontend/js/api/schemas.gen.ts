@@ -163,12 +163,19 @@ export const $Project = {
       type: "string",
       readOnly: true,
     },
+    queries: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/Query",
+      },
+      readOnly: true,
+    },
     name: {
       type: "string",
       maxLength: 255,
     },
   },
-  required: ["database", "id", "name"],
+  required: ["database", "id", "name", "queries"],
 } as const;
 
 export const $Query = {

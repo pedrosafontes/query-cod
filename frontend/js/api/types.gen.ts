@@ -48,6 +48,7 @@ export type PatchedUser = {
 export type Project = {
   readonly id: number;
   readonly database: string;
+  readonly queries: Array<Query>;
   name: string;
 };
 
@@ -278,14 +279,14 @@ export type ProjectsCreateData = {
 
 export type ProjectsCreateResponse = Project;
 
-export type ProjectsQueriesListData = {
+export type ProjectsRetrieveData = {
   /**
-   * ID of the parent project
+   * A unique integer value identifying this project.
    */
-  projectPk: number;
+  id: number;
 };
 
-export type ProjectsQueriesListResponse = Array<Query>;
+export type ProjectsRetrieveResponse = Project;
 
 export type ProjectsQueriesCreateData = {
   /**
@@ -502,13 +503,15 @@ export type $OpenApiTs = {
       };
     };
   };
-  "/api/projects/{project_pk}/queries/": {
+  "/api/projects/{id}/": {
     get: {
-      req: ProjectsQueriesListData;
+      req: ProjectsRetrieveData;
       res: {
-        200: Array<Query>;
+        200: Project;
       };
     };
+  };
+  "/api/projects/{project_pk}/queries/": {
     post: {
       req: ProjectsQueriesCreateData;
       res: {

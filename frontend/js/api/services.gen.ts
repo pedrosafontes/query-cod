@@ -45,8 +45,8 @@ import type {
   ProjectsListResponse,
   ProjectsCreateData,
   ProjectsCreateResponse,
-  ProjectsQueriesListData,
-  ProjectsQueriesListResponse,
+  ProjectsRetrieveData,
+  ProjectsRetrieveResponse,
   ProjectsQueriesCreateData,
   ProjectsQueriesCreateResponse,
   QueriesUpdateData,
@@ -436,18 +436,18 @@ export class ProjectsService {
 
   /**
    * @param data The data for the request.
-   * @param data.projectPk ID of the parent project
-   * @returns Query
+   * @param data.id A unique integer value identifying this project.
+   * @returns Project
    * @throws ApiError
    */
-  public static projectsQueriesList(
-    data: ProjectsQueriesListData,
-  ): CancelablePromise<ProjectsQueriesListResponse> {
+  public static projectsRetrieve(
+    data: ProjectsRetrieveData,
+  ): CancelablePromise<ProjectsRetrieveResponse> {
     return __request(OpenAPI, {
       method: "GET",
-      url: "/api/projects/{project_pk}/queries/",
+      url: "/api/projects/{id}/",
       path: {
-        project_pk: data.projectPk,
+        id: data.id,
       },
     });
   }

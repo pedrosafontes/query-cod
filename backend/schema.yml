@@ -533,15 +533,15 @@ paths:
               schema:
                 $ref: '#/components/schemas/Project'
           description: ''
-  /api/projects/{project_pk}/queries/:
+  /api/projects/{id}/:
     get:
-      operationId: projects_queries_list
+      operationId: projects_retrieve
       parameters:
       - in: path
-        name: project_pk
+        name: id
         schema:
           type: integer
-        description: ID of the parent project
+        description: A unique integer value identifying this project.
         required: true
       tags:
       - projects
@@ -552,10 +552,9 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Query'
+                $ref: '#/components/schemas/Project'
           description: ''
+  /api/projects/{project_pk}/queries/:
     post:
       operationId: projects_queries_create
       parameters:
@@ -816,6 +815,11 @@ components:
         database:
           type: string
           readOnly: true
+        queries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Query'
+          readOnly: true
         name:
           type: string
           maxLength: 255
@@ -823,6 +827,7 @@ components:
       - database
       - id
       - name
+      - queries
     Query:
       type: object
       properties:
