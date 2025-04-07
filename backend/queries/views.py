@@ -35,6 +35,9 @@ class QueryViewSet(mixins.UpdateModelMixin, mixins.DestroyModelMixin, viewsets.G
     queryset = Query.objects.all()
     serializer_class = QuerySerializer
 
+    def get_queryset(self):
+        return Query.objects.filter(project__user=self.request.user)
+
     @extend_schema(
         request=QuerySerializer,
         responses={200: QueryPartialUpdateSerializer},
