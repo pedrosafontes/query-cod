@@ -64,5 +64,17 @@ module.exports = {
         'react-refresh/only-export-components': 'off',
       },
     },
+    {
+      files: ["*.ts", "*.tsx"],
+      rules: {
+        "camelcase": [
+          "error",
+          {
+            "properties": "never", // Allow snake_case in object keys
+            "ignoreDestructuring": true
+          }
+        ]
+      }
+    }
   ],
 };
