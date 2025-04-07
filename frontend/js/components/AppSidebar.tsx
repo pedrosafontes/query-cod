@@ -5,7 +5,6 @@ import { useNavigate, useLocation } from "react-router";
 import { AuthService } from "@/api";
 import {
   Sidebar,
-  SidebarProvider,
   SidebarContent,
   SidebarMenu,
   SidebarMenuItem,
