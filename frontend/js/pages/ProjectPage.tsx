@@ -3,7 +3,7 @@ import { useParams } from "react-router";
 
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-import { ProjectsService, QueriesService, Query } from "../api";
+import { ProjectsService } from "../api";
 import ProjectSidebar from "../components/ProjectSidebar";
 import QueryExplorer from "../components/QueryExplorer";
 
@@ -26,50 +26,6 @@ const ProjectPage = () => {
     setProject(result);
   };
 
-  const createQuery = async (): Promise<void> => {
-    try {
-      await ProjectsService.projectsQueriesCreate({
-        projectPk: projectId,
-        requestBody: {
-          name: "Query",
-          text: "",
-        } as Query,
-      });
-
-      fetchProject();
-    } catch (error) {
-      console.error("Error creating query:", error);
-    }
-  };
-
-  const renameQuery = async (id: number, name: string): Promise<void> => {
-    try {
-      await QueriesService.queriesPartialUpdate({
-        id,
-        requestBody: {
-          name,
-        },
-      });
-      fetchProject();
-    } catch (error) {
-      console.error("Error renaming query:", error);
-    }
-  };
-
-  const deleteQuery = async (id: number): Promise<void> => {
-    try {
-      await QueriesService.queriesDestroy({
-        id,
-      });
-      await fetchProject();
-      if (currentQueryId === id) {
-        setCurrentQueryId(undefined);
-      }
-    } catch (error) {
-      console.error("Error deleting query:", error);
-    }
-  };
-
   useEffect(() => {
     fetchProject();
   }, []);
@@ -80,10 +36,8 @@ const ProjectPage = () => {
         <ProjectSidebar
           currentQueryId={currentQueryId}
           project={project}
-          onCreate={createQuery}
-          onDelete={deleteQuery}
-          onRename={renameQuery}
           onSelect={setCurrentQueryId}
+          onSuccess={fetchProject}
         />
       )}
       <SidebarInset>{query && <QueryExplorer query={query} />}</SidebarInset>

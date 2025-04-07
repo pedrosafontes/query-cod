@@ -12,23 +12,28 @@ import { Input } from "@/components/ui/input";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 
 interface QueryMenuItemProps {
-  id: number;
   name: string;
   isActive: boolean;
-  onSelect: (id: number) => void;
-  onRename: (id: number, newName: string) => void;
-  onDelete: (id: number) => void;
+  onSelect: () => void;
+  onRename: (newName: string) => void;
+  onDelete: () => void;
+  isCreating?: boolean;
+  onCreationEnd?: () => void;
 }
 
 const QueryMenuItem = ({
-  id,
   name,
   isActive,
   onSelect,
   onRename,
   onDelete,
+  isCreating,
+  onCreationEnd,
 }: QueryMenuItemProps) => {
-  const [editing, setEditing] = useState(false);
+  const [manuallyEditing, setManuallyEditing] = useState(false);
+  const editing = isCreating || manuallyEditing;
+
+  const endEditing = () => isCreating ? onCreationEnd?.() : setManuallyEditing(false);
 
   return (
     <SidebarMenuItem>
@@ -38,15 +43,15 @@ const QueryMenuItem = ({
           className="h-8 text-sm"
           defaultValue={name}
           onBlur={(e) => {
-            onRename(id, e.target.value);
-            setEditing(false);
+            onRename(e.target.value);
+            endEditing();
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              onRename(id, (e.target as HTMLInputElement).value);
-              setEditing(false);
+              onRename((e.target as HTMLInputElement).value);
+              endEditing();
             } else if (e.key === "Escape") {
-              setEditing(false);
+              endEditing();
             }
           }}
         />
@@ -54,7 +59,7 @@ const QueryMenuItem = ({
         <SidebarMenuButton
           className="group justify-between"
           isActive={isActive}
-          onClick={() => onSelect(id)}
+          onClick={() => onSelect()}
         >
           <span className="truncate">{name}</span>
           <DropdownMenu>
@@ -69,11 +74,11 @@ const QueryMenuItem = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" side="right">
-              <DropdownMenuItem onSelect={() => setEditing(true)}>
+              <DropdownMenuItem onSelect={() => setManuallyEditing(true)}>
                 <Pencil className="mr-2" />
                 Rename
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => onDelete(id)}>
+              <DropdownMenuItem onSelect={() => onDelete()}>
                 <Trash className="mr-2 text-red-600" />
                 <span className="text-red-600">Delete</span>
               </DropdownMenuItem>
