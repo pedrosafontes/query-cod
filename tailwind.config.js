@@ -8,6 +8,7 @@ module.exports = {
   theme: {
   	extend: {
   		colors: {
+        background: colors.white,
   			primary: colors.gray[950],
   			'primary-foreground': colors.white,
         sidebar: {
