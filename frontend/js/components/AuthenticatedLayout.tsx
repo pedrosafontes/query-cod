@@ -1,15 +1,16 @@
 import { Outlet } from "react-router";
 
 import AppSidebar from "./AppSidebar";
+import { SidebarInset, SidebarProvider } from "./ui/sidebar";
 
 const AuthenticatedLayout = () => {
   return (
-    <div className="flex h-screen w-screen bg-background">
+    <SidebarProvider defaultOpen={false}>
       <AppSidebar />
-      <main className="flex-1">
+      <SidebarInset>
         <Outlet />
-      </main>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 };
 
