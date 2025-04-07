@@ -25,7 +25,7 @@ const QueryExplorer = ({ query }: { query: Query }) => {
   };
 
   return (
-    <div className="grid grid-cols-3 gap-4 h-full">
+    <div className="grid grid-cols-3 h-full">
       <div className="col-span-1 px-3 py-5 border-r">
         <div className="flex justify-end mb-3 w-full">
           <Button
@@ -38,7 +38,7 @@ const QueryExplorer = ({ query }: { query: Query }) => {
         </div>
         <QueryEditor query={query} />
       </div>
-      <div className="col-span-2 px-3 py-5 flex flex-col justify-end h-full">
+      <div className="col-span-2 px-3 py-5 flex flex-col justify-end h-full bg-gray-50">
         <QueryResult result={queryResult} success={success} />
       </div>
     </div>
