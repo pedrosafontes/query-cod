@@ -28,12 +28,14 @@ export function DataTable<TData, TValue>({
   pageSize,
 }: DataTableProps<TData, TValue>) {
   const paginationEnabled = !!pageSize;
-  
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    ...(paginationEnabled && { getPaginationRowModel: getPaginationRowModel() }),
+    ...(paginationEnabled && {
+      getPaginationRowModel: getPaginationRowModel(),
+    }),
     initialState: paginationEnabled
       ? {
           pagination: {
