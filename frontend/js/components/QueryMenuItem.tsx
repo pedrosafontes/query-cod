@@ -1,5 +1,6 @@
 import { MoreVertical, Pencil, Trash } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -7,6 +8,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
@@ -31,35 +33,58 @@ const QueryMenuItem = ({
   onCreationEnd,
 }: QueryMenuItemProps) => {
   const [manuallyEditing, setManuallyEditing] = useState(false);
+  const [inputValue, setInputValue] = useState(name);
+  const inputRef = useRef<HTMLInputElement>(null);
   const editing = isCreating || manuallyEditing;
 
-  const endEditing = () => isCreating ? onCreationEnd?.() : setManuallyEditing(false);
+  useEffect(() => {
+    setInputValue(name);
+  }, [name]);
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  const handleRename = () => {
+    const trimmedValue = inputValue.trim();
+    if (trimmedValue && trimmedValue !== name) {
+      onRename(trimmedValue);
+    } else {
+      setInputValue(name); // Reset to original name if empty or unchanged
+    }
+    endEditing();
+  };
+
+  const endEditing = () =>
+    isCreating ? onCreationEnd?.() : setManuallyEditing(false);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleRename();
+    } else if (e.key === "Escape") {
+      endEditing();
+    }
+  };
 
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem className={`${editing ? "py-1" : ""}`}>
       {editing ? (
         <Input
-          autoFocus
+          ref={inputRef}
           className="h-8 text-sm"
-          defaultValue={name}
-          onBlur={(e) => {
-            onRename(e.target.value);
-            endEditing();
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              onRename((e.target as HTMLInputElement).value);
-              endEditing();
-            } else if (e.key === "Escape") {
-              endEditing();
-            }
-          }}
+          value={inputValue}
+          onBlur={handleRename}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleKeyDown}
         />
       ) : (
         <SidebarMenuButton
           className="group justify-between"
           isActive={isActive}
-          onClick={() => onSelect()}
+          onClick={onSelect}
         >
           <span className="truncate">{name}</span>
           <DropdownMenu>
@@ -74,13 +99,14 @@ const QueryMenuItem = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" side="right">
-              <DropdownMenuItem onSelect={() => setManuallyEditing(true)}>
-                <Pencil className="mr-2" />
+              <DropdownMenuItem onClick={() => setManuallyEditing(true)}>
+                <Pencil />
                 Rename
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => onDelete()}>
-                <Trash className="mr-2 text-red-600" />
-                <span className="text-red-600">Delete</span>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="text-destructive" onClick={onDelete}>
+                <Trash />
+                Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

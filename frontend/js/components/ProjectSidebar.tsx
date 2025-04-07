@@ -125,8 +125,8 @@ const ProjectSidebar = ({
                   key={query.id}
                   isActive={currentQueryId === query.id}
                   isCreating={creatingQueryId === query.id}
-                  onCreationEnd={() => setCreatingQueryId(null)}
                   name={query.name}
+                  onCreationEnd={() => setCreatingQueryId(null)}
                   onDelete={() => deleteQuery(query.id)}
                   onRename={(name: string) => renameQuery(query.id, name)}
                   onSelect={() => onSelect(query.id)}
