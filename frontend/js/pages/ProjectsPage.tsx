@@ -1,5 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { Loader2, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 
 import { ProjectsService, type Project } from "@/api";
@@ -56,15 +56,6 @@ const ProjectsPage = () => {
     },
   ];
 
-  if (loading) {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        <span className="ml-2 text-muted-foreground">Loading projects...</span>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6">
       <div className="flex justify-between items-end mb-4">
@@ -88,7 +79,7 @@ const ProjectsPage = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <DataTable columns={columns} data={projects} />
+      <DataTable columns={columns} data={projects} loading={loading} />
     </div>
   );
 };

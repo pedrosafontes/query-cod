@@ -15,17 +15,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Spinner } from "@/components/ui/spinner";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   pageSize?: number | null; // null or undefined disables pagination
+  loading?: boolean;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   pageSize,
+  loading
 }: DataTableProps<TData, TValue>) {
   const paginationEnabled = !!pageSize;
 
@@ -94,7 +97,7 @@ export function DataTable<TData, TValue>({
                   className="h-24 text-center"
                   colSpan={columns.length}
                 >
-                  No results.
+                  {loading ? <Spinner size="small" />: "No results."}
                 </TableCell>
               </TableRow>
             )}

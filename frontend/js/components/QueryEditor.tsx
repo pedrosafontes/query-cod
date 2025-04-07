@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { QueriesService, Query, QueryError } from "../api";
 import { useAutosave } from "../hooks/useAutosave";
+import { Spinner } from "@/components/ui/spinner";
 
 const QueryEditor = ({ query }: { query: Query }) => {
   const [text, setText] = useState<string>(query.text);
@@ -65,7 +66,7 @@ const QueryEditor = ({ query }: { query: Query }) => {
       case "saving":
         return (
           <span className="inline-flex items-center gap-1 text-gray-400 animate-pulse">
-            <Loader2 className="h-3 w-3 animate-spin" />
+            <Spinner size="xs" />
             Saving...
           </span>
         );
@@ -80,7 +81,7 @@ const QueryEditor = ({ query }: { query: Query }) => {
         return (
           <span className="inline-flex items-center gap-1 text-green-600">
             <CheckCircle className="h-3 w-3" />
-            Saved!
+            Saved
           </span>
         );
     }
