@@ -1,3 +1,10 @@
-from django.shortcuts import render
+from rest_framework import viewsets, mixins
 
-# Create your views here.
+from .models import Database
+from .serializers import DatabaseSerializer
+
+
+class DatabaseViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    queryset = Database.objects.all()
+    serializer_class = DatabaseSerializer
+    pagination_class = None
