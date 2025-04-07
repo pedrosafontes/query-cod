@@ -56,7 +56,7 @@ const ProjectPage = () => {
           />
         )}
         <SidebarInset>
-          {query && <QueryExplorer key={query.id} query={query} />}
+          {query && <QueryExplorer query={query} />}
         </SidebarInset>
     </SidebarProvider>
   );

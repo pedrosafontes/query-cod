@@ -36,7 +36,7 @@ const QueryExplorer = ({ query }: { query: Query }) => {
             Execute
           </Button>
         </div>
-        <QueryEditor query={query} />
+        <QueryEditor key={query.id} query={query} />
       </div>
       <div className="col-span-2 px-3 py-5 flex flex-col justify-end h-full bg-gray-50">
         <QueryResult result={queryResult} success={success} />
