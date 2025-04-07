@@ -9,7 +9,7 @@ import AuthenticatedLayout from "./components/AuthenticatedLayout";
 import PrivateRoute from "./components/PrivateRoute";
 import LoginPage from "./pages/LoginPage";
 import ProjectsPage from "./pages/ProjectsPage";
-import QueriesExplorer from "./pages/QueriesExplorer";
+import ProjectPage from "./pages/ProjectPage";
 import SignupPage from "./pages/SignupPage";
 
 OpenAPI.interceptors.request.use((request) => {
@@ -29,7 +29,7 @@ const App = () => (
         <Route element={<PrivateRoute />}>
           <Route element={<AuthenticatedLayout />}>
             <Route element={<ProjectsPage />} path="/projects" />
-            <Route element={<QueriesExplorer />} path="/projects/:projectId" />
+            <Route element={<ProjectPage />} path="/projects/:projectId" />
           </Route>
         </Route>
       </Routes>

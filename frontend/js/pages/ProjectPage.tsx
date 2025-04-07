@@ -5,7 +5,7 @@ import { ProjectsService, Query } from "../api";
 import QueryExplorer from "../components/QueryExplorer";
 import QueryTabs from "../components/QueryTabs";
 
-const QueriesExplorer = () => {
+const ProjectPage = () => {
   const [queries, setQueries] =
     useState<Awaited<ReturnType<typeof ProjectsService.projectsQueriesList>>>();
   const [currentQueryId, setCurrentQueryId] = useState<number | undefined>(
@@ -64,4 +64,4 @@ const QueriesExplorer = () => {
   );
 };
 
-export default QueriesExplorer;
+export default ProjectPage;
