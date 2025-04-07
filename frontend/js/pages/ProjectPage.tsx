@@ -3,64 +3,62 @@ import { useParams } from "react-router";
 
 import { ProjectsService, Query } from "../api";
 import QueryExplorer from "../components/QueryExplorer";
-import QueryTabs from "../components/QueryTabs";
+import ProjectSidebar from "../components/ProjectSidebar";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
 const ProjectPage = () => {
-  const [queries, setQueries] =
-    useState<Awaited<ReturnType<typeof ProjectsService.projectsQueriesList>>>();
+  const [project, setProject] =
+    useState<Awaited<ReturnType<typeof ProjectsService.projectsRetrieve>>>();
   const [currentQueryId, setCurrentQueryId] = useState<number | undefined>(
     undefined,
   );
-  const { projectId } = useParams<{ projectId: string }>();
-  const projectPk = Number(projectId);
+  const { projectId : projectParamId } = useParams<{ projectId: string }>();
+  const projectId = Number(projectParamId);
 
+  const queries = project?.queries;
   const query = queries?.find((query) => query.id === currentQueryId);
 
-  const fetchQueries = async () => {
-    const result = await ProjectsService.projectsQueriesList({
-      projectPk,
+  const fetchProject = async () => {
+    const result = await ProjectsService.projectsRetrieve({
+      id: projectId,
     });
-    setQueries(result);
+    setProject(result);
   };
 
   const createQuery = async (): Promise<void> => {
     try {
       await ProjectsService.projectsQueriesCreate({
-        projectPk,
+        projectPk: projectId,
         requestBody: {
           name: "Query",
           text: "",
         } as Query,
       });
 
-      fetchQueries();
+      fetchProject();
     } catch (error) {
       console.error("Error creating query:", error);
     }
   };
 
   useEffect(() => {
-    fetchQueries();
+    fetchProject();
   }, []);
 
   return (
-    <div className="w-full h-full">
-      <div className="grid grid-cols-8 gap-4 h-full">
-        <div className="col-span-1 overflow-auto px-3 border-r py-5">
-          {queries && (
-            <QueryTabs
-              currentQueryId={currentQueryId}
-              queries={queries}
-              onCreate={createQuery}
-              onSelect={setCurrentQueryId}
-            />
-          )}
-        </div>
-        <div className="col-span-7">
+    <SidebarProvider defaultOpen={true}>
+        {project && queries && (
+          <ProjectSidebar
+            project={project}
+            currentQueryId={currentQueryId}
+            onCreate={createQuery}
+            onSelect={setCurrentQueryId}
+          />
+        )}
+        <SidebarInset>
           {query && <QueryExplorer key={query.id} query={query} />}
-        </div>
-      </div>
-    </div>
+        </SidebarInset>
+    </SidebarProvider>
   );
 };
 
