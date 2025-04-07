@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
-import { ProjectsService, Query } from "../api";
-import QueryExplorer from "../components/QueryExplorer";
-import ProjectSidebar from "../components/ProjectSidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+
+import { ProjectsService, QueriesService, Query } from "../api";
+import ProjectSidebar from "../components/ProjectSidebar";
+import QueryExplorer from "../components/QueryExplorer";
 
 const ProjectPage = () => {
   const [project, setProject] =
@@ -12,7 +13,7 @@ const ProjectPage = () => {
   const [currentQueryId, setCurrentQueryId] = useState<number | undefined>(
     undefined,
   );
-  const { projectId : projectParamId } = useParams<{ projectId: string }>();
+  const { projectId: projectParamId } = useParams<{ projectId: string }>();
   const projectId = Number(projectParamId);
 
   const queries = project?.queries;
@@ -41,23 +42,51 @@ const ProjectPage = () => {
     }
   };
 
+  const renameQuery = async (id: number, name: string): Promise<void> => {
+    try {
+      await QueriesService.queriesPartialUpdate({
+        id,
+        requestBody: {
+          name,
+        },
+      });
+      fetchProject();
+    } catch (error) {
+      console.error("Error renaming query:", error);
+    }
+  };
+
+  const deleteQuery = async (id: number): Promise<void> => {
+    try {
+      await QueriesService.queriesDestroy({
+        id,
+      });
+      await fetchProject();
+      if (currentQueryId === id) {
+        setCurrentQueryId(undefined);
+      }
+    } catch (error) {
+      console.error("Error deleting query:", error);
+    }
+  };
+
   useEffect(() => {
     fetchProject();
   }, []);
 
   return (
-    <SidebarProvider defaultOpen={true}>
-        {project && queries && (
-          <ProjectSidebar
-            project={project}
-            currentQueryId={currentQueryId}
-            onCreate={createQuery}
-            onSelect={setCurrentQueryId}
-          />
-        )}
-        <SidebarInset>
-          {query && <QueryExplorer query={query} />}
-        </SidebarInset>
+    <SidebarProvider defaultOpen>
+      {project && queries && (
+        <ProjectSidebar
+          currentQueryId={currentQueryId}
+          project={project}
+          onCreate={createQuery}
+          onDelete={deleteQuery}
+          onRename={renameQuery}
+          onSelect={setCurrentQueryId}
+        />
+      )}
+      <SidebarInset>{query && <QueryExplorer query={query} />}</SidebarInset>
     </SidebarProvider>
   );
 };
