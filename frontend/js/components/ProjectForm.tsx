@@ -1,58 +1,62 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useState, useEffect } from "react";
 
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
-  SelectItem
+  SelectItem,
 } from "@/components/ui/select";
 
-import {
-  Database,
-  DatabasesService,
-  Project,
-  ProjectsService
-} from "../api";
+import { Database, DatabasesService, Project, ProjectsService } from "../api";
 
 type ProjectFormValues = {
   name: string;
-  database_id: number;
+  databaseId: number;
 };
 
 const projectSchema = z.object({
   name: z.string().nonempty("Project name is required"),
-  database_id: z.number(),
+  databaseId: z.number(),
 });
-
 type ProjectFormProps = {
   onSuccess?: () => void;
+  project?: Project;
 };
 
-const ProjectForm = ({ onSuccess }: ProjectFormProps) => {
+const ProjectForm = ({ onSuccess, project }: ProjectFormProps) => {
   const [databases, setDatabases] = useState<Database[]>([]);
   const [loadingDatabases, setLoadingDatabases] = useState(true);
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
-      name: "",
-      database_id: undefined,
+      name: project?.name || "",
+      databaseId: project?.database.id || undefined,
     },
   });
+
+  useEffect(() => {
+    if (project) {
+      form.reset({
+        name: project.name,
+        databaseId: project.database.id,
+      });
+    }
+  }, [project, form]);
 
   const fetchDatabases = async () => {
     try {
@@ -71,24 +75,34 @@ const ProjectForm = ({ onSuccess }: ProjectFormProps) => {
 
   const onSubmit = async (values: ProjectFormValues) => {
     try {
-      await ProjectsService.projectsCreate({ requestBody: values as Project });
+      if (project?.id) {
+        await ProjectsService.projectsPartialUpdate({
+          id: project.id,
+          requestBody: values,
+        });
+      } else {
+        await ProjectsService.projectsCreate({
+          requestBody: {
+            name: values.name,
+            database_id: values.databaseId,
+          } as Project,
+        });
+      }
+
       form.reset();
       onSuccess?.();
     } catch (err) {
-      console.error("Project creation failed", err);
+      console.error("Project submission failed", err);
       form.setError("root", {
         type: "manual",
-        message: "Failed to create project. Please try again.",
+        message: "Failed to submit project. Please try again.",
       });
     }
   };
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-4"
-      >
+      <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}
           name="name"
@@ -105,15 +119,15 @@ const ProjectForm = ({ onSuccess }: ProjectFormProps) => {
 
         <FormField
           control={form.control}
-          name="database_id"
+          name="databaseId"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Database</FormLabel>
               <FormControl>
                 <Select
                   disabled={loadingDatabases}
-                  onValueChange={(value) => field.onChange(Number(value))}
                   value={field.value?.toString() || ""}
+                  onValueChange={(value) => field.onChange(Number(value))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select a database" />
@@ -138,8 +152,14 @@ const ProjectForm = ({ onSuccess }: ProjectFormProps) => {
           </div>
         )}
 
-        <Button type="submit" disabled={form.formState.isSubmitting}>
-          {form.formState.isSubmitting ? "Creating Project..." : "Create Project"}
+        <Button disabled={form.formState.isSubmitting} type="submit">
+          {form.formState.isSubmitting
+            ? project
+              ? "Updating..."
+              : "Creating..."
+            : project
+              ? "Update Project"
+              : "Create Project"}
         </Button>
       </form>
     </Form>
