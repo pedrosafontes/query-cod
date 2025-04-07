@@ -6,6 +6,7 @@ import { QueriesService, Query, QueryResultData } from "../api";
 
 import QueryEditor from "./QueryEditor";
 import QueryResult from "./QueryResult";
+import { Play } from "lucide-react";
 
 const QueryExplorer = ({ query }: { query: Query }) => {
   const [queryResult, setQueryResult] = useState<QueryResultData>();
@@ -33,6 +34,7 @@ const QueryExplorer = ({ query }: { query: Query }) => {
             variant="default"
             onClick={() => handleExecuteQuery()}
           >
+            <Play />
             Execute
           </Button>
         </div>
