@@ -1,25 +1,25 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { Loader2, Plus } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
-import { useNavigate } from "react-router";
 
 import { ProjectsService, type Project } from "@/api";
 import { Button } from "@/components/ui/button";
-import { DataTable } from "../components/DataTable";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
 } from "@/components/ui/dialog";
+
+import { DataTable } from "../components/DataTable";
+import ProjectActions from "../components/ProjectActions";
 import ProjectForm from "../components/ProjectForm";
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const navigate = useNavigate();
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -51,15 +51,7 @@ const ProjectsPage = () => {
       id: "actions",
       header: () => <div className="text-right">Actions</div>,
       cell: ({ row }) => (
-        <div className="text-right">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => navigate(`/projects/${row.original.id}`)}
-          >
-            Open
-          </Button>
-        </div>
+        <ProjectActions project={row.original} onSuccess={fetchProjects} />
       ),
     },
   ];
