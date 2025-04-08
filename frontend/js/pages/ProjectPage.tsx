@@ -49,7 +49,7 @@ const ProjectPage = () => {
           onSuccess={fetchProject}
         />
       )}
-      <SidebarInset>{query && <QueryExplorer query={query} />}</SidebarInset>
+      <SidebarInset className="h-screen overflow-auto">{query && <QueryExplorer query={query} />}</SidebarInset>
     </SidebarProvider>
   );
 };
