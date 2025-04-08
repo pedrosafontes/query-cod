@@ -108,6 +108,7 @@ const QueryEditor = ({ query }: { query: Query }) => {
           monacoRef.current = monaco;
           updateQuery(text);
         }}
+        loading={<Spinner size="small" className="text-gray-400" />}
       />
       <div className="flex justify-end text-xs mt-2">{renderStatus()}</div>
     </>
