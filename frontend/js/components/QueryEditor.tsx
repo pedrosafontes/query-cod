@@ -89,6 +89,7 @@ const QueryEditor = ({ query }: { query: Query }) => {
       <MonacoEditor
         defaultLanguage="sql"
         height="500px"
+        loading={<Spinner className="text-gray-400" size="small" />}
         options={{
           fontSize: 14,
           minimap: { enabled: false },
@@ -108,7 +109,6 @@ const QueryEditor = ({ query }: { query: Query }) => {
           monacoRef.current = monaco;
           updateQuery(text);
         }}
-        loading={<Spinner size="small" className="text-gray-400" />}
       />
       <div className="flex justify-end text-xs mt-2">{renderStatus()}</div>
     </>
