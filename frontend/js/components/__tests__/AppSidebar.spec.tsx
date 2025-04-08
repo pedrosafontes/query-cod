@@ -1,16 +1,15 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import AppSidebar from "../AppSidebar";
-import { MemoryRouter, Routes, Route } from "react-router";
+import { MemoryRouter, Routes, Route, useLocation } from "react-router";
 import { useAuth } from "contexts/AuthContext";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 const mockNavigate = jest.fn();
-const mockLocation = jest.fn();
 
 jest.mock("react-router", () => ({
   ...jest.requireActual("react-router"),
   useNavigate: () => mockNavigate,
-  useLocation: () => mockLocation,
+  useLocation: jest.fn(),
 }));
 
 jest.mock("contexts/AuthContext", () => ({
@@ -26,7 +25,7 @@ describe("AppSidebar", () => {
   });
 
   const renderComponent = (locationPath = "/projects") => {
-    jest.spyOn(require("react-router"), "useLocation").mockReturnValue({ pathname: locationPath });
+    (useLocation as jest.Mock).mockReturnValueOnce({ pathname: "/projects" });
 
     return render(
       <SidebarProvider>
