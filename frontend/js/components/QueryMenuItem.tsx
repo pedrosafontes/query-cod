@@ -1,4 +1,4 @@
-import { MoreVertical, Pencil, Trash } from "lucide-react";
+import { Ellipsis, Pencil, Trash } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import * as React from "react";
 
@@ -95,7 +95,7 @@ const QueryMenuItem = ({
                 variant="ghost"
                 onClick={(e) => e.stopPropagation()}
               >
-                <MoreVertical />
+                <Ellipsis />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" side="right">
