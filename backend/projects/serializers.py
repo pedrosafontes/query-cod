@@ -1,9 +1,9 @@
+from databases.models import Database
+from databases.serializers import DatabaseSerializer
 from drf_spectacular.utils import extend_schema_field
+from queries.serializers import QuerySerializer
 from rest_framework import serializers
 
-from databases.serializers import DatabaseSerializer
-from databases.models import Database
-from queries.serializers import QuerySerializer
 from .models import Project
 
 
@@ -17,7 +17,9 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        exclude = ['user']
+        exclude = [  # noqa: RUF012
+            'user'
+        ]
 
     @extend_schema_field(serializers.DateTimeField())
     def get_last_modified(self, obj):

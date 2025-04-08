@@ -1,8 +1,9 @@
 from django.contrib.auth import login, logout
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status, permissions
 from django.contrib.auth.forms import AuthenticationForm
+
+from rest_framework import permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .serializers import LoginSerializer, LogoutSerializer
 

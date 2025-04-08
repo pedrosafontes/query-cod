@@ -1,4 +1,5 @@
-from sqlalchemy import create_engine, text as sql_text
+from sqlalchemy import create_engine
+from sqlalchemy import text as sql_text
 
 from databases.models import DatabaseConnectionInfo
 

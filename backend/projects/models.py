@@ -1,10 +1,10 @@
 from django.db import models
-from django.db.models import Max, DateTimeField
+from django.db.models import DateTimeField, Max
 from django.db.models.functions import Greatest
 
-from users.models import User
 from common.models import IndexedTimeStampedModel
 from databases.models import Database
+from users.models import User
 
 
 class Project(IndexedTimeStampedModel):

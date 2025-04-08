@@ -1,8 +1,8 @@
 from django.db import models
 
-from databases.utils.conversion import from_model
-from databases.services.execution import execute_sql
 from common.models import IndexedTimeStampedModel
+from databases.services.execution import execute_sql
+from databases.utils.conversion import from_model
 from projects.models import Project
 
 from .services.sql_parser import parse_sql
@@ -20,4 +20,6 @@ class Query(IndexedTimeStampedModel):
         return parse_sql(self.text, from_model(self.project.database))
 
     class Meta:
-        ordering = ['-modified']
+        ordering = [  # noqa: RUF012
+            '-modified'
+        ]

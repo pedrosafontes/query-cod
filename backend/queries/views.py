@@ -1,15 +1,13 @@
 from django.shortcuts import get_object_or_404
-from drf_spectacular.utils import extend_schema, extend_schema_view
-from rest_framework import permissions, viewsets, mixins
+
+from drf_spectacular.utils import OpenApiParameter, extend_schema
+from projects.models import Project
+from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from projects.models import Project
-
 from .models import Query
 from .serializers import QueryExecutionSerializer, QueryPartialUpdateSerializer, QuerySerializer
-
-from drf_spectacular.utils import OpenApiParameter
 
 
 @extend_schema(

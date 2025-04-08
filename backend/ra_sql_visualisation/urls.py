@@ -2,16 +2,18 @@ from django.contrib import admin
 from django.urls import include, path
 
 import django_js_reverse.views
+from databases.routes import routes as databases_routes
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-from rest_framework.routers import DefaultRouter
 from projects.routes import routes as projects_routes
-from queries.routes import routes as queries_routes, nested_routes as project_queries_routes
-from databases.routes import routes as databases_routes
+from queries.routes import nested_routes as project_queries_routes
+from queries.routes import routes as queries_routes
+from rest_framework.routers import DefaultRouter
 from rest_framework_nested.routers import NestedDefaultRouter
+
 
 router = DefaultRouter()
 

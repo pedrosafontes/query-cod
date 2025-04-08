@@ -1,4 +1,4 @@
-from rest_framework import viewsets, mixins
+from rest_framework import mixins, viewsets
 
 from .models import Database
 from .serializers import DatabaseSerializer

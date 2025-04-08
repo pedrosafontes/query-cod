@@ -1,5 +1,6 @@
-from django.db import models
 from dataclasses import dataclass
+
+from django.db import models
 
 from common.models import IndexedTimeStampedModel
 

@@ -1,9 +1,7 @@
-from sqlglot import ParseError, parse_one
-
 from databases.models import DatabaseConnectionInfo
 from databases.services.execution import execute_sql
-
 from sqlalchemy.exc import SQLAlchemyError
+from sqlglot import ParseError, parse_one
 
 
 def parse_sql(query_text, db: DatabaseConnectionInfo):
