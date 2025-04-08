@@ -3,7 +3,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Plus } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 
-import { ProjectsService, type Project } from "@/api";
+import { ProjectsService, type Project } from "api";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,10 +13,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { DataTable } from "../components/DataTable";
-import ProjectActions from "../components/ProjectActions";
-import ProjectForm from "../components/ProjectForm";
-import { useToast } from "../hooks/use-toast";
+import { DataTable } from "components/DataTable";
+import ProjectActions from "components/ProjectActions";
+import ProjectForm from "components/ProjectForm";
+import { useToast } from "hooks/use-toast";
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState<Project[]>([]);
