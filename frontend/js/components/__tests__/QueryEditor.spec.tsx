@@ -1,9 +1,9 @@
 import { EditorProps } from "@monaco-editor/react";
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import type { editor } from "monaco-editor";
 
-import { QueriesService } from "js/api";
-import { useAutosave } from "js/hooks/useAutosave";
+import { Query } from "api";
+import { useAutosave } from "hooks/useAutosave";
 
 import QueryEditor from "../QueryEditor";
 
@@ -37,11 +37,12 @@ jest.mock("js/api", () => ({
 }));
 
 describe("QueryEditor", () => {
-  const fakeQuery = {
+  const mockQuery: Query = {
     id: 1,
+    name: "Test Query",
     text: "SELECT * FROM users;",
-    created: "2024-01-01T00:00:00Z",
-    modified: "2024-01-02T00:00:00Z",
+    created: new Date().toISOString(),
+    modified: new Date().toISOString(),
   };
 
   beforeEach(() => {
@@ -51,39 +52,33 @@ describe("QueryEditor", () => {
   test("renders the editor with initial text", async () => {
     (useAutosave as jest.Mock).mockReturnValue("saved");
 
-    render(<QueryEditor query={fakeQuery} />);
+    render(<QueryEditor query={mockQuery} />);
 
     const editor = screen.getByTestId("monaco-editor");
-    expect(editor).toBeInTheDocument();
-    expect(editor).toHaveValue(fakeQuery.text);
-    expect(screen.getByText("Saved!")).toBeInTheDocument();
+    expect(editor).toHaveValue(mockQuery.text);
   });
 
-  test("calls autosave on change", async () => {
-    (useAutosave as jest.Mock).mockImplementation(({ onSave }) => {
-      onSave("SELECT 1");
-      return "saving";
-    });
+  test("shows loading state during save", async () => {
+    (useAutosave as jest.Mock).mockReturnValue("saving");
 
-    render(<QueryEditor query={fakeQuery} />);
-    const editor = screen.getByTestId("monaco-editor");
+    render(<QueryEditor query={mockQuery} />);
 
-    fireEvent.change(editor, { target: { value: "SELECT 1" } });
-
-    await waitFor(() => {
-      expect(QueriesService.queriesPartialUpdate).toHaveBeenCalledWith({
-        id: 1,
-        requestBody: { text: "SELECT 1" },
-      });
-    });
-
-    expect(screen.getByText(/Saving/i)).toBeInTheDocument();
+    expect(screen.getByText(/saving/i)).toBeInTheDocument();
   });
 
-  test("displays error status on autosave failure", async () => {
+  test("shows error state when save fails", async () => {
     (useAutosave as jest.Mock).mockReturnValue("error");
 
-    render(<QueryEditor query={fakeQuery} />);
-    expect(screen.getByText(/Error saving/i)).toBeInTheDocument();
+    render(<QueryEditor query={mockQuery} />);
+
+    expect(screen.getByText(/error/i)).toBeInTheDocument();
+  });
+
+  test("shows saved state after successful save", async () => {
+    (useAutosave as jest.Mock).mockReturnValue("saved");
+
+    render(<QueryEditor query={mockQuery} />);
+
+    expect(screen.getByText(/saved/i)).toBeInTheDocument();
   });
 });

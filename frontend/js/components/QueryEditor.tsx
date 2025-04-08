@@ -4,9 +4,8 @@ import { editor } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
 import { Spinner } from "@/components/ui/spinner";
-
-import { QueriesService, Query, QueryError } from "../api";
-import { useAutosave } from "../hooks/useAutosave";
+import { QueriesService, Query, QueryError } from "api";
+import { useAutosave } from "hooks/useAutosave";
 
 const QueryEditor = ({ query }: { query: Query }) => {
   const [text, setText] = useState<string>(query.text);
