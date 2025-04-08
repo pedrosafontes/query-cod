@@ -1,8 +1,10 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import AppSidebar from "../AppSidebar";
 import { MemoryRouter, Routes, Route, useLocation } from "react-router";
-import { useAuth } from "contexts/AuthContext";
+
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { useAuth } from "contexts/AuthContext";
+
+import AppSidebar from "../AppSidebar";
 
 const mockNavigate = jest.fn();
 
@@ -31,20 +33,20 @@ describe("AppSidebar", () => {
       <SidebarProvider>
         <MemoryRouter initialEntries={[locationPath]}>
           <Routes>
-            <Route path="*" element={<AppSidebar />} />
+            <Route element={<AppSidebar />} path="*" />
           </Routes>
         </MemoryRouter>
-      </SidebarProvider>
+      </SidebarProvider>,
     );
   };
 
-  it("renders the sidebar with Projects and Logout buttons", () => {
+  test("renders the sidebar with Projects and Logout buttons", () => {
     renderComponent("/projects");
     expect(screen.getByText(/Projects/i)).toBeInTheDocument();
     expect(screen.getByText(/Logout/i)).toBeInTheDocument();
   });
 
-  it("navigates to '/projects' when the Projects button is clicked", async () => {
+  test("navigates to '/projects' when the Projects button is clicked", async () => {
     renderComponent("/some-other-path");
     const projectsButton = screen.getByRole("button", { name: /projects/i });
     fireEvent.click(projectsButton);
@@ -53,7 +55,7 @@ describe("AppSidebar", () => {
     });
   });
 
-  it("calls logout and navigates to '/login' when Logout button is clicked", async () => {
+  test("calls logout and navigates to '/login' when Logout button is clicked", async () => {
     renderComponent("/projects");
     const logoutButton = screen.getByRole("button", { name: /logout/i });
     fireEvent.click(logoutButton);

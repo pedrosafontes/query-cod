@@ -1,4 +1,5 @@
 import { renderHook, act } from "@testing-library/react";
+
 import { useAutosave } from "../useAutosave";
 
 jest.useFakeTimers();
@@ -10,17 +11,17 @@ describe("useAutosave", () => {
     onSave = jest.fn().mockResolvedValue(undefined);
   });
 
-  it("should return 'idle' initially", () => {
+  test("should return 'idle' initially", () => {
     const { result } = renderHook(() =>
-      useAutosave({ data: "initial", onSave, delay: 1000 })
+      useAutosave({ data: "initial", onSave, delay: 1000 }),
     );
     expect(result.current).toBe("idle");
   });
 
-  it("calls onSave after data changes and debounce delay", async () => {
+  test("calls onSave after data changes and debounce delay", async () => {
     const { result, rerender } = renderHook(
       ({ data }) => useAutosave({ data, onSave, delay: 1000 }),
-      { initialProps: { data: "initial" } }
+      { initialProps: { data: "initial" } },
     );
 
     // Update the data value
@@ -49,10 +50,10 @@ describe("useAutosave", () => {
     expect(result.current).toBe("idle");
   });
 
-  it("does not call onSave if the data has not changed", async () => {
+  test("does not call onSave if the data has not changed", async () => {
     const { result, rerender } = renderHook(
       ({ data }) => useAutosave({ data, onSave, delay: 1000 }),
-      { initialProps: { data: "initial" } }
+      { initialProps: { data: "initial" } },
     );
 
     act(() => {
@@ -65,12 +66,12 @@ describe("useAutosave", () => {
     expect(result.current).toBe("idle");
   });
 
-  it("sets status to 'error' if onSave fails", async () => {
+  test("sets status to 'error' if onSave fails", async () => {
     onSave.mockRejectedValueOnce(new Error("failure"));
 
     const { result, rerender } = renderHook(
       ({ data }) => useAutosave({ data, onSave, delay: 1000 }),
-      { initialProps: { data: "initial" } }
+      { initialProps: { data: "initial" } },
     );
 
     act(() => {

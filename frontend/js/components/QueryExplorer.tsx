@@ -10,7 +10,11 @@ import QueryEditor from "./QueryEditor";
 import QueryResult from "./QueryResult";
 import { Spinner } from "./ui/spinner";
 
-const QueryExplorer = ({ query }: { query: Query }) => {
+export type QueryExplorerProps = {
+  query: Query;
+};
+
+const QueryExplorer = ({ query }: QueryExplorerProps) => {
   const [queryResult, setQueryResult] = useState<QueryResultData>();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();

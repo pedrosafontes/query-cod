@@ -1,7 +1,9 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
-import ProjectsPage from "../ProjectsPage";
+
 import { ProjectsService } from "api";
 import { useToast } from "hooks/use-toast";
+
+import ProjectsPage from "../ProjectsPage";
 
 jest.mock("api", () => ({
   ProjectsService: {
@@ -14,7 +16,9 @@ jest.mock("hooks/use-toast", () => ({
 }));
 
 jest.mock("components/ProjectForm", () => () => <div>Mock ProjectForm</div>);
-jest.mock("components/ProjectActions", () => () => <div>Mock ProjectActions</div>);
+jest.mock("components/ProjectActions", () => () => (
+  <div>Mock ProjectActions</div>
+));
 
 describe("ProjectsPage", () => {
   const mockToast = jest.fn();
@@ -24,7 +28,7 @@ describe("ProjectsPage", () => {
       name: "Project One",
       database: {
         id: 0,
-        name: "Database One"
+        name: "Database One",
       },
       last_modified: new Date().toISOString(),
       created: new Date().toISOString(),
@@ -36,7 +40,7 @@ describe("ProjectsPage", () => {
       name: "Project Two",
       database: {
         id: 1,
-        name: "Database Two"
+        name: "Database Two",
       },
       last_modified: new Date().toISOString(),
       created: new Date().toISOString(),
@@ -48,36 +52,44 @@ describe("ProjectsPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useToast as jest.Mock).mockReturnValue({ toast: mockToast });
-    (ProjectsService.projectsList as jest.Mock).mockResolvedValue({ results: mockProjects });
+    (ProjectsService.projectsList as jest.Mock).mockResolvedValue({
+      results: mockProjects,
+    });
   });
 
-  it("fetches and renders projects", async () => {
+  test("fetches and renders projects", async () => {
     render(<ProjectsPage />);
 
     expect(ProjectsService.projectsList).toHaveBeenCalledTimes(1);
-    
+
     await waitFor(() => {
       expect(screen.getByRole("table")).toHaveTextContent("Project One");
       expect(screen.getByRole("table")).toHaveTextContent("Project Two");
     });
   });
 
-  it("opens the dialog when 'New Project' button is clicked", async () => {
+  test("opens the dialog when 'New Project' button is clicked", async () => {
     render(<ProjectsPage />);
-    
-    const newProjectButton = screen.getByRole("button", { name: /new project/i });
+
+    const newProjectButton = screen.getByRole("button", {
+      name: /new project/i,
+    });
     fireEvent.click(newProjectButton);
-    
+
     await waitFor(() => {
-      expect(screen.getByRole("heading", { name: /new project/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole("heading", { name: /new project/i }),
+      ).toBeInTheDocument();
       expect(screen.getByText("Mock ProjectForm")).toBeInTheDocument();
     });
   });
 
-  it("shows an error toast when API call fails", async () => {
-    (ProjectsService.projectsList as jest.Mock).mockRejectedValueOnce(new Error("API failure"));
+  test("shows an error toast when API call fails", async () => {
+    (ProjectsService.projectsList as jest.Mock).mockRejectedValueOnce(
+      new Error("API failure"),
+    );
     render(<ProjectsPage />);
-    
+
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith({
         title: "Error loading projects",

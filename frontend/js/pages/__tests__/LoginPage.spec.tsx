@@ -1,7 +1,9 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import LoginPage from "../LoginPage";
 import { MemoryRouter } from "react-router";
+
 import { useAuth } from "contexts/AuthContext";
+
+import LoginPage from "../LoginPage";
 
 const mockNavigate = jest.fn();
 jest.mock("react-router", () => ({
@@ -25,30 +27,34 @@ describe("LoginPage", () => {
     return render(
       <MemoryRouter>
         <LoginPage />
-      </MemoryRouter>
+      </MemoryRouter>,
     );
   };
 
-  it("renders the login form", () => {
+  test("renders the login form", () => {
     renderComponent();
-    expect(screen.getByRole("heading", { name: /log in/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /log in/i }),
+    ).toBeInTheDocument();
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
     expect(screen.getByLabelText("Password")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /log in/i })).toBeInTheDocument();
   });
 
-  it("shows validation errors when fields are empty or invalid", async () => {
+  test("shows validation errors when fields are empty or invalid", async () => {
     renderComponent();
     const loginButton = screen.getByRole("button", { name: /log in/i });
     fireEvent.click(loginButton);
 
     expect(await screen.findByText(/invalid email/i)).toBeInTheDocument();
-    expect(await screen.findByText(/password is required/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/password is required/i),
+    ).toBeInTheDocument();
 
     expect(loginMock).not.toHaveBeenCalled();
   });
 
-  it("logs in successfully and redirects to /projects", async () => {
+  test("logs in successfully and redirects to /projects", async () => {
     loginMock.mockResolvedValueOnce({}); // Simulate successful login
 
     renderComponent();
@@ -67,7 +73,7 @@ describe("LoginPage", () => {
     });
   });
 
-  it("displays an error message when login fails", async () => {
+  test("displays an error message when login fails", async () => {
     loginMock.mockRejectedValueOnce(new Error("Invalid credentials"));
 
     renderComponent();
@@ -84,7 +90,7 @@ describe("LoginPage", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
-  it("contains a sign up link that navigates to /signup", () => {
+  test("contains a sign up link that navigates to /signup", () => {
     renderComponent();
     const signUpLink = screen.getByRole("link", { name: /sign up/i });
     expect(signUpLink).toBeInTheDocument();

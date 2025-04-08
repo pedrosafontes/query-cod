@@ -1,7 +1,9 @@
-import React from "react";
 import { render, screen, waitFor, act } from "@testing-library/react";
-import { AuthProvider, useAuth } from "../AuthContext";
+import React from "react";
+
 import { AuthService, User } from "api";
+
+import { AuthProvider, useAuth } from "../AuthContext";
 
 function AuthConsumer() {
   const { user, isAuthenticated, isLoading, login, logout } = useAuth();
@@ -13,10 +15,15 @@ function AuthConsumer() {
         {isAuthenticated ? "authenticated" : "not authenticated"}
       </div>
       <div data-testid="user">{user ? user.email : "no user"}</div>
-      <button onClick={() => login("user@example.com", "password123")}>
+      <button
+        type="submit"
+        onClick={() => login("user@example.com", "password123")}
+      >
         Login
       </button>
-      <button onClick={() => logout()}>Logout</button>
+      <button type="submit" onClick={() => logout()}>
+        Logout
+      </button>
     </div>
   );
 }
@@ -45,7 +52,7 @@ describe("AuthProvider and useAuth", () => {
     jest.clearAllMocks();
   });
 
-  it("should fetch auth status on mount and set user when successful", async () => {
+  test("should fetch auth status on mount and set user when successful", async () => {
     (AuthService.authUsersMeRetrieve as jest.Mock).mockResolvedValue(mockUser);
 
     renderWithAuth(<AuthConsumer />);
@@ -53,38 +60,48 @@ describe("AuthProvider and useAuth", () => {
     expect(screen.getByTestId("loading")).toHaveTextContent("loading");
 
     await waitFor(() =>
-      expect(screen.getByTestId("loading")).toHaveTextContent("not loading")
+      expect(screen.getByTestId("loading")).toHaveTextContent("not loading"),
     );
     expect(screen.getByTestId("user")).toHaveTextContent("user@example.com");
-    expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("authenticated");
+    expect(screen.getByTestId("isAuthenticated")).toHaveTextContent(
+      "authenticated",
+    );
   });
 
-  it("should fetch auth status on mount and set user to null if it fails", async () => {
-    (AuthService.authUsersMeRetrieve as jest.Mock).mockRejectedValueOnce(new Error("Not authenticated"));
+  test("should fetch auth status on mount and set user to null if it fails", async () => {
+    (AuthService.authUsersMeRetrieve as jest.Mock).mockRejectedValueOnce(
+      new Error("Not authenticated"),
+    );
 
     renderWithAuth(<AuthConsumer />);
 
     expect(screen.getByTestId("loading")).toHaveTextContent("loading");
 
     await waitFor(() =>
-      expect(screen.getByTestId("loading")).toHaveTextContent("not loading")
+      expect(screen.getByTestId("loading")).toHaveTextContent("not loading"),
     );
 
     expect(screen.getByTestId("user")).toHaveTextContent("no user");
-    expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("not authenticated");
+    expect(screen.getByTestId("isAuthenticated")).toHaveTextContent(
+      "not authenticated",
+    );
   });
 
-  it("should update user on login", async () => {
-    (AuthService.authUsersMeRetrieve as jest.Mock).mockRejectedValueOnce(new Error("Not authenticated"));
+  test("should update user on login", async () => {
+    (AuthService.authUsersMeRetrieve as jest.Mock).mockRejectedValueOnce(
+      new Error("Not authenticated"),
+    );
 
     // Simulate a successful login
     (AuthService.authLoginCreate as jest.Mock).mockResolvedValue({});
-    (AuthService.authUsersMeRetrieve as jest.Mock).mockResolvedValueOnce(mockUser);
+    (AuthService.authUsersMeRetrieve as jest.Mock).mockResolvedValueOnce(
+      mockUser,
+    );
 
     renderWithAuth(<AuthConsumer />);
 
     await waitFor(() =>
-      expect(screen.getByTestId("loading")).toHaveTextContent("not loading")
+      expect(screen.getByTestId("loading")).toHaveTextContent("not loading"),
     );
 
     expect(screen.getByTestId("user")).toHaveTextContent("no user");
@@ -95,11 +112,13 @@ describe("AuthProvider and useAuth", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("user")).toHaveTextContent("user@example.com");
-      expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("authenticated");
+      expect(screen.getByTestId("isAuthenticated")).toHaveTextContent(
+        "authenticated",
+      );
     });
   });
 
-  it("should clear user on logout", async () => {
+  test("should clear user on logout", async () => {
     // Start with a logged in user
     (AuthService.authUsersMeRetrieve as jest.Mock).mockResolvedValue(mockUser);
     (AuthService.authLogoutCreate as jest.Mock).mockResolvedValue({});
@@ -107,7 +126,7 @@ describe("AuthProvider and useAuth", () => {
     renderWithAuth(<AuthConsumer />);
 
     await waitFor(() =>
-      expect(screen.getByTestId("user")).toHaveTextContent("user@example.com")
+      expect(screen.getByTestId("user")).toHaveTextContent("user@example.com"),
     );
 
     await act(async () => {
@@ -116,7 +135,9 @@ describe("AuthProvider and useAuth", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("user")).toHaveTextContent("no user");
-      expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("not authenticated");
+      expect(screen.getByTestId("isAuthenticated")).toHaveTextContent(
+        "not authenticated",
+      );
     });
   });
 });

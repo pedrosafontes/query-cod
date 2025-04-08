@@ -1,8 +1,11 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
-import ProjectsPage from "../ProjectPage";
+
 import { ProjectsService } from "api";
+import { QueryExplorerProps } from "components/QueryExplorer";
 import { useToast } from "hooks/use-toast";
+
+import ProjectsPage from "../ProjectPage";
 
 jest.mock("api", () => ({
   ProjectsService: {
@@ -14,7 +17,7 @@ jest.mock("hooks/use-toast", () => ({
   useToast: jest.fn(),
 }));
 
-jest.mock("components/QueryExplorer", () => ({ query }: any) => (
+jest.mock("components/QueryExplorer", () => ({ query }: QueryExplorerProps) => (
   <div data-testid="query-explorer">{query?.name}</div>
 ));
 
@@ -34,8 +37,8 @@ describe("ProjectPage", () => {
         text: "SELECT 2",
       },
     ],
-    database: { 
-      name: "TestDB"
+    database: {
+      name: "TestDB",
     },
   };
 
@@ -44,7 +47,9 @@ describe("ProjectPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useToast as jest.Mock).mockReturnValue({ toast: mockToast });
-    (ProjectsService.projectsRetrieve as jest.Mock).mockResolvedValue(sampleProject);
+    (ProjectsService.projectsRetrieve as jest.Mock).mockResolvedValue(
+      sampleProject,
+    );
   });
 
   // Helper to render the ProjectPage with a router so that useParams works.
@@ -52,26 +57,28 @@ describe("ProjectPage", () => {
     render(
       <MemoryRouter initialEntries={[`/projects/${sampleProject.id}`]}>
         <Routes>
-          <Route path="/projects/:projectId" element={<ProjectsPage />} />
+          <Route element={<ProjectsPage />} path="/projects/:projectId" />
         </Routes>
-      </MemoryRouter>
+      </MemoryRouter>,
     );
 
-  it("fetches and renders the project, then auto-selects the first query", async () => {
+  test("fetches and renders the project, then auto-selects the first query", async () => {
     renderComponent();
 
-    expect(ProjectsService.projectsRetrieve).toHaveBeenCalledWith(
-      { id: sampleProject.id}
-    );
+    expect(ProjectsService.projectsRetrieve).toHaveBeenCalledWith({
+      id: sampleProject.id,
+    });
 
     await waitFor(() => {
-      expect(screen.getByTestId("query-explorer")).toHaveTextContent("First Query");
+      expect(screen.getByTestId("query-explorer")).toHaveTextContent(
+        "First Query",
+      );
     });
   });
 
-  it("shows an error toast when project retrieval fails", async () => {
+  test("shows an error toast when project retrieval fails", async () => {
     (ProjectsService.projectsRetrieve as jest.Mock).mockRejectedValueOnce(
-      new Error("API failure")
+      new Error("API failure"),
     );
     renderComponent();
 

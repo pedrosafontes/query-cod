@@ -3,7 +3,6 @@ import { formatDistanceToNow } from "date-fns";
 import { Plus } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 
-import { ProjectsService, type Project } from "api";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
+import { ProjectsService, type Project } from "api";
 import { DataTable } from "components/DataTable";
 import ProjectActions from "components/ProjectActions";
 import ProjectForm from "components/ProjectForm";

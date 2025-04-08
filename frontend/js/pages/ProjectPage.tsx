@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-
 import { ProjectsService } from "api";
 import ProjectSidebar from "components/ProjectSidebar";
 import QueryExplorer from "components/QueryExplorer";
