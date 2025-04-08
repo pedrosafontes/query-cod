@@ -125,6 +125,7 @@ const ProjectSidebar = ({
               size="icon"
               variant="ghost"
               onClick={createQuery}
+              aria-label="Create Query"
             >
               <FilePlus />
             </Button>
@@ -144,6 +145,11 @@ const ProjectSidebar = ({
                   onSelect={() => onSelect(query.id)}
                 />
               ))}
+              {queries.length === 0 && (
+                <span className="text-sm text-muted-foreground p-2">
+                  Click the <FilePlus className="inline align-baseline h-4 w-4" /> button to create your first query.
+                </span>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

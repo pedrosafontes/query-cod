@@ -12,6 +12,7 @@ module.exports = {
         background: colors.white,
   			primary: colors.gray[950],
   			'primary-foreground': colors.white,
+        'muted-foreground': colors.gray[500],
         sidebar: {
           DEFAULT: colors.gray[50],
           foreground: colors.gray[800],

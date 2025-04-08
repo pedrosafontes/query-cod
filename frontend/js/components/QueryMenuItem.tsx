@@ -94,17 +94,18 @@ const QueryMenuItem = ({
                 size="icon"
                 variant="ghost"
                 onClick={(e) => e.stopPropagation()}
+                aria-label="Actions"
               >
                 <Ellipsis />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" side="right">
-              <DropdownMenuItem onClick={() => setManuallyEditing(true)}>
+              <DropdownMenuItem onClick={() => setManuallyEditing(true)} aria-label="Rename Query">
                 <Pencil />
                 Rename
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive" onClick={onDelete}>
+              <DropdownMenuItem className="text-destructive" onClick={onDelete} aria-label="Delete Query">
                 <Trash />
                 Delete
               </DropdownMenuItem>
