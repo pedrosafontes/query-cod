@@ -40,6 +40,7 @@ const ProjectActions = ({ project, onSuccess }: ProjectActionsProps) => {
   return (
     <div className="flex justify-end gap-2">
       <Button
+        aria-label="Delete Project"
         className="text-destructive"
         size="sm"
         variant="outline"
@@ -50,7 +51,7 @@ const ProjectActions = ({ project, onSuccess }: ProjectActionsProps) => {
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
-          <Button size="sm" variant="outline">
+          <Button aria-label="Edit Project" size="sm" variant="outline">
             <Pencil />
           </Button>
         </DialogTrigger>
@@ -69,6 +70,7 @@ const ProjectActions = ({ project, onSuccess }: ProjectActionsProps) => {
       </Dialog>
 
       <Button
+        aria-label="Open Project"
         size="sm"
         variant="outline"
         onClick={() => navigate(`/projects/${project.id}`)}

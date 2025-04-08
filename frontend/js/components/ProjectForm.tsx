@@ -32,7 +32,8 @@ const projectSchema = z.object({
   name: z.string().nonempty("Project name is required"),
   databaseId: z.number(),
 });
-type ProjectFormProps = {
+
+export type ProjectFormProps = {
   onSuccess?: () => void;
   project?: Project;
 };
