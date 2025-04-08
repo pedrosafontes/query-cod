@@ -16,6 +16,7 @@ import { DataTable } from "../components/DataTable";
 import ProjectActions from "../components/ProjectActions";
 import ProjectForm from "../components/ProjectForm";
 import { useToast } from "../hooks/use-toast";
+import { formatDistanceToNow } from 'date-fns';
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -45,12 +46,17 @@ const ProjectsPage = () => {
     {
       accessorKey: "name",
       header: "Name",
-      cell: ({ row }) => <span>{row.original.name}</span>,
+      cell: ({ row }) => row.original.name
     },
     {
       accessorKey: "database",
       header: "Database",
-      cell: ({ row }) => <span>{row.original.database.name}</span>,
+      cell: ({ row }) => row.original.database.name
+    },
+    {
+      accessorKey: "created",
+      header: "Created",
+      cell: ({ row }) => formatDistanceToNow(new Date(row.original.created), { addSuffix: true })
     },
     {
       id: "actions",
