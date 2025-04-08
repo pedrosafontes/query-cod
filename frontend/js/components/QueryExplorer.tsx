@@ -8,25 +8,28 @@ import { useToast } from "../hooks/use-toast";
 
 import QueryEditor from "./QueryEditor";
 import QueryResult from "./QueryResult";
+import { Spinner } from "./ui/spinner";
 
 const QueryExplorer = ({ query }: { query: Query }) => {
   const [queryResult, setQueryResult] = useState<QueryResultData>();
-  const [success, setSuccess] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleExecuteQuery = async (): Promise<void> => {
+    setIsLoading(true);
     try {
       const execution = await QueriesService.queriesExecutionsCreate({
         id: query.id,
       });
 
       setQueryResult(execution.results);
-      setSuccess(execution.success);
     } catch (error) {
       toast({
         title: "Error executing query",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -35,18 +38,25 @@ const QueryExplorer = ({ query }: { query: Query }) => {
       <div className="col-span-1 px-3 py-5 border-r">
         <div className="flex justify-end mb-3 w-full">
           <Button
+            disabled={isLoading}
             size="sm"
             variant="default"
             onClick={() => handleExecuteQuery()}
           >
-            <Play />
+            {isLoading ? (
+              <Spinner className="text-primary-foreground" size="small" />
+            ) : (
+              <Play />
+            )}
             Execute
           </Button>
         </div>
         <QueryEditor key={query.id} query={query} />
       </div>
       <div className="col-span-2 px-3 py-5 flex flex-col justify-end h-full bg-gray-50">
-        {success && queryResult && <QueryResult result={queryResult} />}
+        {queryResult && (
+          <QueryResult isLoading={isLoading} result={queryResult} />
+        )}
       </div>
     </div>
   );
