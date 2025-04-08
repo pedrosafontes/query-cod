@@ -46,12 +46,10 @@ const ProjectsPage = () => {
     {
       accessorKey: "name",
       header: "Name",
-      cell: ({ row }) => row.original.name,
     },
     {
-      accessorKey: "database",
+      accessorKey: "database.name",
       header: "Database",
-      cell: ({ row }) => row.original.database.name,
     },
     {
       accessorKey: "last_modified",
