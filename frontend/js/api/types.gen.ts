@@ -40,6 +40,7 @@ export type PatchedProject = {
   database_id?: number;
   readonly database?: Database;
   readonly queries?: Array<Query>;
+  readonly last_modified?: string;
   readonly created?: string;
   readonly modified?: string;
   name?: string;
@@ -65,6 +66,7 @@ export type Project = {
   database_id: number;
   readonly database: Database;
   readonly queries: Array<Query>;
+  readonly last_modified: string;
   readonly created: string;
   readonly modified: string;
   name: string;

@@ -141,6 +141,11 @@ export const $PatchedProject = {
       },
       readOnly: true,
     },
+    last_modified: {
+      type: "string",
+      format: "date-time",
+      readOnly: true,
+    },
     created: {
       type: "string",
       format: "date-time",
@@ -236,6 +241,11 @@ export const $Project = {
       },
       readOnly: true,
     },
+    last_modified: {
+      type: "string",
+      format: "date-time",
+      readOnly: true,
+    },
     created: {
       type: "string",
       format: "date-time",
@@ -256,6 +266,7 @@ export const $Project = {
     "database",
     "database_id",
     "id",
+    "last_modified",
     "modified",
     "name",
     "queries",
