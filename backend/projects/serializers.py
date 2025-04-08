@@ -13,7 +13,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     )
     database = DatabaseSerializer(read_only=True)
     queries = QuerySerializer(many=True, read_only=True)
-    last_modified = serializers.SerializerMethodField()
+    last_modified = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Project
