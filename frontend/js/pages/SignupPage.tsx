@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import { AuthService, UserCreate } from "../api";
-import { useAuth } from "../contexts/AuthContext";
+import { AuthService, UserCreate } from "api";
+import { useAuth } from "contexts/AuthContext";
 
 type SignupFormValues = Omit<UserCreate, "id"> & {
   confirmPassword: string;
@@ -24,8 +24,8 @@ type SignupFormValues = Omit<UserCreate, "id"> & {
 const signupSchema = z
   .object({
     email: z.string().email("Invalid email"),
-    password: z.string(),
-    confirmPassword: z.string(),
+    password: z.string().nonempty("Password is required"),
+    confirmPassword: z.string().nonempty("Password confirmation is required"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
