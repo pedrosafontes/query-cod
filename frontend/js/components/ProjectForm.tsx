@@ -129,7 +129,7 @@ const ProjectForm = ({ onSuccess, project }: ProjectFormProps) => {
                   value={field.value?.toString() || ""}
                   onValueChange={(value) => field.onChange(Number(value))}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger aria-label="Database">
                     <SelectValue placeholder="Select a database" />
                   </SelectTrigger>
                   <SelectContent>
