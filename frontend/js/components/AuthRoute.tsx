@@ -7,7 +7,9 @@ interface AuthRouteProps {
 }
 
 const AuthRoute = ({ redirectPath = "/projects" }: AuthRouteProps) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) return null;
 
   return isAuthenticated ? <Navigate to={redirectPath} /> : <Outlet />;
 };

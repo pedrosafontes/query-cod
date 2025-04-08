@@ -7,7 +7,9 @@ interface PrivateRouteProps {
 }
 
 const PrivateRoute = ({ redirectPath = "/login" }: PrivateRouteProps) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) return null;
 
   return isAuthenticated ? <Outlet /> : <Navigate to={redirectPath} />;
 };
