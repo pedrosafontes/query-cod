@@ -2,13 +2,12 @@ import { Play } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-
-import { QueriesService, Query, QueryResultData } from "../api";
-import { useToast } from "../hooks/use-toast";
+import { Spinner } from "@/components/ui/spinner";
+import { QueriesService, Query, QueryResultData } from "api";
+import { useToast } from "hooks/use-toast";
 
 import QueryEditor from "./QueryEditor";
 import QueryResult from "./QueryResult";
-import { Spinner } from "./ui/spinner";
 
 export type QueryExplorerProps = {
   query: Query;
