@@ -44,8 +44,8 @@ describe("AuthProvider and useAuth", () => {
   const mockUser: User = {
     email: "user@example.com",
     id: 1,
-    created: "2024-01-01T00:00:00Z",
-    modified: "2024-01-01T00:00:00Z",
+    created: new Date().toISOString(),
+    modified: new Date().toISOString(),
   };
 
   beforeEach(() => {
