@@ -1,10 +1,12 @@
 // ProjectSidebar.spec.tsx
-import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import ProjectSidebar from "../ProjectSidebar";
-import { Project, ProjectsService, QueriesService } from "api";
+import { render, screen, waitFor, within } from "@testing-library/react";
+import { userEvent } from "@testing-library/user-event";
 import { BrowserRouter } from "react-router";
+
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { Project, ProjectsService, QueriesService } from "api";
+
+import ProjectSidebar from "../ProjectSidebar";
 
 jest.mock("api");
 const mockToast = jest.fn();
@@ -31,9 +33,9 @@ const mockProject = {
       modified: new Date().toISOString(),
     },
   ],
-  database: { 
+  database: {
     id: 1,
-    name: "testdb"
+    name: "testdb",
   },
   created: new Date().toISOString(),
   modified: new Date().toISOString(),
@@ -45,24 +47,23 @@ const renderComponent = (props = {}) =>
     <BrowserRouter>
       <SidebarProvider>
         <ProjectSidebar
-          project={mockProject}
           currentQueryId={101}
+          project={mockProject}
           onSelect={jest.fn()}
           onSuccess={jest.fn()}
           {...props}
         />
       </SidebarProvider>
-    </BrowserRouter>
+    </BrowserRouter>,
   );
 
 const openQueryDropdown = async (queryName: string) => {
-    const queryItem = screen.getByText(queryName).closest("li")!;
-    const dropdownButton = within(queryItem).getByRole("button", {
-      name: /actions/i,
-    });
-    await userEvent.click(dropdownButton);
-  };
-  
+  const queryItem = screen.getByText(queryName).closest("li")!;
+  const dropdownButton = within(queryItem).getByRole("button", {
+    name: /actions/i,
+  });
+  await userEvent.click(dropdownButton);
+};
 
 describe("ProjectSidebar", () => {
   const onSelect = jest.fn();
@@ -73,27 +74,27 @@ describe("ProjectSidebar", () => {
   });
 
   describe("Rendering", () => {
-    it("renders project name and query list", () => {
+    test("renders project name and query list", () => {
       renderComponent();
       expect(screen.getByText("Test Project")).toBeInTheDocument();
       expect(screen.getByText("Query 1")).toBeInTheDocument();
       expect(screen.getByText("Query 2")).toBeInTheDocument();
     });
 
-    it("renders correctly with no queries", () => {
+    test("renders correctly with no queries", () => {
       const emptyProject = {
         ...mockProject,
-        queries: []
+        queries: [],
       };
-      
+
       renderComponent({ project: emptyProject });
-      
+
       expect(screen.getByText("Test Project")).toBeInTheDocument();
       expect(screen.getByText(/create your first query/i)).toBeInTheDocument();
     });
   });
 
-  it("calls onSelect for a query click", async () => {
+  test("calls onSelect for a query click", async () => {
     renderComponent({ onSelect });
 
     await userEvent.click(screen.getByText("Query 2"));
@@ -102,7 +103,7 @@ describe("ProjectSidebar", () => {
 
   describe("Query CRUD operations", () => {
     describe("Creating queries", () => {
-      it("creates a new query", async () => {
+      test("creates a new query", async () => {
         (ProjectsService.projectsQueriesCreate as jest.Mock).mockResolvedValue({
           id: 999,
           name: "Untitled",
@@ -111,39 +112,45 @@ describe("ProjectSidebar", () => {
 
         renderComponent({ onSuccess });
 
-        const createButton = screen.getByRole("button", { name: /create query/i });
+        const createButton = screen.getByRole("button", {
+          name: /create query/i,
+        });
         await userEvent.click(createButton);
 
         await waitFor(() =>
-          expect(ProjectsService.projectsQueriesCreate).toHaveBeenCalled()
+          expect(ProjectsService.projectsQueriesCreate).toHaveBeenCalled(),
         );
         expect(onSuccess).toHaveBeenCalled();
       });
 
-      it("handles network errors during query creation", async () => {
+      test("handles network errors during query creation", async () => {
         (ProjectsService.projectsQueriesCreate as jest.Mock).mockRejectedValue(
-          new Error("Create error")
+          new Error("Create error"),
         );
 
         renderComponent();
 
-        const createButton = screen.getByRole("button", { name: /create query/i });
+        const createButton = screen.getByRole("button", {
+          name: /create query/i,
+        });
         await userEvent.click(createButton);
 
         await waitFor(() => {
           expect(mockToast).toHaveBeenCalledWith(
-            expect.objectContaining({ 
-              title: expect.stringContaining("Error"), 
-              variant: "destructive" 
-            })
+            expect.objectContaining({
+              title: expect.stringContaining("Error"),
+              variant: "destructive",
+            }),
           );
         });
       });
     });
 
     describe("Renaming queries", () => {
-      it("allows renaming a query", async () => {
-        (QueriesService.queriesPartialUpdate as jest.Mock).mockResolvedValue({});
+      test("allows renaming a query", async () => {
+        (QueriesService.queriesPartialUpdate as jest.Mock).mockResolvedValue(
+          {},
+        );
 
         renderComponent({ onSuccess });
 
@@ -167,7 +174,7 @@ describe("ProjectSidebar", () => {
         expect(onSuccess).toHaveBeenCalled();
       });
 
-      it("allows cancelling a query rename operation", async () => {
+      test("allows cancelling a query rename operation", async () => {
         renderComponent();
 
         await openQueryDropdown("Query 1");
@@ -181,7 +188,7 @@ describe("ProjectSidebar", () => {
         const input = await screen.findByDisplayValue("Query 1");
         await userEvent.clear(input);
         await userEvent.type(input, "Renamed Query");
-        
+
         // Press Escape to cancel
         await userEvent.keyboard("{Escape}");
 
@@ -190,8 +197,10 @@ describe("ProjectSidebar", () => {
         expect(QueriesService.queriesPartialUpdate).not.toHaveBeenCalled();
       });
 
-      it("handles network errors during query rename", async () => {
-        (QueriesService.queriesPartialUpdate as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
+      test("handles network errors during query rename", async () => {
+        (
+          QueriesService.queriesPartialUpdate as jest.Mock
+        ).mockRejectedValueOnce(new Error("Network error"));
 
         renderComponent();
 
@@ -210,35 +219,37 @@ describe("ProjectSidebar", () => {
 
         await waitFor(() => {
           expect(mockToast).toHaveBeenCalledWith(
-            expect.objectContaining({ 
-              title: expect.stringContaining("Error"), 
-              variant: "destructive" 
-            })
+            expect.objectContaining({
+              title: expect.stringContaining("Error"),
+              variant: "destructive",
+            }),
           );
         });
       });
     });
 
     describe("Deleting queries", () => {
-      it("deletes a query", async () => {
+      test("deletes a query", async () => {
         (QueriesService.queriesDestroy as jest.Mock).mockResolvedValue({});
-    
+
         renderComponent({ onSuccess });
-      
+
         await openQueryDropdown("Query 1");
-    
+
         const deleteItem = await screen.findByRole("menuitem", {
           name: /delete query/i,
         });
-    
+
         await userEvent.click(deleteItem);
-    
+
         expect(QueriesService.queriesDestroy).toHaveBeenCalledWith({ id: 101 });
         expect(onSuccess).toHaveBeenCalled();
       });
 
-      it("handles network errors during query deletion", async () => {
-        (QueriesService.queriesDestroy as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
+      test("handles network errors during query deletion", async () => {
+        (QueriesService.queriesDestroy as jest.Mock).mockRejectedValueOnce(
+          new Error("Network error"),
+        );
 
         renderComponent();
 
@@ -247,15 +258,15 @@ describe("ProjectSidebar", () => {
         const deleteItem = await screen.findByRole("menuitem", {
           name: /delete query/i,
         });
-    
+
         await userEvent.click(deleteItem);
 
         await waitFor(() => {
           expect(mockToast).toHaveBeenCalledWith(
-            expect.objectContaining({ 
-              title: expect.stringContaining("Error"), 
-              variant: "destructive" 
-            })
+            expect.objectContaining({
+              title: expect.stringContaining("Error"),
+              variant: "destructive",
+            }),
           );
         });
       });
