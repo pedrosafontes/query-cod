@@ -1,0 +1,122 @@
+import React from "react";
+import { render, screen, waitFor, act } from "@testing-library/react";
+import { AuthProvider, useAuth } from "../AuthContext";
+import { AuthService, User } from "api";
+
+function AuthConsumer() {
+  const { user, isAuthenticated, isLoading, login, logout } = useAuth();
+
+  return (
+    <div>
+      <div data-testid="loading">{isLoading ? "loading" : "not loading"}</div>
+      <div data-testid="isAuthenticated">
+        {isAuthenticated ? "authenticated" : "not authenticated"}
+      </div>
+      <div data-testid="user">{user ? user.email : "no user"}</div>
+      <button onClick={() => login("user@example.com", "password123")}>
+        Login
+      </button>
+      <button onClick={() => logout()}>Logout</button>
+    </div>
+  );
+}
+
+const renderWithAuth = (ui: React.ReactElement) => {
+  return render(<AuthProvider>{ui}</AuthProvider>);
+};
+
+jest.mock("api", () => ({
+  AuthService: {
+    authUsersMeRetrieve: jest.fn(),
+    authLoginCreate: jest.fn(),
+    authLogoutCreate: jest.fn(),
+  },
+}));
+
+describe("AuthProvider and useAuth", () => {
+  const mockUser: User = {
+    email: "user@example.com",
+    id: 1,
+    created: "2024-01-01T00:00:00Z",
+    modified: "2024-01-01T00:00:00Z",
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("should fetch auth status on mount and set user when successful", async () => {
+    (AuthService.authUsersMeRetrieve as jest.Mock).mockResolvedValue(mockUser);
+
+    renderWithAuth(<AuthConsumer />);
+
+    expect(screen.getByTestId("loading")).toHaveTextContent("loading");
+
+    await waitFor(() =>
+      expect(screen.getByTestId("loading")).toHaveTextContent("not loading")
+    );
+    expect(screen.getByTestId("user")).toHaveTextContent("user@example.com");
+    expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("authenticated");
+  });
+
+  it("should fetch auth status on mount and set user to null if it fails", async () => {
+    (AuthService.authUsersMeRetrieve as jest.Mock).mockRejectedValueOnce(new Error("Not authenticated"));
+
+    renderWithAuth(<AuthConsumer />);
+
+    expect(screen.getByTestId("loading")).toHaveTextContent("loading");
+
+    await waitFor(() =>
+      expect(screen.getByTestId("loading")).toHaveTextContent("not loading")
+    );
+
+    expect(screen.getByTestId("user")).toHaveTextContent("no user");
+    expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("not authenticated");
+  });
+
+  it("should update user on login", async () => {
+    (AuthService.authUsersMeRetrieve as jest.Mock).mockRejectedValueOnce(new Error("Not authenticated"));
+
+    // Simulate a successful login
+    (AuthService.authLoginCreate as jest.Mock).mockResolvedValue({});
+    (AuthService.authUsersMeRetrieve as jest.Mock).mockResolvedValueOnce(mockUser);
+
+    renderWithAuth(<AuthConsumer />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("loading")).toHaveTextContent("not loading")
+    );
+
+    expect(screen.getByTestId("user")).toHaveTextContent("no user");
+
+    await act(async () => {
+      screen.getByText("Login").click();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("user")).toHaveTextContent("user@example.com");
+      expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("authenticated");
+    });
+  });
+
+  it("should clear user on logout", async () => {
+    // Start with a logged in user
+    (AuthService.authUsersMeRetrieve as jest.Mock).mockResolvedValue(mockUser);
+    (AuthService.authLogoutCreate as jest.Mock).mockResolvedValue({});
+
+    renderWithAuth(<AuthConsumer />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("user")).toHaveTextContent("user@example.com")
+    );
+
+    await act(async () => {
+      screen.getByText("Logout").click();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("user")).toHaveTextContent("no user");
+      expect(screen.getByTestId("isAuthenticated")).toHaveTextContent("not authenticated");
+    });
+  });
+});
