@@ -18,3 +18,6 @@ class Query(IndexedTimeStampedModel):
 
     def parse(self):
         return parse_sql(self.text, from_model(self.project.database))
+
+    class Meta:
+        ordering = ['-modified']
