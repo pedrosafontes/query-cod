@@ -1,4 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
+import { formatDistanceToNow } from "date-fns";
 import { Plus } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 
@@ -16,7 +17,6 @@ import { DataTable } from "../components/DataTable";
 import ProjectActions from "../components/ProjectActions";
 import ProjectForm from "../components/ProjectForm";
 import { useToast } from "../hooks/use-toast";
-import { formatDistanceToNow } from 'date-fns';
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -46,17 +46,28 @@ const ProjectsPage = () => {
     {
       accessorKey: "name",
       header: "Name",
-      cell: ({ row }) => row.original.name
+      cell: ({ row }) => row.original.name,
     },
     {
       accessorKey: "database",
       header: "Database",
-      cell: ({ row }) => row.original.database.name
+      cell: ({ row }) => row.original.database.name,
+    },
+    {
+      accessorKey: "last_modified",
+      header: "Last modified",
+      cell: ({ row }) =>
+        formatDistanceToNow(new Date(row.original.last_modified), {
+          addSuffix: true,
+        }),
     },
     {
       accessorKey: "created",
       header: "Created",
-      cell: ({ row }) => formatDistanceToNow(new Date(row.original.created), { addSuffix: true })
+      cell: ({ row }) =>
+        formatDistanceToNow(new Date(row.original.created), {
+          addSuffix: true,
+        }),
     },
     {
       id: "actions",
