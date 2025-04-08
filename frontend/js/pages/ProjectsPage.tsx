@@ -15,18 +15,23 @@ import {
 import { DataTable } from "../components/DataTable";
 import ProjectActions from "../components/ProjectActions";
 import ProjectForm from "../components/ProjectForm";
+import { useToast } from "../hooks/use-toast";
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const fetchProjects = useCallback(async () => {
     try {
       const response = await ProjectsService.projectsList();
-      setProjects(response.results || []);
+      setProjects(response.results);
     } catch (error) {
-      console.error("Failed to load projects:", error);
+      toast({
+        title: "Error loading projects",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }

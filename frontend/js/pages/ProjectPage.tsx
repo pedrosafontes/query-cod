@@ -6,6 +6,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ProjectsService } from "../api";
 import ProjectSidebar from "../components/ProjectSidebar";
 import QueryExplorer from "../components/QueryExplorer";
+import { useToast } from "../hooks/use-toast";
 
 const ProjectPage = () => {
   const [project, setProject] =
@@ -14,16 +15,24 @@ const ProjectPage = () => {
     undefined,
   );
   const { projectId: projectParamId } = useParams<{ projectId: string }>();
-  const projectId = Number(projectParamId);
+  const { toast } = useToast();
 
+  const projectId = Number(projectParamId);
   const queries = project?.queries;
   const query = queries?.find((query) => query.id === currentQueryId);
 
   const fetchProject = async () => {
-    const result = await ProjectsService.projectsRetrieve({
-      id: projectId,
-    });
-    setProject(result);
+    try {
+      const result = await ProjectsService.projectsRetrieve({
+        id: projectId,
+      });
+      setProject(result);
+    } catch (error) {
+      toast({
+        title: "Error loading project",
+        variant: "destructive",
+      });
+    }
   };
 
   useEffect(() => {

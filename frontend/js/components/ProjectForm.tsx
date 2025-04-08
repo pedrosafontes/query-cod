@@ -92,7 +92,6 @@ const ProjectForm = ({ onSuccess, project }: ProjectFormProps) => {
       form.reset();
       onSuccess?.();
     } catch (err) {
-      console.error("Project submission failed", err);
       form.setError("root", {
         type: "manual",
         message: "Failed to submit project. Please try again.",

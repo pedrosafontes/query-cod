@@ -29,9 +29,11 @@ const ProjectActions = ({ project, onSuccess }: ProjectActionsProps) => {
     try {
       await ProjectsService.projectsDestroy({ id });
       onSuccess();
-      toast({ title: "Project deleted" });
     } catch (error) {
-      console.error("Failed to delete project:", error);
+      toast({
+        title: "Error deleting project",
+        variant: "destructive",
+      });
     }
   };
 

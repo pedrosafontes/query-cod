@@ -1,29 +1,15 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { useEffect } from "react";
 
-import { useToast } from "@/hooks/use-toast";
-import { QueryResultData } from "js/api";
+import { QueryResultData } from "../api";
 
 import { DataTable } from "./DataTable";
 
-const QueryResult = ({
-  success,
-  result,
-}: {
-  success: boolean;
-  result: QueryResultData | undefined;
-}) => {
-  const { toast } = useToast();
+type QueryResultProps = {
+  result: QueryResultData;
+};
 
-  useEffect(() => {
-    if (!success) {
-      toast({ description: "Query execution failed." });
-    } else if (result && result.columns.length === 0) {
-      toast({ description: "No results found." });
-    }
-  }, [success, result, toast]);
-
-  if (!success || !result || result.columns.length === 0) {
+const QueryResult = ({ result }: QueryResultProps) => {
+  if (result.columns.length === 0) {
     return null;
   }
 

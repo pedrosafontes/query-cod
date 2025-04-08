@@ -49,8 +49,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
       const userResponse = await AuthService.authUsersMeRetrieve();
       setUser(userResponse);
-    } catch (error) {
-      console.error("Login failed", error);
     } finally {
       setIsLoading(false);
     }
@@ -61,8 +59,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     try {
       await AuthService.authLogoutCreate();
       setUser(null);
-    } catch (error) {
-      console.error("Logout failed", error);
     } finally {
       setIsLoading(false);
     }

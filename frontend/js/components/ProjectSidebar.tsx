@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import { ProjectsService, QueriesService, Query, type Project } from "../api";
+import { useToast } from "../hooks/use-toast";
 
 import QueryMenuItem from "./QueryMenuItem";
 
@@ -37,6 +38,8 @@ const ProjectSidebar = ({
 
   const navigate = useNavigate();
 
+  const { toast } = useToast();
+
   useEffect(() => {
     if (!currentQueryId && queries.length > 0) {
       onSelect(queries[0].id);
@@ -55,7 +58,10 @@ const ProjectSidebar = ({
       onSuccess();
       setCreatingQueryId(newQuery.id);
     } catch (error) {
-      console.error("Error creating query:", error);
+      toast({
+        title: "Error creating query",
+        variant: "destructive",
+      });
     }
   };
 
@@ -69,7 +75,10 @@ const ProjectSidebar = ({
       });
       onSuccess();
     } catch (error) {
-      console.error("Error renaming query:", error);
+      toast({
+        title: "Error renaming query",
+        variant: "destructive",
+      });
     }
   };
 
@@ -83,7 +92,10 @@ const ProjectSidebar = ({
         onSelect(undefined);
       }
     } catch (error) {
-      console.error("Error deleting query:", error);
+      toast({
+        title: "Error deleting query",
+        variant: "destructive",
+      });
     }
   };
 

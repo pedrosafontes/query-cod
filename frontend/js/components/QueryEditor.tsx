@@ -15,18 +15,14 @@ const QueryEditor = ({ query }: { query: Query }) => {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
   const updateQuery = async (queryText: string): Promise<void> => {
-    try {
-      const result = await QueriesService.queriesPartialUpdate({
-        id: query.id,
-        requestBody: {
-          text: queryText,
-        },
-      });
+    const result = await QueriesService.queriesPartialUpdate({
+      id: query.id,
+      requestBody: {
+        text: queryText,
+      },
+    });
 
-      setErrors(result?.errors ?? []);
-    } catch (err) {
-      console.error("Error updating query:", err);
-    }
+    setErrors(result.errors ?? []);
   };
 
   const updateErrorMarkers = () => {
@@ -73,7 +69,7 @@ const QueryEditor = ({ query }: { query: Query }) => {
         );
       case "error":
         return (
-          <span className="inline-flex items-center gap-1 text-red-500">
+          <span className="inline-flex items-center gap-1 text-destructive">
             <AlertTriangle className="h-3 w-3" />
             Error saving
           </span>
