@@ -8,7 +8,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('databases', '0003_alter_database_type'),
+        ('databases', '0002_rename_username_database_user'),
     ]
 
     operations = [

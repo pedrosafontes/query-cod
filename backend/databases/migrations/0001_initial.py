@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 ('username', models.CharField(max_length=255)),
                 ('password', models.CharField(max_length=255)),
                 ('database_name', models.CharField(max_length=255)),
-                ('type', models.CharField(choices=[('postgresql', 'PostgreSQL'), ('mysql', 'MySQL'), ('sqlite', 'SQLite')], default='postgresql')),
+                ('database_type', models.CharField(max_length=255, choices=[('postgresql', 'PostgreSQL')], default='postgresql')),
             ],
         ),
     ]
