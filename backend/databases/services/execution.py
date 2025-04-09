@@ -8,8 +8,14 @@ def execute_sql(sql: str, db: DatabaseConnectionInfo) -> dict:
 
     with engine.connect() as conn:
         result = conn.execute(sql_text(sql))
-        rows = result.fetchall()
-        columns = result.keys()
+
+        if result.returns_rows:
+            rows = result.fetchall()
+            columns = result.keys()
+        else:
+            rows = []
+            columns = []
+
         return {
             'columns': columns,
             'rows': [list(row) for row in rows],
@@ -20,5 +26,7 @@ def _build_url(db: DatabaseConnectionInfo) -> str:
     match db.database_type:
         case 'postgresql':
             return f'postgresql://{db.user}:{db.password}@{db.host}:{db.port}/{db.name}'
+        case 'sqlite':
+            return f'sqlite:///{db.name}'
         case _:
             raise ValueError(f'Unsupported database type: {db.database_type}')
