@@ -23,7 +23,7 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     serializer_class = LogoutSerializer
-    permission_classes = [permissions.AllowAny]  # noqa: RUF012    s
+    permission_classes = [permissions.AllowAny]  # noqa: RUF012
 
     def post(self, request):
         logout(request)
