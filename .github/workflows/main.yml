@@ -103,6 +103,7 @@ jobs:
           poetry run python manage.py migrate
         env:
           DJANGO_SETTINGS_MODULE: "ra_sql_visualisation.settings.test"
+        working-directory: backend
       - run: |
           poetry run coverage run -m pytest --junitxml=junit/test-results.xml
           poetry run coverage xml
