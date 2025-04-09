@@ -15,6 +15,7 @@ class Database(IndexedTimeStampedModel):
     password = models.CharField(max_length=255)
     database_name = models.CharField(max_length=255)
     database_type = models.CharField(
+        max_length=255,
         choices=DatabaseType,
         default=DatabaseType.POSTGRESQL,
     )
