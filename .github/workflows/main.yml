@@ -94,16 +94,6 @@ jobs:
           SENDGRID_PASSWORD: "test"
           REDIS_URL: "redis://"
         working-directory: backend
-      - name: Clear .pyc and __pycache__
-        run: |
-          find . -name "*.pyc" -delete
-          find . -name "__pycache__" -type d -exec rm -rf {} +
-      - name: Migrate DB
-        run: |
-          poetry run python manage.py migrate
-        env:
-          DJANGO_SETTINGS_MODULE: "ra_sql_visualisation.settings.test"
-        working-directory: backend
       - run: |
           poetry run coverage run -m pytest --junitxml=junit/test-results.xml
           poetry run coverage xml
