@@ -1,73 +1,76 @@
 from django.urls import reverse
 
-from common.utils.tests import TestCaseUtils
-from model_bakery import baker
-from rest_framework.test import APITestCase
-
-from ..models import User
+import pytest
+from rest_framework import status
+from users.models import User
 
 
-class UserViewSetTest(TestCaseUtils, APITestCase):
-    def test_list_users(self):
-        baker.make(User, _fill_optional=True, _quantity=5)
+@pytest.fixture
+def user(db):
+    user = User.objects.create_user(
+        email="user@example.com",
+        password="testpass123",
+    )
+    return user
 
-        response = self.auth_client.get(reverse('user-list'))
 
-        self.assertResponse200(response)
-        # Note: One user is already created in the setUp method of TestCaseUtils
-        self.assertEqual(response.data.get('count'), 6)
-        self.assertEqual(len(response.data.get('results')), 6)
+@pytest.mark.django_db
+def test_login_success(client, user):
+    url = reverse("login")
 
-    def test_create_user(self):
-        data = {
-            'email': 'testuser@test.com',
-            'password': '12345678',
-        }
+    response = client.post(url, {
+        "username": user.email,
+        "password": "testpass123",
+    })
 
-        response = self.auth_client.post(reverse('user-list'), data=data)
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["detail"] == "Successfully logged in."
 
-        self.assertResponse201(response)
-        user = User.objects.get(id=response.data['id'])
-        self.assertEqual(user.email, data['email'])
 
-    def test_retrieve_user(self):
-        user = baker.make(User, _fill_optional=True)
+@pytest.mark.django_db
+def test_login_failure_wrong_password(client, user):
+    url = reverse("login")
 
-        response = self.auth_client.get(reverse('user-detail', args=[user.id]))
+    response = client.post(url, {
+        "username": user.email,
+        "password": "wrongpass",
+    })
 
-        self.assertResponse200(response)
-        self.assertEqual(response.data['id'], user.id)
-        self.assertEqual(response.data['email'], user.email)
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_put_update_user(self):
-        user = baker.make(User, email='testuser@test.com', _fill_optional=True)
-        data = {
-            'email': 'user@test.com',
-            'password': '87654321',
-        }
+@pytest.mark.django_db
+def test_login_failure_unknown_user(client):
+    url = reverse("login")
 
-        response = self.auth_client.put(reverse('user-detail', args=[user.id]), data=data)
+    response = client.post(url, {
+        "username": "unknown@example.com",
+        "password": "whatever",
+    })
 
-        self.assertResponse200(response)
-        user.refresh_from_db()
-        self.assertEqual(user.email, data['email'])
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_patch_update_user(self):
-        user = baker.make(User, email='testuser@test.com', _fill_optional=True)
-        data = {
-            'email': 'user@test.com',
-        }
+@pytest.mark.django_db
+def test_logout_clears_session(client, user):
+    login_url = reverse("login")
+    logout_url = reverse("logout")
+    protected_url = reverse("projects-list")
 
-        response = self.auth_client.patch(reverse('user-detail', args=[user.id]), data=data)
+    # Login
+    login_response = client.post(login_url, {
+        "username": user.email,
+        "password": "testpass123",
+    })
+    assert login_response.status_code == 200
 
-        self.assertResponse200(response)
-        user.refresh_from_db()
-        self.assertEqual(user.email, data['email'])
+    # Access a protected view
+    auth_response = client.get(protected_url)
+    assert auth_response.status_code == 200
 
-    def test_delete_user(self):
-        user = baker.make(User, _fill_optional=True)
+    # Logout
+    logout_response = client.post(logout_url)
+    assert logout_response.status_code == 200
+    assert logout_response.json()["detail"] == "Successfully logged out."
 
-        response = self.auth_client.delete(reverse('user-detail', args=[user.id]))
-
-        self.assertResponse204(response)
-        self.assertFalse(User.objects.filter(id=user.id).exists())
+    # Access protected view again — should fail with 403 or 401
+    post_logout_response = client.get(protected_url)
+    assert post_logout_response.status_code in [401, 403]
