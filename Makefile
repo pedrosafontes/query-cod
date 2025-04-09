@@ -6,10 +6,10 @@ clean:
 	@find . -name "__pycache__" -delete
 
 test:
-	poetry run backend/manage.py test backend/ $(ARG) --parallel --keepdb
+	poetry run pytest backend/ $(ARG) --reuse-db
 
 test_reset:
-	poetry run backend/manage.py test backend/ $(ARG) --parallel
+	poetry run pytest backend/ $(ARG)
 
 backend_format:
 	black backend
