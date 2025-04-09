@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class DatabaseConnectionInfo:
-    type: str
+    database_type: str
     host: str
     port: int
     user: str

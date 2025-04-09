@@ -3,7 +3,7 @@ from databases.models import Database, DatabaseConnectionInfo
 
 def from_model(database: Database) -> DatabaseConnectionInfo:
     return DatabaseConnectionInfo(
-        type=database.type,
+        database_type=database.database_type,
         host=database.host,
         port=database.port,
         user=database.user,

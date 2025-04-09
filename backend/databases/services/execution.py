@@ -17,8 +17,8 @@ def execute_sql(sql: str, db: DatabaseConnectionInfo) -> dict:
 
 
 def _build_url(db: DatabaseConnectionInfo) -> str:
-    match db.type:
+    match db.database_type:
         case 'postgresql':
             return f'postgresql://{db.user}:{db.password}@{db.host}:{db.port}/{db.name}'
         case _:
-            raise ValueError(f'Unsupported database type: {db.type}')
+            raise ValueError(f'Unsupported database type: {db.database_type}')

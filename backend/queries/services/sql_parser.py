@@ -11,7 +11,7 @@ def parse_sql(query_text, db: DatabaseConnectionInfo):
 
     # Syntax check with sqlglot
     try:
-        tree = parse_one(query_text, read=_database_type_to_sqlglot(db.type))
+        tree = parse_one(query_text, read=_database_type_to_sqlglot(db.database_type))
     except ParseError as e:
         return {
             'valid': False,

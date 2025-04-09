@@ -7,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 @pytest.fixture
 def db_info():
     return DatabaseConnectionInfo(
-        type='postgresql',
+        database_type='postgresql',
         host='localhost',
         port=5432,
         user='user',

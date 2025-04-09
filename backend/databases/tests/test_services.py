@@ -8,7 +8,7 @@ from databases.services.execution import _build_url, execute_sql
 @pytest.fixture
 def mock_db_info():
     return DatabaseConnectionInfo(
-        type='postgresql',
+        database_type='postgresql',
         host='localhost',
         port=5432,
         user='test',
@@ -55,7 +55,7 @@ def test_execute_sql_empty_result(mock_db_info, mock_sql_engine):
 
 def test_build_url_unsupported_db_type(mock_db_info):
     modified_db = mock_db_info
-    modified_db.type = "oracle"
+    modified_db.database_type = "oracle"
     
     with pytest.raises(ValueError, match=f"Unsupported database type: {"oracle"}"):
         _build_url(modified_db)
