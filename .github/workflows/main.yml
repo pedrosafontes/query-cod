@@ -1,6 +1,10 @@
 name: main
 on: [push, pull_request]
 
+permissions:
+  checks: write
+  contents: read
+
 jobs:
   build:
     name: Build ra_sql_visualisation
