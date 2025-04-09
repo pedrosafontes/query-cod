@@ -34,12 +34,19 @@ django-guid = "^3.4.0"
 drf-spectacular = "^0.27.2"
 tblib = "^3.1.0"
 sqlglot = "^26.12.1"
+drf-nested-routers = "^0.94.1"
+sqlalchemy = "^2.0.40"
+psycopg2 = "^2.9.10"
+pymysql = "^1.1.1"
+djoser = "^2.3.1"
 
 [tool.poetry.group.dev.dependencies]
 coverage = "^7.2.7"
 model-bakery = "^1.12.0"
 pre-commit = "^3.3.3"
 ruff = "^0.1.8"
+pytest = "^8.3.5"
+pytest-django = "^4.11.1"
 
 [build-system]
 requires = ["poetry-core>=1.2.0"]

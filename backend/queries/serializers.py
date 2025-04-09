@@ -4,14 +4,13 @@ from .models import Query
 
 
 class QuerySerializer(serializers.ModelSerializer):
-    # This field is required to be present in the request payload,
-    # but it can be an empty string (i.e., blank=True at the model level).
     text = serializers.CharField(required=True, allow_blank=True)
 
     class Meta:
         model = Query
         fields = [  # noqa: RUF012
             'id',
+            'name',
             'text',
             'created',
             'modified',

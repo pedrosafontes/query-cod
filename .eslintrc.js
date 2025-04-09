@@ -60,9 +60,21 @@ module.exports = {
     {
       files: ['**/components/ui/*.tsx'], 
       rules: {
-        'react/prop-types': [2, { ignore: ['className'] }],
+        'react/prop-types': 'off',
         'react-refresh/only-export-components': 'off',
       },
     },
+    {
+      files: ["*.ts", "*.tsx"],
+      rules: {
+        "camelcase": [
+          "error",
+          {
+            "properties": "never", // Allow snake_case in object keys
+            "ignoreDestructuring": true
+          }
+        ]
+      }
+    }
   ],
 };

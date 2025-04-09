@@ -1,45 +1,65 @@
+import { Play } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-
-import { QueriesService, Query, QueryResultData } from "../api";
+import { Spinner } from "@/components/ui/spinner";
+import { QueriesService, Query, QueryResultData } from "api";
+import { useToast } from "hooks/use-toast";
 
 import QueryEditor from "./QueryEditor";
 import QueryResult from "./QueryResult";
 
-const QueryExplorer = ({ query }: { query: Query }) => {
+export type QueryExplorerProps = {
+  query: Query;
+};
+
+const QueryExplorer = ({ query }: QueryExplorerProps) => {
   const [queryResult, setQueryResult] = useState<QueryResultData>();
-  const [success, setSuccess] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
   const handleExecuteQuery = async (): Promise<void> => {
+    setIsLoading(true);
     try {
       const execution = await QueriesService.queriesExecutionsCreate({
         id: query.id,
       });
 
       setQueryResult(execution.results);
-      setSuccess(execution.success);
     } catch (error) {
-      console.error("Error executing query:", error);
+      toast({
+        title: "Error executing query",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="grid grid-cols-3 gap-4 h-full">
+    <div className="grid grid-cols-3 h-full">
       <div className="col-span-1 px-3 py-5 border-r">
         <div className="flex justify-end mb-3 w-full">
           <Button
+            disabled={isLoading}
             size="sm"
             variant="default"
             onClick={() => handleExecuteQuery()}
           >
+            {isLoading ? (
+              <Spinner className="text-primary-foreground" size="small" />
+            ) : (
+              <Play />
+            )}
             Execute
           </Button>
         </div>
-        <QueryEditor query={query} />
+        <QueryEditor key={query.id} query={query} />
       </div>
-      <div className="col-span-2 px-3 py-5 flex flex-col justify-end h-full">
-        <QueryResult result={queryResult} success={success} />
+      <div className="col-span-2 px-3 py-5 flex flex-col justify-end h-full bg-gray-50">
+        {queryResult && (
+          <QueryResult isLoading={isLoading} result={queryResult} />
+        )}
       </div>
     </div>
   );

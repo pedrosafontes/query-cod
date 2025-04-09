@@ -5,18 +5,18 @@ import {
   waitFor,
   act,
 } from "@testing-library/react";
-import React from "react";
 
 import "@testing-library/jest-dom";
-import { QueriesService, Query } from "../../api";
+import { QueriesService, Query } from "api";
+
 import QueryEditor from "../QueryEditor";
 import QueryExplorer from "../QueryExplorer";
 import QueryResult from "../QueryResult";
 
-jest.mock("../../api", () => ({
-  QueriesService: {
-    queriesExecutionsCreate: jest.fn(),
-  },
+jest.mock("api");
+const mockToast = jest.fn();
+jest.mock("hooks/use-toast", () => ({
+  useToast: () => ({ toast: mockToast }),
 }));
 
 jest.mock("../QueryEditor", () => {
@@ -34,9 +34,10 @@ jest.mock("../QueryResult", () => {
 describe("QueryExplorer Component", () => {
   const mockQuery: Query = {
     id: 1,
+    name: "Test Query",
     text: "SELECT * FROM users",
-    created: "2024-01-01T00:00:00Z",
-    modified: "2024-01-02T00:00:00Z",
+    created: new Date().toISOString(),
+    modified: new Date().toISOString(),
   };
 
   const mockExecutionResult = {
@@ -57,29 +58,17 @@ describe("QueryExplorer Component", () => {
     );
   });
 
-  test("renders the component with QueryEditor and QueryResult", async () => {
+  test("renders the component with QueryEditor", async () => {
     await act(async () => {
       render(<QueryExplorer query={mockQuery} />);
     });
 
-    // Check if component renders correctly
     expect(screen.getByText("Execute")).toBeInTheDocument();
     expect(screen.getByTestId("query-editor")).toBeInTheDocument();
-    expect(screen.getByTestId("query-result")).toBeInTheDocument();
 
-    // Verify QueryEditor was called with the right props
     expect(QueryEditor).toHaveBeenCalledWith(
       expect.objectContaining({
         query: mockQuery,
-      }),
-      expect.anything(),
-    );
-
-    // Verify QueryResult was called with initial state
-    expect(QueryResult).toHaveBeenCalledWith(
-      expect.objectContaining({
-        result: undefined,
-        success: true,
       }),
       expect.anything(),
     );
@@ -92,19 +81,54 @@ describe("QueryExplorer Component", () => {
 
     fireEvent.click(screen.getByText("Execute"));
 
-    // Check if queriesExecutionsCreate was called with correct parameters
     expect(QueriesService.queriesExecutionsCreate).toHaveBeenCalledWith({
       id: mockQuery.id,
     });
 
-    // Verify that QueryResult was called with updated props after execution
     await waitFor(() => {
       expect(QueryResult).toHaveBeenCalledWith(
         expect.objectContaining({
           result: mockExecutionResult.results,
-          success: mockExecutionResult.success,
+          isLoading: false,
         }),
         expect.anything(),
+      );
+    });
+  });
+
+  test("disables execute button while loading", async () => {
+    (QueriesService.queriesExecutionsCreate as jest.Mock).mockImplementation(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(() => resolve(mockExecutionResult), 100),
+        ),
+    );
+
+    await act(async () => {
+      render(<QueryExplorer query={mockQuery} />);
+    });
+
+    const executeButton = screen.getByRole("button", { name: /execute/i });
+    fireEvent.click(executeButton);
+
+    expect(executeButton).toBeDisabled();
+    await waitFor(() => expect(executeButton).not.toBeDisabled());
+  });
+
+  test("handles execution error and shows toast", async () => {
+    (QueriesService.queriesExecutionsCreate as jest.Mock).mockRejectedValue(
+      new Error("Execution failed"),
+    );
+
+    await act(async () => {
+      render(<QueryExplorer query={mockQuery} />);
+    });
+
+    fireEvent.click(screen.getByText("Execute"));
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: "Error executing query" }),
       );
     });
   });

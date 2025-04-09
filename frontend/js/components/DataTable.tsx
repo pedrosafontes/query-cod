@@ -7,6 +7,7 @@ import {
 } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Table,
   TableBody,
@@ -19,27 +20,41 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  pageSize?: number | null; // null or undefined disables pagination
+  loading?: boolean;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  pageSize,
+  loading,
 }: DataTableProps<TData, TValue>) {
+  const paginationEnabled = !!pageSize;
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: {
-        pageSize: 5,
-      },
-    },
+    ...(paginationEnabled && {
+      getPaginationRowModel: getPaginationRowModel(),
+    }),
+    initialState: paginationEnabled
+      ? {
+          pagination: {
+            pageSize,
+          },
+        }
+      : {},
   });
+
+  const rows = paginationEnabled
+    ? table.getRowModel().rows
+    : table.getCoreRowModel().rows;
 
   return (
     <div>
-      <div className="rounded-md border">
+      <div className="rounded-md border bg-white">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -60,8 +75,8 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
+            {rows.length ? (
+              rows.map((row) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
@@ -82,31 +97,34 @@ export function DataTable<TData, TValue>({
                   className="h-24 text-center"
                   colSpan={columns.length}
                 >
-                  No results.
+                  {loading ? <Spinner size="small" /> : "No results."}
                 </TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 pt-4">
-        <Button
-          disabled={!table.getCanPreviousPage()}
-          size="sm"
-          variant="outline"
-          onClick={() => table.previousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          disabled={!table.getCanNextPage()}
-          size="sm"
-          variant="outline"
-          onClick={() => table.nextPage()}
-        >
-          Next
-        </Button>
-      </div>
+
+      {paginationEnabled && (
+        <div className="flex items-center justify-end space-x-2 pt-4">
+          <Button
+            disabled={!table.getCanPreviousPage()}
+            size="sm"
+            variant="outline"
+            onClick={() => table.previousPage()}
+          >
+            Previous
+          </Button>
+          <Button
+            disabled={!table.getCanNextPage()}
+            size="sm"
+            variant="outline"
+            onClick={() => table.nextPage()}
+          >
+            Next
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

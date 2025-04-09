@@ -1,16 +1,17 @@
-from django.db import DatabaseError, connection
-
+from databases.models import DatabaseConnectionInfo
+from databases.services.execution import execute_sql
+from sqlalchemy.exc import SQLAlchemyError
 from sqlglot import ParseError, parse_one
 
 
-def parse_sql(query_text, dialect='postgres'):
+def parse_sql(query_text, db: DatabaseConnectionInfo):
     query_text = query_text.strip()
     if not query_text:
         return {'valid': False, 'errors': []}
 
     # Syntax check with sqlglot
     try:
-        tree = parse_one(query_text, read=dialect)
+        tree = parse_one(query_text, read=_database_type_to_sqlglot(db.database_type))
     except ParseError as e:
         return {
             'valid': False,
@@ -40,9 +41,8 @@ def parse_sql(query_text, dialect='postgres'):
 
     # Semantic check with EXPLAIN
     try:
-        with connection.cursor() as cursor:
-            cursor.execute(f'EXPLAIN {query_text}')
-    except DatabaseError as e:
+        execute_sql(f'EXPLAIN {query_text}', db)
+    except SQLAlchemyError as e:
         return {
             'valid': False,
             'errors': [
@@ -56,3 +56,9 @@ def parse_sql(query_text, dialect='postgres'):
         }
 
     return {'valid': True}
+
+
+def _database_type_to_sqlglot(db_type: str) -> str:
+    return {
+        'postgresql': 'postgres',
+    }.get(db_type, db_type)

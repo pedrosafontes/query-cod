@@ -1,10 +1,11 @@
 import MonacoEditor, { Monaco } from "@monaco-editor/react";
-import { AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { AlertTriangle, CheckCircle } from "lucide-react";
 import { editor } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
-import { QueriesService, Query, QueryError } from "../api";
-import { useAutosave } from "../hooks/useAutosave";
+import { Spinner } from "@/components/ui/spinner";
+import { QueriesService, Query, QueryError } from "api";
+import { useAutosave } from "hooks/useAutosave";
 
 const QueryEditor = ({ query }: { query: Query }) => {
   const [text, setText] = useState<string>(query.text);
@@ -13,18 +14,14 @@ const QueryEditor = ({ query }: { query: Query }) => {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
   const updateQuery = async (queryText: string): Promise<void> => {
-    try {
-      const result = await QueriesService.queriesPartialUpdate({
-        id: query.id,
-        requestBody: {
-          text: queryText,
-        },
-      });
+    const result = await QueriesService.queriesPartialUpdate({
+      id: query.id,
+      requestBody: {
+        text: queryText,
+      },
+    });
 
-      setErrors(result?.errors ?? []);
-    } catch (err) {
-      console.error("Error updating query:", err);
-    }
+    setErrors(result.errors ?? []);
   };
 
   const updateErrorMarkers = () => {
@@ -65,13 +62,13 @@ const QueryEditor = ({ query }: { query: Query }) => {
       case "saving":
         return (
           <span className="inline-flex items-center gap-1 text-gray-400 animate-pulse">
-            <Loader2 className="h-3 w-3 animate-spin" />
+            <Spinner size="xs" />
             Saving...
           </span>
         );
       case "error":
         return (
-          <span className="inline-flex items-center gap-1 text-red-500">
+          <span className="inline-flex items-center gap-1 text-destructive">
             <AlertTriangle className="h-3 w-3" />
             Error saving
           </span>
@@ -80,7 +77,7 @@ const QueryEditor = ({ query }: { query: Query }) => {
         return (
           <span className="inline-flex items-center gap-1 text-green-600">
             <CheckCircle className="h-3 w-3" />
-            Saved!
+            Saved
           </span>
         );
     }
@@ -91,6 +88,7 @@ const QueryEditor = ({ query }: { query: Query }) => {
       <MonacoEditor
         defaultLanguage="sql"
         height="500px"
+        loading={<Spinner className="text-gray-400" size="small" />}
         options={{
           fontSize: 14,
           minimap: { enabled: false },

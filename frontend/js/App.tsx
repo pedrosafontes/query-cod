@@ -1,10 +1,18 @@
 import * as Sentry from "@sentry/react";
 import cookie from "cookie";
+import { BrowserRouter, Routes, Route } from "react-router";
 
 import { Toaster } from "@/components/ui/toaster";
 
 import { OpenAPI } from "./api";
-import QueriesExplorer from "./pages/QueriesExplorer";
+import AuthenticatedLayout from "./components/AuthenticatedLayout";
+import AuthRoute from "./components/AuthRoute";
+import PrivateRoute from "./components/PrivateRoute";
+import { AuthProvider } from "./contexts/AuthContext";
+import LoginPage from "./pages/LoginPage";
+import ProjectPage from "./pages/ProjectPage";
+import ProjectsPage from "./pages/ProjectsPage";
+import SignupPage from "./pages/SignupPage";
 
 OpenAPI.interceptors.request.use((request) => {
   const { csrftoken } = cookie.parse(document.cookie);
@@ -16,8 +24,23 @@ OpenAPI.interceptors.request.use((request) => {
 
 const App = () => (
   <Sentry.ErrorBoundary fallback={<p>An error has occurred</p>}>
-    <QueriesExplorer />
-    <Toaster />
+    <BrowserRouter>
+      <AuthProvider>
+        <Routes>
+          <Route element={<AuthRoute />}>
+            <Route element={<LoginPage />} path="/login" />
+            <Route element={<SignupPage />} path="/signup" />
+          </Route>
+          <Route element={<PrivateRoute />}>
+            <Route element={<AuthenticatedLayout />}>
+              <Route element={<ProjectsPage />} path="/projects" />
+              <Route element={<ProjectPage />} path="/projects/:projectId" />
+            </Route>
+          </Route>
+        </Routes>
+        <Toaster />
+      </AuthProvider>
+    </BrowserRouter>
   </Sentry.ErrorBoundary>
 );
 

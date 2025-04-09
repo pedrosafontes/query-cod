@@ -6,10 +6,10 @@ clean:
 	@find . -name "__pycache__" -delete
 
 test:
-	poetry run backend/manage.py test backend/ $(ARG) --parallel --keepdb
+	poetry run pytest backend/ $(ARG) --reuse-db
 
 test_reset:
-	poetry run backend/manage.py test backend/ $(ARG) --parallel
+	poetry run pytest backend/ $(ARG)
 
 backend_format:
 	black backend
@@ -23,10 +23,10 @@ docker_setup:
 	docker compose run --rm frontend npm run openapi-ts
 
 docker_test:
-	docker compose run backend python manage.py test $(ARG) --parallel --keepdb
+	docker compose run backend pytest $(ARG) --reuse-db
 
 docker_test_reset:
-	docker compose run backend python manage.py test $(ARG) --parallel
+	docker compose run backend pytest $(ARG)
 
 docker_up:
 	docker compose up -d

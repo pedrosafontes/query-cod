@@ -95,8 +95,7 @@ jobs:
           REDIS_URL: "redis://"
         working-directory: backend
       - run: |
-          poetry run coverage run manage.py test
-          mkdir -p junit
-          poetry run coverage xml -o junit/test-results.xml
+          poetry run coverage run -m pytest --junitxml=junit/test-results.xml
+          poetry run coverage xml
         working-directory: backend
       - run: npm run test
