@@ -1,11 +1,10 @@
+from databases.models import DatabaseConnectionInfo
 from sqlalchemy import create_engine
 from sqlalchemy import text as sql_text
 
-from databases.models import DatabaseConnectionInfo
-
 
 def execute_sql(sql: str, db: DatabaseConnectionInfo) -> dict:
-    engine = create_engine(build_url(db))
+    engine = create_engine(_build_url(db))
 
     with engine.connect() as conn:
         result = conn.execute(sql_text(sql))
@@ -17,7 +16,7 @@ def execute_sql(sql: str, db: DatabaseConnectionInfo) -> dict:
         }
 
 
-def build_url(db: DatabaseConnectionInfo) -> str:
+def _build_url(db: DatabaseConnectionInfo) -> str:
     match db.type:
         case 'postgresql':
             return f'postgresql://{db.user}:{db.password}@{db.host}:{db.port}/{db.name}'
