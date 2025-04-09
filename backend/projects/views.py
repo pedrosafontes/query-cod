@@ -6,8 +6,8 @@ from .serializers import ProjectSerializer
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.with_last_modified()
-
     serializer_class = ProjectSerializer
+    pagination_class = None
 
     def get_queryset(self):
         return Project.with_last_modified().filter(user=self.request.user)

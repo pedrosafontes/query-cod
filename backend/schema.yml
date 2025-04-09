@@ -500,19 +500,6 @@ paths:
   /api/projects/:
     get:
       operationId: projects_list
-      parameters:
-      - name: limit
-        required: false
-        in: query
-        description: Number of results to return per page.
-        schema:
-          type: integer
-      - name: offset
-        required: false
-        in: query
-        description: The initial index from which to return the results.
-        schema:
-          type: integer
       tags:
       - projects
       security:
@@ -522,7 +509,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedProjectList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
           description: ''
     post:
       operationId: projects_create
@@ -817,29 +806,6 @@ components:
       required:
       - password
       - username
-    PaginatedProjectList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?offset=400&limit=100
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?offset=200&limit=100
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/Project'
     PaginatedUserList:
       type: object
       required:

@@ -26,7 +26,7 @@ const ProjectsPage = () => {
   const fetchProjects = useCallback(async () => {
     try {
       const response = await ProjectsService.projectsList();
-      setProjects(response.results);
+      setProjects(response);
     } catch (error) {
       toast({
         title: "Error loading projects",

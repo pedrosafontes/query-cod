@@ -20,9 +20,8 @@ def test_list_projects_returns_only_user_projects(auth_client, user):
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
 
-    assert data["count"] == 1
-    assert len(data["results"]) == 1
-    assert data["results"][0]["id"] == user_project.id
+    assert len(data) == 1
+    assert data[0]["id"] == user_project.id
 
 
 @pytest.mark.django_db

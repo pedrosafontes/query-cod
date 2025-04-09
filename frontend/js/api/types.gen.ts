@@ -15,13 +15,6 @@ export type Login = {
   password: string;
 };
 
-export type PaginatedProjectList = {
-  count: number;
-  next?: string | null;
-  previous?: string | null;
-  results: Array<Project>;
-};
-
 export type PaginatedUserList = {
   count: number;
   next?: string | null;
@@ -282,18 +275,7 @@ export type AuthUsersSetPasswordCreateResponse = SetPassword;
 
 export type DatabasesListResponse = Array<Database>;
 
-export type ProjectsListData = {
-  /**
-   * Number of results to return per page.
-   */
-  limit?: number;
-  /**
-   * The initial index from which to return the results.
-   */
-  offset?: number;
-};
-
-export type ProjectsListResponse = PaginatedProjectList;
+export type ProjectsListResponse = Array<Project>;
 
 export type ProjectsCreateData = {
   requestBody: Project;
@@ -549,9 +531,8 @@ export type $OpenApiTs = {
   };
   "/api/projects/": {
     get: {
-      req: ProjectsListData;
       res: {
-        200: PaginatedProjectList;
+        200: Array<Project>;
       };
     };
     post: {

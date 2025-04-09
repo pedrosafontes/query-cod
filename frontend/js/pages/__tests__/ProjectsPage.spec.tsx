@@ -52,9 +52,7 @@ describe("ProjectsPage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useToast as jest.Mock).mockReturnValue({ toast: mockToast });
-    (ProjectsService.projectsList as jest.Mock).mockResolvedValue({
-      results: mockProjects,
-    });
+    (ProjectsService.projectsList as jest.Mock).mockResolvedValue(mockProjects);
   });
 
   test("fetches and renders projects", async () => {

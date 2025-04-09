@@ -41,35 +41,6 @@ export const $Login = {
   required: ["password", "username"],
 } as const;
 
-export const $PaginatedProjectList = {
-  type: "object",
-  required: ["count", "results"],
-  properties: {
-    count: {
-      type: "integer",
-      example: 123,
-    },
-    next: {
-      type: "string",
-      nullable: true,
-      format: "uri",
-      example: "http://api.example.org/accounts/?offset=400&limit=100",
-    },
-    previous: {
-      type: "string",
-      nullable: true,
-      format: "uri",
-      example: "http://api.example.org/accounts/?offset=200&limit=100",
-    },
-    results: {
-      type: "array",
-      items: {
-        $ref: "#/components/schemas/Project",
-      },
-    },
-  },
-} as const;
-
 export const $PaginatedUserList = {
   type: "object",
   required: ["count", "results"],

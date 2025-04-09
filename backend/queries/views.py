@@ -22,7 +22,6 @@ from .serializers import QueryExecutionSerializer, QueryPartialUpdateSerializer,
 )
 class ProjectQueryViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = QuerySerializer
-    pagination_class = None
 
     def perform_create(self, serializer):
         project = get_object_or_404(Project, id=self.kwargs['project_pk'])

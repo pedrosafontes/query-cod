@@ -42,7 +42,6 @@ import type {
   AuthUsersSetPasswordCreateData,
   AuthUsersSetPasswordCreateResponse,
   DatabasesListResponse,
-  ProjectsListData,
   ProjectsListResponse,
   ProjectsCreateData,
   ProjectsCreateResponse,
@@ -418,22 +417,13 @@ export class DatabasesService {
 
 export class ProjectsService {
   /**
-   * @param data The data for the request.
-   * @param data.limit Number of results to return per page.
-   * @param data.offset The initial index from which to return the results.
-   * @returns PaginatedProjectList
+   * @returns Project
    * @throws ApiError
    */
-  public static projectsList(
-    data: ProjectsListData = {},
-  ): CancelablePromise<ProjectsListResponse> {
+  public static projectsList(): CancelablePromise<ProjectsListResponse> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/projects/",
-      query: {
-        limit: data.limit,
-        offset: data.offset,
-      },
     });
   }
 
