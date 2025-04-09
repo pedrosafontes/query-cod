@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from django.db import models
 
 from common.models import IndexedTimeStampedModel
@@ -23,13 +21,3 @@ class Database(IndexedTimeStampedModel):
 
     def __str__(self):
         return f'{self.name}'
-
-
-@dataclass
-class DatabaseConnectionInfo:
-    type: str
-    host: str
-    port: int
-    user: str
-    password: str
-    name: str
