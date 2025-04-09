@@ -23,10 +23,10 @@ def mock_sql_engine():
     mock_conn = mock_engine.connect.return_value.__enter__.return_value
     mock_result = MagicMock()
     mock_conn.execute.return_value = mock_result
-    
+
     mock_result.fetchall.return_value = [(1, 'Alice'), (2, 'Bob')]
     mock_result.keys.return_value = ['id', 'name']
-    
+
     return {
         'engine': mock_engine,
         'connection': mock_conn,
@@ -35,27 +35,31 @@ def mock_sql_engine():
 
 
 def test_execute_sql_success(mock_db_info, mock_sql_engine):
-    with patch("databases.services.execution.create_engine", return_value=mock_sql_engine['engine']):
-        result = execute_sql("SELECT * FROM users", mock_db_info)
+    with patch(
+        'databases.services.execution.create_engine', return_value=mock_sql_engine['engine']
+    ):
+        result = execute_sql('SELECT * FROM users', mock_db_info)
 
     mock_sql_engine['connection'].execute.assert_called_once()
-    assert result["columns"] == ['id', 'name']
-    assert result["rows"] == [[1, 'Alice'], [2, 'Bob']]
+    assert result['columns'] == ['id', 'name']
+    assert result['rows'] == [[1, 'Alice'], [2, 'Bob']]
 
 
 def test_execute_sql_empty_result(mock_db_info, mock_sql_engine):
     mock_sql_engine['result'].fetchall.return_value = []
-    
-    with patch("databases.services.execution.create_engine", return_value=mock_sql_engine['engine']):
-        result = execute_sql("SELECT * FROM users WHERE id = 999", mock_db_info)
 
-    assert result["columns"] == ['id', 'name']
-    assert result["rows"] == []
+    with patch(
+        'databases.services.execution.create_engine', return_value=mock_sql_engine['engine']
+    ):
+        result = execute_sql('SELECT * FROM users WHERE id = 999', mock_db_info)
+
+    assert result['columns'] == ['id', 'name']
+    assert result['rows'] == []
 
 
 def test_build_url_unsupported_db_type(mock_db_info):
     modified_db = mock_db_info
-    modified_db.database_type = "oracle"
-    
+    modified_db.database_type = 'oracle'
+
     with pytest.raises(ValueError, match=f"Unsupported database type: {"oracle"}"):
         _build_url(modified_db)

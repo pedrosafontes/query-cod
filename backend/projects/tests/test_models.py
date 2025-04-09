@@ -12,14 +12,14 @@ def test_with_last_modified_returns_ordered_projects():
     project2 = baker.make(Project)
 
     baker.make(
-        "queries.Query",
+        'queries.Query',
         project=project1,
         created=timezone.now() - timezone.timedelta(days=2),
         modified=timezone.now() - timezone.timedelta(days=2),
     )
 
     baker.make(
-        "queries.Query",
+        'queries.Query',
         project=project2,
         created=timezone.now(),
         modified=timezone.now(),
@@ -29,5 +29,5 @@ def test_with_last_modified_returns_ordered_projects():
 
     assert len(projects) == 2
     assert projects[0].id == project2.id  # most recently modified project comes first
-    assert hasattr(projects[0], "last_modified")
+    assert hasattr(projects[0], 'last_modified')
     assert projects[0].last_modified >= projects[1].last_modified

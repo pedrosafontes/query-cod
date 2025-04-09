@@ -7,19 +7,19 @@ from databases.models import Database
 @pytest.fixture
 def mock_db(db):
     return Database.objects.create(
-        name="Test",
-        description="This is the Test DB.",
-        host="localhost",
+        name='Test',
+        description='This is the Test DB.',
+        host='localhost',
         port=5432,
-        user="test",
-        password="secret",
-        database_name="test_db"
+        user='test',
+        password='secret',
+        database_name='test_db',
     )
 
 
 @pytest.mark.django_db
 def test_list_databases(auth_client, mock_db):
-    url = reverse("databases-list")
+    url = reverse('databases-list')
     response = auth_client.get(url)
 
     assert response.status_code == 200
