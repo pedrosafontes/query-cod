@@ -98,4 +98,8 @@ jobs:
           poetry run coverage run -m pytest --junitxml=junit/test-results.xml
           poetry run coverage xml
         working-directory: backend
+      - name: Publish Pytest Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: backend/junit/test-results.xml
       - run: npm run test
