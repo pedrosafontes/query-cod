@@ -26,7 +26,7 @@ docker_test:
 	docker compose run backend pytest $(ARG) --reuse-db
 
 docker_test_reset:
-	docker compose run backend pytest $(ARG)
+	docker compose run backend pytest $(ARG) --nomigrations --reuse-db
 
 docker_up:
 	docker compose up -d
