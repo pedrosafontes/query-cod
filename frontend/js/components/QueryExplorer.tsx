@@ -6,6 +6,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query, QueryResultData } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
+import ErrorAlert from "./ErrorAlert";
 import QueryEditor from "./QueryEditor";
 import QueryResult from "./QueryResult";
 
@@ -16,38 +17,44 @@ export type QueryExplorerProps = {
 const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
   const [query, setQuery] = useState<Query>();
   const [queryResult, setQueryResult] = useState<QueryResultData>();
+  const [isExecuting, setIsExecuting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
   const toast = useErrorToast();
 
   const handleExecuteQuery = async (): Promise<void> => {
-    setIsLoading(true);
+    setIsExecuting(true);
     try {
       const execution = await QueriesService.queriesExecutionsCreate({
         id: queryId,
       });
 
       setQueryResult(execution.results);
-    } catch (error) {
+    } catch (err) {
       toast({
         title: "Error executing query",
       });
     } finally {
-      setIsLoading(false);
+      setIsExecuting(false);
     }
   };
 
   useEffect(() => {
     const fetchQuery = async () => {
+      setIsLoading(true);
       try {
         const result = await QueriesService.queriesRetrieve({
           id: queryId,
         });
         setQuery(result);
-      } catch (error) {
+        setError(null);
+      } catch (err) {
         setQuery(undefined);
-        toast({
-          title: "Error loading query",
-        });
+        if (err instanceof Error) {
+          setError(err);
+        }
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -59,12 +66,12 @@ const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
       <div className="col-span-1 px-3 py-5 border-r">
         <div className="flex justify-end mb-3 w-full">
           <Button
-            disabled={isLoading}
+            disabled={isExecuting}
             size="sm"
             variant="default"
             onClick={() => handleExecuteQuery()}
           >
-            {isLoading ? (
+            {isExecuting ? (
               <Spinner className="text-primary-foreground" size="small" />
             ) : (
               <Play />
@@ -72,11 +79,22 @@ const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
             Execute
           </Button>
         </div>
+        {isLoading && (
+          <div className="flex items-center justify-center h-full">
+            <Spinner className="text-muted-foreground" />
+          </div>
+        )}
+        {error && (
+          <ErrorAlert
+            description={error.message}
+            title="There was an error loading the query"
+          />
+        )}
         {query && <QueryEditor key={query.id} query={query} />}
       </div>
       <div className="col-span-2 px-3 py-5 flex flex-col justify-end h-full bg-gray-50">
         {queryResult && (
-          <QueryResult isLoading={isLoading} result={queryResult} />
+          <QueryResult isLoading={isExecuting} result={queryResult} />
         )}
       </div>
     </div>
