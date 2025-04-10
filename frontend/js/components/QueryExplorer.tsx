@@ -1,17 +1,11 @@
-import { Play } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { QueriesService, Query, QueryResultData } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
 import ErrorAlert from "./ErrorAlert";
+import ExecuteQueryButton from "./ExecuteQueryButton";
 import QueryEditor from "./QueryEditor";
 import QueryResult from "./QueryResult";
 
@@ -72,32 +66,12 @@ const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
     <div className="grid grid-cols-3 h-full">
       <div className="col-span-1 px-3 py-5 border-r">
         <div className="flex justify-end mb-3 w-full">
-          <Tooltip delayDuration={200}>
-            <TooltipTrigger asChild>
-              <div>
-                <Button
-                  disabled={
-                    isExecuting || isLoading || !!loadingError || hasErrors
-                  }
-                  size="sm"
-                  variant="default"
-                  onClick={() => handleExecuteQuery()}
-                >
-                  {isExecuting ? (
-                    <Spinner className="text-primary-foreground" size="small" />
-                  ) : (
-                    <Play />
-                  )}
-                  Execute
-                </Button>
-              </div>
-            </TooltipTrigger>
-            {hasErrors && (
-              <TooltipContent side="right">
-                Please fix the errors before executing the query.
-              </TooltipContent>
-            )}
-          </Tooltip>
+          <ExecuteQueryButton
+            disabled={isExecuting || isLoading || !!loadingError || hasErrors}
+            handleExecuteQuery={handleExecuteQuery}
+            hasErrors={hasErrors}
+            loading={isExecuting}
+          />
         </div>
         {isLoading && (
           <div className="flex items-center justify-center h-full">
