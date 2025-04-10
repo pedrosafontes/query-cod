@@ -1,5 +1,6 @@
 from databases.models import DatabaseConnectionInfo
 from databases.services.execution import execute_sql
+from queries.utils.tokens import find_token_position, to_error_position
 from sqlalchemy import inspect
 from sqlalchemy.exc import SQLAlchemyError
 from sqlglot import ParseError, expressions, parse_one
@@ -13,7 +14,7 @@ def validate_sql(query_text: str, db: DatabaseConnectionInfo):
     if syntax_errors:
         return {'valid': False, 'errors': syntax_errors}
 
-    schema_result = _validate_sql_schema(tree, db)
+    schema_result = _validate_sql_schema(query_text, tree, db)
     if schema_result['errors']:
         return schema_result
 
@@ -36,17 +37,13 @@ def _validate_sql_syntax(query_text: str, db: DatabaseConnectionInfo):
         return None, [
             {
                 'message': err['description'],
-                'position': {
-                    'line': err['line'],
-                    'start_col': err['col'],
-                    'end_col': err['col'] + len(err['highlight']),
-                },
+                'position': to_error_position(err['line'], err['col'], len(err['highlight'])),
             }
             for err in e.errors
         ]
 
 
-def _validate_sql_schema(tree: expressions.Expression, db) -> dict:
+def _validate_sql_schema(query_text: str, tree: expressions.Expression, db) -> dict:
     try:
         engine = db.to_sqlalchemy_engine()
         inspector = inspect(engine)
@@ -75,6 +72,7 @@ def _validate_sql_schema(tree: expressions.Expression, db) -> dict:
             errors.append(
                 {
                     'message': f'Unknown table "{table_name}"',
+                    'position': find_token_position(query_text, table_name),
                 }
             )
 
@@ -99,6 +97,7 @@ def _validate_sql_schema(tree: expressions.Expression, db) -> dict:
                 errors.append(
                     {
                         'message': f'Unknown column "{col_name}" in table "{table_name}"',
+                        'position': find_token_position(query_text, col_name),
                     }
                 )
         else:
@@ -108,6 +107,7 @@ def _validate_sql_schema(tree: expressions.Expression, db) -> dict:
                 errors.append(
                     {
                         'message': f'Unknown column "{col_name}"',
+                        'position': find_token_position(query_text, col_name),
                     }
                 )
 
