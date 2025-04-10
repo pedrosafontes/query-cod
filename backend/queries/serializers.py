@@ -50,3 +50,10 @@ class QueryExecutionSerializer(serializers.Serializer):
     success = serializers.BooleanField(help_text='Indicates if the query execution was successful')
 
 
+class QuerySummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Query
+        fields = [  # noqa: RUF012
+            'id',
+            'name',
+        ]

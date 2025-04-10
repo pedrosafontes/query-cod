@@ -32,7 +32,7 @@ export type PatchedProject = {
   readonly id?: number;
   database_id?: number;
   readonly database?: Database;
-  readonly queries?: Array<Query>;
+  readonly queries?: Array<QuerySummary>;
   readonly last_modified?: string;
   readonly created?: string;
   readonly modified?: string;
@@ -59,7 +59,7 @@ export type Project = {
   readonly id: number;
   database_id: number;
   readonly database: Database;
-  readonly queries: Array<Query>;
+  readonly queries: Array<QuerySummary>;
   readonly last_modified: string;
   readonly created: string;
   readonly modified: string;
@@ -102,6 +102,11 @@ export type QueryResultData = {
    * List of query result rows
    */
   rows: Array<Array<string | null>>;
+};
+
+export type QuerySummary = {
+  readonly id: number;
+  name: string;
 };
 
 export type SendEmailReset = {

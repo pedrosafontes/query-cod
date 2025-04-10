@@ -878,7 +878,7 @@ components:
         queries:
           type: array
           items:
-            $ref: '#/components/schemas/Query'
+            $ref: '#/components/schemas/QuerySummary'
           readOnly: true
         last_modified:
           type: string
@@ -953,7 +953,7 @@ components:
         queries:
           type: array
           items:
-            $ref: '#/components/schemas/Query'
+            $ref: '#/components/schemas/QuerySummary'
           readOnly: true
         last_modified:
           type: string
@@ -1058,6 +1058,18 @@ components:
       required:
       - columns
       - rows
+    QuerySummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+      required:
+      - id
+      - name
     SendEmailReset:
       type: object
       properties:

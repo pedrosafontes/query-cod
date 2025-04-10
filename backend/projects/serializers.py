@@ -1,7 +1,7 @@
 from databases.models import Database
 from databases.serializers import DatabaseSerializer
 from drf_spectacular.utils import extend_schema_field
-from queries.serializers import QuerySerializer
+from queries.serializers import QuerySummarySerializer
 from rest_framework import serializers
 
 from .models import Project
@@ -12,7 +12,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         queryset=Database.objects.all(), source='database', write_only=True
     )
     database = DatabaseSerializer(read_only=True)
-    queries = QuerySerializer(many=True, read_only=True)
+    queries = QuerySummarySerializer(many=True, read_only=True)
     last_modified = serializers.SerializerMethodField(read_only=True)
 
     class Meta:

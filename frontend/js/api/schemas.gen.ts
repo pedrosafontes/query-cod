@@ -108,7 +108,7 @@ export const $PatchedProject = {
     queries: {
       type: "array",
       items: {
-        $ref: "#/components/schemas/Query",
+        $ref: "#/components/schemas/QuerySummary",
       },
       readOnly: true,
     },
@@ -215,7 +215,7 @@ export const $Project = {
     queries: {
       type: "array",
       items: {
-        $ref: "#/components/schemas/Query",
+        $ref: "#/components/schemas/QuerySummary",
       },
       readOnly: true,
     },
@@ -348,6 +348,21 @@ export const $QueryResultData = {
     },
   },
   required: ["columns", "rows"],
+} as const;
+
+export const $QuerySummary = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    name: {
+      type: "string",
+      maxLength: 255,
+    },
+  },
+  required: ["id", "name"],
 } as const;
 
 export const $SendEmailReset = {
