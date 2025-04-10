@@ -10,7 +10,12 @@ import { useAutosave } from "hooks/useAutosave";
 
 import ErrorAlert from "./ErrorAlert";
 
-const QueryEditor = ({ query }: { query: Query }) => {
+type QueryEditorProps = {
+  query: Query;
+  onErrorsChange: (errors: QueryError[]) => void;
+};
+
+const QueryEditor = ({ query, onErrorsChange }: QueryEditorProps) => {
   const [text, setText] = useState<string>(query.text);
   const [errors, setErrors] = useState<QueryError[]>(query.errors);
   const monacoRef = useRef<Monaco | null>(null);
@@ -27,6 +32,7 @@ const QueryEditor = ({ query }: { query: Query }) => {
     });
 
     setErrors(result.errors);
+    onErrorsChange(result.errors);
   };
 
   const updateErrorMarkers = () => {
@@ -59,6 +65,10 @@ const QueryEditor = ({ query }: { query: Query }) => {
   useEffect(() => {
     updateErrorMarkers();
   }, [editorErrors]);
+
+  useEffect(() => {
+    onErrorsChange(query.errors);
+  }, [query.errors, onErrorsChange]);
 
   const status = useAutosave({ data: text, onSave: updateQuery });
 
