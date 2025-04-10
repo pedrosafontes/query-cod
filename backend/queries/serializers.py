@@ -1,10 +1,19 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from .models import Query
 
 
+class QueryErrorSerializer(serializers.Serializer):
+    message = serializers.CharField()
+    line = serializers.IntegerField()
+    start_col = serializers.IntegerField()
+    end_col = serializers.IntegerField()
+
+
 class QuerySerializer(serializers.ModelSerializer):
     text = serializers.CharField(required=True, allow_blank=True)
+    errors = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Query
@@ -14,7 +23,12 @@ class QuerySerializer(serializers.ModelSerializer):
             'text',
             'created',
             'modified',
+            'errors',
         ]
+
+    @extend_schema_field(serializers.ListSerializer(child=QueryErrorSerializer()))
+    def get_errors(self, obj):
+        return obj.parse().get('errors')
 
 
 class QueryResultDataSerializer(serializers.Serializer):
@@ -36,17 +50,3 @@ class QueryExecutionSerializer(serializers.Serializer):
     success = serializers.BooleanField(help_text='Indicates if the query execution was successful')
 
 
-class QueryErrorSerializer(serializers.Serializer):
-    message = serializers.CharField()
-    line = serializers.IntegerField()
-    start_col = serializers.IntegerField()
-    end_col = serializers.IntegerField()
-
-
-class QueryPartialUpdateSerializer(serializers.Serializer):
-    query = QuerySerializer(help_text='The updated query object after partial update.')
-    errors = serializers.ListField(
-        required=False,
-        help_text='Errors, if any, that occurred during update.',
-        child=QueryErrorSerializer(),
-    )

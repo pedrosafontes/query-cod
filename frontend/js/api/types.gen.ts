@@ -45,6 +45,7 @@ export type PatchedQuery = {
   text?: string;
   readonly created?: string;
   readonly modified?: string;
+  readonly errors?: Array<QueryError>;
 };
 
 export type PatchedUser = {
@@ -71,6 +72,7 @@ export type Query = {
   text: string;
   readonly created: string;
   readonly modified: string;
+  readonly errors: Array<QueryError>;
 };
 
 export type QueryError = {
@@ -89,17 +91,6 @@ export type QueryExecution = {
    * Indicates if the query execution was successful
    */
   success: boolean;
-};
-
-export type QueryPartialUpdate = {
-  /**
-   * The updated query object after partial update.
-   */
-  query: Query;
-  /**
-   * Errors, if any, that occurred during update.
-   */
-  errors?: Array<QueryError>;
 };
 
 export type QueryResultData = {
@@ -331,6 +322,15 @@ export type ProjectsQueriesCreateData = {
 
 export type ProjectsQueriesCreateResponse = Query;
 
+export type QueriesRetrieveData = {
+  /**
+   * A unique integer value identifying this query.
+   */
+  id: number;
+};
+
+export type QueriesRetrieveResponse = Query;
+
 export type QueriesUpdateData = {
   /**
    * A unique integer value identifying this query.
@@ -349,7 +349,7 @@ export type QueriesPartialUpdateData = {
   requestBody?: PatchedQuery;
 };
 
-export type QueriesPartialUpdateResponse = QueryPartialUpdate;
+export type QueriesPartialUpdateResponse = Query;
 
 export type QueriesDestroyData = {
   /**
@@ -580,6 +580,12 @@ export type $OpenApiTs = {
     };
   };
   "/api/queries/{id}/": {
+    get: {
+      req: QueriesRetrieveData;
+      res: {
+        200: Query;
+      };
+    };
     put: {
       req: QueriesUpdateData;
       res: {
@@ -589,7 +595,7 @@ export type $OpenApiTs = {
     patch: {
       req: QueriesPartialUpdateData;
       res: {
-        200: QueryPartialUpdate;
+        200: Query;
       };
     };
     delete: {

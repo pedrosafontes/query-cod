@@ -21,16 +21,10 @@ const mockProject = {
     {
       id: 101,
       name: "Query 1",
-      text: "",
-      created: new Date().toISOString(),
-      modified: new Date().toISOString(),
     },
     {
       id: 102,
       name: "Query 2",
-      text: "",
-      created: new Date().toISOString(),
-      modified: new Date().toISOString(),
     },
   ],
   database: {

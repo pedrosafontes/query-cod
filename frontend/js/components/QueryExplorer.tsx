@@ -1,5 +1,5 @@
 import { Play } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -10,10 +10,11 @@ import QueryEditor from "./QueryEditor";
 import QueryResult from "./QueryResult";
 
 export type QueryExplorerProps = {
-  query: Query;
+  queryId: number;
 };
 
-const QueryExplorer = ({ query }: QueryExplorerProps) => {
+const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
+  const [query, setQuery] = useState<Query>();
   const [queryResult, setQueryResult] = useState<QueryResultData>();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -22,7 +23,7 @@ const QueryExplorer = ({ query }: QueryExplorerProps) => {
     setIsLoading(true);
     try {
       const execution = await QueriesService.queriesExecutionsCreate({
-        id: query.id,
+        id: queryId,
       });
 
       setQueryResult(execution.results);
@@ -35,6 +36,24 @@ const QueryExplorer = ({ query }: QueryExplorerProps) => {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchQuery = async () => {
+      try {
+        const result = await QueriesService.queriesRetrieve({
+          id: queryId,
+        });
+        setQuery(result);
+      } catch (error) {
+        toast({
+          title: "Error loading query",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchQuery();
+  }, [queryId]);
 
   return (
     <div className="grid grid-cols-3 h-full">
@@ -54,7 +73,7 @@ const QueryExplorer = ({ query }: QueryExplorerProps) => {
             Execute
           </Button>
         </div>
-        <QueryEditor key={query.id} query={query} />
+        {query && <QueryEditor key={query.id} query={query} />}
       </div>
       <div className="col-span-2 px-3 py-5 flex flex-col justify-end h-full bg-gray-50">
         {queryResult && (

@@ -133,16 +133,16 @@ const ProjectSidebar = ({
 
           <SidebarGroupContent>
             <SidebarMenu>
-              {queries.map((query) => (
+              {queries.map(({ id, name }) => (
                 <QueryMenuItem
-                  key={query.id}
-                  isActive={currentQueryId === query.id}
-                  isCreating={creatingQueryId === query.id}
-                  name={query.name}
+                  key={id}
+                  isActive={currentQueryId === id}
+                  isCreating={creatingQueryId === id}
+                  name={name}
                   onCreationEnd={() => setCreatingQueryId(null)}
-                  onDelete={() => deleteQuery(query.id)}
-                  onRename={(name: string) => renameQuery(query.id, name)}
-                  onSelect={() => onSelect(query.id)}
+                  onDelete={() => deleteQuery(id)}
+                  onRename={(name: string) => renameQuery(id, name)}
+                  onSelect={() => onSelect(id)}
                 />
               ))}
               {queries.length === 0 && (

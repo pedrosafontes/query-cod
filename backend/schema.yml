@@ -672,6 +672,26 @@ paths:
                 $ref: '#/components/schemas/Query'
           description: ''
   /api/queries/{id}/:
+    get:
+      operationId: queries_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this query.
+        required: true
+      tags:
+      - queries
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Query'
+          description: ''
     put:
       operationId: queries_update
       parameters:
@@ -733,7 +753,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QueryPartialUpdate'
+                $ref: '#/components/schemas/Query'
           description: ''
     delete:
       operationId: queries_destroy
@@ -894,6 +914,11 @@ components:
           type: string
           format: date-time
           readOnly: true
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+          readOnly: true
     PatchedUser:
       type: object
       properties:
@@ -973,8 +998,14 @@ components:
           type: string
           format: date-time
           readOnly: true
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+          readOnly: true
       required:
       - created
+      - errors
       - id
       - modified
       - name
@@ -1007,20 +1038,6 @@ components:
           description: Indicates if the query execution was successful
       required:
       - success
-    QueryPartialUpdate:
-      type: object
-      properties:
-        query:
-          allOf:
-          - $ref: '#/components/schemas/Query'
-          description: The updated query object after partial update.
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/QueryError'
-          description: Errors, if any, that occurred during update.
-      required:
-      - query
     QueryResultData:
       type: object
       properties:

@@ -17,8 +17,6 @@ const ProjectPage = () => {
   const { toast } = useToast();
 
   const projectId = Number(projectParamId);
-  const queries = project?.queries;
-  const query = queries?.find((query) => query.id === currentQueryId);
 
   const fetchProject = async () => {
     try {
@@ -40,7 +38,7 @@ const ProjectPage = () => {
 
   return (
     <SidebarProvider defaultOpen>
-      {project && queries && (
+      {project && (
         <ProjectSidebar
           currentQueryId={currentQueryId}
           project={project}
@@ -49,7 +47,7 @@ const ProjectPage = () => {
         />
       )}
       <SidebarInset className="h-screen overflow-auto">
-        {query && <QueryExplorer query={query} />}
+        {currentQueryId && <QueryExplorer queryId={currentQueryId} />}
       </SidebarInset>
     </SidebarProvider>
   );

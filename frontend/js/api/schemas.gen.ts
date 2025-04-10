@@ -158,6 +158,13 @@ export const $PatchedQuery = {
       format: "date-time",
       readOnly: true,
     },
+    errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+      readOnly: true,
+    },
   },
 } as const;
 
@@ -268,8 +275,15 @@ export const $Query = {
       format: "date-time",
       readOnly: true,
     },
+    errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+      readOnly: true,
+    },
   },
-  required: ["created", "id", "modified", "name", "text"],
+  required: ["created", "errors", "id", "modified", "name", "text"],
 } as const;
 
 export const $QueryError = {
@@ -308,28 +322,6 @@ export const $QueryExecution = {
     },
   },
   required: ["success"],
-} as const;
-
-export const $QueryPartialUpdate = {
-  type: "object",
-  properties: {
-    query: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/Query",
-        },
-      ],
-      description: "The updated query object after partial update.",
-    },
-    errors: {
-      type: "array",
-      items: {
-        $ref: "#/components/schemas/QueryError",
-      },
-      description: "Errors, if any, that occurred during update.",
-    },
-  },
-  required: ["query"],
 } as const;
 
 export const $QueryResultData = {

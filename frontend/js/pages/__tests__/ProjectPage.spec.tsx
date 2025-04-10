@@ -17,9 +17,13 @@ jest.mock("hooks/use-toast", () => ({
   useToast: jest.fn(),
 }));
 
-jest.mock("components/QueryExplorer", () => ({ query }: QueryExplorerProps) => (
-  <div data-testid="query-explorer">{query?.name}</div>
-));
+jest.mock(
+  "components/QueryExplorer",
+  () =>
+    ({ queryId }: QueryExplorerProps) => (
+      <div data-testid="query-explorer">{queryId}</div>
+    ),
+);
 
 describe("ProjectPage", () => {
   const sampleProject = {
@@ -71,7 +75,7 @@ describe("ProjectPage", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("query-explorer")).toHaveTextContent(
-        "First Query",
+        sampleProject.queries[0].id.toString(),
       );
     });
   });

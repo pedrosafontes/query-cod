@@ -55,6 +55,8 @@ import type {
   ProjectsDestroyResponse,
   ProjectsQueriesCreateData,
   ProjectsQueriesCreateResponse,
+  QueriesRetrieveData,
+  QueriesRetrieveResponse,
   QueriesUpdateData,
   QueriesUpdateResponse,
   QueriesPartialUpdateData,
@@ -548,6 +550,24 @@ export class QueriesService {
   /**
    * @param data The data for the request.
    * @param data.id A unique integer value identifying this query.
+   * @returns Query
+   * @throws ApiError
+   */
+  public static queriesRetrieve(
+    data: QueriesRetrieveData,
+  ): CancelablePromise<QueriesRetrieveResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/queries/{id}/",
+      path: {
+        id: data.id,
+      },
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this query.
    * @param data.requestBody
    * @returns Query
    * @throws ApiError
@@ -570,7 +590,7 @@ export class QueriesService {
    * @param data The data for the request.
    * @param data.id A unique integer value identifying this query.
    * @param data.requestBody
-   * @returns QueryPartialUpdate
+   * @returns Query
    * @throws ApiError
    */
   public static queriesPartialUpdate(
