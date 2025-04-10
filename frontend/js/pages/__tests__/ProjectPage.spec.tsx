@@ -3,7 +3,7 @@ import { MemoryRouter, Route, Routes } from "react-router";
 
 import { ProjectsService } from "api";
 import { QueryExplorerProps } from "components/QueryExplorer";
-import { useToast } from "hooks/use-toast";
+import { useErrorToast } from "hooks/useErrorToast";
 
 import ProjectsPage from "../ProjectPage";
 
@@ -13,8 +13,8 @@ jest.mock("api", () => ({
   },
 }));
 
-jest.mock("hooks/use-toast", () => ({
-  useToast: jest.fn(),
+jest.mock("hooks/useErrorToast", () => ({
+  useErrorToast: jest.fn(),
 }));
 
 jest.mock(
@@ -50,7 +50,7 @@ describe("ProjectPage", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (useToast as jest.Mock).mockReturnValue({ toast: mockToast });
+    (useErrorToast as jest.Mock).mockReturnValue(mockToast);
     (ProjectsService.projectsRetrieve as jest.Mock).mockResolvedValue(
       sampleProject,
     );
@@ -89,7 +89,6 @@ describe("ProjectPage", () => {
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith({
         title: "Error loading project",
-        variant: "destructive",
       });
     });
   });

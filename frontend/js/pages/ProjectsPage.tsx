@@ -15,13 +15,13 @@ import { ProjectsService, type Project } from "api";
 import { DataTable } from "components/DataTable";
 import ProjectActions from "components/ProjectActions";
 import ProjectForm from "components/ProjectForm";
-import { useToast } from "hooks/use-toast";
+import { useErrorToast } from "hooks/useErrorToast";
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { toast } = useToast();
+  const toast = useErrorToast();
 
   const fetchProjects = useCallback(async () => {
     try {
@@ -30,7 +30,6 @@ const ProjectsPage = () => {
     } catch (error) {
       toast({
         title: "Error loading projects",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);

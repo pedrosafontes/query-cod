@@ -15,8 +15,8 @@ import QueryResult from "../QueryResult";
 
 jest.mock("api");
 const mockToast = jest.fn();
-jest.mock("hooks/use-toast", () => ({
-  useToast: () => ({ toast: mockToast }),
+jest.mock("hooks/useErrorToast", () => ({
+  useErrorToast: () => mockToast,
 }));
 
 jest.mock("../QueryEditor", () => {

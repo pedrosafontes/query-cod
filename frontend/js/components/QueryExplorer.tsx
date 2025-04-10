@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query, QueryResultData } from "api";
-import { useToast } from "hooks/use-toast";
+import { useErrorToast } from "hooks/useErrorToast";
 
 import QueryEditor from "./QueryEditor";
 import QueryResult from "./QueryResult";
@@ -17,7 +17,7 @@ const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
   const [query, setQuery] = useState<Query>();
   const [queryResult, setQueryResult] = useState<QueryResultData>();
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const toast = useErrorToast();
 
   const handleExecuteQuery = async (): Promise<void> => {
     setIsLoading(true);
@@ -30,7 +30,6 @@ const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
     } catch (error) {
       toast({
         title: "Error executing query",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -45,9 +44,9 @@ const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
         });
         setQuery(result);
       } catch (error) {
+        setQuery(undefined);
         toast({
           title: "Error loading query",
-          variant: "destructive",
         });
       }
     };

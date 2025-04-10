@@ -1,12 +1,13 @@
 import MonacoEditor, { Monaco } from "@monaco-editor/react";
+import { partition } from "lodash";
 import { AlertTriangle, CheckCircle } from "lucide-react";
 import { editor } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
-import { partition } from "lodash";
 
 import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query, QueryError } from "api";
 import { useAutosave } from "hooks/useAutosave";
+
 import GeneralErrorAlert from "./GeneralErrorAlert";
 
 const QueryEditor = ({ query }: { query: Query }) => {
@@ -35,13 +36,13 @@ const QueryEditor = ({ query }: { query: Query }) => {
     if (!model) return;
 
     if (editorErrors.length > 0) {
-       const markers = editorErrors.map(({ message, position }) => {
+      const markers = editorErrors.map(({ message, position }) => {
         return {
           startLineNumber: position!.line,
           endLineNumber: position!.line,
           startColumn: position!.start_col,
           endColumn: position!.end_col,
-          message: message,
+          message,
           severity: monacoRef.current!.MarkerSeverity.Error,
         };
       });
@@ -114,7 +115,7 @@ const QueryEditor = ({ query }: { query: Query }) => {
         }}
       />
       <div className="flex justify-end text-xs mt-2">{renderStatus()}</div>
-      <GeneralErrorAlert errors={generalErrors} className="mt-4" />
+      <GeneralErrorAlert className="mt-4" errors={generalErrors} />
     </>
   );
 };

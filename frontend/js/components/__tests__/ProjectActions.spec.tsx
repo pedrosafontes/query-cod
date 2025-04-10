@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { useNavigate } from "react-router";
 
 import { Project, ProjectsService } from "api";
-import { useToast } from "hooks/use-toast";
+import { useErrorToast } from "hooks/useErrorToast";
 
 import ProjectActions from "../ProjectActions";
 import { ProjectFormProps } from "../ProjectForm";
@@ -13,8 +13,8 @@ jest.mock("api", () => ({
   },
 }));
 
-jest.mock("hooks/use-toast", () => ({
-  useToast: jest.fn(),
+jest.mock("hooks/useErrorToast", () => ({
+  useErrorToast: jest.fn(),
 }));
 
 jest.mock("react-router", () => ({
@@ -42,7 +42,7 @@ describe("ProjectActions", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (useToast as jest.Mock).mockReturnValue({ toast: mockToast });
+    (useErrorToast as jest.Mock).mockReturnValue(mockToast);
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
   });
 
@@ -75,7 +75,6 @@ describe("ProjectActions", () => {
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith({
         title: "Error deleting project",
-        variant: "destructive",
       });
     });
   });

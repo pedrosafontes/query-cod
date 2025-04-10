@@ -10,8 +10,8 @@ import ProjectSidebar from "../ProjectSidebar";
 
 jest.mock("api");
 const mockToast = jest.fn();
-jest.mock("hooks/use-toast", () => ({
-  useToast: () => ({ toast: mockToast }),
+jest.mock("hooks/useErrorToast", () => ({
+  useErrorToast: () => mockToast,
 }));
 
 const mockProject = {
@@ -133,7 +133,6 @@ describe("ProjectSidebar", () => {
           expect(mockToast).toHaveBeenCalledWith(
             expect.objectContaining({
               title: expect.stringContaining("Error"),
-              variant: "destructive",
             }),
           );
         });
@@ -215,7 +214,6 @@ describe("ProjectSidebar", () => {
           expect(mockToast).toHaveBeenCalledWith(
             expect.objectContaining({
               title: expect.stringContaining("Error"),
-              variant: "destructive",
             }),
           );
         });
@@ -259,7 +257,6 @@ describe("ProjectSidebar", () => {
           expect(mockToast).toHaveBeenCalledWith(
             expect.objectContaining({
               title: expect.stringContaining("Error"),
-              variant: "destructive",
             }),
           );
         });
