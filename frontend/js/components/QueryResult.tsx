@@ -34,7 +34,7 @@ const QueryResult = ({ result, isLoading }: QueryResultProps) => {
 
   return (
     <div className="[&_table]:text-xs [&_td]:px-3 [&_td]:py-2 [&_th]:px-3 [&_th]:py-2 [&_th]:h-auto">
-      <DataTable columns={columns} data={data} pageSize={5} />
+      <DataTable columns={columns} data={data} pageSize={5} cellClassName="text-nowrap" />
     </div>
   );
 };

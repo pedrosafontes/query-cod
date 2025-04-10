@@ -22,6 +22,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   pageSize?: number | null; // null or undefined disables pagination
   loading?: boolean;
+  cellClassName?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -29,6 +30,7 @@ export function DataTable<TData, TValue>({
   data,
   pageSize,
   loading,
+  cellClassName,
 }: DataTableProps<TData, TValue>) {
   const paginationEnabled = !!pageSize;
 
@@ -82,7 +84,7 @@ export function DataTable<TData, TValue>({
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className={cellClassName}>
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),
