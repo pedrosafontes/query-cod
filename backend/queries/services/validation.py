@@ -1,17 +1,20 @@
 from databases.models import DatabaseConnectionInfo
 from databases.services.execution import execute_sql
 from sqlalchemy.exc import SQLAlchemyError
-from sqlglot import ParseError, parse_one
+from sqlglot import ParseError, parse_one, expressions
 
 
-def parse_sql(query_text, db: DatabaseConnectionInfo):
-    query_text = query_text.strip()
-    if not query_text:
+def validate_sql(query_text: str, db: DatabaseConnectionInfo):
+    if not query_text.strip():
         return {'valid': False, 'errors': []}
 
     # Syntax check with sqlglot
     try:
-        tree = parse_one(query_text, read=_database_type_to_sqlglot(db.database_type))
+        parse_one(
+            query_text,
+            read=_database_type_to_sqlglot(db.database_type),
+            into=expressions.Select,
+        )
     except ParseError as e:
         return {
             'valid': False,
@@ -23,19 +26,6 @@ def parse_sql(query_text, db: DatabaseConnectionInfo):
                     'end_col': err['col'] + len(err['highlight'] or ' '),
                 }
                 for err in e.errors
-            ],
-        }
-
-    if tree.key != 'select':
-        return {
-            'valid': False,
-            'errors': [
-                {
-                    'message': 'Only SELECT queries are allowed.',
-                    'line': 1,
-                    'start_col': 1,
-                    'end_col': 7,
-                }
             ],
         }
 

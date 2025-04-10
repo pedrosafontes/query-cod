@@ -28,7 +28,7 @@ class QuerySerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.ListSerializer(child=QueryErrorSerializer()))
     def get_errors(self, obj):
-        return obj.parse().get('errors')
+        return obj.validate().get('errors')
 
 
 class QueryResultDataSerializer(serializers.Serializer):

@@ -28,10 +28,10 @@ class TestQueryCRUD:
     def test_retrieve_query_returns_query_with_errors(self, auth_client, user, monkeypatch):
         query = baker.make(Query, project__user=user)
 
-        def fake_parse():
+        def mock_validate():
             return {'valid': True, 'errors': []}
 
-        monkeypatch.setattr(query, 'parse', fake_parse)
+        monkeypatch.setattr(query, 'validate', mock_validate)
 
         url = reverse('queries-detail', kwargs={'pk': query.id})
         response = auth_client.get(url)
@@ -49,10 +49,10 @@ class TestQueryCRUD:
     def test_partial_update_query_returns_query_with_errors(self, auth_client, user, monkeypatch):
         query = baker.make(Query, project__user=user)
 
-        def fake_parse():
+        def mock_validate():
             return {'valid': True, 'errors': []}
 
-        monkeypatch.setattr(query, 'parse', fake_parse)
+        monkeypatch.setattr(query, 'validate', mock_validate)
 
         url = reverse('queries-detail', kwargs={'pk': query.id})
         response = auth_client.patch(url, {'name': 'Updated!'}, content_type='application/json')
@@ -68,7 +68,7 @@ class TestQueryExecution:
     def test_run_query_success(self, auth_client, user, monkeypatch):
         query = baker.make(Query, project__user=user)
 
-        monkeypatch.setattr(query, 'parse', lambda: {'valid': True})
+        monkeypatch.setattr(query, 'validate', lambda: {'valid': True})
         monkeypatch.setattr(
             query,
             'execute',
@@ -94,7 +94,7 @@ class TestQueryExecution:
     @pytest.mark.django_db
     def test_run_query_invalid(self, auth_client, user, monkeypatch):
         query = baker.make(Query, project__user=user)
-        monkeypatch.setattr(query, 'parse', lambda: {'valid': False})
+        monkeypatch.setattr(query, 'validate', lambda: {'valid': False})
 
         monkeypatch.setattr('queries.views.QueryViewSet.get_object', lambda self: query)
 

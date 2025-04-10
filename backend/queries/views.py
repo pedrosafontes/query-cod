@@ -47,7 +47,7 @@ class QueryViewSet(
     @action(detail=True, methods=['post'], url_path='executions')
     def run(self, request, pk=None):
         query = self.get_object()
-        if not query.parse()['valid']:
+        if not query.validate()['valid']:
             return Response(
                 {
                     'success': False,

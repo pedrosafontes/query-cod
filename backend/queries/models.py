@@ -5,7 +5,7 @@ from databases.services.execution import execute_sql
 from databases.utils.conversion import from_model
 from projects.models import Project
 
-from .services.sql_parser import parse_sql
+from .services.validation import validate_sql
 
 
 class Query(IndexedTimeStampedModel):
@@ -16,8 +16,8 @@ class Query(IndexedTimeStampedModel):
     def execute(self):
         return execute_sql(self.text, from_model(self.project.database))
 
-    def parse(self):
-        return parse_sql(self.text, from_model(self.project.database))
+    def validate(self):
+        return validate_sql(self.text, from_model(self.project.database))
 
     class Meta:
         ordering = [  # noqa: RUF012
