@@ -1,4 +1,5 @@
 from django.urls import reverse
+from django.utils.dateparse import parse_datetime
 
 import pytest
 from model_bakery import baker
@@ -6,7 +7,7 @@ from queries.models import Query
 from rest_framework import status
 
 
-class ProjectQueriesTests:
+class TestProjectQueries:
     @pytest.mark.django_db
     def test_create_query_for_project(self, auth_client, user):
         project = baker.make('projects.Project', user=user)
@@ -22,7 +23,28 @@ class ProjectQueriesTests:
         assert query.text == 'SELECT 1'
 
 
-class QueryExecutionTests:
+class TestQueryCRUD:
+    @pytest.mark.django_db
+    def test_retrieve_query_returns_query_with_errors(self, auth_client, user, monkeypatch):
+        query = baker.make(Query, project__user=user)
+
+        def fake_parse():
+            return {'valid': True, 'errors': []}
+
+        monkeypatch.setattr(query, 'parse', fake_parse)
+
+        url = reverse('queries-detail', kwargs={'pk': query.id})
+        response = auth_client.get(url)
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data['id'] == query.id
+        assert data['name'] == query.name
+        assert data['text'] == query.text
+        assert parse_datetime(data['created']) == query.created
+        assert parse_datetime(data['modified']) == query.modified
+        assert data['errors'] == []
+
     @pytest.mark.django_db
     def test_partial_update_query_returns_query_with_errors(self, auth_client, user, monkeypatch):
         query = baker.make(Query, project__user=user)
@@ -37,10 +59,11 @@ class QueryExecutionTests:
 
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
-        assert 'query' in data
-        assert data['query']['name'] == 'Updated!'
+        assert data['name'] == 'Updated!'
         assert data['errors'] == []
 
+
+class TestQueryExecution:
     @pytest.mark.django_db
     def test_run_query_success(self, auth_client, user, monkeypatch):
         query = baker.make(Query, project__user=user)
