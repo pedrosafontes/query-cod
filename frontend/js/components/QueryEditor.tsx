@@ -9,7 +9,7 @@ import { useAutosave } from "hooks/useAutosave";
 
 const QueryEditor = ({ query }: { query: Query }) => {
   const [text, setText] = useState<string>(query.text);
-  const [errors, setErrors] = useState<QueryError[]>([]);
+  const [errors, setErrors] = useState<QueryError[]>(query.errors);
   const monacoRef = useRef<Monaco | null>(null);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
@@ -21,7 +21,7 @@ const QueryEditor = ({ query }: { query: Query }) => {
       },
     });
 
-    setErrors(result.errors ?? []);
+    setErrors(result.errors);
   };
 
   const updateErrorMarkers = () => {
@@ -106,7 +106,7 @@ const QueryEditor = ({ query }: { query: Query }) => {
         onMount={(editor, monaco) => {
           editorRef.current = editor;
           monacoRef.current = monaco;
-          updateQuery(text);
+          updateErrorMarkers();
         }}
       />
       <div className="flex justify-end text-xs mt-2">{renderStatus()}</div>
