@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 
 import "@testing-library/jest-dom";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueriesService, Query } from "api";
 
 import QueryEditor from "../QueryEditor";
@@ -52,6 +53,13 @@ describe("QueryExplorer Component", () => {
     },
   };
 
+  const renderComponent = () =>
+    render(
+      <TooltipProvider>
+        <QueryExplorer queryId={mockQuery.id} />
+      </TooltipProvider>,
+    );
+
   beforeEach(() => {
     jest.clearAllMocks();
     (QueriesService.queriesRetrieve as jest.Mock).mockResolvedValue(mockQuery);
@@ -62,7 +70,7 @@ describe("QueryExplorer Component", () => {
 
   test("fetches the query and renders the QueryEditor", async () => {
     await act(async () => {
-      render(<QueryExplorer queryId={mockQuery.id} />);
+      renderComponent();
     });
 
     expect(QueriesService.queriesRetrieve).toHaveBeenCalledWith({
@@ -85,7 +93,7 @@ describe("QueryExplorer Component", () => {
 
   test("executes query when Execute button is clicked", async () => {
     await act(async () => {
-      render(<QueryExplorer queryId={mockQuery.id} />);
+      renderComponent();
     });
 
     fireEvent.click(screen.getByText("Execute"));
@@ -114,7 +122,7 @@ describe("QueryExplorer Component", () => {
     );
 
     await act(async () => {
-      render(<QueryExplorer queryId={mockQuery.id} />);
+      renderComponent();
     });
 
     const executeButton = screen.getByRole("button", { name: /execute/i });
@@ -130,7 +138,7 @@ describe("QueryExplorer Component", () => {
     );
 
     await act(async () => {
-      render(<QueryExplorer queryId={mockQuery.id} />);
+      renderComponent();
     });
 
     fireEvent.click(screen.getByText("Execute"));
