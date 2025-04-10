@@ -1,7 +1,7 @@
 import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 
 import { ProjectsService } from "api";
-import { useToast } from "hooks/use-toast";
+import { useErrorToast } from "hooks/useErrorToast";
 
 import ProjectsPage from "../ProjectsPage";
 
@@ -11,8 +11,8 @@ jest.mock("api", () => ({
   },
 }));
 
-jest.mock("hooks/use-toast", () => ({
-  useToast: jest.fn(),
+jest.mock("hooks/useErrorToast", () => ({
+  useErrorToast: jest.fn(),
 }));
 
 jest.mock("components/ProjectForm", () => () => <div>Mock ProjectForm</div>);
@@ -51,7 +51,7 @@ describe("ProjectsPage", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    (useToast as jest.Mock).mockReturnValue({ toast: mockToast });
+    (useErrorToast as jest.Mock).mockReturnValue(mockToast);
     (ProjectsService.projectsList as jest.Mock).mockResolvedValue(mockProjects);
   });
 
@@ -91,7 +91,6 @@ describe("ProjectsPage", () => {
     await waitFor(() => {
       expect(mockToast).toHaveBeenCalledWith({
         title: "Error loading projects",
-        variant: "destructive",
       });
     });
   });

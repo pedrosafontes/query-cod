@@ -2,8 +2,9 @@ import { ArrowRight, Pencil, Trash } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 
+import { useErrorToast } from "hooks/useErrorToast";
+
 import { Project, ProjectsService } from "../api";
-import { useToast } from "../hooks/use-toast";
 
 import ProjectForm from "./ProjectForm";
 import { Button } from "./ui/button";
@@ -23,7 +24,7 @@ type ProjectActionsProps = {
 const ProjectActions = ({ project, onSuccess }: ProjectActionsProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const toast = useErrorToast();
 
   const deleteProject = async (id: number) => {
     try {
@@ -32,7 +33,6 @@ const ProjectActions = ({ project, onSuccess }: ProjectActionsProps) => {
     } catch (error) {
       toast({
         title: "Error deleting project",
-        variant: "destructive",
       });
     }
   };

@@ -10,6 +10,12 @@ export type Database = {
   name: string;
 };
 
+export type ErrorPosition = {
+  line: number;
+  start_col: number;
+  end_col: number;
+};
+
 export type Login = {
   username: string;
   password: string;
@@ -32,7 +38,7 @@ export type PatchedProject = {
   readonly id?: number;
   database_id?: number;
   readonly database?: Database;
-  readonly queries?: Array<Query>;
+  readonly queries?: Array<QuerySummary>;
   readonly last_modified?: string;
   readonly created?: string;
   readonly modified?: string;
@@ -45,6 +51,7 @@ export type PatchedQuery = {
   text?: string;
   readonly created?: string;
   readonly modified?: string;
+  readonly errors?: Array<QueryError>;
 };
 
 export type PatchedUser = {
@@ -58,7 +65,7 @@ export type Project = {
   readonly id: number;
   database_id: number;
   readonly database: Database;
-  readonly queries: Array<Query>;
+  readonly queries: Array<QuerySummary>;
   readonly last_modified: string;
   readonly created: string;
   readonly modified: string;
@@ -71,13 +78,12 @@ export type Query = {
   text: string;
   readonly created: string;
   readonly modified: string;
+  readonly errors: Array<QueryError>;
 };
 
 export type QueryError = {
   message: string;
-  line: number;
-  start_col: number;
-  end_col: number;
+  position?: ErrorPosition;
 };
 
 export type QueryExecution = {
@@ -91,17 +97,6 @@ export type QueryExecution = {
   success: boolean;
 };
 
-export type QueryPartialUpdate = {
-  /**
-   * The updated query object after partial update.
-   */
-  query: Query;
-  /**
-   * Errors, if any, that occurred during update.
-   */
-  errors?: Array<QueryError>;
-};
-
 export type QueryResultData = {
   /**
    * List of column names from the query
@@ -111,6 +106,11 @@ export type QueryResultData = {
    * List of query result rows
    */
   rows: Array<Array<string | null>>;
+};
+
+export type QuerySummary = {
+  readonly id: number;
+  name: string;
 };
 
 export type SendEmailReset = {
@@ -331,6 +331,15 @@ export type ProjectsQueriesCreateData = {
 
 export type ProjectsQueriesCreateResponse = Query;
 
+export type QueriesRetrieveData = {
+  /**
+   * A unique integer value identifying this query.
+   */
+  id: number;
+};
+
+export type QueriesRetrieveResponse = Query;
+
 export type QueriesUpdateData = {
   /**
    * A unique integer value identifying this query.
@@ -349,7 +358,7 @@ export type QueriesPartialUpdateData = {
   requestBody?: PatchedQuery;
 };
 
-export type QueriesPartialUpdateResponse = QueryPartialUpdate;
+export type QueriesPartialUpdateResponse = Query;
 
 export type QueriesDestroyData = {
   /**
@@ -580,6 +589,12 @@ export type $OpenApiTs = {
     };
   };
   "/api/queries/{id}/": {
+    get: {
+      req: QueriesRetrieveData;
+      res: {
+        200: Query;
+      };
+    };
     put: {
       req: QueriesUpdateData;
       res: {
@@ -589,7 +604,7 @@ export type $OpenApiTs = {
     patch: {
       req: QueriesPartialUpdateData;
       res: {
-        200: QueryPartialUpdate;
+        200: Query;
       };
     };
     delete: {

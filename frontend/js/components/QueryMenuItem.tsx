@@ -82,7 +82,7 @@ const QueryMenuItem = ({
         />
       ) : (
         <SidebarMenuButton
-          className="group justify-between"
+          className="group/item justify-between"
           isActive={isActive}
           onClick={onSelect}
         >
@@ -91,7 +91,7 @@ const QueryMenuItem = ({
             <DropdownMenuTrigger asChild>
               <Button
                 aria-label="Actions"
-                className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="h-6 w-6 opacity-0 group-hover/item:opacity-100 transition-opacity"
                 size="icon"
                 variant="ghost"
                 onClick={(e) => e.stopPropagation()}

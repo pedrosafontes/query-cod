@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 
 import "@testing-library/jest-dom";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueriesService, Query } from "api";
 
 import QueryEditor from "../QueryEditor";
@@ -15,8 +16,8 @@ import QueryResult from "../QueryResult";
 
 jest.mock("api");
 const mockToast = jest.fn();
-jest.mock("hooks/use-toast", () => ({
-  useToast: () => ({ toast: mockToast }),
+jest.mock("hooks/useErrorToast", () => ({
+  useErrorToast: () => mockToast,
 }));
 
 jest.mock("../QueryEditor", () => {
@@ -38,6 +39,7 @@ describe("QueryExplorer Component", () => {
     text: "SELECT * FROM users",
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
+    errors: [],
   };
 
   const mockExecutionResult = {
@@ -51,32 +53,47 @@ describe("QueryExplorer Component", () => {
     },
   };
 
+  const renderComponent = () =>
+    render(
+      <TooltipProvider>
+        <QueryExplorer queryId={mockQuery.id} />
+      </TooltipProvider>,
+    );
+
   beforeEach(() => {
     jest.clearAllMocks();
+    (QueriesService.queriesRetrieve as jest.Mock).mockResolvedValue(mockQuery);
     (QueriesService.queriesExecutionsCreate as jest.Mock).mockResolvedValue(
       mockExecutionResult,
     );
   });
 
-  test("renders the component with QueryEditor", async () => {
+  test("fetches the query and renders the QueryEditor", async () => {
     await act(async () => {
-      render(<QueryExplorer query={mockQuery} />);
+      renderComponent();
+    });
+
+    expect(QueriesService.queriesRetrieve).toHaveBeenCalledWith({
+      id: mockQuery.id,
     });
 
     expect(screen.getByText("Execute")).toBeInTheDocument();
-    expect(screen.getByTestId("query-editor")).toBeInTheDocument();
 
-    expect(QueryEditor).toHaveBeenCalledWith(
-      expect.objectContaining({
-        query: mockQuery,
-      }),
-      expect.anything(),
-    );
+    await waitFor(() => {
+      expect(screen.getByTestId("query-editor")).toBeInTheDocument();
+
+      expect(QueryEditor).toHaveBeenCalledWith(
+        expect.objectContaining({
+          query: mockQuery,
+        }),
+        expect.anything(),
+      );
+    });
   });
 
   test("executes query when Execute button is clicked", async () => {
     await act(async () => {
-      render(<QueryExplorer query={mockQuery} />);
+      renderComponent();
     });
 
     fireEvent.click(screen.getByText("Execute"));
@@ -105,7 +122,7 @@ describe("QueryExplorer Component", () => {
     );
 
     await act(async () => {
-      render(<QueryExplorer query={mockQuery} />);
+      renderComponent();
     });
 
     const executeButton = screen.getByRole("button", { name: /execute/i });
@@ -121,7 +138,7 @@ describe("QueryExplorer Component", () => {
     );
 
     await act(async () => {
-      render(<QueryExplorer query={mockQuery} />);
+      renderComponent();
     });
 
     fireEvent.click(screen.getByText("Execute"));

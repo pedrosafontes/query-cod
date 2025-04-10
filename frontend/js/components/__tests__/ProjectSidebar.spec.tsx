@@ -10,8 +10,8 @@ import ProjectSidebar from "../ProjectSidebar";
 
 jest.mock("api");
 const mockToast = jest.fn();
-jest.mock("hooks/use-toast", () => ({
-  useToast: () => ({ toast: mockToast }),
+jest.mock("hooks/useErrorToast", () => ({
+  useErrorToast: () => mockToast,
 }));
 
 const mockProject = {
@@ -21,16 +21,10 @@ const mockProject = {
     {
       id: 101,
       name: "Query 1",
-      text: "",
-      created: new Date().toISOString(),
-      modified: new Date().toISOString(),
     },
     {
       id: 102,
       name: "Query 2",
-      text: "",
-      created: new Date().toISOString(),
-      modified: new Date().toISOString(),
     },
   ],
   database: {
@@ -139,7 +133,6 @@ describe("ProjectSidebar", () => {
           expect(mockToast).toHaveBeenCalledWith(
             expect.objectContaining({
               title: expect.stringContaining("Error"),
-              variant: "destructive",
             }),
           );
         });
@@ -221,7 +214,6 @@ describe("ProjectSidebar", () => {
           expect(mockToast).toHaveBeenCalledWith(
             expect.objectContaining({
               title: expect.stringContaining("Error"),
-              variant: "destructive",
             }),
           );
         });
@@ -265,7 +257,6 @@ describe("ProjectSidebar", () => {
           expect(mockToast).toHaveBeenCalledWith(
             expect.objectContaining({
               title: expect.stringContaining("Error"),
-              variant: "destructive",
             }),
           );
         });

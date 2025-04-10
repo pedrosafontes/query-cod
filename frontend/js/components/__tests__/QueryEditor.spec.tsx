@@ -43,7 +43,10 @@ describe("QueryEditor", () => {
     text: "SELECT * FROM users;",
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
+    errors: [],
   };
+
+  const mockOnErrorsChange = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -52,7 +55,9 @@ describe("QueryEditor", () => {
   test("renders the editor with initial text", async () => {
     (useAutosave as jest.Mock).mockReturnValue("saved");
 
-    render(<QueryEditor query={mockQuery} />);
+    render(
+      <QueryEditor query={mockQuery} onErrorsChange={mockOnErrorsChange} />,
+    );
 
     const editor = screen.getByTestId("monaco-editor");
     expect(editor).toHaveValue(mockQuery.text);
@@ -61,7 +66,9 @@ describe("QueryEditor", () => {
   test("shows loading state during save", async () => {
     (useAutosave as jest.Mock).mockReturnValue("saving");
 
-    render(<QueryEditor query={mockQuery} />);
+    render(
+      <QueryEditor query={mockQuery} onErrorsChange={mockOnErrorsChange} />,
+    );
 
     expect(screen.getByText(/saving/i)).toBeInTheDocument();
   });
@@ -69,7 +76,9 @@ describe("QueryEditor", () => {
   test("shows error state when save fails", async () => {
     (useAutosave as jest.Mock).mockReturnValue("error");
 
-    render(<QueryEditor query={mockQuery} />);
+    render(
+      <QueryEditor query={mockQuery} onErrorsChange={mockOnErrorsChange} />,
+    );
 
     expect(screen.getByText(/error/i)).toBeInTheDocument();
   });
@@ -77,7 +86,9 @@ describe("QueryEditor", () => {
   test("shows saved state after successful save", async () => {
     (useAutosave as jest.Mock).mockReturnValue("saved");
 
-    render(<QueryEditor query={mockQuery} />);
+    render(
+      <QueryEditor query={mockQuery} onErrorsChange={mockOnErrorsChange} />,
+    );
 
     expect(screen.getByText(/saved/i)).toBeInTheDocument();
   });

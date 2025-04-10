@@ -28,6 +28,22 @@ export const $Database = {
   required: ["id", "name"],
 } as const;
 
+export const $ErrorPosition = {
+  type: "object",
+  properties: {
+    line: {
+      type: "integer",
+    },
+    start_col: {
+      type: "integer",
+    },
+    end_col: {
+      type: "integer",
+    },
+  },
+  required: ["end_col", "line", "start_col"],
+} as const;
+
 export const $Login = {
   type: "object",
   properties: {
@@ -108,7 +124,7 @@ export const $PatchedProject = {
     queries: {
       type: "array",
       items: {
-        $ref: "#/components/schemas/Query",
+        $ref: "#/components/schemas/QuerySummary",
       },
       readOnly: true,
     },
@@ -156,6 +172,13 @@ export const $PatchedQuery = {
     modified: {
       type: "string",
       format: "date-time",
+      readOnly: true,
+    },
+    errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
       readOnly: true,
     },
   },
@@ -208,7 +231,7 @@ export const $Project = {
     queries: {
       type: "array",
       items: {
-        $ref: "#/components/schemas/Query",
+        $ref: "#/components/schemas/QuerySummary",
       },
       readOnly: true,
     },
@@ -268,8 +291,15 @@ export const $Query = {
       format: "date-time",
       readOnly: true,
     },
+    errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+      readOnly: true,
+    },
   },
-  required: ["created", "id", "modified", "name", "text"],
+  required: ["created", "errors", "id", "modified", "name", "text"],
 } as const;
 
 export const $QueryError = {
@@ -278,17 +308,11 @@ export const $QueryError = {
     message: {
       type: "string",
     },
-    line: {
-      type: "integer",
-    },
-    start_col: {
-      type: "integer",
-    },
-    end_col: {
-      type: "integer",
+    position: {
+      $ref: "#/components/schemas/ErrorPosition",
     },
   },
-  required: ["end_col", "line", "message", "start_col"],
+  required: ["message"],
 } as const;
 
 export const $QueryExecution = {
@@ -308,28 +332,6 @@ export const $QueryExecution = {
     },
   },
   required: ["success"],
-} as const;
-
-export const $QueryPartialUpdate = {
-  type: "object",
-  properties: {
-    query: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/Query",
-        },
-      ],
-      description: "The updated query object after partial update.",
-    },
-    errors: {
-      type: "array",
-      items: {
-        $ref: "#/components/schemas/QueryError",
-      },
-      description: "Errors, if any, that occurred during update.",
-    },
-  },
-  required: ["query"],
 } as const;
 
 export const $QueryResultData = {
@@ -356,6 +358,21 @@ export const $QueryResultData = {
     },
   },
   required: ["columns", "rows"],
+} as const;
+
+export const $QuerySummary = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    name: {
+      type: "string",
+      maxLength: 255,
+    },
+  },
+  required: ["id", "name"],
 } as const;
 
 export const $SendEmailReset = {

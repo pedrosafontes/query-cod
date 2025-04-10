@@ -1,64 +1,100 @@
-import { Play } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query, QueryResultData } from "api";
-import { useToast } from "hooks/use-toast";
+import { useErrorToast } from "hooks/useErrorToast";
 
+import ErrorAlert from "./ErrorAlert";
+import ExecuteQueryButton from "./ExecuteQueryButton";
 import QueryEditor from "./QueryEditor";
 import QueryResult from "./QueryResult";
 
 export type QueryExplorerProps = {
-  query: Query;
+  queryId: number;
 };
 
-const QueryExplorer = ({ query }: QueryExplorerProps) => {
+const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
+  const [query, setQuery] = useState<Query>();
   const [queryResult, setQueryResult] = useState<QueryResultData>();
+  const [isExecuting, setIsExecuting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const [loadingError, setLoadingError] = useState<Error | null>(null);
+  const [hasErrors, setHasErrors] = useState(false);
+  const toast = useErrorToast();
 
   const handleExecuteQuery = async (): Promise<void> => {
-    setIsLoading(true);
+    setIsExecuting(true);
     try {
       const execution = await QueriesService.queriesExecutionsCreate({
-        id: query.id,
+        id: queryId,
       });
 
       setQueryResult(execution.results);
-    } catch (error) {
+    } catch (err) {
       toast({
         title: "Error executing query",
-        variant: "destructive",
       });
     } finally {
-      setIsLoading(false);
+      setIsExecuting(false);
     }
   };
+
+  useEffect(() => {
+    const fetchQuery = async () => {
+      setIsLoading(true);
+      setQueryResult(undefined);
+      try {
+        const result = await QueriesService.queriesRetrieve({
+          id: queryId,
+        });
+        setQuery(result);
+        setLoadingError(null);
+      } catch (err) {
+        setQuery(undefined);
+        if (err instanceof Error) {
+          setLoadingError(err);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchQuery();
+  }, [queryId]);
 
   return (
     <div className="grid grid-cols-3 h-full">
       <div className="col-span-1 px-3 py-5 border-r">
         <div className="flex justify-end mb-3 w-full">
-          <Button
-            disabled={isLoading}
-            size="sm"
-            variant="default"
-            onClick={() => handleExecuteQuery()}
-          >
-            {isLoading ? (
-              <Spinner className="text-primary-foreground" size="small" />
-            ) : (
-              <Play />
-            )}
-            Execute
-          </Button>
+          <ExecuteQueryButton
+            disabled={isExecuting || isLoading || !!loadingError || hasErrors}
+            handleExecuteQuery={handleExecuteQuery}
+            hasErrors={hasErrors}
+            loading={isExecuting}
+          />
         </div>
-        <QueryEditor key={query.id} query={query} />
+        {isLoading && (
+          <div className="flex items-center justify-center h-full">
+            <Spinner className="text-muted-foreground" />
+          </div>
+        )}
+        {loadingError && (
+          <ErrorAlert
+            description={loadingError.message}
+            title="There was an error loading the query"
+          />
+        )}
+        {query && (
+          <QueryEditor
+            key={query.id}
+            query={query}
+            onErrorsChange={(errors) => setHasErrors(errors.length > 0)}
+          />
+        )}
       </div>
       <div className="col-span-2 px-3 py-5 flex flex-col justify-end h-full bg-gray-50">
         {queryResult && (
-          <QueryResult isLoading={isLoading} result={queryResult} />
+          <QueryResult isLoading={isExecuting} result={queryResult} />
         )}
       </div>
     </div>

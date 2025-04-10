@@ -5,7 +5,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ProjectsService } from "api";
 import ProjectSidebar from "components/ProjectSidebar";
 import QueryExplorer from "components/QueryExplorer";
-import { useToast } from "hooks/use-toast";
+import { useErrorToast } from "hooks/useErrorToast";
 
 const ProjectPage = () => {
   const [project, setProject] =
@@ -14,11 +14,9 @@ const ProjectPage = () => {
     undefined,
   );
   const { projectId: projectParamId } = useParams<{ projectId: string }>();
-  const { toast } = useToast();
+  const toast = useErrorToast();
 
   const projectId = Number(projectParamId);
-  const queries = project?.queries;
-  const query = queries?.find((query) => query.id === currentQueryId);
 
   const fetchProject = async () => {
     try {
@@ -29,7 +27,6 @@ const ProjectPage = () => {
     } catch (error) {
       toast({
         title: "Error loading project",
-        variant: "destructive",
       });
     }
   };
@@ -40,7 +37,7 @@ const ProjectPage = () => {
 
   return (
     <SidebarProvider defaultOpen>
-      {project && queries && (
+      {project && (
         <ProjectSidebar
           currentQueryId={currentQueryId}
           project={project}
@@ -49,7 +46,7 @@ const ProjectPage = () => {
         />
       )}
       <SidebarInset className="h-screen overflow-auto">
-        {query && <QueryExplorer query={query} />}
+        {currentQueryId && <QueryExplorer queryId={currentQueryId} />}
       </SidebarInset>
     </SidebarProvider>
   );

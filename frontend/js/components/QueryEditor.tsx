@@ -1,4 +1,5 @@
 import MonacoEditor, { Monaco } from "@monaco-editor/react";
+import { partition } from "lodash";
 import { AlertTriangle, CheckCircle } from "lucide-react";
 import { editor } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
@@ -7,11 +8,20 @@ import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query, QueryError } from "api";
 import { useAutosave } from "hooks/useAutosave";
 
-const QueryEditor = ({ query }: { query: Query }) => {
+import ErrorAlert from "./ErrorAlert";
+
+type QueryEditorProps = {
+  query: Query;
+  onErrorsChange: (errors: QueryError[]) => void;
+};
+
+const QueryEditor = ({ query, onErrorsChange }: QueryEditorProps) => {
   const [text, setText] = useState<string>(query.text);
-  const [errors, setErrors] = useState<QueryError[]>([]);
+  const [errors, setErrors] = useState<QueryError[]>(query.errors);
   const monacoRef = useRef<Monaco | null>(null);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+
+  const [editorErrors, generalErrors] = partition(errors, (e) => e.position);
 
   const updateQuery = async (queryText: string): Promise<void> => {
     const result = await QueriesService.queriesPartialUpdate({
@@ -21,7 +31,8 @@ const QueryEditor = ({ query }: { query: Query }) => {
       },
     });
 
-    setErrors(result.errors ?? []);
+    setErrors(result.errors);
+    onErrorsChange(result.errors);
   };
 
   const updateErrorMarkers = () => {
@@ -30,14 +41,14 @@ const QueryEditor = ({ query }: { query: Query }) => {
     const model = editorRef.current.getModel();
     if (!model) return;
 
-    if (errors.length > 0) {
-      const markers = errors.map((error) => {
+    if (editorErrors.length > 0) {
+      const markers = editorErrors.map(({ message, position }) => {
         return {
-          startLineNumber: error.line,
-          endLineNumber: error.line,
-          startColumn: error.start_col,
-          endColumn: error.end_col,
-          message: error.message,
+          startLineNumber: position!.line,
+          endLineNumber: position!.line,
+          startColumn: position!.start_col,
+          endColumn: position!.end_col,
+          message,
           severity: monacoRef.current!.MarkerSeverity.Error,
         };
       });
@@ -53,7 +64,11 @@ const QueryEditor = ({ query }: { query: Query }) => {
 
   useEffect(() => {
     updateErrorMarkers();
-  }, [errors]);
+  }, [editorErrors]);
+
+  useEffect(() => {
+    onErrorsChange(query.errors);
+  }, [query.errors, onErrorsChange]);
 
   const status = useAutosave({ data: text, onSave: updateQuery });
 
@@ -106,10 +121,23 @@ const QueryEditor = ({ query }: { query: Query }) => {
         onMount={(editor, monaco) => {
           editorRef.current = editor;
           monacoRef.current = monaco;
-          updateQuery(text);
+          updateErrorMarkers();
         }}
       />
       <div className="flex justify-end text-xs mt-2">{renderStatus()}</div>
+      {generalErrors.length > 0 && (
+        <ErrorAlert
+          className="mt-4"
+          description={
+            <ul className="list-disc list-inside space-y-1">
+              {generalErrors.map((error, i) => (
+                <li key={i}>{error.message}</li>
+              ))}
+            </ul>
+          }
+          title="Query validation failed"
+        />
+      )}
     </>
   );
 };

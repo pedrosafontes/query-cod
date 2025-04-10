@@ -672,6 +672,26 @@ paths:
                 $ref: '#/components/schemas/Query'
           description: ''
   /api/queries/{id}/:
+    get:
+      operationId: queries_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this query.
+        required: true
+      tags:
+      - queries
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Query'
+          description: ''
     put:
       operationId: queries_update
       parameters:
@@ -733,7 +753,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/QueryPartialUpdate'
+                $ref: '#/components/schemas/Query'
           description: ''
     delete:
       operationId: queries_destroy
@@ -796,6 +816,19 @@ components:
       required:
       - id
       - name
+    ErrorPosition:
+      type: object
+      properties:
+        line:
+          type: integer
+        start_col:
+          type: integer
+        end_col:
+          type: integer
+      required:
+      - end_col
+      - line
+      - start_col
     Login:
       type: object
       properties:
@@ -858,7 +891,7 @@ components:
         queries:
           type: array
           items:
-            $ref: '#/components/schemas/Query'
+            $ref: '#/components/schemas/QuerySummary'
           readOnly: true
         last_modified:
           type: string
@@ -894,6 +927,11 @@ components:
           type: string
           format: date-time
           readOnly: true
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+          readOnly: true
     PatchedUser:
       type: object
       properties:
@@ -928,7 +966,7 @@ components:
         queries:
           type: array
           items:
-            $ref: '#/components/schemas/Query'
+            $ref: '#/components/schemas/QuerySummary'
           readOnly: true
         last_modified:
           type: string
@@ -973,8 +1011,14 @@ components:
           type: string
           format: date-time
           readOnly: true
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+          readOnly: true
       required:
       - created
+      - errors
       - id
       - modified
       - name
@@ -984,17 +1028,10 @@ components:
       properties:
         message:
           type: string
-        line:
-          type: integer
-        start_col:
-          type: integer
-        end_col:
-          type: integer
+        position:
+          $ref: '#/components/schemas/ErrorPosition'
       required:
-      - end_col
-      - line
       - message
-      - start_col
     QueryExecution:
       type: object
       properties:
@@ -1007,20 +1044,6 @@ components:
           description: Indicates if the query execution was successful
       required:
       - success
-    QueryPartialUpdate:
-      type: object
-      properties:
-        query:
-          allOf:
-          - $ref: '#/components/schemas/Query'
-          description: The updated query object after partial update.
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/QueryError'
-          description: Errors, if any, that occurred during update.
-      required:
-      - query
     QueryResultData:
       type: object
       properties:
@@ -1041,6 +1064,18 @@ components:
       required:
       - columns
       - rows
+    QuerySummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+      required:
+      - id
+      - name
     SendEmailReset:
       type: object
       properties:

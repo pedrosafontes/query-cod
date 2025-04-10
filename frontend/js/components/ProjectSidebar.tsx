@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 
 import { ProjectsService, QueriesService, Query, type Project } from "../api";
-import { useToast } from "../hooks/use-toast";
+import { useErrorToast } from "../hooks/useErrorToast";
 
 import QueryMenuItem from "./QueryMenuItem";
 
@@ -38,7 +38,7 @@ const ProjectSidebar = ({
 
   const navigate = useNavigate();
 
-  const { toast } = useToast();
+  const toast = useErrorToast();
 
   useEffect(() => {
     if (!currentQueryId && queries.length > 0) {
@@ -60,7 +60,6 @@ const ProjectSidebar = ({
     } catch (error) {
       toast({
         title: "Error creating query",
-        variant: "destructive",
       });
     }
   };
@@ -77,7 +76,6 @@ const ProjectSidebar = ({
     } catch (error) {
       toast({
         title: "Error renaming query",
-        variant: "destructive",
       });
     }
   };
@@ -94,7 +92,6 @@ const ProjectSidebar = ({
     } catch (error) {
       toast({
         title: "Error deleting query",
-        variant: "destructive",
       });
     }
   };
@@ -133,16 +130,16 @@ const ProjectSidebar = ({
 
           <SidebarGroupContent>
             <SidebarMenu>
-              {queries.map((query) => (
+              {queries.map(({ id, name }) => (
                 <QueryMenuItem
-                  key={query.id}
-                  isActive={currentQueryId === query.id}
-                  isCreating={creatingQueryId === query.id}
-                  name={query.name}
+                  key={id}
+                  isActive={currentQueryId === id}
+                  isCreating={creatingQueryId === id}
+                  name={name}
                   onCreationEnd={() => setCreatingQueryId(null)}
-                  onDelete={() => deleteQuery(query.id)}
-                  onRename={(name: string) => renameQuery(query.id, name)}
-                  onSelect={() => onSelect(query.id)}
+                  onDelete={() => deleteQuery(id)}
+                  onRename={(name: string) => renameQuery(id, name)}
+                  onSelect={() => onSelect(id)}
                 />
               ))}
               {queries.length === 0 && (
