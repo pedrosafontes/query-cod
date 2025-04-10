@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from databases.models import DatabaseConnectionInfo
-from databases.services.execution import _build_url, execute_sql
+from databases.services.execution import execute_sql
 
 
 @pytest.fixture
@@ -36,7 +36,8 @@ def mock_sql_engine():
 
 def test_execute_sql_success(mock_db_info, mock_sql_engine):
     with patch(
-        'databases.services.execution.create_engine', return_value=mock_sql_engine['engine']
+        'databases.models.database_connection_info.create_engine',
+        return_value=mock_sql_engine['engine'],
     ):
         result = execute_sql('SELECT * FROM users', mock_db_info)
 
@@ -49,17 +50,10 @@ def test_execute_sql_empty_result(mock_db_info, mock_sql_engine):
     mock_sql_engine['result'].fetchall.return_value = []
 
     with patch(
-        'databases.services.execution.create_engine', return_value=mock_sql_engine['engine']
+        'databases.models.database_connection_info.create_engine',
+        return_value=mock_sql_engine['engine'],
     ):
         result = execute_sql('SELECT * FROM users WHERE id = 999', mock_db_info)
 
     assert result['columns'] == ['id', 'name']
     assert result['rows'] == []
-
-
-def test_build_url_unsupported_db_type(mock_db_info):
-    modified_db = mock_db_info
-    modified_db.database_type = 'oracle'
-
-    with pytest.raises(ValueError, match=f"Unsupported database type: {"oracle"}"):
-        _build_url(modified_db)
