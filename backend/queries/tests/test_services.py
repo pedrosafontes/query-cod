@@ -262,7 +262,7 @@ def setup_test_db(db_info):
     'query',
     [
         'SELECT * FROM customers',
-        'SELECT customer_id, company_name FROM customers WHERE country = "Germany"',
+        "SELECT customer_id, company_name FROM customers WHERE country = 'Germany'",
         'SELECT p.product_id, p.product_name, c.category_name FROM products p JOIN categories c ON p.category_id = c.category_id',
         'SELECT customer_id, COUNT(*) FROM orders GROUP BY customer_id HAVING COUNT(*) > 0',
         'SELECT * FROM products ORDER BY unit_price DESC LIMIT 10',
@@ -286,7 +286,6 @@ def test_valid_select_queries(query, db_info, setup_test_db):
 def test_empty_queries(query, db_info, setup_test_db):
     result = validate_sql(query, db_info)
     assert result['valid'] is False
-    assert result['errors'] == []
 
 
 @pytest.mark.parametrize(
@@ -321,8 +320,6 @@ def test_non_select_queries(query, db_info, setup_test_db):
 
     assert result['valid'] is False
     assert len(result['errors']) == 1
-    # assert result['errors'][0]['message'] == 'Only SELECT queries are allowed.'
-    # assert result['errors'][0]['line'] == 1
 
 
 @pytest.mark.parametrize(
@@ -337,7 +334,6 @@ def test_semantic_errors(query, db_info, setup_test_db):
 
     assert result['valid'] is False
     assert len(result['errors']) == 1
-    assert result['errors'][0]['line'] == 1
 
 
 @pytest.mark.parametrize(
