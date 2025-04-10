@@ -8,7 +8,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query, QueryError } from "api";
 import { useAutosave } from "hooks/useAutosave";
 
-import GeneralErrorAlert from "./GeneralErrorAlert";
+import ErrorAlert from "./ErrorAlert";
 
 const QueryEditor = ({ query }: { query: Query }) => {
   const [text, setText] = useState<string>(query.text);
@@ -115,7 +115,19 @@ const QueryEditor = ({ query }: { query: Query }) => {
         }}
       />
       <div className="flex justify-end text-xs mt-2">{renderStatus()}</div>
-      <GeneralErrorAlert className="mt-4" errors={generalErrors} />
+      {generalErrors.length > 0 && (
+        <ErrorAlert
+          className="mt-4"
+          description={
+            <ul className="list-disc list-inside space-y-1">
+              {generalErrors.map((error, i) => (
+                <li key={i}>{error.message}</li>
+              ))}
+            </ul>
+          }
+          title="Query validation failed"
+        />
+      )}
     </>
   );
 };
