@@ -7,6 +7,7 @@ import { partition } from "lodash";
 import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query, QueryError } from "api";
 import { useAutosave } from "hooks/useAutosave";
+import GeneralErrorAlert from "./GeneralErrorAlert";
 
 const QueryEditor = ({ query }: { query: Query }) => {
   const [text, setText] = useState<string>(query.text);
@@ -113,6 +114,7 @@ const QueryEditor = ({ query }: { query: Query }) => {
         }}
       />
       <div className="flex justify-end text-xs mt-2">{renderStatus()}</div>
+      <GeneralErrorAlert errors={generalErrors} className="mt-4" />
     </>
   );
 };
