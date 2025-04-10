@@ -3,13 +3,17 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { QueriesService, Query, QueryResultData } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
 import ErrorAlert from "./ErrorAlert";
 import QueryEditor from "./QueryEditor";
 import QueryResult from "./QueryResult";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export type QueryExplorerProps = {
   queryId: number;
@@ -72,7 +76,9 @@ const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
             <TooltipTrigger asChild>
               <div>
                 <Button
-                  disabled={isExecuting || isLoading || !!loadingError || hasErrors}
+                  disabled={
+                    isExecuting || isLoading || !!loadingError || hasErrors
+                  }
                   size="sm"
                   variant="default"
                   onClick={() => handleExecuteQuery()}
@@ -104,7 +110,13 @@ const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
             title="There was an error loading the query"
           />
         )}
-        {query && <QueryEditor key={query.id} query={query} onErrorsChange={(errors) => setHasErrors(errors.length > 0)} />}
+        {query && (
+          <QueryEditor
+            key={query.id}
+            query={query}
+            onErrorsChange={(errors) => setHasErrors(errors.length > 0)}
+          />
+        )}
       </div>
       <div className="col-span-2 px-3 py-5 flex flex-col justify-end h-full bg-gray-50">
         {queryResult && (
