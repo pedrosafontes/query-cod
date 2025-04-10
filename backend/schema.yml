@@ -816,6 +816,19 @@ components:
       required:
       - id
       - name
+    ErrorPosition:
+      type: object
+      properties:
+        line:
+          type: integer
+        start_col:
+          type: integer
+        end_col:
+          type: integer
+      required:
+      - end_col
+      - line
+      - start_col
     Login:
       type: object
       properties:
@@ -1015,17 +1028,10 @@ components:
       properties:
         message:
           type: string
-        line:
-          type: integer
-        start_col:
-          type: integer
-        end_col:
-          type: integer
+        position:
+          $ref: '#/components/schemas/ErrorPosition'
       required:
-      - end_col
-      - line
       - message
-      - start_col
     QueryExecution:
       type: object
       properties:

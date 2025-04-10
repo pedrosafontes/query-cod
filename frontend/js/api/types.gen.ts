@@ -10,6 +10,12 @@ export type Database = {
   name: string;
 };
 
+export type ErrorPosition = {
+  line: number;
+  start_col: number;
+  end_col: number;
+};
+
 export type Login = {
   username: string;
   password: string;
@@ -77,9 +83,7 @@ export type Query = {
 
 export type QueryError = {
   message: string;
-  line: number;
-  start_col: number;
-  end_col: number;
+  position?: ErrorPosition;
 };
 
 export type QueryExecution = {

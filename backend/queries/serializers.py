@@ -4,11 +4,15 @@ from rest_framework import serializers
 from .models import Query
 
 
-class QueryErrorSerializer(serializers.Serializer):
-    message = serializers.CharField()
+class ErrorPositionSerializer(serializers.Serializer):
     line = serializers.IntegerField()
     start_col = serializers.IntegerField()
     end_col = serializers.IntegerField()
+
+
+class QueryErrorSerializer(serializers.Serializer):
+    message = serializers.CharField()
+    position = ErrorPositionSerializer(required=False)
 
 
 class QuerySerializer(serializers.ModelSerializer):
@@ -28,7 +32,7 @@ class QuerySerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.ListSerializer(child=QueryErrorSerializer()))
     def get_errors(self, obj):
-        return obj.validate().get('errors')
+        return obj.validate().get('errors', [])
 
 
 class QueryResultDataSerializer(serializers.Serializer):

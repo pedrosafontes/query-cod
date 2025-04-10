@@ -28,6 +28,22 @@ export const $Database = {
   required: ["id", "name"],
 } as const;
 
+export const $ErrorPosition = {
+  type: "object",
+  properties: {
+    line: {
+      type: "integer",
+    },
+    start_col: {
+      type: "integer",
+    },
+    end_col: {
+      type: "integer",
+    },
+  },
+  required: ["end_col", "line", "start_col"],
+} as const;
+
 export const $Login = {
   type: "object",
   properties: {
@@ -292,17 +308,11 @@ export const $QueryError = {
     message: {
       type: "string",
     },
-    line: {
-      type: "integer",
-    },
-    start_col: {
-      type: "integer",
-    },
-    end_col: {
-      type: "integer",
+    position: {
+      $ref: "#/components/schemas/ErrorPosition",
     },
   },
-  required: ["end_col", "line", "message", "start_col"],
+  required: ["message"],
 } as const;
 
 export const $QueryExecution = {
