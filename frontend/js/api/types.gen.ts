@@ -10,12 +10,6 @@ export type Database = {
   name: string;
 };
 
-export type ErrorPosition = {
-  line: number;
-  start_col: number;
-  end_col: number;
-};
-
 export type Login = {
   username: string;
   password: string;
@@ -51,7 +45,14 @@ export type PatchedQuery = {
   text?: string;
   readonly created?: string;
   readonly modified?: string;
-  readonly errors?: Array<QueryError>;
+  readonly validation_errors?: Array<{
+    message: string;
+    position?: {
+      line: number;
+      start_col: number;
+      end_col: number;
+    } | null;
+  }>;
 };
 
 export type PatchedUser = {
@@ -78,12 +79,14 @@ export type Query = {
   text: string;
   readonly created: string;
   readonly modified: string;
-  readonly errors: Array<QueryError>;
-};
-
-export type QueryError = {
-  message: string;
-  position?: ErrorPosition;
+  readonly validation_errors: Array<{
+    message: string;
+    position?: {
+      line: number;
+      start_col: number;
+      end_col: number;
+    } | null;
+  }>;
 };
 
 export type QueryExecution = {

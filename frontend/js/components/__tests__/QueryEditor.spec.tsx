@@ -43,7 +43,7 @@ describe("QueryEditor", () => {
     text: "SELECT * FROM users;",
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
-    errors: [],
+    validation_errors: [],
   };
 
   const mockOnErrorsChange = jest.fn();

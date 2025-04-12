@@ -5,10 +5,12 @@ import { editor } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
 import { Spinner } from "@/components/ui/spinner";
-import { QueriesService, Query, QueryError } from "api";
+import { QueriesService, Query } from "api";
 import { useAutosave } from "hooks/useAutosave";
 
 import ErrorAlert from "./ErrorAlert";
+
+type QueryError = Query["validation_errors"][number];
 
 type QueryEditorProps = {
   query: Query;
@@ -17,7 +19,7 @@ type QueryEditorProps = {
 
 const QueryEditor = ({ query, onErrorsChange }: QueryEditorProps) => {
   const [text, setText] = useState<string>(query.text);
-  const [errors, setErrors] = useState<QueryError[]>(query.errors);
+  const [errors, setErrors] = useState<QueryError[]>(query.validation_errors);
   const monacoRef = useRef<Monaco | null>(null);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
 
@@ -31,8 +33,8 @@ const QueryEditor = ({ query, onErrorsChange }: QueryEditorProps) => {
       },
     });
 
-    setErrors(result.errors);
-    onErrorsChange(result.errors);
+    setErrors(result.validation_errors);
+    onErrorsChange(result.validation_errors);
   };
 
   const updateErrorMarkers = () => {
@@ -67,8 +69,8 @@ const QueryEditor = ({ query, onErrorsChange }: QueryEditorProps) => {
   }, [editorErrors]);
 
   useEffect(() => {
-    onErrorsChange(query.errors);
-  }, [query.errors, onErrorsChange]);
+    onErrorsChange(query.validation_errors);
+  }, [query.validation_errors, onErrorsChange]);
 
   const status = useAutosave({ data: text, onSave: updateQuery });
 
