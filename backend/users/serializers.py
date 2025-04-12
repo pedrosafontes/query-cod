@@ -1,9 +1,10 @@
 from rest_framework import serializers
 
 from .models import User
+from .types import LoginCredentials
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer[User]):
     class Meta:
         model = User
         fields = [  # noqa: RUF012
@@ -14,10 +15,10 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
 
-class LoginSerializer(serializers.Serializer):
+class LoginSerializer(serializers.Serializer[LoginCredentials]):
     username = serializers.CharField()
     password = serializers.CharField(style={'input_type': 'password'})
 
 
-class LogoutSerializer(serializers.Serializer):
+class LogoutSerializer(serializers.Serializer[None]):
     pass

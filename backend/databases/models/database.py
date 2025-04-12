@@ -20,5 +20,7 @@ class Database(IndexedTimeStampedModel):
         default=DatabaseType.POSTGRESQL,
     )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.name}'
+
+    objects: models.Manager['Database']

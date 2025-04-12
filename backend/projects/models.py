@@ -1,5 +1,8 @@
+from datetime import datetime
+from typing import TYPE_CHECKING
+
 from django.db import models
-from django.db.models import DateTimeField, Max
+from django.db.models import DateTimeField, Max, QuerySet
 from django.db.models.functions import Greatest
 
 from common.models import IndexedTimeStampedModel
@@ -13,7 +16,7 @@ class Project(IndexedTimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='projects')
 
     @classmethod
-    def with_last_modified(cls):
+    def with_last_modified(cls) -> QuerySet['Project']:
         return cls.objects.annotate(
             last_modified=Greatest(
                 Max('queries__created'),
@@ -22,3 +25,8 @@ class Project(IndexedTimeStampedModel):
                 output_field=DateTimeField(),
             )
         ).order_by('-last_modified')
+
+    objects: models.Manager['Project']
+
+    if TYPE_CHECKING:
+        last_modified: datetime
