@@ -13,6 +13,8 @@ module.exports = {
   			primary: colors.gray[950],
   			'primary-foreground': colors.white,
         'muted-foreground': colors.gray[500],
+        secondary: colors.gray[200],
+        'secondary-foreground': colors.gray[950],
         sidebar: {
           DEFAULT: colors.gray[50],
           foreground: colors.gray[800],

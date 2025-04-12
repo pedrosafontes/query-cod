@@ -72,7 +72,7 @@ const ProjectActions = ({ project, onSuccess }: ProjectActionsProps) => {
       <Button
         aria-label="Open Project"
         size="sm"
-        variant="outline"
+        variant="secondary"
         onClick={() => navigate(`/projects/${project.id}`)}
       >
         <ArrowRight />
