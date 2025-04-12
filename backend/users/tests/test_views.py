@@ -1,3 +1,4 @@
+from django.test import Client
 from django.urls import reverse
 
 import pytest
@@ -6,7 +7,7 @@ from users.models import User
 
 
 @pytest.fixture
-def user(db):
+def user() -> User:
     user = User.objects.create_user(
         email='user@example.com',
         password='testpass123',
@@ -15,7 +16,7 @@ def user(db):
 
 
 @pytest.mark.django_db
-def test_login_success(client, user):
+def test_login_success(client: Client, user: User) -> None:
     url = reverse('login')
 
     response = client.post(
@@ -31,7 +32,7 @@ def test_login_success(client, user):
 
 
 @pytest.mark.django_db
-def test_login_failure_wrong_password(client, user):
+def test_login_failure_wrong_password(client: Client, user: User) -> None:
     url = reverse('login')
 
     response = client.post(
@@ -46,7 +47,7 @@ def test_login_failure_wrong_password(client, user):
 
 
 @pytest.mark.django_db
-def test_login_failure_unknown_user(client):
+def test_login_failure_unknown_user(client: Client) -> None:
     url = reverse('login')
 
     response = client.post(
@@ -61,7 +62,7 @@ def test_login_failure_unknown_user(client):
 
 
 @pytest.mark.django_db
-def test_logout_clears_session(client, user):
+def test_logout_clears_session(client: Client, user: User) -> None:
     login_url = reverse('login')
     logout_url = reverse('logout')
     protected_url = reverse('projects-list')

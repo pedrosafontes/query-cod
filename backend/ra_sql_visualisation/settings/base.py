@@ -7,7 +7,7 @@ from dj_database_url import parse as db_url
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
-def base_dir_join(*args):
+def base_dir_join(*args: str) -> str:
     return os.path.join(BASE_DIR, *args)
 
 
@@ -19,7 +19,7 @@ ADMINS = (('Admin', 'pedrosafontes.psf@gmail.com'),)
 
 AUTH_USER_MODEL = 'users.User'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: list[str] = []
 
 DATABASES = {
     'default': config('DATABASE_URL', cast=db_url),
@@ -196,7 +196,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # All available policies are listed at:
 # https://github.com/w3c/webappsec-permissions-policy/blob/main/features.md
 # Empty list means the policy is disabled
-PERMISSIONS_POLICY = {
+PERMISSIONS_POLICY: dict[str, list[str]] = {
     'accelerometer': [],
     'camera': [],
     'display-capture': [],

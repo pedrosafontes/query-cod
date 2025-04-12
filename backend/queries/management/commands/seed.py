@@ -1,19 +1,17 @@
-from django.contrib.auth import get_user_model
+from typing import Any
+
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now
 
 from databases.models import Database
 from decouple import config
-from queries.models import Project, Query
-
-
-User = get_user_model()
+from projects.models import Project
+from queries.models import Query
+from users.models import User
 
 
 class Command(BaseCommand):
-    help = 'Seeds the database with queries for testing'
-
-    def handle(self, *args, **options):
+    def handle(self, *args: Any, **options: Any) -> None:
         # Create user
         user, created = User.objects.get_or_create(email='pedro@example.com')
         if created:

@@ -1,18 +1,18 @@
 from dataclasses import dataclass
 
-from sqlalchemy import create_engine
+from sqlalchemy import Engine, create_engine
 
 
 @dataclass
 class DatabaseConnectionInfo:
     database_type: str
     host: str
-    port: int
-    user: str
-    password: str
+    port: int | None
+    user: str | None
+    password: str | None
     name: str
 
-    def to_sqlalchemy_engine(self):
+    def to_sqlalchemy_engine(self) -> Engine:
         return create_engine(self._build_url())
 
     def _build_url(self) -> str:

@@ -28,22 +28,6 @@ export const $Database = {
   required: ["id", "name"],
 } as const;
 
-export const $ErrorPosition = {
-  type: "object",
-  properties: {
-    line: {
-      type: "integer",
-    },
-    start_col: {
-      type: "integer",
-    },
-    end_col: {
-      type: "integer",
-    },
-  },
-  required: ["end_col", "line", "start_col"],
-} as const;
-
 export const $Login = {
   type: "object",
   properties: {
@@ -174,10 +158,32 @@ export const $PatchedQuery = {
       format: "date-time",
       readOnly: true,
     },
-    errors: {
+    validation_errors: {
       type: "array",
       items: {
-        $ref: "#/components/schemas/QueryError",
+        type: "object",
+        properties: {
+          message: {
+            type: "string",
+          },
+          position: {
+            type: "object",
+            properties: {
+              line: {
+                type: "integer",
+              },
+              start_col: {
+                type: "integer",
+              },
+              end_col: {
+                type: "integer",
+              },
+            },
+            required: ["end_col", "line", "start_col"],
+            nullable: true,
+          },
+        },
+        required: ["message"],
       },
       readOnly: true,
     },
@@ -291,28 +297,37 @@ export const $Query = {
       format: "date-time",
       readOnly: true,
     },
-    errors: {
+    validation_errors: {
       type: "array",
       items: {
-        $ref: "#/components/schemas/QueryError",
+        type: "object",
+        properties: {
+          message: {
+            type: "string",
+          },
+          position: {
+            type: "object",
+            properties: {
+              line: {
+                type: "integer",
+              },
+              start_col: {
+                type: "integer",
+              },
+              end_col: {
+                type: "integer",
+              },
+            },
+            required: ["end_col", "line", "start_col"],
+            nullable: true,
+          },
+        },
+        required: ["message"],
       },
       readOnly: true,
     },
   },
-  required: ["created", "errors", "id", "modified", "name", "text"],
-} as const;
-
-export const $QueryError = {
-  type: "object",
-  properties: {
-    message: {
-      type: "string",
-    },
-    position: {
-      $ref: "#/components/schemas/ErrorPosition",
-    },
-  },
-  required: ["message"],
+  required: ["created", "id", "modified", "name", "text", "validation_errors"],
 } as const;
 
 export const $QueryExecution = {

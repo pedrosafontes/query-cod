@@ -6,7 +6,7 @@ from .models import User
 
 
 @admin.register(User)
-class CustomUserAdmin(UserAdmin):
+class CustomUserAdmin(UserAdmin):  # type: ignore[type-arg]
     list_display = ('id', 'email', 'created', 'modified')
     list_filter = ('is_active', 'is_staff', 'groups')
     search_fields = ('email',)

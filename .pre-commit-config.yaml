@@ -70,3 +70,9 @@ repos:
         language: system
         files: backend/schema\.yml$
         pass_filenames: false
+      - id: mypy
+        name: mypy
+        entry: bash -c 'cd backend && poetry run mypy .'
+        language: system
+        types: [python]
+        files: backend

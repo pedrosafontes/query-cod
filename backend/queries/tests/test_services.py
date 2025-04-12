@@ -1,10 +1,13 @@
+from collections.abc import Generator
+from pathlib import Path
+
 import pytest
 from databases.models import DatabaseConnectionInfo
 from queries.services.validation import validate_sql
 
 
 @pytest.fixture
-def db_info(tmp_path):
+def db_info(tmp_path: Path) -> DatabaseConnectionInfo:
     return DatabaseConnectionInfo(
         database_type='sqlite',
         host='',
@@ -16,7 +19,7 @@ def db_info(tmp_path):
 
 
 @pytest.fixture
-def setup_test_db(db_info):
+def setup_test_db(db_info: DatabaseConnectionInfo) -> Generator[None, None, None]:
     from databases.services.execution import execute_sql
 
     # Create Categories table
@@ -269,7 +272,9 @@ def setup_test_db(db_info):
         '  SELECT  *  FROM  customers  ',  # Test with extra whitespace
     ],
 )
-def test_valid_select_queries(query, db_info, setup_test_db):
+def test_valid_select_queries(
+    query: str, db_info: DatabaseConnectionInfo, setup_test_db: None
+) -> None:
     result = validate_sql(query, db_info)
 
     assert result['valid'] is True
@@ -283,7 +288,7 @@ def test_valid_select_queries(query, db_info, setup_test_db):
         '\n\t',
     ],
 )
-def test_empty_queries(query, db_info, setup_test_db):
+def test_empty_queries(query: str, db_info: DatabaseConnectionInfo, setup_test_db: None) -> None:
     result = validate_sql(query, db_info)
     assert result['valid'] is False
 
@@ -297,7 +302,7 @@ def test_empty_queries(query, db_info, setup_test_db):
         'SELECT * FROMM customers',
     ],
 )
-def test_syntax_errors(query, db_info, setup_test_db):
+def test_syntax_errors(query: str, db_info: DatabaseConnectionInfo, setup_test_db: None) -> None:
     result = validate_sql(query, db_info)
 
     assert result['valid'] is False
@@ -315,7 +320,9 @@ def test_syntax_errors(query, db_info, setup_test_db):
         'ALTER TABLE customers ADD COLUMN email TEXT',
     ],
 )
-def test_non_select_queries(query, db_info, setup_test_db):
+def test_non_select_queries(
+    query: str, db_info: DatabaseConnectionInfo, setup_test_db: None
+) -> None:
     result = validate_sql(query, db_info)
 
     assert result['valid'] is False
@@ -329,7 +336,7 @@ def test_non_select_queries(query, db_info, setup_test_db):
         'SELECT unknown_column FROM customers',
     ],
 )
-def test_semantic_errors(query, db_info, setup_test_db):
+def test_semantic_errors(query: str, db_info: DatabaseConnectionInfo, setup_test_db: None) -> None:
     result = validate_sql(query, db_info)
 
     assert result['valid'] is False
@@ -389,13 +396,15 @@ def test_semantic_errors(query, db_info, setup_test_db):
         # """,
     ],
 )
-def test_complex_valid_queries(query, db_info, setup_test_db):
+def test_complex_valid_queries(
+    query: str, db_info: DatabaseConnectionInfo, setup_test_db: None
+) -> None:
     result = validate_sql(query, db_info)
 
     assert result['valid'] is True
 
 
-def test_sql_injection_attempt(db_info, setup_test_db):
+def test_sql_injection_attempt(db_info: DatabaseConnectionInfo, setup_test_db: None) -> None:
     query = 'SELECT * FROM customers; DROP TABLE customers;'
 
     result = validate_sql(query, db_info)

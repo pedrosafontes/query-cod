@@ -816,19 +816,6 @@ components:
       required:
       - id
       - name
-    ErrorPosition:
-      type: object
-      properties:
-        line:
-          type: integer
-        start_col:
-          type: integer
-        end_col:
-          type: integer
-      required:
-      - end_col
-      - line
-      - start_col
     Login:
       type: object
       properties:
@@ -927,10 +914,29 @@ components:
           type: string
           format: date-time
           readOnly: true
-        errors:
+        validation_errors:
           type: array
           items:
-            $ref: '#/components/schemas/QueryError'
+            type: object
+            properties:
+              message:
+                type: string
+              position:
+                type: object
+                properties:
+                  line:
+                    type: integer
+                  start_col:
+                    type: integer
+                  end_col:
+                    type: integer
+                required:
+                - end_col
+                - line
+                - start_col
+                nullable: true
+            required:
+            - message
           readOnly: true
     PatchedUser:
       type: object
@@ -1011,27 +1017,37 @@ components:
           type: string
           format: date-time
           readOnly: true
-        errors:
+        validation_errors:
           type: array
           items:
-            $ref: '#/components/schemas/QueryError'
+            type: object
+            properties:
+              message:
+                type: string
+              position:
+                type: object
+                properties:
+                  line:
+                    type: integer
+                  start_col:
+                    type: integer
+                  end_col:
+                    type: integer
+                required:
+                - end_col
+                - line
+                - start_col
+                nullable: true
+            required:
+            - message
           readOnly: true
       required:
       - created
-      - errors
       - id
       - modified
       - name
       - text
-    QueryError:
-      type: object
-      properties:
-        message:
-          type: string
-        position:
-          $ref: '#/components/schemas/ErrorPosition'
-      required:
-      - message
+      - validation_errors
     QueryExecution:
       type: object
       properties:

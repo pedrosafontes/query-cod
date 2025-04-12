@@ -1,8 +1,9 @@
 from databases.models import DatabaseConnectionInfo
+from databases.types import QueryExecutionResult
 from sqlalchemy import text as sql_text
 
 
-def execute_sql(sql: str, db: DatabaseConnectionInfo) -> dict:
+def execute_sql(sql: str, db: DatabaseConnectionInfo) -> QueryExecutionResult:
     engine = db.to_sqlalchemy_engine()
 
     with engine.connect() as conn:
@@ -10,7 +11,7 @@ def execute_sql(sql: str, db: DatabaseConnectionInfo) -> dict:
 
         if result.returns_rows:
             rows = result.fetchall()
-            columns = result.keys()
+            columns = list(result.keys())
         else:
             rows = []
             columns = []
