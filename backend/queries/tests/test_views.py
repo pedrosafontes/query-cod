@@ -2,15 +2,21 @@ from django.urls import reverse
 from django.utils.dateparse import parse_datetime
 
 import pytest
+from _pytest.monkeypatch import MonkeyPatch
 from model_bakery import baker
+from projects.models import Project
 from queries.models import Query
+from queries.types import QueryValidationResult
+from queries.views import QueryViewSet
 from rest_framework import status
+from rest_framework.test import APIClient
+from users.models import User
 
 
 class TestProjectQueries:
     @pytest.mark.django_db
-    def test_create_query_for_project(self, auth_client, user):
-        project = baker.make('projects.Project', user=user)
+    def test_create_query_for_project(self, auth_client: APIClient, user: User) -> None:
+        project = baker.make(Project, user=user)
         url = reverse('project-queries-list', kwargs={'project_pk': project.id})
 
         payload = {'name': 'My query', 'text': 'SELECT 1'}
@@ -25,10 +31,12 @@ class TestProjectQueries:
 
 class TestQueryCRUD:
     @pytest.mark.django_db
-    def test_retrieve_query_returns_query_with_errors(self, auth_client, user, monkeypatch):
+    def test_retrieve_query_returns_query_with_errors(
+        self, auth_client: APIClient, user: User, monkeypatch: MonkeyPatch
+    ) -> None:
         query = baker.make(Query, project__user=user)
 
-        def mock_validate():
+        def mock_validate() -> QueryValidationResult:
             return {'valid': True, 'errors': []}
 
         monkeypatch.setattr(query, 'validate', mock_validate)
@@ -43,13 +51,15 @@ class TestQueryCRUD:
         assert data['text'] == query.text
         assert parse_datetime(data['created']) == query.created
         assert parse_datetime(data['modified']) == query.modified
-        assert data['errors'] == []
+        assert data['validation_errors'] == []
 
     @pytest.mark.django_db
-    def test_partial_update_query_returns_query_with_errors(self, auth_client, user, monkeypatch):
+    def test_partial_update_query_returns_query_with_errors(
+        self, auth_client: APIClient, user: User, monkeypatch: MonkeyPatch
+    ) -> None:
         query = baker.make(Query, project__user=user)
 
-        def mock_validate():
+        def mock_validate() -> QueryValidationResult:
             return {'valid': True, 'errors': []}
 
         monkeypatch.setattr(query, 'validate', mock_validate)
@@ -60,12 +70,14 @@ class TestQueryCRUD:
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data['name'] == 'Updated!'
-        assert data['errors'] == []
+        assert data['validation_errors'] == []
 
 
 class TestQueryExecution:
     @pytest.mark.django_db
-    def test_run_query_success(self, auth_client, user, monkeypatch):
+    def test_run_query_success(
+        self, auth_client: APIClient, user: User, monkeypatch: MonkeyPatch
+    ) -> None:
         query = baker.make(Query, project__user=user)
 
         monkeypatch.setattr(query, 'validate', lambda: {'valid': True})
@@ -78,7 +90,7 @@ class TestQueryExecution:
             },
         )
 
-        def get_object(self):
+        def get_object(self: QueryViewSet) -> Query:
             return query
 
         monkeypatch.setattr('queries.views.QueryViewSet.get_object', get_object)
@@ -92,7 +104,9 @@ class TestQueryExecution:
         assert 'results' in data
 
     @pytest.mark.django_db
-    def test_run_query_invalid(self, auth_client, user, monkeypatch):
+    def test_run_query_invalid(
+        self, auth_client: APIClient, user: User, monkeypatch: MonkeyPatch
+    ) -> None:
         query = baker.make(Query, project__user=user)
         monkeypatch.setattr(query, 'validate', lambda: {'valid': False})
 

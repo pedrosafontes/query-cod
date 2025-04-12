@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.utils import timezone
 
 import pytest
@@ -6,7 +8,7 @@ from projects.models import Project
 
 
 @pytest.mark.django_db
-def test_with_last_modified_returns_ordered_projects():
+def test_with_last_modified_returns_ordered_projects() -> None:
     # Create two projects with different query timestamps
     project1 = baker.make(Project)
     project2 = baker.make(Project)
@@ -14,8 +16,8 @@ def test_with_last_modified_returns_ordered_projects():
     baker.make(
         'queries.Query',
         project=project1,
-        created=timezone.now() - timezone.timedelta(days=2),
-        modified=timezone.now() - timezone.timedelta(days=2),
+        created=timezone.now() - timedelta(days=2),
+        modified=timezone.now() - timedelta(days=2),
     )
 
     baker.make(

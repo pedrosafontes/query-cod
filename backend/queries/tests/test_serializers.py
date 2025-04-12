@@ -4,7 +4,7 @@ from queries.serializers import (
 )
 
 
-def test_query_serializer_allows_blank_text():
+def test_query_serializer_allows_blank_text() -> None:
     data = {
         'name': 'Example Query',
         'text': '',
@@ -14,7 +14,7 @@ def test_query_serializer_allows_blank_text():
     assert serializer.validated_data['text'] == ''
 
 
-def test_query_serializer_requires_text_field():
+def test_query_serializer_requires_text_field() -> None:
     data = {
         'name': 'Missing text',
     }
@@ -23,7 +23,7 @@ def test_query_serializer_requires_text_field():
     assert 'text' in serializer.errors
 
 
-def test_query_execution_serializer_valid_data():
+def test_query_execution_serializer_valid_data() -> None:
     data = {
         'success': True,
         'results': {
