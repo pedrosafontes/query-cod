@@ -1,12 +1,13 @@
 from databases.models import DatabaseConnectionInfo
 from databases.services.execution import execute_sql
+from queries.types import QueryError, QueryValidationResult
 from queries.utils.tokens import find_token_position, to_error_position
-from sqlalchemy import inspect
+from sqlalchemy import Table, inspect
 from sqlalchemy.exc import SQLAlchemyError
 from sqlglot import ParseError, expressions, parse_one
 
 
-def validate_sql(query_text: str, db: DatabaseConnectionInfo):
+def validate_sql(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationResult:
     if not query_text.strip():
         return {'valid': False}
 
@@ -14,6 +15,7 @@ def validate_sql(query_text: str, db: DatabaseConnectionInfo):
     if syntax_errors:
         return {'valid': False, 'errors': syntax_errors}
 
+    assert tree  # noqa: S101
     schema_result = _validate_sql_schema(query_text, tree, db)
     if schema_result['errors']:
         return schema_result
@@ -25,7 +27,9 @@ def validate_sql(query_text: str, db: DatabaseConnectionInfo):
     return {'valid': True}
 
 
-def _validate_sql_syntax(query_text: str, db: DatabaseConnectionInfo):
+def _validate_sql_syntax(
+    query_text: str, db: DatabaseConnectionInfo
+) -> tuple[expressions.Select | None, list[QueryError]]:
     try:
         tree = parse_one(
             query_text,
@@ -43,7 +47,9 @@ def _validate_sql_syntax(query_text: str, db: DatabaseConnectionInfo):
         ]
 
 
-def _validate_sql_schema(query_text: str, tree: expressions.Expression, db) -> dict:
+def _validate_sql_schema(
+    query_text: str, tree: expressions.Select, db: DatabaseConnectionInfo
+) -> QueryValidationResult:
     try:
         engine = db.to_sqlalchemy_engine()
         inspector = inspect(engine)
@@ -61,7 +67,7 @@ def _validate_sql_schema(query_text: str, tree: expressions.Expression, db) -> d
             ],
         }
 
-    errors = []
+    errors: list[QueryError] = []
 
     # Validate table references
     referenced_tables = set()
@@ -82,21 +88,21 @@ def _validate_sql_schema(query_text: str, tree: expressions.Expression, db) -> d
     # Validate column references
     for col_expr in tree.find_all(expressions.Column):
         col_name = col_expr.name
-        table_expr = col_expr.args.get('table')
-        table_name = table_expr.name if table_expr else None
+        col_table_expr: Table | None = col_expr.args.get('table')
+        col_table_name: str | None = col_table_expr.name if col_table_expr else None
 
         # Skip if it's an alias
         if col_name in aliased_names:
             continue
 
         # Qualified column
-        if table_name:
-            if table_name not in schema:
+        if col_table_name:
+            if col_table_name not in schema:
                 continue  # Already reported unknown table
-            if col_name not in schema[table_name]:
+            if col_name not in schema[col_table_name]:
                 errors.append(
                     {
-                        'message': f'Unknown column "{col_name}" in table "{table_name}"',
+                        'message': f'Unknown column "{col_name}" in table "{col_table_name}"',
                         'position': find_token_position(query_text, col_name),
                     }
                 )
@@ -114,7 +120,7 @@ def _validate_sql_schema(query_text: str, tree: expressions.Expression, db) -> d
     return {'valid': not errors, 'errors': errors}
 
 
-def _validate_sql_explain(query_text: str, db: DatabaseConnectionInfo):
+def _validate_sql_explain(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationResult:
     try:
         execute_sql(f'EXPLAIN {query_text}', db)
     except SQLAlchemyError as e:
