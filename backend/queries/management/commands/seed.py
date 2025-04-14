@@ -13,12 +13,12 @@ from users.models import User
 class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
         # Wipe Database
-        self.stdout.write("Wiping queries, projects, and databases...")
+        self.stdout.write('Wiping queries, projects, and databases...')
         Query.objects.all().delete()
         Project.objects.all().delete()
         Database.objects.all().delete()
 
-        self.stdout.write("Deleting non-admin users...")
+        self.stdout.write('Deleting non-admin users...')
         User.objects.filter(is_staff=False, is_superuser=False).delete()
 
         # Create user

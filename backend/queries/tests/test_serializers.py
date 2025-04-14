@@ -13,6 +13,7 @@ def test_query_serializer_allows_blank_sql_text() -> None:
     serializer.is_valid(raise_exception=True)
     assert serializer.validated_data['sql_text'] == ''
 
+
 def test_query_serializer_allows_blank_ra_text() -> None:
     data = {
         'name': 'Example Query',
