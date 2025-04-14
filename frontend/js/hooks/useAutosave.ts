@@ -1,25 +1,25 @@
 import debounce from "lodash.debounce";
 import { useEffect, useRef, useState } from "react";
 
-type Status = "idle" | "saving" | "saved" | "error";
+export type Status = "idle" | "saving" | "saved" | "error";
 
 export function useAutosave({
   data,
   onSave,
   delay = 1000,
 }: {
-  data: string;
+  data: string | undefined;
   onSave: (value: string) => Promise<void>;
   delay?: number;
 }) {
   const [status, setStatus] = useState<Status>("idle");
-  const lastSaved = useRef<string>(data);
-  const current = useRef<string>(data);
+  const lastSaved = useRef<string | undefined>(data);
+  const current = useRef<string | undefined>(data);
 
   const save = async () => {
     const valueToSave = current.current;
 
-    if (valueToSave === lastSaved.current) return;
+    if (valueToSave === undefined || valueToSave === lastSaved.current) return;
 
     setStatus("saving");
     try {
