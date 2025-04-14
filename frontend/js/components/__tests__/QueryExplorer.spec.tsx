@@ -36,7 +36,7 @@ describe("QueryExplorer Component", () => {
   const mockQuery: Query = {
     id: 1,
     name: "Test Query",
-    text: "SELECT * FROM users",
+    sql_text: "SELECT * FROM users",
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
     validation_errors: [],
