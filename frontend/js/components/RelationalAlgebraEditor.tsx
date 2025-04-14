@@ -1,4 +1,7 @@
+/* eslint-disable import/no-duplicates */
+import "mathlive";
 import { MathfieldElement } from "mathlive";
+/* eslint-enable import/no-duplicates */
 import React, { useEffect, useRef, useState } from "react";
 
 import { QueriesService, Query } from "api";
@@ -19,10 +22,6 @@ const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
 }) => {
   const [value, setValue] = useState<string | undefined>(query.ra_text);
   const mf = useRef<MathfieldElement>(null);
-
-  useEffect(() => {
-    import("mathlive");
-  }, []);
 
   useEffect(() => {
     const el = mf.current;
