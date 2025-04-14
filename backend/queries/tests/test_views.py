@@ -19,14 +19,15 @@ class TestProjectQueries:
         project = baker.make(Project, user=user)
         url = reverse('project-queries-list', kwargs={'project_pk': project.id})
 
-        payload = {'name': 'My query', 'text': 'SELECT 1'}
+        payload = {'name': 'My query'}
 
         response = auth_client.post(url, payload)
         assert response.status_code == status.HTTP_201_CREATED
 
         query = Query.objects.get(name='My query')
         assert query.project == project
-        assert query.text == 'SELECT 1'
+        assert query.sql_text == ''
+        assert query.ra_text == ''
 
 
 class TestQueryCRUD:
@@ -48,7 +49,8 @@ class TestQueryCRUD:
         data = response.json()
         assert data['id'] == query.id
         assert data['name'] == query.name
-        assert data['text'] == query.text
+        assert data['sql_text'] == query.sql_text
+        assert data['ra_text'] == query.ra_text
         assert parse_datetime(data['created']) == query.created
         assert parse_datetime(data['modified']) == query.modified
         assert data['validation_errors'] == []

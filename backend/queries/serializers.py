@@ -6,14 +6,14 @@ from .models import Query
 
 
 class QuerySerializer(serializers.ModelSerializer[Query]):
-    text = serializers.CharField(required=True, allow_blank=True)
-
     class Meta:
         model = Query
         fields = [  # noqa: RUF012
             'id',
             'name',
-            'text',
+            'sql_text',
+            'ra_text',
+            'language',
             'created',
             'modified',
             'validation_errors',

@@ -4,23 +4,23 @@ from queries.serializers import (
 )
 
 
-def test_query_serializer_allows_blank_text() -> None:
+def test_query_serializer_allows_blank_sql_text() -> None:
     data = {
         'name': 'Example Query',
-        'text': '',
+        'sql_text': '',
     }
     serializer = QuerySerializer(data=data)
     serializer.is_valid(raise_exception=True)
-    assert serializer.validated_data['text'] == ''
+    assert serializer.validated_data['sql_text'] == ''
 
-
-def test_query_serializer_requires_text_field() -> None:
+def test_query_serializer_allows_blank_ra_text() -> None:
     data = {
-        'name': 'Missing text',
+        'name': 'Example Query',
+        'ra_text': '',
     }
     serializer = QuerySerializer(data=data)
-    assert not serializer.is_valid()
-    assert 'text' in serializer.errors
+    serializer.is_valid(raise_exception=True)
+    assert serializer.validated_data['ra_text'] == ''
 
 
 def test_query_execution_serializer_valid_data() -> None:
