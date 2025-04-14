@@ -242,6 +242,7 @@ CSP_STYLE_SRC = [
 CSP_FONT_SRC = [
     "'self'",
     "'unsafe-inline'",
+    'data:',
     # drf-spectacular UI (Swagger and ReDoc)
     'https://fonts.gstatic.com',
     # Monaco Editor
