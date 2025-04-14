@@ -21,7 +21,7 @@ class Query(IndexedTimeStampedModel):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='queries')
     language = models.CharField(
         max_length=16,
-        choices=QueryLanguage.choices,
+        choices=QueryLanguage,
         default=QueryLanguage.SQL,
     )
 
