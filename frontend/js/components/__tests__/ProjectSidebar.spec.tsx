@@ -1,4 +1,3 @@
-// ProjectSidebar.spec.tsx
 import { render, screen, waitFor, within } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { BrowserRouter } from "react-router";
@@ -165,6 +164,16 @@ describe("ProjectSidebar", () => {
           requestBody: { name: "Renamed Query" },
         });
         expect(onSuccess).toHaveBeenCalled();
+      });
+
+      test("enters rename mode on double click", async () => {
+        renderComponent();
+      
+        const queryItem = screen.getByText("Query 1");
+        await userEvent.dblClick(queryItem);
+      
+        const input = await screen.findByDisplayValue("Query 1");
+        expect(input).toBeInTheDocument();
       });
 
       test("allows cancelling a query rename operation", async () => {

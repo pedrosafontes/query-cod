@@ -2,7 +2,6 @@ import { Ellipsis, Pencil, Trash } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import * as React from "react";
 
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -85,15 +84,16 @@ const QueryMenuItem = ({
           className="group/item justify-between"
           isActive={isActive}
           onClick={onSelect}
+          onDoubleClick={() => setManuallyEditing(true)}
         >
           <span className="truncate">{name}</span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <div
-                role="button"
                 aria-label="Actions"
-                tabIndex={0}
                 className="opacity-0 group-hover/item:opacity-100 data-[state=open]:opacity-75 transition-opacity focus-visible:outline-none"
+                role="button"
+                tabIndex={0}
               >
                 <Ellipsis className="size-4 shrink-0" />
               </div>
