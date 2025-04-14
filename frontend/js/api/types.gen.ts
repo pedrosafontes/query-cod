@@ -10,6 +10,12 @@ export type Database = {
   name: string;
 };
 
+/**
+ * * `sql` - SQL
+ * * `ra` - Relational Algebra
+ */
+export type LanguageEnum = "sql" | "ra";
+
 export type Login = {
   username: string;
   password: string;
@@ -42,7 +48,9 @@ export type PatchedProject = {
 export type PatchedQuery = {
   readonly id?: number;
   name?: string;
-  text?: string;
+  sql_text?: string;
+  ra_text?: string;
+  language?: LanguageEnum;
   readonly created?: string;
   readonly modified?: string;
   readonly validation_errors?: Array<{
@@ -76,7 +84,9 @@ export type Project = {
 export type Query = {
   readonly id: number;
   name: string;
-  text: string;
+  sql_text?: string;
+  ra_text?: string;
+  language?: LanguageEnum;
   readonly created: string;
   readonly modified: string;
   readonly validation_errors: Array<{
