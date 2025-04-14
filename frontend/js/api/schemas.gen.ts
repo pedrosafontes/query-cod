@@ -28,6 +28,13 @@ export const $Database = {
   required: ["id", "name"],
 } as const;
 
+export const $LanguageEnum = {
+  enum: ["sql", "ra"],
+  type: "string",
+  description: `* \`sql\` - SQL
+* \`ra\` - Relational Algebra`,
+} as const;
+
 export const $Login = {
   type: "object",
   properties: {
@@ -145,8 +152,14 @@ export const $PatchedQuery = {
       type: "string",
       maxLength: 255,
     },
-    text: {
+    sql_text: {
       type: "string",
+    },
+    ra_text: {
+      type: "string",
+    },
+    language: {
+      $ref: "#/components/schemas/LanguageEnum",
     },
     created: {
       type: "string",
@@ -284,8 +297,14 @@ export const $Query = {
       type: "string",
       maxLength: 255,
     },
-    text: {
+    sql_text: {
       type: "string",
+    },
+    ra_text: {
+      type: "string",
+    },
+    language: {
+      $ref: "#/components/schemas/LanguageEnum",
     },
     created: {
       type: "string",
@@ -327,7 +346,7 @@ export const $Query = {
       readOnly: true,
     },
   },
-  required: ["created", "id", "modified", "name", "text", "validation_errors"],
+  required: ["created", "id", "modified", "name", "validation_errors"],
 } as const;
 
 export const $QueryExecution = {

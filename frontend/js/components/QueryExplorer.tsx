@@ -7,7 +7,9 @@ import { useErrorToast } from "hooks/useErrorToast";
 import ErrorAlert from "./ErrorAlert";
 import ExecuteQueryButton from "./ExecuteQueryButton";
 import QueryEditor from "./QueryEditor";
+import QueryLanguageTabs from "./QueryLanguageTabs";
 import QueryResult from "./QueryResult";
+import { Skeleton } from "./ui/skeleton";
 
 export type QueryExplorerProps = {
   queryId: number;
@@ -65,7 +67,15 @@ const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
   return (
     <div className="grid grid-cols-3 h-full">
       <div className="col-span-1 px-3 py-5 border-r">
-        <div className="flex justify-end mb-3 w-full">
+        <div className="flex justify-between mb-5 w-full">
+          {query && (
+            <QueryLanguageTabs
+              query={query}
+              setIsLoading={setIsLoading}
+              setQuery={setQuery}
+            />
+          )}
+          {!query && <Skeleton className="h-10 w-52" />}
           <ExecuteQueryButton
             disabled={isExecuting || isLoading || !!loadingError || hasErrors}
             handleExecuteQuery={handleExecuteQuery}

@@ -1,0 +1,34 @@
+@layer base {
+  math-field[contenteditable]:not([read-only]) {
+    @apply rounded-md border border-input bg-background px-3 py-2 ring-offset-background text-base;
+    display: block;
+
+    --hue: theme(colors.primary.DEFAULT);
+    --primary: theme(colors.primary.DEFAULT);
+    --caret-color: theme(colors.primary.DEFAULT);
+    --selection-color: theme(colors.primary.foreground);
+    --selection-background-color: theme(colors.primary.DEFAULT);
+    --contains-highlight-background-color: theme(colors.secondary.DEFAULT);
+    --placeholder-color: theme(colors.muted.foreground);
+    --placeholder-opacity: 0.5;
+    --smart-fence-color: theme(colors.ring);
+    --smart-fence-opacity: 0.5;
+    --highlight-text: theme(colors.secondary.DEFAULT);
+    --text-font-family: theme(fontFamily.sans);
+    --latex-color: theme(colors.foreground);
+    --correct-color: theme(colors.green.500);
+    --incorrect-color: theme(colors.destructive);
+
+    &:focus-within {
+      @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background rounded-md;
+    }
+
+    &::part(menu-toggle) {
+      display: none;
+    }
+
+    &::part(virtual-keyboard-toggle) {
+      display: none;
+    }
+  }
+}

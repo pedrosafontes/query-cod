@@ -816,6 +816,14 @@ components:
       required:
       - id
       - name
+    LanguageEnum:
+      enum:
+      - sql
+      - ra
+      type: string
+      description: |-
+        * `sql` - SQL
+        * `ra` - Relational Algebra
     Login:
       type: object
       properties:
@@ -904,8 +912,12 @@ components:
         name:
           type: string
           maxLength: 255
-        text:
+        sql_text:
           type: string
+        ra_text:
+          type: string
+        language:
+          $ref: '#/components/schemas/LanguageEnum'
         created:
           type: string
           format: date-time
@@ -1007,8 +1019,12 @@ components:
         name:
           type: string
           maxLength: 255
-        text:
+        sql_text:
           type: string
+        ra_text:
+          type: string
+        language:
+          $ref: '#/components/schemas/LanguageEnum'
         created:
           type: string
           format: date-time
@@ -1046,7 +1062,6 @@ components:
       - id
       - modified
       - name
-      - text
       - validation_errors
     QueryExecution:
       type: object

@@ -12,6 +12,15 @@ from users.models import User
 
 class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> None:
+        # Wipe Database
+        self.stdout.write('Wiping queries, projects, and databases...')
+        Query.objects.all().delete()
+        Project.objects.all().delete()
+        Database.objects.all().delete()
+
+        self.stdout.write('Deleting non-admin users...')
+        User.objects.filter(is_staff=False, is_superuser=False).delete()
+
         # Create user
         user, created = User.objects.get_or_create(email='pedro@example.com')
         if created:
@@ -111,7 +120,7 @@ class Command(BaseCommand):
         for i, (text, category) in enumerate(all_queries, 1):
             Query.objects.create(
                 name=f'{category.title()} Query {i}',
-                text=text.strip(),
+                sql_text=text.strip(),
                 project=project,
                 created=now(),
                 modified=now(),
