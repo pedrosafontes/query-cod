@@ -52,7 +52,6 @@ const ProjectSidebar = ({
         projectPk: project.id,
         requestBody: {
           name: "Untitled",
-          text: "",
         } as Query,
       });
       onSuccess();
