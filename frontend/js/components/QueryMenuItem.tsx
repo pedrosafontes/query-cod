@@ -89,15 +89,14 @@ const QueryMenuItem = ({
           <span className="truncate">{name}</span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
+              <div
+                role="button"
                 aria-label="Actions"
-                className="h-6 w-6 opacity-0 group-hover/item:opacity-100 transition-opacity"
-                size="icon"
-                variant="ghost"
-                onClick={(e) => e.stopPropagation()}
+                tabIndex={0}
+                className="opacity-0 group-hover/item:opacity-100 data-[state=open]:opacity-75 transition-opacity focus-visible:outline-none"
               >
-                <Ellipsis />
-              </Button>
+                <Ellipsis className="size-4 shrink-0" />
+              </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" side="right">
               <DropdownMenuItem
