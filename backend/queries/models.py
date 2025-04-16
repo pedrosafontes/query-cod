@@ -1,5 +1,6 @@
 from django.db import models
 
+from .services.ra.validation import validate_ra
 from common.models import IndexedTimeStampedModel
 from databases.services.execution import execute_sql
 from databases.types import QueryExecutionResult
@@ -29,7 +30,13 @@ class Query(IndexedTimeStampedModel):
         return execute_sql(self.sql_text, from_model(self.project.database))
 
     def validate(self) -> QueryValidationResult:
-        return validate_sql(self.sql_text, from_model(self.project.database))
+        match self.language:
+            case Query.QueryLanguage.SQL:
+                return validate_sql(self.sql_text, from_model(self.project.database))
+            case Query.QueryLanguage.RA:
+                return validate_ra(self.ra_text)
+            case _:
+                raise ValueError(f'Unsupported query language: {self.language}')
 
     @property
     def validation_errors(self) -> list[QueryError]:
