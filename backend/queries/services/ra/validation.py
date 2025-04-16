@@ -1,6 +1,6 @@
-from .errors import RASyntaxError
 from queries.types import QueryValidationResult
 
+from .errors import RASyntaxError
 from .parser import parse_ra
 
 
@@ -24,5 +24,3 @@ def validate_ra(query_text: str) -> QueryValidationResult:
                 }
             ],
         }
-    except Exception as e:
-        return { 'valid': False }

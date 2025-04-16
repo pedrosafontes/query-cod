@@ -1,11 +1,11 @@
 class RASyntaxError(Exception):
-    def __init__(self, line: int, column: int, label: str = "Syntax Error", context: str = ""):
+    def __init__(self, line: int, column: int, label: str = 'Syntax Error', context: str = ''):
         self.label = label
         self.line = line
         self.column = column
         self.context = context
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.label} at line {self.line}, column {self.column}.\n\n{self.context}'
 
 
