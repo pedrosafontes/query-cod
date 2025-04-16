@@ -1,6 +1,5 @@
 from django.db import models
 
-from .services.ra.validation import validate_ra
 from common.models import IndexedTimeStampedModel
 from databases.services.execution import execute_sql
 from databases.types import QueryExecutionResult
@@ -8,6 +7,7 @@ from databases.utils.conversion import from_model
 from projects.models import Project
 from queries.types import QueryError, QueryValidationResult
 
+from .services.ra.validation import validate_ra
 from .services.sql.validation import validate_sql
 
 
