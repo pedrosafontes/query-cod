@@ -1,7 +1,12 @@
-class RASyntaxError(SyntaxError):
+class RASyntaxError(Exception):
+    def __init__(self, line: int, column: int, label: str = "Syntax Error", context: str = ""):
+        self.label = label
+        self.line = line
+        self.column = column
+        self.context = context
+
     def __str__(self):
-        context, line, column = self.args
-        return f'{self.label} at line {line}, column {column}.\n\n{context}'
+        return f'{self.label} at line {self.line}, column {self.column}.\n\n{self.context}'
 
 
 class MismatchedParenthesisError(RASyntaxError):
