@@ -30,14 +30,14 @@ from .ast import (
 
 class RATransformer(Transformer[Relation, RAExpression]):
     def relation(self, args: list[Token]) -> Relation:
-        return Relation(name=args[0].value, attributes=[])
+        return Relation(name=args[0], attributes=[])
 
     def attribute(self, args: tuple[Token] | tuple[Relation | Token]) -> Attribute:  # type: ignore[return]
         match args:
             case (relation, token):
-                return Attribute(name=token.value, relation=relation.name)  # type: ignore[union-attr]
+                return Attribute(name=token, relation=relation.name)  # type: ignore[union-attr]
             case (token,):
-                return Attribute(name=token.value)  # type: ignore[union-attr]
+                return Attribute(name=token)  # type: ignore[union-attr]
 
     def projection(self, args: tuple[list[Attribute], RAExpression]) -> Projection:
         attrs, expr = args
@@ -63,16 +63,16 @@ class RATransformer(Transformer[Relation, RAExpression]):
     def count(self, _: tuple[()]) -> AggregationFunction:
         return AggregationFunction.COUNT
 
-    def sum_(self, _: tuple[()]) -> AggregationFunction:
+    def sum(self, _: tuple[()]) -> AggregationFunction:
         return AggregationFunction.SUM
 
     def avg(self, _: tuple[()]) -> AggregationFunction:
         return AggregationFunction.AVG
 
-    def min_(self, _: tuple[()]) -> AggregationFunction:
+    def min(self, _: tuple[()]) -> AggregationFunction:
         return AggregationFunction.MIN
 
-    def max_(self, _: tuple[()]) -> AggregationFunction:
+    def max(self, _: tuple[()]) -> AggregationFunction:
         return AggregationFunction.MAX
 
     def topn(self, args: tuple[Token, Attribute, RAExpression]) -> TopN:
@@ -146,12 +146,6 @@ class RATransformer(Transformer[Relation, RAExpression]):
 
     def item_list(self, args: list[Any]) -> list[Any]:
         return args
-
-    def _subscript(self, args: list[Any]) -> Any:
-        return args[0]
-
-    def _overset(self, args: list[Any]) -> tuple[Any, Any]:
-        return args[0], args[1]
 
     def expr(self, args: list[Any]) -> Any:
         return args[0]
