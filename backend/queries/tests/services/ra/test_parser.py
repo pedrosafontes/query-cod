@@ -19,6 +19,23 @@ from queries.services.ra.ast import (
     ThetaJoin,
     TopN,
 )
+from queries.services.ra.errors import (
+    InvalidAggregationFunctionError,
+    InvalidAggregationInputError,
+    InvalidAggregationOutputError,
+    InvalidOperatorError,
+    InvalidSelectionConditionError,
+    InvalidThetaJoinConditionError,
+    InvalidTopNLimitError,
+    InvalidTopNOrderByError,
+    MismatchedParenthesisError,
+    MissingCommaError,
+    MissingGroupingAggregationsError,
+    MissingOperandError,
+    MissingProjectionAttributesError,
+    MissingSelectionConditionError,
+    MissingThetaJoinConditionError,
+)
 from queries.services.ra.parser import parse_ra
 
 
@@ -560,3 +577,62 @@ class TestComplexQueries:
         assert [a.name for a in tree.attributes] == ['name', 'dept_name']
         assert isinstance(tree.expression, ThetaJoin)
         assert isinstance(tree.expression.right, Selection)
+
+
+class TestErrorHandling:
+    @pytest.mark.parametrize(
+        'query, expected_error',
+        [
+            ('\\pi_{} R', MissingProjectionAttributesError),
+            ('\\pi R', MissingProjectionAttributesError),
+            ('\\sigma_{} R', MissingSelectionConditionError),
+            ('\\sigma R', MissingSelectionConditionError),
+            ('\\sigma_{a >} R', InvalidSelectionConditionError),
+            ('\\sigma_{=} R', InvalidSelectionConditionError),
+            ('\\sigma_{a == b} R', InvalidSelectionConditionError),
+            ('R \\overset{}{\\bowtie} S', MissingThetaJoinConditionError),
+            ('R \\overset{a =}{\\bowtie} S', InvalidThetaJoinConditionError),
+            ('R \\overset{= b}{\\bowtie} S', InvalidThetaJoinConditionError),
+            ('\\pi_{A B} R', MissingCommaError),
+            ('\\Gamma_{(A B), (C, count, D)} R', MissingCommaError),
+            ('\\Gamma_{(A,B), (C count D)} R', MissingCommaError),
+            ('\\Gamma_{(A,B) (C, count, D)} R', MissingCommaError),
+            ('\\operatorname{T}_{(10 A)} R', MissingCommaError),
+            ('R \\cup', MissingOperandError),
+            ('\\cup S', MissingOperandError),
+            ('R -', MissingOperandError),
+            ('- S', MissingOperandError),
+            ('\\Join S', MissingOperandError),
+            ('R \\div', MissingOperandError),
+            ('\\ltimes S', MissingOperandError),
+            ('R && S', InvalidOperatorError),
+            ('R + S', InvalidOperatorError),
+            ('R || S', InvalidOperatorError),
+            ('R * S', InvalidOperatorError),
+            ('R ^^ S', InvalidOperatorError),
+            ('R ! S', InvalidOperatorError),
+            ('\\pi_{A} (R \\Join S', MismatchedParenthesisError),
+            ('(R \\cup S', MismatchedParenthesisError),
+            ('R \\cup S)', MismatchedParenthesisError),
+            ('((R \\cap S)', MismatchedParenthesisError),
+            ('R - (S', MismatchedParenthesisError),
+            ('\\Gamma R', MissingGroupingAggregationsError),
+            ('\\Gamma_{} R', MissingGroupingAggregationsError),
+            ('\\Gamma_{((A,B))} R', MissingGroupingAggregationsError),
+            ('\\Gamma_{((),())} R', MissingGroupingAggregationsError),
+            ('\\Gamma_{((A,B),())} R', MissingGroupingAggregationsError),
+            ('\\Gamma_{((A), ((1, sum, B)))} R', InvalidAggregationInputError),
+            ('\\Gamma_{((A), ((a+b, sum, B)))} R', InvalidAggregationInputError),
+            ('\\Gamma_{((A), ((B, total, C)))} R', InvalidAggregationFunctionError),
+            ('\\Gamma_{((A), ((B, summation, C)))} R', InvalidAggregationFunctionError),
+            ('\\Gamma_{((A), ((B, sum, 123)))} R', InvalidAggregationOutputError),
+            ('\\Gamma_{((A), ((B, avg, a+b)))} R', InvalidAggregationOutputError),
+            ('\\operatorname{T}_{(abc, A)} R', InvalidTopNLimitError),
+            ('\\operatorname{T}_{(, A)} R', InvalidTopNLimitError),
+            ('\\operatorname{T}_{(10, )} R', InvalidTopNOrderByError),
+            ('\\operatorname{T}_{(10, 123)} R', InvalidTopNOrderByError),
+        ],
+    )
+    def test_syntax_errors(self, query: str, expected_error: type) -> None:
+        with pytest.raises(expected_error):
+            parse_ra(query)
