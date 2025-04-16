@@ -487,7 +487,7 @@ class TestGroupedAggregation:
 
 class TestTopN:
     def test_simple_topn(self) -> None:
-        tree = parse_ra('\operatorname{Top}_{(5,score)} R')
+        tree = parse_ra('\\operatorname{Top}_{(5,score)} R')
         assert isinstance(tree, TopN)
         assert tree.limit == 5
         assert tree.attribute.name == 'score'
@@ -495,13 +495,15 @@ class TestTopN:
         assert tree.expression.name == 'R'
 
     def test_topn_with_larger_limit(self) -> None:
-        tree = parse_ra('\operatorname{Top}_{(100,salary)} Employee')
+        tree = parse_ra('\\operatorname{Top}_{(100,salary)} Employee')
         assert isinstance(tree, TopN)
         assert tree.limit == 100
         assert tree.attribute.name == 'salary'
 
     def test_topn_over_complex_expression(self) -> None:
-        tree = parse_ra('\operatorname{Top}_{(10,price)} (\\sigma_{category = "electronics"} Products)')
+        tree = parse_ra(
+            '\\operatorname{Top}_{(10,price)} (\\sigma_{category = "electronics"} Products)'
+        )
         assert isinstance(tree, TopN)
         assert tree.limit == 10
         assert tree.attribute.name == 'price'
