@@ -34,6 +34,8 @@ const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
       union: "#@\\cup\\placeholder{rrel}",
       intersect: "#@\\cap\\placeholder{rrel}",
     };
+
+    MathfieldElement.soundsDirectory = null;
   }, []);
 
   const updateRaText = async (value: string) => {
