@@ -7,7 +7,7 @@ from databases.utils.conversion import from_model
 from projects.models import Project
 from queries.types import QueryError, QueryValidationResult
 
-from .services.validation import validate_sql
+from .services.sql.validation import validate_sql
 
 
 class Query(IndexedTimeStampedModel):

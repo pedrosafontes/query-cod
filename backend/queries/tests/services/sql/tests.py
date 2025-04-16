@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 from databases.models import DatabaseConnectionInfo
-from queries.services.validation import validate_sql
+from queries.services.sql.validation import validate_sql
 
 
 @pytest.fixture
