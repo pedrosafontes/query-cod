@@ -21,7 +21,7 @@
 ?sub_expr: relation
          | "(" expr ")"
 
-projection: _PI _subscript{list{attribute}} expr
+projection: _PI _subscript{nonempty_list{attribute}} expr
 
 selection: _SIGMA _subscript{bool_expr} expr
 
@@ -38,9 +38,9 @@ selection: _SIGMA _subscript{bool_expr} expr
 comparison: value comparator value
 comparator: "=" -> eq
           | "\\neq" -> neq
-          | lt
+          | ("<" | "\\lt") -> lt
           | "\\leq" -> leq
-          | gt
+          | (">" | "\\gt") -> gt
           | "\\geq" -> geq
 
 ?value: NUMBER -> number
@@ -50,7 +50,7 @@ comparator: "=" -> eq
 grouped_aggregation: _GAMMA _subscript{_grouped_aggregation_params} expr
 _grouped_aggregation_params: "(" _grouping_attrs "," _aggregations ")"
 _grouping_attrs: "(" list{attribute} ")"
-_aggregations: "(" list{aggregation} ")"
+_aggregations: "(" nonempty_list{aggregation} ")"
 aggregation: "(" attribute "," aggregation_function "," attribute ")"
 aggregation_function: "count" -> count
                     | "sum" -> sum
@@ -63,13 +63,14 @@ _topn_params: "(" NUMBER "," attribute ")"
 
 _theta_join_op: _overset{bool_expr, "\\bowtie"}
 
-relation: IDENTIFIER
-attribute: (relation ".")? IDENTIFIER
+relation: _identifier
+attribute: (relation ".")? _identifier
+_identifier: CNAME | "\\text" "{" CNAME "}"
 
 _PI: "\\pi"
 _SIGMA: "\\sigma"
 _GAMMA: "\\Gamma"
-_TOPN: "T"
+_TOPN: "\operatorname{Top}"
 _UNION: "\\cup"
 _DIFF: "-"
 _INTERSECT: "\\cap"
@@ -77,15 +78,16 @@ _CARTESIAN: "\\times"
 _NATURAL_JOIN: "\\Join"
 _SEMIJOIN: "\\ltimes"
 _DIV: "\\div"
-lt: "<" | "\\lt"
-gt: ">" | "\\gt"
 
-list{item}: item ("," item)* -> item_list
+nonempty_list{item}: _nonempty_list_helper{item} -> item_list
+list{item}: -> item_list
+          | _nonempty_list_helper{item} -> item_list
+_nonempty_list_helper{item}: item ("," item)*
+
 _subscript{content}: "_" "{" content "}"
 _overset{superscript, operator}: "\\overset" "{" superscript "}" "{" operator "}"
 
-IDENTIFIER: /[a-zA-Z](\\_|[a-zA-Z0-9])*/
-
+%import common.CNAME
 %import common.NUMBER
 %import common.ESCAPED_STRING
 %import common.WS_INLINE
