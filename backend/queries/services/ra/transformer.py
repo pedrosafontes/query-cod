@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 from lark import Token, Transformer
 
@@ -34,10 +34,10 @@ class RATransformer(Transformer[Relation, RAExpression]):
 
     def attribute(self, args: tuple[Token] | tuple[Relation | Token]) -> Attribute:  # type: ignore[return]
         match args:
-            case (relation, token):
-                return Attribute(name=token, relation=relation.name)  # type: ignore[union-attr]
-            case (token,):
-                return Attribute(name=token)  # type: ignore[union-attr]
+            case (relation, identifier):
+                return Attribute(name=cast(str, identifier), relation=cast(Relation, relation).name)
+            case (identifier,):
+                return Attribute(name=cast(str, identifier))
 
     def projection(self, args: tuple[list[Attribute], RAExpression]) -> Projection:
         attrs, expr = args
@@ -147,8 +147,8 @@ class RATransformer(Transformer[Relation, RAExpression]):
     def item_list(self, args: list[Any]) -> list[Any]:
         return args
 
-    def expr(self, args: list[Any]) -> Any:
+    def expr(self, args: tuple[RAExpression]) -> RAExpression:
         return args[0]
 
-    def sub_expr(self, args: list[Any]) -> Any:
+    def sub_expr(self, args: tuple[RAExpression]) -> RAExpression:
         return args[0]
