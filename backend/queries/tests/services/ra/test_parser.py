@@ -1,5 +1,6 @@
 import pytest
-from queries.services.ra.ast import (
+from queries.services.ra.parser import parse_ra
+from queries.services.ra.parser.ast import (
     AggregationFunction,
     Attribute,
     BinaryBooleanExpression,
@@ -19,7 +20,7 @@ from queries.services.ra.ast import (
     ThetaJoin,
     TopN,
 )
-from queries.services.ra.errors import (
+from queries.services.ra.parser.errors import (
     InvalidAggregationFunctionError,
     InvalidAggregationInputError,
     InvalidAggregationOutputError,
@@ -36,7 +37,6 @@ from queries.services.ra.errors import (
     MissingSelectionConditionError,
     MissingThetaJoinConditionError,
 )
-from queries.services.ra.parser import parse_ra
 
 
 class TestRelationAndAttributes:

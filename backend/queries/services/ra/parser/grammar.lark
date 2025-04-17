@@ -67,6 +67,8 @@ relation: _identifier
 attribute: (relation ".")? _identifier
 _identifier: CNAME | "\\text" "{" CNAME "}"
 
+placeholder: "\\placeholder" "{" CNAME? "}"
+
 _PI: "\\pi"
 _SIGMA: "\\sigma"
 _GAMMA: "\\Gamma"
