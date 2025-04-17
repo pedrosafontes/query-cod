@@ -138,8 +138,11 @@ class RATransformer(Transformer[Relation, RAExpression]):
     def geq(self, _: tuple[()]) -> ComparisonOperator:
         return ComparisonOperator.GREATER_THAN_EQUAL
 
-    def number(self, args: list[Token]) -> int:
+    def int(self, args: list[Token]) -> int:
         return int(args[0])
+    
+    def float(self, args: list[Token]) -> float:
+        return float(args[0])
 
     def string(self, args: list[Token]) -> str:
         return str(args[0])[1:-1]  # strip quotes

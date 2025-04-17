@@ -43,7 +43,8 @@ comparator: "=" -> eq
           | (">" | "\\gt") -> gt
           | "\\geq" -> geq
 
-?value: NUMBER -> number
+?value: SIGNED_FLOAT  -> float
+      | SIGNED_INT -> int
       | ESCAPED_STRING -> string
       | attribute
 
@@ -59,7 +60,7 @@ aggregation_function: "count" -> count
                     | "max" -> max
 
 topn: _TOPN _subscript{_topn_params} expr
-_topn_params: "(" NUMBER "," attribute ")"
+_topn_params: "(" INT "," attribute ")"
 
 _theta_join_op: _overset{bool_expr, "\\bowtie"}
 
@@ -90,7 +91,9 @@ _subscript{content}: "_" "{" content "}"
 _overset{superscript, operator}: "\\overset" "{" superscript "}" "{" operator "}"
 
 %import common.CNAME
-%import common.NUMBER
+%import common.INT
+%import common.SIGNED_INT
+%import common.SIGNED_FLOAT
 %import common.ESCAPED_STRING
 %import common.WS_INLINE
 %ignore WS_INLINE
