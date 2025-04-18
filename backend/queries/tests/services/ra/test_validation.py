@@ -81,6 +81,11 @@ class TestRAValidation:
             ('\\sigma_{Z > 10} R', 'Unknown attribute: Z'),
             # Join condition errors
             ('R \\overset{A = G}{\\bowtie} S', 'Unknown attribute: G'),
+            # Aggregation errors
+            ('\\Gamma_{((Z), ((A, sum, X)))} R', 'Unknown attribute: Z'),
+            ('\\Gamma_{((A), ((Z, sum, X)))} R', 'Unknown attribute: Z'),
+            # TopN errors
+            ('\\operatorname{T}_{(10, Z)} R', 'Unknown attribute: Z'),
         ],
     )
     def test_semantic_errors(self, query: str, expected_error_message: str) -> None:
@@ -90,3 +95,35 @@ class TestRAValidation:
         assert any(
             expected_error_message in error['message'] for error in result['errors']
         ), f"Expected error '{expected_error_message}' not found in {result['errors']}"
+
+    @pytest.mark.parametrize('query', [
+        # Complex nested query with various operations
+        # '\\pi_{name, salary} (\\sigma_{department = \\"IT\\" \\land salary > 50000} Employee)',
+        # Query with nested joins
+        '\\pi_{Employee.name, Department.name} (Employee \\Join Department)',
+        # Query with aggregation and filtering
+        '\\pi_{department, avg_salary} (\\Gamma_{((department), ((salary, avg, \\text{avg_salary})))} (\\sigma_{salary > 30000} Employee))',
+        # Complex query with multiple operations
+        '\\pi_{department, count} (\\Gamma_{((department), ((id, count, count)))} (\\sigma_{salary > 50000} Employee))',
+    ])
+    def test_complex_query_validation(self, query) -> None:
+        result = validate_ra(query, mock_db)
+        assert result[
+            'valid'
+        ], f'Complex query should be valid: {query}, but got errors: {result['errors']}'
+
+    @pytest.mark.parametrize(
+        'query, expected_error_message',
+        [
+            # Ambiguous attributes in natural joins
+            ('R \\overset{A = B}{\\bowtie} T', 'Ambiguous attribute: A in relations: R, T'),
+        ],
+    )
+    def test_ambiguous_attribute_errors(self, query: str, expected_error_message: str) -> None:
+        """Test detection of ambiguous attribute references."""
+        result = validate_ra(query, mock_db)
+        assert not result['valid'], f'Query should be invalid due to ambiguity: {query}'
+        assert any(
+            expected_error_message in error['message'] for error in result['errors']
+        ), f"Expected error '{expected_error_message}' not found in {result['errors']}"
+
