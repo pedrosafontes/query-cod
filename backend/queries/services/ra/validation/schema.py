@@ -79,7 +79,6 @@ class RASchemaValidator:
     def _validate_Division(self, div: Division) -> None: # noqa: N802
         self._validate(div.dividend)
         self._validate(div.divisor)
-        # TODO: validate dividend and divisor attributes
 
     def _validate_GroupedAggregation(self, agg: GroupedAggregation) -> None: # noqa: N802
         self._validate(agg.expression)
@@ -133,7 +132,7 @@ class RASchemaValidator:
         if isinstance(expr, Join) or isinstance(expr, ThetaJoin):
             return self._infer_attributes(expr.left) + self._infer_attributes(expr.right)
         if isinstance(expr, GroupedAggregation):
-            return [Attribute(a.output) for a in expr.aggregations]
+            return [Attribute(a.output) for a in expr.aggregations] + expr.group_by
         if isinstance(expr, TopN):
             return self._infer_attributes(expr.expression)
         if isinstance(expr, Division):
