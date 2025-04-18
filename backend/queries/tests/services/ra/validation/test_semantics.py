@@ -12,6 +12,7 @@ from queries.services.ra.parser.ast import (
     GroupedAggregation,
     Join,
     JoinOperator,
+    NotExpression,
     Projection,
     RAExpression,
     Relation,
@@ -236,6 +237,26 @@ class TestRAValidation:
 @pytest.mark.parametrize(
     'expr, expected_exception',
     [
+        # AND between non-booleans
+        (
+            Selection(
+                BinaryBooleanExpression(
+                    BinaryBooleanOperator.AND,
+                    Attribute("A"),
+                    Attribute("B"),
+                ),
+                Relation("R"),
+            ),
+            TypeMismatchError,
+        ),
+        # Logical NOT on a string: ¬B
+        (
+            Selection(
+                NotExpression(Attribute("B")),
+                Relation("R"),
+            ),
+            TypeMismatchError,
+        ),
         # Comparison between TEXT and FLOAT: B < C
         (
             Selection(
