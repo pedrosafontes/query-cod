@@ -44,7 +44,6 @@ class TestRelationAndAttributes:
         relation = parse_ra('Sailor')
         assert isinstance(relation, Relation)
         assert relation.name == 'Sailor'
-        assert relation.attributes == []
 
     def test_relations_with_special_chars(self) -> None:
         relation = parse_ra('\\text{Student_2023}')

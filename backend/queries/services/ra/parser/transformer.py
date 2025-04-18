@@ -30,7 +30,7 @@ from .ast import (
 
 class RATransformer(Transformer[Relation, RAExpression]):
     def relation(self, args: list[Token]) -> Relation:
-        return Relation(name=args[0], attributes=[])
+        return Relation(name=args[0])
 
     def attribute(self, args: tuple[Token] | tuple[Relation | Token]) -> Attribute:  # type: ignore[return]
         match args:

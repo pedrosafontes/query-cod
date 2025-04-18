@@ -9,7 +9,6 @@ class RAExpression:
 @dataclass
 class Relation(RAExpression):
     name: str
-    attributes: list[str]
 
 
 @dataclass
