@@ -121,7 +121,7 @@ def test_valid_ast_expressions(expr: RAExpression, schema: Schema) -> None:
 
 @pytest.mark.parametrize(
     'expr, expected_exception',
-    [   
+    [
         (Relation('X'), UndefinedRelationError),
         (
             Join(JoinOperator.NATURAL, Relation('R'), Relation('X')),
@@ -301,6 +301,7 @@ def test_semantic_exceptions(
 ) -> None:
     with pytest.raises(expected_exception):
         RASemanticAnalyzer(schema).validate(expr)
+
 
 @pytest.mark.parametrize(
     'function',
