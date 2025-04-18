@@ -143,7 +143,11 @@ class RASemanticAnalyzer:
         return input_attrs
 
     def _validate_condition(self, cond: BooleanExpression, attrs: list[TypedAttribute]) -> None:
-        if isinstance(cond, Comparison):
+        if isinstance(cond, Attribute):
+            typed_attr = self._resolve_attribute(cond, attrs)
+            if typed_attr.data_type != DataType.BOOLEAN:
+                raise TypeMismatchError(DataType.BOOLEAN, typed_attr.data_type)
+        elif isinstance(cond, Comparison):
             self._validate_comparison(cond, attrs)
         elif isinstance(cond, BinaryBooleanExpression):
             self._validate_condition(cond.left, attrs)

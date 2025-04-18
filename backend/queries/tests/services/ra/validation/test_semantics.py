@@ -224,6 +224,28 @@ class TestRAValidation:
                 ),
                 AmbiguousAttributeError,
             ),
+            (
+                Projection(
+                    [Attribute('A')],
+                    SetOperation(
+                        SetOperator.CARTESIAN,
+                        Relation('R'),
+                        Relation('T'),
+                    )
+                ),
+                AmbiguousAttributeError,
+            ),
+            (
+                Selection(
+                    Comparison(ComparisonOperator.GREATER_THAN, Attribute('A'), 10),
+                    SetOperation(
+                        SetOperator.CARTESIAN,
+                        Relation('R'),
+                        Relation('T'),
+                    )
+                ),
+                AmbiguousAttributeError,
+            )
         ],
     )
     def test_ambiguous_attribute_exceptions(
