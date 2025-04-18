@@ -60,7 +60,7 @@ class Comparison:
     right: ComparisonValue
 
 
-BooleanExpression = BinaryBooleanExpression | NotExpression | Comparison
+BooleanExpression = BinaryBooleanExpression | NotExpression | Comparison | Attribute
 
 
 @dataclass

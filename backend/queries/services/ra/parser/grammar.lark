@@ -34,6 +34,7 @@ selection: _SIGMA _subscript{bool_expr} expr
 ?bool_atom: "\\lnot" bool_atom -> not_
           | "(" bool_expr ")"
           | comparison
+          | attribute
 
 comparison: value comparator value
 comparator: "=" -> eq

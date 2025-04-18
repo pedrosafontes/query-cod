@@ -395,6 +395,7 @@ from queries.services.ra.parser.errors import (
                 ),
             ),
         ),
+        ('\\sigma_{a} R', Selection(Attribute('a'), Relation('R'))),
     ],
 )
 def test_parser_ast_equivalence(query: str, expected: RAExpression) -> None:
