@@ -36,7 +36,7 @@ from queries.services.ra.validation.semantics import RASemanticAnalyzer
 
 
 @pytest.fixture
-def mock_schema() -> Schema:
+def schema() -> Schema:
     return {
         'R': {'A': DataType.INTEGER, 'B': DataType.STRING, 'C': DataType.FLOAT},
         'S': {'D': DataType.INTEGER, 'E': DataType.STRING, 'F': DataType.FLOAT},
@@ -57,225 +57,200 @@ def mock_schema() -> Schema:
     }
 
 
-class TestRAValidation:
-    @pytest.mark.parametrize(
-        'expr',
-        [
-            Relation('R'),
-            Projection([Attribute('A'), Attribute('B')], Relation('R')),
+@pytest.mark.parametrize(
+    'expr',
+    [
+        Relation('R'),
+        Projection([Attribute('A'), Attribute('B')], Relation('R')),
+        Selection(Comparison(ComparisonOperator.GREATER_THAN, Attribute('A'), 10), Relation('R')),
+        Join(JoinOperator.NATURAL, Relation('R'), Relation('S')),
+        SetOperation(SetOperator.CARTESIAN, Relation('R'), Relation('S')),
+        SetOperation(SetOperator.UNION, Relation('R'), Relation('U')),
+        SetOperation(SetOperator.INTERSECT, Relation('R'), Relation('U')),
+        SetOperation(SetOperator.DIFFERENCE, Relation('R'), Relation('U')),
+        GroupedAggregation(
+            group_by=[Attribute('A')],
+            aggregations=[Aggregation(Attribute('B'), AggregationFunction.COUNT, 'X')],
+            expression=Relation('R'),
+        ),
+        TopN(10, Attribute('A'), Relation('R')),
+        ThetaJoin(
+            Relation('Employee'),
+            Relation('Department'),
+            Comparison(
+                ComparisonOperator.EQUAL,
+                Attribute('department', 'Employee'),
+                Attribute('name', 'Department'),
+            ),
+        ),
+        Projection(
+            [Attribute('A'), Attribute('B')],
             Selection(
-                Comparison(ComparisonOperator.GREATER_THAN, Attribute('A'), 10), Relation('R')
+                Comparison(ComparisonOperator.GREATER_THAN, Attribute('C'), 5.0),
+                Relation('R'),
             ),
-            Join(JoinOperator.NATURAL, Relation('R'), Relation('S')),
-            SetOperation(SetOperator.CARTESIAN, Relation('R'), Relation('S')),
-            SetOperation(SetOperator.UNION, Relation('R'), Relation('U')),
-            SetOperation(SetOperator.INTERSECT, Relation('R'), Relation('U')),
-            SetOperation(SetOperator.DIFFERENCE, Relation('R'), Relation('U')),
-            GroupedAggregation(
-                group_by=[Attribute('A')],
-                aggregations=[Aggregation(Attribute('B'), AggregationFunction.COUNT, 'X')],
-                expression=Relation('R'),
-            ),
-            TopN(10, Attribute('A'), Relation('R')),
-            ThetaJoin(
-                Relation('Employee'),
-                Relation('Department'),
-                Comparison(
-                    ComparisonOperator.EQUAL,
-                    Attribute('department', 'Employee'),
-                    Attribute('name', 'Department'),
-                ),
-            ),
-            Projection(
-                [Attribute('A'), Attribute('B')],
-                Selection(
-                    Comparison(ComparisonOperator.GREATER_THAN, Attribute('C'), 5.0),
-                    Relation('R'),
-                ),
-            ),
-            Projection(
-                attributes=[
-                    Attribute("name"),
-                    Attribute("salary"),
-                ],
-                expression=Selection(
-                    condition=BinaryBooleanExpression(
-                        operator=BinaryBooleanOperator.AND,
-                        left=Comparison(
-                            operator=ComparisonOperator.EQUAL,
-                            left=Attribute("department"),
-                            right="IT",
-                        ),
-                        right=Comparison(
-                            operator=ComparisonOperator.GREATER_THAN,
-                            left=Attribute("salary"),
-                            right=50000,
-                        ),
+        ),
+        Projection(
+            attributes=[
+                Attribute('name'),
+                Attribute('salary'),
+            ],
+            expression=Selection(
+                condition=BinaryBooleanExpression(
+                    operator=BinaryBooleanOperator.AND,
+                    left=Comparison(
+                        operator=ComparisonOperator.EQUAL,
+                        left=Attribute('department'),
+                        right='IT',
                     ),
-                    expression=Relation("Employee"),
-                )
-            ),
-        ],
-    )
-    def test_valid_ast_expressions(self, expr: RAExpression, mock_schema: Schema) -> None:
-        analyzer = RASemanticAnalyzer(mock_schema)
-        analyzer.validate(expr)
-
-    @pytest.mark.parametrize(
-        'expr, expected_exception',
-        [
-            (Relation('X'), UndefinedRelationError),
-            (
-                Join(JoinOperator.NATURAL, Relation('R'), Relation('X')),
-                UndefinedRelationError,
-            ),
-            (Projection([Attribute('Z')], Relation('R')), UndefinedAttributeError),
-            (
-                Selection(
-                    Comparison(ComparisonOperator.GREATER_THAN, Attribute('Z'), 10),
-                    Relation('R'),
+                    right=Comparison(
+                        operator=ComparisonOperator.GREATER_THAN,
+                        left=Attribute('salary'),
+                        right=50000,
+                    ),
                 ),
-                UndefinedAttributeError,
+                expression=Relation('Employee'),
             ),
-            (
-                Selection(Comparison(ComparisonOperator.EQUAL, Attribute('B'), 10), Relation('R')),
-                TypeMismatchError,
-            ),
-            (
-                Selection(Comparison(ComparisonOperator.GREATER_THAN, Attribute('A'), 'text'), Relation('R')),
-                TypeMismatchError,
-            ),
-            (
-                SetOperation(SetOperator.UNION, Relation('R'), Relation('S')),
-                UnionCompatibilityError,
-            ),
-            (
-                SetOperation(SetOperator.INTERSECT, Relation('R'), Relation('S')),
-                UnionCompatibilityError,
-            ),
-            (
-                SetOperation(SetOperator.DIFFERENCE, Relation('R'), Relation('S')),
-                UnionCompatibilityError,
-            ),
-            (
-                ThetaJoin(
-                    Relation('R'),
-                    Relation('S'),
-                    Comparison(ComparisonOperator.EQUAL, Attribute('A'), Attribute('G')),
-                ),
-                UndefinedAttributeError,
-            ),
-            (
-                ThetaJoin(
-                    Relation('R'),
-                    Relation('S'),
-                    Comparison(ComparisonOperator.EQUAL, Attribute('B'), Attribute('D')),
-                ),
-                TypeMismatchError,
-            ),
-            (
-                GroupedAggregation(
-                    [Attribute('Z')],
-                    [Aggregation(Attribute('A'), AggregationFunction.SUM, 'X')],
-                    Relation('R'),
-                ),
-                UndefinedAttributeError,
-            ),
-            (
-                GroupedAggregation(
-                    [Attribute('A')],
-                    [Aggregation(Attribute('Z'), AggregationFunction.SUM, 'X')],
-                    Relation('R'),
-                ),
-                UndefinedAttributeError,
-            ),
-            (
-                GroupedAggregation(
-                    group_by=[Attribute('A')],
-                    aggregations=[
-                        Aggregation(
-                            input=Attribute('B'),
-                            aggregation_function=AggregationFunction.SUM,
-                            output='X',
-                        )
-                    ],
-                    expression=Relation('R'),
-                ),
-                InvalidFunctionArgumentError,
-            ),
-            (TopN(10, Attribute('Z'), Relation('R')), UndefinedAttributeError),
-        ],
-    )
-    def test_semantic_exceptions(
-        self, expr: RAExpression, expected_exception: type[Exception], mock_schema: Schema
-    ) -> None:
-        analyzer = RASemanticAnalyzer(mock_schema)
-        with pytest.raises(expected_exception):
-            analyzer.validate(expr)
-
-    @pytest.mark.parametrize(
-        'expr, expected_exception',
-        [
-            (
-                ThetaJoin(
-                    Relation('R'),
-                    Relation('T'),
-                    Comparison(ComparisonOperator.EQUAL, Attribute('A'), Attribute('B')),
-                ),
-                AmbiguousAttributeError,
-            ),
-            (
-                Projection(
-                    [Attribute('A')],
-                    SetOperation(
-                        SetOperator.CARTESIAN,
-                        Relation('R'),
-                        Relation('T'),
-                    )
-                ),
-                AmbiguousAttributeError,
-            ),
-            (
-                Selection(
-                    Comparison(ComparisonOperator.GREATER_THAN, Attribute('A'), 10),
-                    SetOperation(
-                        SetOperator.CARTESIAN,
-                        Relation('R'),
-                        Relation('T'),
-                    )
-                ),
-                AmbiguousAttributeError,
-            )
-        ],
-    )
-    def test_ambiguous_attribute_exceptions(
-        self, expr: RAExpression, expected_exception: type[Exception], mock_schema: Schema
-    ) -> None:
-        analyzer = RASemanticAnalyzer(mock_schema)
-        with pytest.raises(expected_exception):
-            analyzer.validate(expr)
+        ),
+    ],
+)
+def test_valid_ast_expressions(expr: RAExpression, schema: Schema) -> None:
+    analyzer = RASemanticAnalyzer(schema)
+    analyzer.validate(expr)
 
 
 @pytest.mark.parametrize(
     'expr, expected_exception',
-    [
+    [   
+        (Relation('X'), UndefinedRelationError),
+        (
+            Join(JoinOperator.NATURAL, Relation('R'), Relation('X')),
+            UndefinedRelationError,
+        ),
+        (Projection([Attribute('Z')], Relation('R')), UndefinedAttributeError),
+        (
+            Selection(
+                Comparison(ComparisonOperator.GREATER_THAN, Attribute('Z'), 10),
+                Relation('R'),
+            ),
+            UndefinedAttributeError,
+        ),
+        (
+            Selection(Comparison(ComparisonOperator.EQUAL, Attribute('B'), 10), Relation('R')),
+            TypeMismatchError,
+        ),
+        (
+            Selection(
+                Comparison(ComparisonOperator.GREATER_THAN, Attribute('A'), 'text'), Relation('R')
+            ),
+            TypeMismatchError,
+        ),
+        (
+            SetOperation(SetOperator.UNION, Relation('R'), Relation('S')),
+            UnionCompatibilityError,
+        ),
+        (
+            SetOperation(SetOperator.INTERSECT, Relation('R'), Relation('S')),
+            UnionCompatibilityError,
+        ),
+        (
+            SetOperation(SetOperator.DIFFERENCE, Relation('R'), Relation('S')),
+            UnionCompatibilityError,
+        ),
+        (
+            ThetaJoin(
+                Relation('R'),
+                Relation('S'),
+                Comparison(ComparisonOperator.EQUAL, Attribute('A'), Attribute('G')),
+            ),
+            UndefinedAttributeError,
+        ),
+        (
+            ThetaJoin(
+                Relation('R'),
+                Relation('S'),
+                Comparison(ComparisonOperator.EQUAL, Attribute('B'), Attribute('D')),
+            ),
+            TypeMismatchError,
+        ),
+        (
+            GroupedAggregation(
+                [Attribute('Z')],
+                [Aggregation(Attribute('A'), AggregationFunction.SUM, 'X')],
+                Relation('R'),
+            ),
+            UndefinedAttributeError,
+        ),
+        (
+            GroupedAggregation(
+                [Attribute('A')],
+                [Aggregation(Attribute('Z'), AggregationFunction.SUM, 'X')],
+                Relation('R'),
+            ),
+            UndefinedAttributeError,
+        ),
+        (
+            GroupedAggregation(
+                group_by=[Attribute('A')],
+                aggregations=[
+                    Aggregation(
+                        input=Attribute('B'),
+                        aggregation_function=AggregationFunction.SUM,
+                        output='X',
+                    )
+                ],
+                expression=Relation('R'),
+            ),
+            InvalidFunctionArgumentError,
+        ),
+        (TopN(10, Attribute('Z'), Relation('R')), UndefinedAttributeError),
+        (
+            ThetaJoin(
+                Relation('R'),
+                Relation('T'),
+                Comparison(ComparisonOperator.EQUAL, Attribute('A'), Attribute('B')),
+            ),
+            AmbiguousAttributeError,
+        ),
+        (
+            Projection(
+                [Attribute('A')],
+                SetOperation(
+                    SetOperator.CARTESIAN,
+                    Relation('R'),
+                    Relation('T'),
+                ),
+            ),
+            AmbiguousAttributeError,
+        ),
+        (
+            Selection(
+                Comparison(ComparisonOperator.GREATER_THAN, Attribute('A'), 10),
+                SetOperation(
+                    SetOperator.CARTESIAN,
+                    Relation('R'),
+                    Relation('T'),
+                ),
+            ),
+            AmbiguousAttributeError,
+        ),
         # AND between non-booleans
         (
             Selection(
                 BinaryBooleanExpression(
                     BinaryBooleanOperator.AND,
-                    Attribute("A"),
-                    Attribute("B"),
+                    Attribute('A'),
+                    Attribute('B'),
                 ),
-                Relation("R"),
+                Relation('R'),
             ),
             TypeMismatchError,
         ),
         # Logical NOT on a string: ¬B
         (
             Selection(
-                NotExpression(Attribute("B")),
-                Relation("R"),
+                NotExpression(Attribute('B')),
+                Relation('R'),
             ),
             TypeMismatchError,
         ),
@@ -303,15 +278,29 @@ class TestRAValidation:
             ),
             TypeMismatchError,
         ),
+        # Right schema attributes must be subset of left
+        (
+            Division(
+                dividend=Relation('R'),
+                divisor=Relation('S'),
+            ),
+            DivisionSchemaMismatchError,
+        ),
+        # Attribute types must match
+        (
+            Division(
+                dividend=Relation('R'),
+                divisor=Relation('V'),
+            ),
+            DivisionTypeMismatchError,
+        ),
     ],
 )
-def test_comparison_type_errors(
-    expr: RAExpression, expected_exception: type[Exception], mock_schema: Schema
+def test_semantic_exceptions(
+    expr: RAExpression, expected_exception: type[Exception], schema: Schema
 ) -> None:
-    analyzer = RASemanticAnalyzer(mock_schema)
     with pytest.raises(expected_exception):
-        analyzer.validate(expr)
-
+        RASemanticAnalyzer(schema).validate(expr)
 
 @pytest.mark.parametrize(
     'function',
@@ -321,7 +310,7 @@ def test_comparison_type_errors(
     ],
 )
 def test_aggregation_function_invalid_on_string(
-    function: AggregationFunction, mock_schema: Schema
+    function: AggregationFunction, schema: Schema
 ) -> None:
     expr = GroupedAggregation(
         group_by=[Attribute('A')],
@@ -329,9 +318,8 @@ def test_aggregation_function_invalid_on_string(
         expression=Relation('R'),
     )
 
-    analyzer = RASemanticAnalyzer(mock_schema)
     with pytest.raises(InvalidFunctionArgumentError):
-        analyzer.validate(expr)
+        RASemanticAnalyzer(schema).validate(expr)
 
 
 @pytest.mark.parametrize(
@@ -351,7 +339,7 @@ def test_aggregation_function_invalid_on_string(
     ],
 )
 def test_aggregation_function_valid_on_compatible_types(
-    function: AggregationFunction, attribute_name: str, mock_schema: Schema
+    function: AggregationFunction, attribute_name: str, schema: Schema
 ) -> None:
     expr = GroupedAggregation(
         group_by=[Attribute('B')],
@@ -359,34 +347,5 @@ def test_aggregation_function_valid_on_compatible_types(
         expression=Relation('R'),
     )
 
-    analyzer = RASemanticAnalyzer(mock_schema)
+    analyzer = RASemanticAnalyzer(schema)
     analyzer.validate(expr)  # should not raise
-
-
-@pytest.mark.parametrize(
-    'expr, expected_exception',
-    [
-        # Right schema attributes must be subset of left
-        (
-            Division(
-                dividend=Relation('R'),
-                divisor=Relation('S'),
-            ),
-            DivisionSchemaMismatchError,
-        ),
-        # Attribute types must match
-        (
-            Division(
-                dividend=Relation('R'),
-                divisor=Relation('V'),
-            ),
-            DivisionTypeMismatchError,
-        ),
-    ],
-)
-def test_division_operator_errors(
-    expr: RAExpression, expected_exception: type[Exception], mock_schema: Schema
-) -> None:
-    analyzer = RASemanticAnalyzer(mock_schema)
-    with pytest.raises(expected_exception):
-        analyzer.validate(expr)
