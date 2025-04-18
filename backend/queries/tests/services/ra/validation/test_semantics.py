@@ -20,6 +20,7 @@ from queries.services.ra.parser.ast import (
 )
 from queries.services.ra.validation.errors import (
     AmbiguousAttributeError,
+    InvalidFunctionArgumentError,
     TypeMismatchError,
     UndefinedAttributeError,
     UndefinedRelationError,
@@ -132,6 +133,14 @@ class TestRAValidation:
                 UndefinedAttributeError,
             ),
             (
+                ThetaJoin(
+                    Relation('R'),
+                    Relation('S'),
+                    Comparison(ComparisonOperator.EQUAL, Attribute('B'), Attribute('D')),
+                ),
+                TypeMismatchError,
+            ),
+            (
                 GroupedAggregation(
                     [Attribute('Z')],
                     [Aggregation(Attribute('A'), AggregationFunction.SUM, 'X')],
@@ -146,6 +155,20 @@ class TestRAValidation:
                     Relation('R'),
                 ),
                 UndefinedAttributeError,
+            ),
+            (
+                GroupedAggregation(
+                    group_by=[Attribute("A")],
+                    aggregations=[
+                        Aggregation(
+                            input=Attribute("B"),
+                            aggregation_function=AggregationFunction.SUM,
+                            output="X"
+                        )
+                    ],
+                    expression=Relation("R")
+                ),
+                InvalidFunctionArgumentError,
             ),
             (TopN(10, Attribute('Z'), Relation('R')), UndefinedAttributeError),
         ],
@@ -176,3 +199,87 @@ class TestRAValidation:
         analyzer = RASemanticAnalyzer(mock_schema)
         with pytest.raises(expected_exception):
             analyzer.validate(expr)
+
+@pytest.mark.parametrize(
+    "expr, expected_exception",
+    [
+        # Comparison between TEXT and FLOAT: B < C
+        (
+            Selection(
+                Comparison(
+                    ComparisonOperator.LESS_THAN,
+                    Attribute("B"),
+                    Attribute("C"),
+                ),
+                Relation("R"),
+            ),
+            TypeMismatchError,
+        ),
+        # Comparison between INTEGER and TEXT: A = B
+        (
+            Selection(
+                Comparison(
+                    ComparisonOperator.EQUAL,
+                    Attribute("A"),
+                    Attribute("B"),
+                ),
+                Relation("R"),
+            ),
+            TypeMismatchError,
+        ),
+    ],
+)
+def test_comparison_type_errors(
+    expr: RAExpression, expected_exception: type[Exception], mock_schema: Schema
+) -> None:
+    analyzer = RASemanticAnalyzer(mock_schema)
+    with pytest.raises(expected_exception):
+        analyzer.validate(expr)
+
+@pytest.mark.parametrize(
+    "function",
+    [
+        AggregationFunction.SUM,
+        AggregationFunction.AVG,
+    ],
+)
+def test_aggregation_function_invalid_on_string(
+    function: AggregationFunction, mock_schema: Schema
+) -> None:
+    expr = GroupedAggregation(
+        group_by=[Attribute("A")],
+        aggregations=[Aggregation(Attribute("B"), function, "X")],  # B is STRING
+        expression=Relation("R"),
+    )
+
+    analyzer = RASemanticAnalyzer(mock_schema)
+    with pytest.raises(InvalidFunctionArgumentError):
+        analyzer.validate(expr)
+
+@pytest.mark.parametrize(
+    "function, attribute_name",
+    [
+        (AggregationFunction.SUM, "A"),   # INTEGER
+        (AggregationFunction.AVG, "A"),   # INTEGER
+        (AggregationFunction.MIN, "A"),   # INTEGER
+        (AggregationFunction.MAX, "A"),   # INTEGER
+        (AggregationFunction.SUM, "C"),   # FLOAT
+        (AggregationFunction.AVG, "C"),   # FLOAT
+        (AggregationFunction.MIN, "C"),   # FLOAT
+        (AggregationFunction.MAX, "C"),   # FLOAT
+        (AggregationFunction.COUNT, "A"),  # any type is fine
+        (AggregationFunction.COUNT, "B"),
+        (AggregationFunction.COUNT, "C"),
+    ],
+)
+def test_aggregation_function_valid_on_compatible_types(
+    function: AggregationFunction, attribute_name: str, mock_schema: Schema
+) -> None:
+    expr = GroupedAggregation(
+        group_by=[Attribute("B")],
+        aggregations=[Aggregation(Attribute(attribute_name), function, "X")],
+        expression=Relation("R"),
+    )
+
+    analyzer = RASemanticAnalyzer(mock_schema)
+    analyzer.validate(expr)  # should not raise
