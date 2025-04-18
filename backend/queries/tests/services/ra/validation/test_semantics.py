@@ -4,6 +4,8 @@ from queries.services.ra.parser.ast import (
     Aggregation,
     AggregationFunction,
     Attribute,
+    BinaryBooleanExpression,
+    BinaryBooleanOperator,
     Comparison,
     ComparisonOperator,
     Division,
@@ -90,6 +92,28 @@ class TestRAValidation:
                     Relation('R'),
                 ),
             ),
+            Projection(
+                attributes=[
+                    Attribute("name"),
+                    Attribute("salary"),
+                ],
+                expression=Selection(
+                    condition=BinaryBooleanExpression(
+                        operator=BinaryBooleanOperator.AND,
+                        left=Comparison(
+                            operator=ComparisonOperator.EQUAL,
+                            left=Attribute("department"),
+                            right="IT",
+                        ),
+                        right=Comparison(
+                            operator=ComparisonOperator.GREATER_THAN,
+                            left=Attribute("salary"),
+                            right=50000,
+                        ),
+                    ),
+                    expression=Relation("Employee"),
+                )
+            ),
         ],
     )
     def test_valid_ast_expressions(self, expr: RAExpression, mock_schema: Schema) -> None:
@@ -114,6 +138,10 @@ class TestRAValidation:
             ),
             (
                 Selection(Comparison(ComparisonOperator.EQUAL, Attribute('B'), 10), Relation('R')),
+                TypeMismatchError,
+            ),
+            (
+                Selection(Comparison(ComparisonOperator.GREATER_THAN, Attribute('A'), 'text'), Relation('R')),
                 TypeMismatchError,
             ),
             (
