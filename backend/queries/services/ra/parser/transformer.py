@@ -140,7 +140,7 @@ class RATransformer(Transformer[Relation, RAExpression]):
 
     def int(self, args: list[Token]) -> int:
         return int(args[0])
-    
+
     def float(self, args: list[Token]) -> float:
         return float(args[0])
 
@@ -155,3 +155,6 @@ class RATransformer(Transformer[Relation, RAExpression]):
 
     def sub_expr(self, args: tuple[RAExpression]) -> RAExpression:
         return args[0]
+
+    def CNAME(self, token: Token) -> str:  # noqa: N802
+        return str(token.value)
