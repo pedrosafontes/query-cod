@@ -4,7 +4,7 @@ from queries.types import QueryValidationResult
 
 from ..parser import parse_ra
 from ..parser.errors import RASyntaxError
-from .schema import RASchemaValidator
+from .schema import RASemanticAnalyzer
 
 
 def validate_ra(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationResult:
@@ -26,7 +26,7 @@ def validate_ra(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationR
         }
 
     schema = get_schema(db)
-    schema_errors = RASchemaValidator(schema).validate(expr)
+    schema_errors = RASemanticAnalyzer(schema).validate(expr)
     if schema_errors:
         return {
             'valid': False,

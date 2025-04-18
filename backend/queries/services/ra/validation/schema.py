@@ -1,3 +1,5 @@
+from collections.abc import Callable
+
 from databases.types import Schema
 
 from ..parser.ast import (
@@ -25,7 +27,7 @@ from .errors import (
 )
 
 
-class RASchemaValidator:
+class RASemanticAnalyzer:
     def __init__(self, schema: Schema):
         self.schema = schema
         self.errors: list[RAValidationError] = []
@@ -35,19 +37,20 @@ class RASchemaValidator:
         self._validate(expr)
         return self.errors
 
-    def _validate(self, expr: RAExpression) -> None:
-        method = getattr(self, f'_validate_{type(expr).__name__}', None)
-        if not method:
-            raise NotImplementedError(f'No validation implemented for {type(expr).__name__}')
-        method(expr)
+    def _validate(self, expr: RAExpression) -> list[Attribute]:
+        method: Callable[[RAExpression], list[Attribute]] = getattr(
+            self, f'_validate_{type(expr).__name__}'
+        )
+        return method(expr)
 
-    def _validate_Relation(self, rel: Relation) -> None: # noqa: N802
+    def _validate_Relation(self, rel: Relation) -> list[Attribute]:  # noqa: N802
         if rel.name not in self.schema:
             self.errors.append(UnknownRelationError(rel.name))
 
-    def _validate_Projection(self, proj: Projection) -> None: # noqa: N802
-        self._validate(proj.expression)
-        input_attrs = self._infer_attributes(proj.expression)
+        return [Attribute(name, relation=rel.name) for name in self.schema.get(rel.name, [])]
+
+    def _validate_Projection(self, proj: Projection) -> list[Attribute]:  # noqa: N802
+        input_attrs = self._validate(proj.expression)
         for attr in proj.attributes:
             matches = [
                 a
@@ -57,32 +60,41 @@ class RASchemaValidator:
             if not matches:
                 self.errors.append(UnknownAttributeError(attr.name))
 
-    def _validate_Selection(self, sel: Selection) -> None: # noqa: N802
-        self._validate(sel.expression)
-        input_attrs = self._infer_attributes(sel.expression)
-        self._validate_condition(sel.condition, input_attrs)
+        return proj.attributes
 
-    def _validate_SetOperation(self, op: SetOperation) -> None: # noqa: N802
-        self._validate(op.left)
+    def _validate_Selection(self, sel: Selection) -> list[Attribute]:  # noqa: N802
+        input_attrs = self._validate(sel.expression)
+        self._validate_condition(sel.condition, input_attrs)
+        return input_attrs
+
+    def _validate_SetOperation(self, op: SetOperation) -> list[Attribute]:  # noqa: N802
+        left_attrs = self._validate(op.left)
         self._validate(op.right)
 
-    def _validate_Join(self, join: Join) -> None: # noqa: N802
-        self._validate(join.left)
-        self._validate(join.right)
+        return left_attrs
 
-    def _validate_ThetaJoin(self, join: ThetaJoin) -> None: # noqa: N802
-        self._validate(join.left)
-        self._validate(join.right)
-        attrs = self._infer_attributes(join)
-        self._validate_condition(join.condition, attrs)
+    def _validate_Join(self, join: Join) -> list[Attribute]:  # noqa: N802
+        left_attrs = self._validate(join.left)
+        right_attrs = self._validate(join.right)
 
-    def _validate_Division(self, div: Division) -> None: # noqa: N802
-        self._validate(div.dividend)
-        self._validate(div.divisor)
+        return left_attrs + right_attrs
 
-    def _validate_GroupedAggregation(self, agg: GroupedAggregation) -> None: # noqa: N802
-        self._validate(agg.expression)
-        input_attrs = self._infer_attributes(agg.expression)
+    def _validate_ThetaJoin(self, join: ThetaJoin) -> list[Attribute]:  # noqa: N802
+        left_attrs = self._validate(join.left)
+        right_attrs = self._validate(join.right)
+        join_attrs = left_attrs + right_attrs
+        self._validate_condition(join.condition, join_attrs)
+
+        return join_attrs
+
+    def _validate_Division(self, div: Division) -> list[Attribute]:  # noqa: N802
+        left_attrs = self._validate(div.dividend)
+        right_attrs = self._validate(div.divisor)
+
+        return [a for a in left_attrs if not any(a.name == b.name for b in right_attrs)]
+
+    def _validate_GroupedAggregation(self, agg: GroupedAggregation) -> list[Attribute]:  # noqa: N802
+        input_attrs = self._validate(agg.expression)
         for attr in agg.group_by:
             if not any(a.name == attr.name for a in input_attrs):
                 self.errors.append(UnknownAttributeError(attr.name))
@@ -90,11 +102,14 @@ class RASchemaValidator:
             if not any(x.name == a.input.name for x in input_attrs):
                 self.errors.append(UnknownAttributeError(a.input.name))
 
-    def _validate_TopN(self, top: TopN) -> None: # noqa: N802
-        self._validate(top.expression)
-        input_attrs = self._infer_attributes(top.expression)
+        return [Attribute(a.output) for a in agg.aggregations] + agg.group_by
+
+    def _validate_TopN(self, top: TopN) -> list[Attribute]:  # noqa: N802
+        input_attrs = self._validate(top.expression)
         if not any(attr.name == top.attribute.name for attr in input_attrs):
             self.errors.append(UnknownAttributeError(top.attribute.name))
+
+        return input_attrs
 
     def _validate_condition(self, cond: BooleanExpression, attrs: list[Attribute]) -> None:
         if isinstance(cond, Comparison):
@@ -119,22 +134,3 @@ class RASchemaValidator:
             self._validate_condition(cond.right, attrs)
         elif isinstance(cond, NotExpression):
             self._validate_condition(cond.expression, attrs)
-
-    def _infer_attributes(self, expr: RAExpression) -> list[Attribute]:
-        if isinstance(expr, Relation):
-            return [Attribute(name, relation=expr.name) for name in self.schema.get(expr.name, [])]
-        if isinstance(expr, Projection):
-            return expr.attributes
-        if isinstance(expr, Selection):
-            return self._infer_attributes(expr.expression)
-        if isinstance(expr, SetOperation):
-            return self._infer_attributes(expr.left)
-        if isinstance(expr, Join) or isinstance(expr, ThetaJoin):
-            return self._infer_attributes(expr.left) + self._infer_attributes(expr.right)
-        if isinstance(expr, GroupedAggregation):
-            return [Attribute(a.output) for a in expr.aggregations] + expr.group_by
-        if isinstance(expr, TopN):
-            return self._infer_attributes(expr.expression)
-        if isinstance(expr, Division):
-            return self._infer_attributes(expr.dividend)
-        return []
