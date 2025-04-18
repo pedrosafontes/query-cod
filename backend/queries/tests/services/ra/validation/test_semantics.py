@@ -1,0 +1,178 @@
+import pytest
+from databases.types import DataType, Schema
+from queries.services.ra.parser.ast import (
+    Aggregation,
+    AggregationFunction,
+    Attribute,
+    Comparison,
+    ComparisonOperator,
+    GroupedAggregation,
+    Join,
+    JoinOperator,
+    Projection,
+    RAExpression,
+    Relation,
+    Selection,
+    SetOperation,
+    SetOperator,
+    ThetaJoin,
+    TopN,
+)
+from queries.services.ra.validation.errors import (
+    AmbiguousAttributeError,
+    TypeMismatchError,
+    UndefinedAttributeError,
+    UndefinedRelationError,
+    UnionCompatibilityError,
+)
+from queries.services.ra.validation.semantics import RASemanticAnalyzer
+
+
+@pytest.fixture
+def mock_schema() -> Schema:
+    return {
+        'R': {'A': DataType.INTEGER, 'B': DataType.STRING, 'C': DataType.FLOAT},
+        'S': {'D': DataType.INTEGER, 'E': DataType.STRING, 'F': DataType.FLOAT},
+        'T': {'A': DataType.INTEGER, 'G': DataType.STRING, 'H': DataType.BOOLEAN},
+        'U': {'A': DataType.INTEGER, 'B': DataType.STRING, 'C': DataType.FLOAT},
+        'Employee': {
+            'id': DataType.INTEGER,
+            'name': DataType.STRING,
+            'department': DataType.STRING,
+            'salary': DataType.FLOAT,
+        },
+        'Department': {
+            'id': DataType.INTEGER,
+            'name': DataType.STRING,
+            'manager_id': DataType.INTEGER,
+        },
+    }
+
+
+class TestRAValidation:
+    @pytest.mark.parametrize(
+        'expr',
+        [
+            Relation('R'),
+            Projection([Attribute('A'), Attribute('B')], Relation('R')),
+            Selection(
+                Comparison(ComparisonOperator.GREATER_THAN, Attribute('A'), 10), Relation('R')
+            ),
+            Join(JoinOperator.NATURAL, Relation('R'), Relation('S')),
+            SetOperation(SetOperator.CARTESIAN, Relation('R'), Relation('S')),
+            SetOperation(SetOperator.UNION, Relation('R'), Relation('U')),
+            SetOperation(SetOperator.INTERSECT, Relation('R'), Relation('U')),
+            SetOperation(SetOperator.DIFFERENCE, Relation('R'), Relation('U')),
+            GroupedAggregation(
+                group_by=[Attribute('A')],
+                aggregations=[Aggregation(Attribute('B'), AggregationFunction.COUNT, 'X')],
+                expression=Relation('R'),
+            ),
+            TopN(10, Attribute('A'), Relation('R')),
+            ThetaJoin(
+                Relation('Employee'),
+                Relation('Department'),
+                Comparison(
+                    ComparisonOperator.EQUAL,
+                    Attribute('department', 'Employee'),
+                    Attribute('name', 'Department'),
+                ),
+            ),
+            Projection(
+                [Attribute('A'), Attribute('B')],
+                Selection(
+                    Comparison(ComparisonOperator.GREATER_THAN, Attribute('C'), 5.0),
+                    Relation('R'),
+                ),
+            ),
+        ],
+    )
+    def test_valid_ast_expressions(self, expr: RAExpression, mock_schema: Schema) -> None:
+        analyzer = RASemanticAnalyzer(mock_schema)
+        analyzer.validate(expr)
+
+    @pytest.mark.parametrize(
+        'expr, expected_exception',
+        [
+            (Relation('X'), UndefinedRelationError),
+            (
+                Join(JoinOperator.NATURAL, Relation('R'), Relation('X')),
+                UndefinedRelationError,
+            ),
+            (Projection([Attribute('Z')], Relation('R')), UndefinedAttributeError),
+            (
+                Selection(
+                    Comparison(ComparisonOperator.GREATER_THAN, Attribute('Z'), 10),
+                    Relation('R'),
+                ),
+                UndefinedAttributeError,
+            ),
+            (
+                Selection(Comparison(ComparisonOperator.EQUAL, Attribute('B'), 10), Relation('R')),
+                TypeMismatchError,
+            ),
+            (
+                SetOperation(SetOperator.UNION, Relation('R'), Relation('S')),
+                UnionCompatibilityError,
+            ),
+            (
+                SetOperation(SetOperator.INTERSECT, Relation('R'), Relation('S')),
+                UnionCompatibilityError,
+            ),
+            (
+                SetOperation(SetOperator.DIFFERENCE, Relation('R'), Relation('S')),
+                UnionCompatibilityError,
+            ),
+            (
+                ThetaJoin(
+                    Relation('R'),
+                    Relation('S'),
+                    Comparison(ComparisonOperator.EQUAL, Attribute('A'), Attribute('G')),
+                ),
+                UndefinedAttributeError,
+            ),
+            (
+                GroupedAggregation(
+                    [Attribute('Z')],
+                    [Aggregation(Attribute('A'), AggregationFunction.SUM, 'X')],
+                    Relation('R'),
+                ),
+                UndefinedAttributeError,
+            ),
+            (
+                GroupedAggregation(
+                    [Attribute('A')],
+                    [Aggregation(Attribute('Z'), AggregationFunction.SUM, 'X')],
+                    Relation('R'),
+                ),
+                UndefinedAttributeError,
+            ),
+            (TopN(10, Attribute('Z'), Relation('R')), UndefinedAttributeError),
+        ],
+    )
+    def test_semantic_exceptions(
+        self, expr: RAExpression, expected_exception: type[Exception], mock_schema: Schema
+    ) -> None:
+        analyzer = RASemanticAnalyzer(mock_schema)
+        with pytest.raises(expected_exception):
+            analyzer.validate(expr)
+
+    @pytest.mark.parametrize(
+        'expr, expected_exception',
+        [
+            (
+                ThetaJoin(
+                    Relation('R'),
+                    Relation('T'),
+                    Comparison(ComparisonOperator.EQUAL, Attribute('A'), Attribute('B')),
+                ),
+                AmbiguousAttributeError,
+            ),
+        ],
+    )
+    def test_ambiguous_attribute_exceptions(
+        self, expr: RAExpression, expected_exception: type[Exception], mock_schema: Schema
+    ) -> None:
+        analyzer = RASemanticAnalyzer(mock_schema)
+        with pytest.raises(expected_exception):
+            analyzer.validate(expr)
