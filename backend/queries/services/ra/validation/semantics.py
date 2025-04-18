@@ -24,6 +24,8 @@ from ..parser.ast import (
 )
 from .errors import (
     AmbiguousAttributeError,
+    DivisionSchemaMismatchError,
+    DivisionTypeMismatchError,
     InvalidFunctionArgumentError,
     JoinAttributeTypeMismatchError,
     TypeMismatchError,
@@ -126,7 +128,17 @@ class RASemanticAnalyzer:
         left_attrs = self._validate(div.dividend)
         right_attrs = self._validate(div.divisor)
 
-        return [a for a in left_attrs if not any(a.name == b.name for b in right_attrs)]
+        left_lookup = {a.name: a for a in left_attrs}
+
+        for attr in right_attrs:
+            match = left_lookup.get(attr.name)
+            if match is None:
+                raise DivisionSchemaMismatchError(div.dividend, div.divisor)
+            if match.data_type != attr.data_type:
+                raise DivisionTypeMismatchError(div.dividend, div.divisor)
+
+        right_attr_names = {b.name for b in right_attrs}
+        return [a for a in left_attrs if a.name not in right_attr_names]
 
     def _validate_GroupedAggregation(self, agg: GroupedAggregation) -> list[TypedAttribute]:  # noqa: N802
         input_attrs = self._validate(agg.expression)

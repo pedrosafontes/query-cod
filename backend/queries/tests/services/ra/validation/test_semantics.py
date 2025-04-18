@@ -6,6 +6,7 @@ from queries.services.ra.parser.ast import (
     Attribute,
     Comparison,
     ComparisonOperator,
+    Division,
     GroupedAggregation,
     Join,
     JoinOperator,
@@ -20,6 +21,8 @@ from queries.services.ra.parser.ast import (
 )
 from queries.services.ra.validation.errors import (
     AmbiguousAttributeError,
+    DivisionSchemaMismatchError,
+    DivisionTypeMismatchError,
     InvalidFunctionArgumentError,
     TypeMismatchError,
     UndefinedAttributeError,
@@ -36,6 +39,7 @@ def mock_schema() -> Schema:
         'S': {'D': DataType.INTEGER, 'E': DataType.STRING, 'F': DataType.FLOAT},
         'T': {'A': DataType.INTEGER, 'G': DataType.STRING, 'H': DataType.BOOLEAN},
         'U': {'A': DataType.INTEGER, 'B': DataType.STRING, 'C': DataType.FLOAT},
+        'V': {'A': DataType.STRING, 'B': DataType.STRING},
         'Employee': {
             'id': DataType.INTEGER,
             'name': DataType.STRING,
@@ -283,3 +287,31 @@ def test_aggregation_function_valid_on_compatible_types(
 
     analyzer = RASemanticAnalyzer(mock_schema)
     analyzer.validate(expr)  # should not raise
+
+@pytest.mark.parametrize(
+    "expr, expected_exception",
+    [
+        # Right schema attributes must be subset of left
+        (
+            Division(
+                dividend=Relation("R"),
+                divisor=Relation("S"),
+            ),
+            DivisionSchemaMismatchError,
+        ),
+        # Attribute types must match
+        (
+            Division(
+                dividend=Relation("R"),
+                divisor=Relation("V"),
+            ),
+            DivisionTypeMismatchError,
+        ),
+    ],
+)
+def test_division_operator_errors(
+    expr: RAExpression, expected_exception: type[Exception], mock_schema: Schema
+) -> None:
+    analyzer = RASemanticAnalyzer(mock_schema)
+    with pytest.raises(expected_exception):
+        analyzer.validate(expr)

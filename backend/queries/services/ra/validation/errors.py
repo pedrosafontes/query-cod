@@ -56,3 +56,15 @@ class JoinAttributeTypeMismatchError(RATypeError):
     def __init__(self, left_attr: TypedAttribute, left_b_attr: TypedAttribute):
         self.left_attr = left_attr
         self.left_b_attr = left_b_attr
+
+
+class DivisionSchemaMismatchError(RATypeError):
+    def __init__(self, dividend: RAExpression, divisor: RAExpression):
+        self.dividend = dividend
+        self.divisor = divisor
+
+
+class DivisionTypeMismatchError(RATypeError):
+    def __init__(self, dividend: RAExpression, divisor: RAExpression):
+        self.dividend = dividend
+        self.divisor = divisor
