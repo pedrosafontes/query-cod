@@ -17,12 +17,12 @@ class RASemanticError(Exception):
             self.end_col = end_col
 
     def _message(self) -> str:
-        raise NotImplementedError("Subclasses must implement _message()")
+        raise NotImplementedError('Subclasses must implement _message()')
 
     def __str__(self) -> str:
         msg = self._message()
         if self.source.position:
-            return f"{msg} (Columns {self.start_col}–{self.end_col})"
+            return f'{msg} (Columns {self.start_col}-{self.end_col})'
         return msg
 
 
