@@ -191,7 +191,6 @@ class RASemanticAnalyzer:
         left_attrs: list[TypedAttribute],
         right_attrs: list[TypedAttribute],
     ) -> list[TypedAttribute]:
-        """Merge two schemas, checking for type compatibility."""
         merged: dict[str, TypedAttribute] = {}
 
         for attr in left_attrs + right_attrs:
