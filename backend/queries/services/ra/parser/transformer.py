@@ -1,6 +1,6 @@
 from typing import Any, cast
 
-from lark import Token, Transformer
+from lark import Token, Transformer, Tree
 
 from .ast import (
     Aggregation,
@@ -29,6 +29,12 @@ from .ast import (
 
 
 class RATransformer(Transformer[Relation, RAExpression]):
+    def _transform_tree(self, tree: Tree[Relation]) -> RAExpression:
+        node = super()._transform_tree(tree)  # type: ignore[no-untyped-call]
+        if isinstance(node, RAExpression):
+            node.position = (tree.meta.column, tree.meta.end_column)
+        return cast(RAExpression, node)
+
     def relation(self, args: list[Token]) -> Relation:
         return Relation(name=args[0])
 

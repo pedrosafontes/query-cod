@@ -1,8 +1,13 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 
 
-class RAExpression:
+@dataclass(kw_only=True)
+class ASTNode:
+    position: tuple[int, int] | None = field(default=None, compare=False)
+
+
+class RAExpression(ASTNode):
     pass
 
 
@@ -10,11 +15,19 @@ class RAExpression:
 class Relation(RAExpression):
     name: str
 
+    def __str__(self) -> str:
+        return self.name
+
 
 @dataclass
-class Attribute:
+class Attribute(ASTNode):
     name: str
     relation: str | None = None
+
+    def __str__(self) -> str:
+        if self.relation:
+            return f'{self.relation}.{self.name}'
+        return self.name
 
 
 class SetOperator(Enum):
@@ -54,7 +67,7 @@ ComparisonValue = Attribute | str | int | float | bool
 
 
 @dataclass
-class Comparison:
+class Comparison(ASTNode):
     operator: ComparisonOperator
     left: ComparisonValue
     right: ComparisonValue
