@@ -51,7 +51,7 @@ class RASemanticAnalyzer:
     def _validate_Relation(self, rel: Relation) -> list[TypedAttribute]:  # noqa: N802
         attrs = self.schema.get(rel.name)
         if attrs is None:
-            raise UndefinedRelationError(rel.name)
+            raise UndefinedRelationError(rel, rel.name)
 
         return [
             TypedAttribute(attr, relations={rel.name}, data_type=data_type)
@@ -85,20 +85,20 @@ class RASemanticAnalyzer:
                 )
 
                 if not union_compatible:
-                    raise UnionCompatibilityError(op.left, op.right)
+                    raise UnionCompatibilityError(op, op.operator, left_attrs, right_attrs)
 
                 return [TypedAttribute(name=a.name, data_type=a.data_type) for a in left_attrs]
 
     def _validate_Join(self, join: Join) -> list[TypedAttribute]:  # noqa: N802
         left_attrs = self._validate(join.left)
         right_attrs = self._validate(join.right)
-        return self._merge_schemas(left_attrs, right_attrs)
+        return self._merge_schemas(join, left_attrs, right_attrs)
 
     def _validate_ThetaJoin(self, join: ThetaJoin) -> list[TypedAttribute]:  # noqa: N802
         left_attrs = self._validate(join.left)
         right_attrs = self._validate(join.right)
         self._validate_condition(join.condition, left_attrs + right_attrs)
-        return self._merge_schemas(left_attrs, right_attrs)
+        return self._merge_schemas(join, left_attrs, right_attrs)
 
     def _validate_Division(self, div: Division) -> list[TypedAttribute]:  # noqa: N802
         dividend_attrs = self._validate(div.dividend)
@@ -109,9 +109,9 @@ class RASemanticAnalyzer:
         for attr in divisor_attrs:
             match = dividend_lookup.get(attr.name)
             if match is None:
-                raise DivisionSchemaMismatchError(div.dividend, div.divisor)
+                raise DivisionSchemaMismatchError(div, dividend_attrs, divisor_attrs)
             if match.data_type != attr.data_type:
-                raise DivisionTypeMismatchError(div.dividend, div.divisor)
+                raise DivisionTypeMismatchError(div, match, attr)
 
         divisor_attr_names = {b.name for b in divisor_attrs}
         return [a for a in dividend_attrs if a.name not in divisor_attr_names]
@@ -130,6 +130,7 @@ class RASemanticAnalyzer:
 
             if input_attr.data_type not in input_types:
                 raise InvalidFunctionArgumentError(
+                    source=agg,
                     function=a.aggregation_function,
                     expected=input_types,
                     actual=input_attr.data_type,
@@ -146,7 +147,7 @@ class RASemanticAnalyzer:
         if isinstance(cond, Attribute):
             typed_attr = self._resolve_attribute(cond, attrs)
             if typed_attr.data_type != DataType.BOOLEAN:
-                raise TypeMismatchError(DataType.BOOLEAN, typed_attr.data_type)
+                raise TypeMismatchError(cond, DataType.BOOLEAN, typed_attr.data_type)
         elif isinstance(cond, Comparison):
             self._validate_comparison(cond, attrs)
         elif isinstance(cond, BinaryBooleanExpression):
@@ -167,7 +168,7 @@ class RASemanticAnalyzer:
 
         left_type, right_type = types
         if not are_types_compatible(left_type, right_type):
-            raise TypeMismatchError(left_type, right_type)
+            raise TypeMismatchError(cond, left_type, right_type)
 
     def _resolve_attribute(self, attr: Attribute, context: list[TypedAttribute]) -> TypedAttribute:
         matches = [
@@ -177,15 +178,18 @@ class RASemanticAnalyzer:
             and (attr.relation is None or (a.relations and attr.relation in a.relations))
         ]
         if not matches:
-            raise UndefinedAttributeError(attr.name)
+            raise UndefinedAttributeError(attr, attr)
         if len(matches) > 1 and attr.relation is None:
             raise AmbiguousAttributeError(
-                attr.name, [a.relations for a in matches if a.relations is not None]
+                attr, attr.name, [a.relations for a in matches if a.relations is not None]
             )
         return matches[0]
 
     def _merge_schemas(
-        self, left_attrs: list[TypedAttribute], right_attrs: list[TypedAttribute]
+        self,
+        join: Join | ThetaJoin,
+        left_attrs: list[TypedAttribute],
+        right_attrs: list[TypedAttribute],
     ) -> list[TypedAttribute]:
         """Merge two schemas, checking for type compatibility."""
         merged: dict[str, TypedAttribute] = {}
@@ -194,7 +198,7 @@ class RASemanticAnalyzer:
             if attr.name in merged:
                 existing = merged[attr.name]
                 if attr.data_type != existing.data_type:
-                    raise JoinAttributeTypeMismatchError(attr, existing)
+                    raise JoinAttributeTypeMismatchError(join, existing, attr)
 
                 # Merge relation sets
                 existing.relations = (existing.relations or set()).union(attr.relations or set())
