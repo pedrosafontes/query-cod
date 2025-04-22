@@ -38,20 +38,20 @@ from queries.services.ra.validation.semantics import RASemanticAnalyzer
 @pytest.fixture
 def schema() -> Schema:
     return {
-        'R': {'A': DataType.INTEGER, 'B': DataType.STRING, 'C': DataType.FLOAT},
-        'S': {'D': DataType.INTEGER, 'E': DataType.STRING, 'F': DataType.FLOAT},
-        'T': {'A': DataType.INTEGER, 'G': DataType.STRING, 'H': DataType.BOOLEAN},
-        'U': {'A': DataType.INTEGER, 'B': DataType.STRING, 'C': DataType.FLOAT},
-        'V': {'A': DataType.STRING, 'B': DataType.STRING},
+        'R': {'A': DataType.INTEGER, 'B': DataType.VARCHAR, 'C': DataType.FLOAT},
+        'S': {'D': DataType.INTEGER, 'E': DataType.VARCHAR, 'F': DataType.FLOAT},
+        'T': {'A': DataType.INTEGER, 'G': DataType.VARCHAR, 'H': DataType.BOOLEAN},
+        'U': {'A': DataType.INTEGER, 'B': DataType.VARCHAR, 'C': DataType.FLOAT},
+        'V': {'A': DataType.VARCHAR, 'B': DataType.VARCHAR},
         'Employee': {
             'id': DataType.INTEGER,
-            'name': DataType.STRING,
-            'department': DataType.STRING,
+            'name': DataType.VARCHAR,
+            'department': DataType.VARCHAR,
             'salary': DataType.FLOAT,
         },
         'Department': {
             'id': DataType.INTEGER,
-            'name': DataType.STRING,
+            'name': DataType.VARCHAR,
             'manager_id': DataType.INTEGER,
         },
     }
@@ -246,7 +246,7 @@ def test_valid_ast_expressions(expr: RAExpression, schema: Schema) -> None:
             ),
             TypeMismatchError,
         ),
-        # Logical NOT on a string: ¬B
+        # Logical NOT on a VARCHAR: ¬B
         (
             Selection(
                 NotExpression(Attribute('B')),
@@ -310,12 +310,12 @@ def test_semantic_exceptions(
         AggregationFunction.AVG,
     ],
 )
-def test_aggregation_function_invalid_on_string(
+def test_aggregation_function_invalid_on_VARCHAR(
     function: AggregationFunction, schema: Schema
 ) -> None:
     expr = GroupedAggregation(
         group_by=[Attribute('A')],
-        aggregations=[Aggregation(Attribute('B'), function, 'X')],  # B is STRING
+        aggregations=[Aggregation(Attribute('B'), function, 'X')],  # B is VARCHAR
         expression=Relation('R'),
     )
 

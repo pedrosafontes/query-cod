@@ -26,7 +26,7 @@ def type_of_value(value: ComparisonValue) -> DataType:
         case float():
             return DataType.FLOAT
         case str():
-            return DataType.STRING
+            return DataType.VARCHAR
         case bool():
             return DataType.BOOLEAN
         case _:
