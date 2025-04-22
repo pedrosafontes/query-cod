@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from sqlglot import Expression
+
 from databases.types import DataType
 
 
@@ -40,3 +42,37 @@ class TypeMismatchError(SQLSemanticError):
 
     def __str__(self) -> str:
         return f'Type mismatch: expected {self.expected.name}, got {self.received.name}.'
+
+
+@dataclass
+class GroupByError(SQLSemanticError):
+    column: str
+
+    def __str__(self) -> str:
+        return (
+            f"Column '{self.column}' must appear in the GROUP BY clause "
+            f'or be used in an aggregate function.'
+        )
+
+
+@dataclass
+class OrderByPositionError(SQLSemanticError):
+    position: int
+    max_position: int
+
+    def __str__(self) -> str:
+        return (
+            f'Invalid position {self.position} in ORDER BY - '
+            f'must be between 1 and number of select items.'
+        )
+
+
+@dataclass
+class OrderByExpressionError(SQLSemanticError):
+    expression: Expression
+
+    def __str__(self) -> str:
+        return (
+            f'Invalid expression {self.expression} in ORDER BY - '
+            f'must be a column name or an aggregate function.'
+        )
