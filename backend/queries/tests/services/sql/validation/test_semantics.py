@@ -2,6 +2,10 @@ import pytest
 from databases.types import DataType, Schema
 from queries.services.sql.parser import parse_sql
 from queries.services.sql.validation.errors import (
+    AmbiguousColumnError,
+    GroupByError,
+    OrderByPositionError,
+    SQLSemanticError,
     TypeMismatchError,
     UndefinedColumnError,
     UndefinedTableError,
@@ -103,6 +107,26 @@ def schema() -> Schema:
 
 
 @pytest.mark.parametrize(
+    'query',
+    [
+        'SELECT * FROM customers',
+        'SELECT customer_id, company_name FROM customers',
+        "SELECT * FROM customers WHERE customer_id = '123abc'",
+        "SELECT * FROM customers WHERE company_name = 'ABC Corp'",
+        'SELECT customer_id, COUNT(*) FROM orders GROUP BY customer_id',
+        'SELECT c.customer_id, o.order_id FROM customers c JOIN orders o ON c.customer_id = o.customer_id',
+        'SELECT COUNT(*) FROM customers',
+        'SELECT customer_id FROM customers ORDER BY company_name',
+    ],
+)
+def test_valid_queries(query: str, schema: Schema) -> None:
+    select = parse_sql(query)
+    print(select.to_s())
+    # Should not raise any exception
+    SQLSemanticAnalyzer(schema).validate(select)
+
+
+@pytest.mark.parametrize(
     'query, expected_exception',
     [
         ('SELECT * FROM nonexistent_table', UndefinedTableError),
@@ -121,6 +145,45 @@ def schema() -> Schema:
         (
             'SELECT * FROM customers c JOIN nonexistent_table n ON c.customer_id = n.id',
             UndefinedTableError,
+        ),
+        (
+            'SELECT customer_id FROM customers JOIN orders ON customer_id = customer_id',
+            AmbiguousColumnError,
+        ),
+        (
+            'SELECT customer_id, company_name, COUNT(*) FROM customers GROUP BY customer_id',
+            GroupByError,
+        ),
+        ('SELECT COUNT(*) FROM customers GROUP BY nonexistent_column', UndefinedColumnError),
+        (
+            'SELECT customer_id FROM customers GROUP BY customer_id HAVING nonexistent_column > 10',
+            UndefinedColumnError,
+        ),
+        (
+            'SELECT customer_id, COUNT(*) FROM customers GROUP BY customer_id HAVING SUM(company_name) > 10',
+            TypeMismatchError,
+        ),
+        (
+            "SELECT customer_id FROM customers GROUP BY customer_id HAVING COUNT(*) > 'text'",
+            TypeMismatchError,
+        ),
+        (
+            "SELECT customer_id FROM customers GROUP BY customer_id HAVING MAX(order_date) > '2020-01-01'",
+            UndefinedColumnError,
+        ),
+        ('SELECT customer_id FROM customers HAVING COUNT(*) > 5', SQLSemanticError),
+        # (
+        #     'SELECT COUNT(COUNT(*)) FROM customers',
+        #     SQLSemanticError
+        # ),
+        (
+            'SELECT * FROM customers ORDER BY nonexistent_column',
+            UndefinedColumnError,
+        ),
+        ('SELECT customer_id FROM customers ORDER BY order_id', UndefinedColumnError),
+        (
+            'SELECT customer_id, company_name FROM customers ORDER BY 3',
+            OrderByPositionError,
         ),
     ],
 )
