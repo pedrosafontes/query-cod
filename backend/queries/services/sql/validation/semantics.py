@@ -75,7 +75,8 @@ class SQLSemanticAnalyzer:
         if having := select.args.get('having'):
             if not scope.group_by_cols:
                 raise SQLSemanticError('HAVING clause without GROUP BY')
-            self._validate_expression(having.this, scope)
+            if (predicate_t := self._validate_expression(having.this, scope)) != DataType.BOOLEAN:
+                raise TypeMismatchError(DataType.BOOLEAN, predicate_t)
 
         # 6. SELECT - validate select expressions
         for proj in select.expressions:
