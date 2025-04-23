@@ -68,7 +68,7 @@ class SQLSemanticAnalyzer:
         # 4. GROUP BY - validate grouping expressions
         if group := select.args.get('group'):
             for exp in group.expressions:
-                self._validate_expression(exp, scope)
+                self._validate_expression(exp, scope, in_group_by=True)
                 scope.group_by_cols.add(exp.name)
 
         # 5. HAVING - validate having expressions
@@ -142,6 +142,7 @@ class SQLSemanticAnalyzer:
         self,
         node: Expression,
         scope: Scope,
+        in_group_by: bool = False,
         in_aggregate: bool = False,
     ) -> DataType:
         match node:
@@ -151,7 +152,8 @@ class SQLSemanticAnalyzer:
             case Column():
                 col_t = scope.resolve_column(node)
                 if (
-                    not in_aggregate
+                    not in_group_by
+                    and not in_aggregate
                     and scope.group_by_cols
                     and node.name not in scope.group_by_cols
                 ):
@@ -162,29 +164,29 @@ class SQLSemanticAnalyzer:
                 return self._validate_expression(node.this, scope, in_group_by, in_aggregate)
 
             case And() | Or():
-                left_t  = self._validate_expression(node.left,  scope, in_aggregate)
-                right_t = self._validate_expression(node.right, scope, in_aggregate)
+                left_t  = self._validate_expression(node.left,  scope, in_group_by, in_aggregate)
+                right_t = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
                 if left_t is not DataType.BOOLEAN or right_t is not DataType.BOOLEAN:
                     raise TypeMismatchError(DataType.BOOLEAN, left_t if left_t is not DataType.BOOLEAN else right_t)
                 return DataType.BOOLEAN
 
             case EQ() | NEQ() | LT() | LTE() | GT() | GTE():
-                left_t  = self._validate_expression(node.left,  scope, in_aggregate)
-                right_t = self._validate_expression(node.right, scope, in_aggregate)
+                left_t  = self._validate_expression(node.left,  scope, in_group_by, in_aggregate)
+                right_t = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
                 if not left_t.is_comparable_with(right_t):
                     raise TypeMismatchError(left_t, right_t)
                 return DataType.BOOLEAN
 
             case Add() | Sub() | Mul() | Div():
-                left_t  = self._validate_expression(node.left,  scope, in_aggregate)
-                right_t = self._validate_expression(node.right, scope, in_aggregate)
+                left_t  = self._validate_expression(node.left,  scope, in_group_by, in_aggregate)
+                right_t = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
                 if not (left_t.is_numeric() and right_t.is_numeric()):
                     raise TypeMismatchError(DataType.NUMERIC, left_t if not left_t.is_numeric() else right_t)
                 return DataType.NUMERIC
     
             case Not():
                 if (
-                    not_t := self._validate_expression(node.this, scope, in_aggregate)
+                    not_t := self._validate_expression(node.this, scope, in_group_by, in_aggregate)
                 ) != DataType.BOOLEAN:
                     raise TypeMismatchError(DataType.BOOLEAN, not_t)
 

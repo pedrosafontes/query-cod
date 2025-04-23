@@ -120,6 +120,7 @@ def schema() -> Schema:
         'SELECT c.customer_id, o.order_id FROM customers c JOIN orders o ON c.customer_id = o.customer_id',
         'SELECT COUNT(*) FROM customers',
         'SELECT customer_id FROM customers ORDER BY company_name',
+        'SELECT * FROM categories GROUP BY category_id, category_name, description, picture',
     ],
 )
 def test_valid_queries(query: str, schema: Schema) -> None:
@@ -207,6 +208,11 @@ def test_valid_queries(query: str, schema: Schema) -> None:
         (
             'SELECT customer_id, company_name FROM customers ORDER BY 3',
             OrderByPositionError,
+        ),
+        # Un-grouped columns in SELECT through *
+        (
+            'SELECT * FROM categories GROUP BY category_id',
+            SQLSemanticError,
         ),
         # Alias uniqueness: same alias “c” for two different tables
         (
