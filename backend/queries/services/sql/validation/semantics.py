@@ -209,10 +209,8 @@ class SQLSemanticAnalyzer:
             case And() | Or():
                 left_t = self._validate_expression(node.left, scope, in_group_by, in_aggregate)
                 right_t = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
-                if left_t is not DataType.BOOLEAN or right_t is not DataType.BOOLEAN:
-                    raise TypeMismatchError(
-                        DataType.BOOLEAN, left_t if left_t is not DataType.BOOLEAN else right_t
-                    )
+                self._assert_boolean(left_t)
+                self._assert_boolean(right_t)
                 return DataType.BOOLEAN
 
             case EQ() | NEQ() | LT() | LTE() | GT() | GTE():
@@ -224,10 +222,8 @@ class SQLSemanticAnalyzer:
             case Add() | Sub() | Mul() | Div():
                 left_t = self._validate_expression(node.left, scope, in_group_by, in_aggregate)
                 right_t = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
-                if not (left_t.is_numeric() and right_t.is_numeric()):
-                    raise TypeMismatchError(
-                        DataType.NUMERIC, left_t if not left_t.is_numeric() else right_t
-                    )
+                self._assert_numeric(left_t)
+                self._assert_numeric(right_t)
                 return DataType.NUMERIC
 
             case Not():
@@ -245,8 +241,7 @@ class SQLSemanticAnalyzer:
 
             case Avg() | Sum() | Min() | Max():
                 arg_t = self._validate_expression(node.this, scope, in_aggregate=True)
-                if not arg_t.is_numeric():
-                    raise TypeMismatchError(DataType.NUMERIC, arg_t)
+                self._assert_numeric(arg_t)
                 return DataType.NUMERIC
 
             case Star():
@@ -266,3 +261,8 @@ class SQLSemanticAnalyzer:
     def _assert_boolean(self, dtype: DataType) -> None:
         if dtype is not DataType.BOOLEAN:
             raise TypeMismatchError(DataType.BOOLEAN, dtype)
+        
+    def _assert_numeric(self, dtype: DataType) -> None:
+        if not dtype.is_numeric():
+            raise TypeMismatchError(DataType.NUMERIC, dtype)
+
