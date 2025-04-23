@@ -2,19 +2,30 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from sqlglot import Expression
-
 from databases.types import DataType
+from sqlglot import Expression
 from sqlglot.expressions import Column
 
-from .errors import AmbiguousColumnError, DuplicateAliasError, UndefinedColumnError, UndefinedTableError
+from .errors import (
+    AmbiguousColumnError,
+    DuplicateAliasError,
+    UndefinedColumnError,
+    UndefinedTableError,
+)
+
+
+# A single “binding” of a column to a table alias and its datatype
+ColumnBinding = tuple[str, DataType]
+
+# Map from column name → list of (table-alias, datatype)
+ColumnBindingsMap = dict[str, list[ColumnBinding]]
 
 
 class Scope:
     def __init__(self, parent: Scope | None = None) -> None:
         self.parent: Scope | None = parent
         self._tables: dict[str, str] = {}  # table alias → table name
-        self.columns: dict[str, list[tuple[str, DataType]]] = defaultdict(
+        self.columns: ColumnBindingsMap = defaultdict(
             list
         )  # column name → list[(table alias, dtype)]
         self.group_by_cols: set[str] = set()
@@ -64,4 +75,3 @@ class Scope:
             raise AmbiguousColumnError(column.name, [a for a, _ in candidates])
         _, dtype = candidates[0]
         return dtype
-    

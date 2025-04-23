@@ -121,6 +121,12 @@ def schema() -> Schema:
         'SELECT COUNT(*) FROM customers',
         'SELECT customer_id FROM customers ORDER BY company_name',
         'SELECT * FROM categories GROUP BY category_id, category_name, description, picture',
+        # USING on a single shared VARCHAR column
+        'SELECT * FROM customers JOIN suppliers USING (country)',
+        # NATURAL JOIN on a shared VARCHAR column
+        'SELECT * FROM customers NATURAL JOIN suppliers',
+        # NATURAL JOIN on a shared INTEGER column
+        'SELECT * FROM orders NATURAL JOIN employees',
     ],
 )
 def test_valid_queries(query: str, schema: Schema) -> None:
@@ -132,7 +138,7 @@ def test_valid_queries(query: str, schema: Schema) -> None:
 
 @pytest.mark.parametrize(
     'query, expected_exception',
-    [   
+    [
         # Non-existing table in FROM
         ('SELECT * FROM nonexistent_table', UndefinedTableError),
         # Non-existing column in SELECT
@@ -282,6 +288,21 @@ def test_valid_queries(query: str, schema: Schema) -> None:
         (
             'SELECT * FROM customers LEFT OUTER JOIN orders ON customers.customer_id',
             TypeMismatchError,
+        ),
+        # USING on a non-existent column
+        (
+            'SELECT * FROM customers JOIN suppliers USING (invalid_column)',
+            UndefinedColumnError,
+        ),
+        # NATURAL JOIN when there are no shared columns
+        (
+            'SELECT * FROM customers NATURAL JOIN products',
+            SQLSemanticError,
+        ),
+        # Another example of NATURAL JOIN with no shared columns
+        (
+            'SELECT * FROM orders NATURAL JOIN categories',
+            SQLSemanticError,
         ),
     ],
 )
