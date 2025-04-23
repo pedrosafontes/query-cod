@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 
-from sqlglot import Expression
-
 from databases.types import DataType
+from sqlglot import Expression
 
 
 class SQLSemanticError(Exception):
