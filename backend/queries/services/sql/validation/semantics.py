@@ -64,10 +64,10 @@ class SQLSemanticAnalyzer:
         self._validate_joins(select, scope)
 
         # 3. WHERE - validate filter expressions
-        if (where := select.args.get('where')) and (
-            predicate_t := self._validate_expression(where.this, scope)
-        ) != DataType.BOOLEAN:
-            raise TypeMismatchError(DataType.BOOLEAN, predicate_t)
+        if where := select.args.get('where'):
+            self._assert_boolean(
+                self._validate_expression(where.this, scope),
+            )
 
         # 4. GROUP BY - validate grouping expressions
         if group := select.args.get('group'):
@@ -79,8 +79,7 @@ class SQLSemanticAnalyzer:
         if having := select.args.get('having'):
             if not scope.group_by_cols:
                 raise SQLSemanticError('HAVING clause without GROUP BY')
-            if (predicate_t := self._validate_expression(having.this, scope)) != DataType.BOOLEAN:
-                raise TypeMismatchError(DataType.BOOLEAN, predicate_t)
+            self._assert_boolean(self._validate_expression(having.this, scope))
 
         # 6. SELECT - validate select expressions
         for proj in select.expressions:
@@ -115,7 +114,7 @@ class SQLSemanticAnalyzer:
 
     def _validate_joins(self, select: Select, scope: Scope) -> None:
         for join in select.args.get('joins', []):
-            assert isinstance(join, Join) # noqa S101
+            assert isinstance(join, Join)  # noqa S101
             left_cols = scope.columns.copy()
             self._validate_table_reference(join.this, scope)
             right_cols = self.schema[join.this.name]
@@ -136,9 +135,7 @@ class SQLSemanticAnalyzer:
             else:
                 if not condition:
                     raise MissingJoinConditionError()
-                cond_t = self._validate_expression(condition, scope)
-                if cond_t != DataType.BOOLEAN:
-                    raise TypeMismatchError(DataType.BOOLEAN, cond_t)
+                self._assert_boolean(self._validate_expression(condition, scope))
 
     def _validate_using(
         self, using: list[Identifier], left_cols: ColumnBindingsMap, right_cols: TableSchema
@@ -151,8 +148,7 @@ class SQLSemanticAnalyzer:
 
             rhs_dtype = right_cols[col]
             for _, lhs_dtype in left_cols[col]:
-                if not lhs_dtype.is_comparable_with(rhs_dtype):
-                    raise TypeMismatchError(lhs_dtype, rhs_dtype)
+                self._assert_comparable(lhs_dtype, rhs_dtype)
 
     def _validate_natural_join(
         self, left_cols: ColumnBindingsMap, right_cols: TableSchema, scope: Scope
@@ -165,8 +161,7 @@ class SQLSemanticAnalyzer:
         for col in shared:
             rhs_dtype = right_cols[col]
             for _, lhs_dtype in scope.columns[col]:
-                if not lhs_dtype.is_comparable_with(rhs_dtype):
-                    raise TypeMismatchError(lhs_dtype, rhs_dtype)
+                self._assert_comparable(lhs_dtype, rhs_dtype)
 
     def _validate_table_reference(self, table_ref: Table, scope: Scope) -> None:
         match table_ref:
@@ -223,8 +218,7 @@ class SQLSemanticAnalyzer:
             case EQ() | NEQ() | LT() | LTE() | GT() | GTE():
                 left_t = self._validate_expression(node.left, scope, in_group_by, in_aggregate)
                 right_t = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
-                if not left_t.is_comparable_with(right_t):
-                    raise TypeMismatchError(left_t, right_t)
+                self._assert_comparable(left_t, right_t)
                 return DataType.BOOLEAN
 
             case Add() | Sub() | Mul() | Div():
@@ -237,10 +231,9 @@ class SQLSemanticAnalyzer:
                 return DataType.NUMERIC
 
             case Not():
-                if (
-                    not_t := self._validate_expression(node.this, scope, in_group_by, in_aggregate)
-                ) != DataType.BOOLEAN:
-                    raise TypeMismatchError(DataType.BOOLEAN, not_t)
+                self._assert_boolean(
+                    self._validate_expression(node.this, scope, in_group_by, in_aggregate),
+                )
 
                 return DataType.BOOLEAN
 
@@ -265,3 +258,11 @@ class SQLSemanticAnalyzer:
                 raise NotImplementedError(
                     f'Expression type {type(node)} is not supported for validation'
                 )
+
+    def _assert_comparable(self, lhs: DataType, rhs: DataType) -> None:
+        if not lhs.is_comparable_with(rhs):
+            raise TypeMismatchError(lhs, rhs)
+
+    def _assert_boolean(self, dtype: DataType) -> None:
+        if dtype is not DataType.BOOLEAN:
+            raise TypeMismatchError(DataType.BOOLEAN, dtype)
