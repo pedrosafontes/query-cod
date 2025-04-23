@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from collections import defaultdict
 
+from sqlglot import Expression
+
 from databases.types import DataType
 from sqlglot.expressions import Column
 
@@ -16,6 +18,13 @@ class Scope:
             list
         )  # column name → list[(table alias, dtype)]
         self.group_by_cols: set[str] = set()
+        self.select_items: set[str] = set()
+
+    def add_select_item(self, expr: Expression) -> None:
+        if expr.alias_or_name in self.select_items:
+            raise DuplicateAliasError(expr.alias_or_name)
+        else:
+            self.select_items.add(expr.alias_or_name)
 
     def add_table(self, alias: str, table: str) -> None:
         if alias in self._tables:

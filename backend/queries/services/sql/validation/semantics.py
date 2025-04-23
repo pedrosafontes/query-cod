@@ -94,7 +94,7 @@ class SQLSemanticAnalyzer:
                     if not (1 <= int(exp.this) <= num_projections):
                         raise OrderByPositionError(1, num_projections)
                 if scope.group_by_cols:
-                    if exp not in select.expressions:
+                    if exp not in select.expressions and exp.name not in scope.select_items:
                         raise OrderByExpressionError(exp)
                 else:
                     if not (order_t :=self._validate_expression(exp, scope)).is_orderable():
