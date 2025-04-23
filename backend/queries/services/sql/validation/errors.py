@@ -88,3 +88,9 @@ class MissingJoinConditionError(SQLSemanticError):
     def __str__(self) -> str:
         return f"Missing join condition."
     
+@dataclass
+class UnorderableTypeError(SQLSemanticError):
+    data_type: DataType
+
+    def __str__(self) -> str:
+        return f"Cannot order by type '{self.data_type.name}' - it is not orderable."

@@ -63,6 +63,9 @@ class DataType(Enum):
             or (self.is_string() and other.is_string())
             or (self.is_bit() and other.is_bit())
         )
+    
+    def is_orderable(self) -> bool:
+        return self.is_numeric() or self.is_string() or self.is_temporal()
 
 
 Schema = dict[str, dict[str, DataType]]

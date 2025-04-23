@@ -37,6 +37,7 @@ from .errors import (
     SQLSemanticError,
     TypeMismatchError,
     UndefinedTableError,
+    UnorderableTypeError,
 )
 from .types import Scope
 from .utils import infer_literal_type
@@ -96,7 +97,8 @@ class SQLSemanticAnalyzer:
                     if exp not in select.expressions:
                         raise OrderByExpressionError(exp)
                 else:
-                    self._validate_expression(exp, scope)
+                    if not (order_t :=self._validate_expression(exp, scope)).is_orderable():
+                        raise UnorderableTypeError(order_t)
 
     def _populate_from_scope(self, select: Select, scope: Scope) -> None:
         from_clause = select.args.get('from')

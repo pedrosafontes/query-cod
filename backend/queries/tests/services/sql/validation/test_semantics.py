@@ -11,6 +11,7 @@ from queries.services.sql.validation.errors import (
     TypeMismatchError,
     UndefinedColumnError,
     UndefinedTableError,
+    UnorderableTypeError,
 )
 from queries.services.sql.validation.semantics import SQLSemanticAnalyzer
 
@@ -235,6 +236,11 @@ def test_valid_queries(query: str, schema: Schema) -> None:
         (
             'SELECT * FROM customers c JOIN orders o ON c.customer_id + o.customer_id',
             TypeMismatchError,
+        ),
+        # ORDER BY on a non-orderable type (BIT_VARYING)
+        (
+            'SELECT * FROM categories ORDER BY picture',
+            UnorderableTypeError,
         ),
     ],
 )
