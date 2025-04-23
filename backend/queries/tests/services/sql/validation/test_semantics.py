@@ -268,6 +268,21 @@ def test_valid_queries(query: str, schema: Schema) -> None:
             "SELECT customer_id FROM customers GROUP BY customer_id HAVING company_name = 'X'",
             GroupByError,
         ),
+        # CROSS JOIN with ON clause should raise an error
+        (
+            'SELECT * FROM customers CROSS JOIN orders ON customers.customer_id = orders.customer_id',
+            SQLSemanticError,
+        ),
+        # INNER JOIN without ON clause should raise an error
+        (
+            'SELECT * FROM customers INNER JOIN orders',
+            MissingJoinConditionError,
+        ),
+        # LEFT OUTER JOIN with non-boolean ON clause should raise an error
+        (
+            'SELECT * FROM customers LEFT OUTER JOIN orders ON customers.customer_id',
+            TypeMismatchError,
+        ),
     ],
 )
 def test_semantic_errors(query: str, expected_exception: type[Exception], schema: Schema) -> None:

@@ -111,15 +111,24 @@ class SQLSemanticAnalyzer:
 
     def _validate_joins(self, select: Select, scope: Scope) -> None:
         for join in select.args.get('joins', []):
-            assert isinstance(join, Join)  # noqa S101
+            assert isinstance(join, Join) # noqa S101
+            # Validate the right-hand table
             self._validate_table_reference(join.this, scope)
 
-            # Validate JOIN condition
-            if condition := join.args.get('on'):
-                if (cond_t := self._validate_expression(condition, scope)) != DataType.BOOLEAN:
-                    raise TypeMismatchError(DataType.BOOLEAN, cond_t)
-            else:
+            if join.args.get("kind") == "CROSS":
+                # CROSS JOIN should not have an ON clause
+                if join.args.get("on"):
+                    raise SQLSemanticError("CROSS JOIN cannot have an ON clause")
+                continue
+
+            # INNER and OUTER joins: ensure an ON clause exists and is boolean
+            condition = join.args.get("on")
+            if not condition:
                 raise MissingJoinConditionError()
+
+            cond_type = self._validate_expression(condition, scope)
+            if cond_type != DataType.BOOLEAN:
+                raise TypeMismatchError(DataType.BOOLEAN, cond_type)
 
     def _validate_table_reference(self, table_ref: Table, scope: Scope) -> None:
         match table_ref:
