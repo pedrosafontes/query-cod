@@ -104,8 +104,9 @@ class SQLSemanticAnalyzer:
     def _populate_from_scope(self, select: Select, scope: Scope) -> None:
         from_clause = select.args.get('from')
         if not isinstance(from_clause, From):
-            return
-
+            raise NotImplementedError(
+                f'FROM clause type {type(from_clause)} is not supported for validation'
+            )
         self._validate_table_reference(from_clause.this, scope)
 
     def _validate_joins(self, select: Select, scope: Scope) -> None:
@@ -114,8 +115,7 @@ class SQLSemanticAnalyzer:
             self._validate_table_reference(join.this, scope)
 
             # Validate JOIN condition
-            condition = join.args.get('on')
-            if condition:
+            if condition := join.args.get('on'):
                 if (cond_t := self._validate_expression(condition, scope)) != DataType.BOOLEAN:
                     raise TypeMismatchError(DataType.BOOLEAN, cond_t)
             else:
@@ -200,9 +200,9 @@ class SQLSemanticAnalyzer:
                 return DataType.INTEGER
 
             case Avg() | Sum() | Min() | Max():
-                arg = node.this
-                if not self._validate_expression(arg, scope, in_aggregate=True).is_numeric():
-                    raise TypeMismatchError(DataType.NUMERIC, arg)
+                arg_t = self._validate_expression(node.this, scope, in_aggregate=True)
+                if not arg_t.is_numeric():
+                    raise TypeMismatchError(DataType.NUMERIC, arg_t)
                 return DataType.NUMERIC
 
             case Star():
