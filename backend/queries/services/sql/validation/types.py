@@ -5,17 +5,22 @@ from collections import defaultdict
 from databases.types import DataType
 from sqlglot.expressions import Column
 
-from .errors import AmbiguousColumnError, UndefinedColumnError, UndefinedTableError
+from .errors import AmbiguousColumnError, DuplicateAliasError, UndefinedColumnError, UndefinedTableError
 
 
 class Scope:
     def __init__(self, parent: Scope | None = None) -> None:
         self.parent: Scope | None = parent
-        self.tables: dict[str, str] = {}  # table alias → table name
+        self._tables: dict[str, str] = {}  # table alias → table name
         self.columns: dict[str, list[tuple[str, DataType]]] = defaultdict(
             list
         )  # column name → list[(table alias, dtype)]
         self.group_by_cols: set[str] = set()
+
+    def add_table(self, alias: str, table: str) -> None:
+        if alias in self._tables:
+            raise DuplicateAliasError(alias)
+        self._tables[alias] = table
 
     def add_column(self, table: str, column: str, dtype: DataType) -> None:
         entry = (table, dtype)
@@ -27,13 +32,13 @@ class Scope:
 
         # Qualified
         if table_or_alias:
-            if table_or_alias not in self.tables:
+            if table_or_alias not in self._tables:
                 if self.parent:
                     return self.parent.resolve_column(column)
                 else:
                     raise UndefinedTableError(table_or_alias)
 
-            table = self.tables[table_or_alias]
+            table = self._tables[table_or_alias]
             for alias, dtype in self.columns.get(column.name, []):
                 if alias == table_or_alias:
                     return dtype
@@ -50,3 +55,4 @@ class Scope:
             raise AmbiguousColumnError(column.name, [a for a, _ in candidates])
         _, dtype = candidates[0]
         return dtype
+    

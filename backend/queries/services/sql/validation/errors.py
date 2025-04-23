@@ -77,6 +77,13 @@ class OrderByExpressionError(SQLSemanticError):
         )
     
 @dataclass
+class DuplicateAliasError(SQLSemanticError):
+    alias: str
+
+    def __str__(self) -> str:
+        return f"Duplicate alias '{self.alias}' in the query."
+
+@dataclass
 class MissingJoinConditionError(SQLSemanticError):
     def __str__(self) -> str:
         return f"Missing join condition."

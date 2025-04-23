@@ -3,6 +3,7 @@ from databases.types import DataType, Schema
 from queries.services.sql.parser import parse_sql
 from queries.services.sql.validation.errors import (
     AmbiguousColumnError,
+    DuplicateAliasError,
     GroupByError,
     MissingJoinConditionError,
     OrderByPositionError,
@@ -206,6 +207,11 @@ def test_valid_queries(query: str, schema: Schema) -> None:
             'SELECT customer_id, company_name FROM customers ORDER BY 3',
             OrderByPositionError,
         ),
+        # Alias uniqueness: same alias “c” for two different tables
+        (
+            'SELECT * FROM customers c JOIN orders c ON c.customer_id = c.customer_id',
+            DuplicateAliasError,
+        ),
         # Join condition: missing ON clause (i.e. no join predicate)
         (
             'SELECT * FROM customers c JOIN orders o',
@@ -215,6 +221,11 @@ def test_valid_queries(query: str, schema: Schema) -> None:
         (
             "SELECT * FROM customers WHERE 'abc'",
             TypeMismatchError,
+        ),
+        # Duplicate column‐alias in the SELECT list
+        (
+            'SELECT customer_id AS id, company_name AS id FROM customers',
+            DuplicateAliasError,
         ),
         # JOIN predicate must be Boolean
         (

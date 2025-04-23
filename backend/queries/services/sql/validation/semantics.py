@@ -1,8 +1,8 @@
 from databases.types import DataType, Schema
 from sqlglot import Expression
 from sqlglot.expressions import (
+    Alias,
     Avg,
-    Binary,
     Column,
     Count,
     From,
@@ -79,6 +79,7 @@ class SQLSemanticAnalyzer:
         # 6. SELECT - validate select expressions
         for proj in select.expressions:
             self._validate_expression(proj, scope)
+            scope.add_select_item(proj)
 
         # 7. ORDER BY - validate order expressions
         if order := select.args.get('order'):
@@ -122,11 +123,11 @@ class SQLSemanticAnalyzer:
             case Table():
                 table_name = table_ref.name
                 alias = table_ref.alias_or_name
-                schema_entry = self.schema.get(table_name)
-                if schema_entry is None:
+                table_schema = self.schema.get(table_name)
+                if table_schema is None:
                     raise UndefinedTableError(table_name)
-                scope.tables[alias] = table_name
-                for col, dtype in schema_entry.items():
+                scope.add_table(alias, table_name)
+                for col, dtype in table_schema.items():
                     scope.add_column(alias, col, dtype)
 
             case _:
@@ -154,6 +155,9 @@ class SQLSemanticAnalyzer:
                 ):
                     raise GroupByError(node.name)
                 return col_t
+            
+            case Alias():
+                return self._validate_expression(node.this, scope, in_group_by, in_aggregate)
 
             case And() | Or():
                 left_t  = self._validate_expression(node.left,  scope, in_aggregate)
