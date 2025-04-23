@@ -75,3 +75,9 @@ class OrderByExpressionError(SQLSemanticError):
             f'Invalid expression {self.expression} in ORDER BY - '
             f'must be a column name or an aggregate function.'
         )
+    
+@dataclass
+class MissingJoinConditionError(SQLSemanticError):
+    def __str__(self) -> str:
+        return f"Missing join condition."
+    
