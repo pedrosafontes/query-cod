@@ -243,10 +243,30 @@ def test_valid_queries(query: str, schema: Schema) -> None:
             'SELECT * FROM customers c JOIN orders o ON c.customer_id + o.customer_id',
             TypeMismatchError,
         ),
+        # Ambiguous column in projection after a qualified JOIN
+        (
+            'SELECT customer_id FROM customers c JOIN orders o ON c.customer_id = o.customer_id',
+            AmbiguousColumnError,
+        ),
+        # Ambiguous column in WHERE
+        (
+            "SELECT * FROM customers c JOIN orders o ON c.customer_id = o.customer_id WHERE customer_id = 'X'",
+            AmbiguousColumnError,
+        ),
         # ORDER BY on a non-orderable type (BIT_VARYING)
         (
             'SELECT * FROM categories ORDER BY picture',
             UnorderableTypeError,
+        ),
+        # Aggregate argument must be numeric
+        (
+            'SELECT SUM(company_name) FROM customers',
+            TypeMismatchError,
+        ),
+        # HAVING references an ungrouped but existing column
+        (
+            "SELECT customer_id FROM customers GROUP BY customer_id HAVING company_name = 'X'",
+            GroupByError,
         ),
     ],
 )
