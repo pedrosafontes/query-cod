@@ -34,12 +34,12 @@ class SQLSemanticAnalyzer:
         self.schema = schema
 
     def validate(self, expression: Select) -> None:
-        self._validate_query(expression, Scope())
+        self._validate_query(expression)
 
-    def _validate_query(self, expression: Select, scope: Scope) -> None:
+    def _validate_query(self, expression: Select, scope: Scope | None = None) -> None:
         self._validate_select(expression, scope)
 
-    def _validate_select(self, select: Select, outer_scope: Scope) -> None:
+    def _validate_select(self, select: Select, outer_scope: Scope | None) -> None:
         scope = Scope(outer_scope)
         # 1. FROM clause - validate tables & populate scope
         self._populate_from_scope(select, scope)
