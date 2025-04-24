@@ -116,3 +116,23 @@ class CrossJoinConditionError(SQLSemanticError):
 class NoCommonColumnsError(SQLSemanticError):
     def __str__(self) -> str:
         return 'NATURAL JOIN requires at least one common column'
+
+
+@dataclass
+class MissingDerivedTableAliasError(SQLSemanticError):
+    def __str__(self) -> str:
+        return 'Every derived table must have its own alias'
+
+
+@dataclass
+class ScalarSubqueryError(SQLSemanticError):
+    def __str__(self) -> str:
+        return 'scalar subquery must return exactly one column'
+
+
+@dataclass
+class DerivedColumnAliasRequiredError(SQLSemanticError):
+    expression: Expression
+
+    def __str__(self) -> str:
+        return 'Derived column {expression} must have an alias'

@@ -1,3 +1,5 @@
+from typing import cast
+
 from databases.types import DataType, Schema, TableSchema
 from sqlglot import Expression
 from sqlglot.expressions import (
@@ -26,18 +28,22 @@ from sqlglot.expressions import (
     Select,
     Star,
     Sub,
+    Subquery,
     Sum,
     Table,
 )
 
 from .errors import (
     CrossJoinConditionError,
+    DerivedColumnAliasRequiredError,
     GroupByClauseRequiredError,
+    MissingDerivedTableAliasError,
     MissingJoinConditionError,
     NoCommonColumnsError,
     NonGroupedColumnError,
     OrderByExpressionError,
     OrderByPositionError,
+    ScalarSubqueryError,
     TypeMismatchError,
     UndefinedColumnError,
     UndefinedTableError,
@@ -54,7 +60,7 @@ class SQLSemanticAnalyzer:
     def validate(self, expression: Select) -> None:
         self._validate_select(expression, outer_scope=None)
 
-    def _validate_select(self, select: Select, outer_scope: Scope | None) -> None:
+    def _validate_select(self, select: Select, outer_scope: Scope | None) -> TableSchema:
         scope = Scope(outer_scope)
         self._populate_from(select, scope)
         self._validate_joins(select, scope)
@@ -63,6 +69,7 @@ class SQLSemanticAnalyzer:
         self._validate_having(select, scope)
         self._validate_projection(select, scope)
         self._validate_order_by(select, scope)
+        return scope.projection_schema
 
     # ──────── Clause Validators ────────
 
@@ -95,12 +102,14 @@ class SQLSemanticAnalyzer:
             else:  # INNER/LEFT/RIGHT/FULL
                 if not condition:
                     raise MissingJoinConditionError()
-                self._assert_boolean(self._validate_expression(condition, scope))
+                condition_t = cast(DataType, self._validate_expression(condition.this, scope))
+                self._assert_boolean(condition_t)
 
     def _validate_where(self, select: Select, scope: Scope) -> None:
         where = select.args.get('where')
         if where:
-            self._assert_boolean(self._validate_expression(where.this, scope))
+            condition_t = cast(DataType, self._validate_expression(where.this, scope))
+            self._assert_boolean(condition_t)
 
     def _validate_group_by(self, select: Select, scope: Scope) -> None:
         group = select.args.get('group')
@@ -116,12 +125,17 @@ class SQLSemanticAnalyzer:
             return
         if not scope.group_by:
             raise GroupByClauseRequiredError()
-        self._assert_boolean(self._validate_expression(having.this, scope))
+        condition_t = cast(DataType, self._validate_expression(having.this, scope))
+        self._assert_boolean(condition_t)
 
     def _validate_projection(self, select: Select, scope: Scope) -> None:
         for expr in select.expressions:
-            self._validate_expression(expr, scope)
-            scope.add_select_item(expr.alias_or_name)
+            t = self._validate_expression(expr, scope)
+            if isinstance(t, DataType):
+                scope.add_select_item(expr.alias_or_name, t)
+            else:
+                for col, col_type in t.items():
+                    scope.add_select_item(col, col_type)
 
     def _validate_order_by(self, select: Select, scope: Scope) -> None:
         order = select.args.get('order')
@@ -141,10 +155,10 @@ class SQLSemanticAnalyzer:
 
             # in grouped queries must refer to output
             if scope.group_by:
-                if node not in select.expressions and node.name not in scope.select_list:
+                if node not in select.expressions and node.name not in scope.projection_schema:
                     raise OrderByExpressionError(node)
             else:
-                t = self._validate_expression(node, scope)
+                t = cast(DataType, self._validate_expression(node, scope))
                 if not t.is_orderable():
                     raise UnorderableTypeError(t)
 
@@ -175,19 +189,29 @@ class SQLSemanticAnalyzer:
 
     # ──────── Table & Expression ────────
 
-    def _add_table(self, tbl: Table, scope: Scope) -> None:
-        if not isinstance(tbl, Table):
-            raise NotImplementedError(f'Unsupported table ref: {type(tbl)}')
-        name = tbl.name
-        alias = tbl.alias_or_name
-        table_schema = self.schema.get(name)
-        if table_schema is None:
-            raise UndefinedTableError(name)
-        scope.register_table(alias, name, table_schema)
+    def _add_table(self, table: Table | Subquery, scope: Scope) -> None:
+        match table:
+            case Table():
+                name = table.name
+                alias = table.alias_or_name
+                table_schema = self.schema.get(name)
+                if table_schema is None:
+                    raise UndefinedTableError(name)
+                scope.register_table(alias, name, table_schema)
+            case Subquery():
+                alias = table.alias_or_name
+                if not alias:
+                    raise MissingDerivedTableAliasError()
+                sub_select = table.this
+                for expr in sub_select.expressions:
+                    if not expr.alias_or_name:
+                        raise DerivedColumnAliasRequiredError(expr)
+                sub_schema = self._validate_select(sub_select, scope)
+                scope.register_table(alias, alias, sub_schema)
 
     def _validate_expression(
         self, node: Expression, scope: Scope, in_group_by: bool = False, in_aggregate: bool = False
-    ) -> DataType:
+    ) -> DataType | TableSchema:
         match node:
             case Literal():
                 return infer_literal_type(node)
@@ -207,27 +231,44 @@ class SQLSemanticAnalyzer:
                 return self._validate_expression(node.this, scope, in_group_by, in_aggregate)
 
             case And() | Or():
-                lt = self._validate_expression(node.left, scope, in_group_by, in_aggregate)
-                rt = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
+                lt = cast(
+                    DataType, self._validate_expression(node.left, scope, in_group_by, in_aggregate)
+                )
+                rt = cast(
+                    DataType,
+                    self._validate_expression(node.right, scope, in_group_by, in_aggregate),
+                )
                 self._assert_boolean(lt)
                 self._assert_boolean(rt)
                 return DataType.BOOLEAN
 
             case EQ() | NEQ() | LT() | LTE() | GT() | GTE():
-                lt = self._validate_expression(node.left, scope, in_group_by, in_aggregate)
-                rt = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
+                lt = cast(
+                    DataType, self._validate_expression(node.left, scope, in_group_by, in_aggregate)
+                )
+                rt = cast(
+                    DataType,
+                    self._validate_expression(node.right, scope, in_group_by, in_aggregate),
+                )
                 self._assert_comparable(lt, rt)
                 return DataType.BOOLEAN
 
             case Add() | Sub() | Mul() | Div():
-                lt = self._validate_expression(node.left, scope, in_group_by, in_aggregate)
-                rt = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
+                lt = cast(
+                    DataType, self._validate_expression(node.left, scope, in_group_by, in_aggregate)
+                )
+                rt = cast(
+                    DataType,
+                    self._validate_expression(node.right, scope, in_group_by, in_aggregate),
+                )
                 self._assert_numeric(lt)
                 self._assert_numeric(rt)
                 return DataType.NUMERIC
 
             case Not():
-                t = self._validate_expression(node.this, scope, in_group_by, in_aggregate)
+                t = cast(
+                    DataType, self._validate_expression(node.this, scope, in_group_by, in_aggregate)
+                )
                 self._assert_boolean(t)
                 return DataType.BOOLEAN
 
@@ -238,7 +279,10 @@ class SQLSemanticAnalyzer:
                 return DataType.INTEGER
 
             case Avg() | Sum() | Min() | Max():
-                t = self._validate_expression(node.this, scope, in_group_by, in_aggregate=True)
+                t = cast(
+                    DataType,
+                    self._validate_expression(node.this, scope, in_group_by, in_aggregate=True),
+                )
                 self._assert_numeric(t)
                 return DataType.NUMERIC
 
@@ -247,7 +291,16 @@ class SQLSemanticAnalyzer:
                     missing = scope.get_columns() - scope.group_by
                     if missing:
                         raise NonGroupedColumnError(list(missing))
-                return None
+                return scope.get_schema()
+
+            case Subquery():
+                sub_schema = self._validate_select(node.this, scope)
+                try:
+                    self._assert_scalar(node)
+                    [(_, dtype)] = sub_schema.items()
+                except ValueError:
+                    raise ScalarSubqueryError() from None
+                return dtype
 
             case _:
                 raise NotImplementedError(f'Expression {type(node)} not supported')
@@ -265,3 +318,10 @@ class SQLSemanticAnalyzer:
     def _assert_numeric(self, t: DataType) -> None:
         if not t.is_numeric():
             raise TypeMismatchError(DataType.NUMERIC, t)
+
+    def _assert_scalar(self, subquery: Subquery) -> None:
+        select = subquery.this
+        [scalar] = select.expressions
+        group = select.args.get('group')
+        if not isinstance(scalar, Count | Sum | Avg | Min | Max) or group:
+            raise ScalarSubqueryError()

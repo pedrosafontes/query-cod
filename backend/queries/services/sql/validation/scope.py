@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from databases.types import DataType
+from databases.types import DataType, TableSchema
 from sqlglot.expressions import Column
 
 from .errors import (
@@ -23,7 +23,7 @@ class Scope:
         self._aliases: dict[str, str] = {}
         self._columns: ColumnBindings = defaultdict(list)
         self.group_by: set[str] = set()
-        self.select_list: set[str] = set()
+        self.projection_schema: TableSchema = {}
 
     def register_table(self, alias: str, table: str, schema: dict[str, DataType]) -> None:
         if alias in self._aliases:
@@ -32,16 +32,22 @@ class Scope:
         for col, dtype in schema.items():
             self._columns[col.lower()].append((alias, dtype))
 
-    def add_select_item(self, alias: str) -> None:
-        if alias in self.select_list:
+    def add_select_item(self, alias: str, t: DataType) -> None:
+        if alias in self.projection_schema:
             raise DuplicateAliasError(alias)
-        self.select_list.add(alias)
+        self.projection_schema[alias] = t
 
     def get_column_bindings(self, col: str) -> list[ColumnBinding]:
         return self._columns.get(col.lower(), [])
 
     def get_columns(self) -> set[str]:
         return set(self._columns.keys())
+
+    def get_schema(self) -> TableSchema:
+        return {col: self._infer_type(types) for col, types in self._columns.items()}
+
+    def _infer_type(self, types: list[ColumnBinding]) -> DataType:
+        return types[0][1]
 
     def resolve_column(self, column: Column) -> DataType:
         name = column.name.lower()
