@@ -42,32 +42,33 @@ class Scope:
         self.projection_schema[table][alias] = t
 
     def is_projected(self, expr: Expression) -> bool:
+        return self._resolve_projection(expr) is not None
+
+    def _resolve_projection(self, expr: Expression) -> DataType | None:
         name = expr.name
         table = expr.table if isinstance(expr, Column) else None
 
         if table:
-            return self._find_qualified_projection(name, table)
-        return self._find_unqualified_projection(name)
+            return self._resolve_qualified_projection(name, table)
+        return self._resolve_unqualified_projection(name)
 
-    def _find_qualified_projection(self, name: str, table: str) -> bool:
-        return table in self.projection_schema and name in self.projection_schema[table]
+    def _resolve_qualified_projection(self, name: str, table: str) -> DataType | None:
+        return self.projection_schema[table].get(name)
 
-    def _find_unqualified_projection(self, name: str) -> bool:
+    def _resolve_unqualified_projection(self, name: str) -> DataType | None:
         matches = self._find_projection_matches(name)
-        return len(matches) == 1
+        return matches[0] if matches else None
 
-    def _find_projection_matches(self, name: str) -> list[tuple[TableAlias | None, DataType]]:
-        return [
-            (table, schema[name])
-            for table, schema in self.projection_schema.items()
-            if name in schema
-        ]
+    def _find_projection_matches(self, name: str) -> list[DataType]:
+        return [schema[name] for schema in self.projection_schema.values() if name in schema]
 
     # ────── Column Resolution ──────
 
-    def resolve_column(self, column: Column) -> DataType:
+    def resolve_column(self, column: Column, in_order_by: bool = False) -> DataType:
         name = column.name
         table = column.table
+        if in_order_by and (t := self._resolve_projection(column)):
+            return t
         if table:
             return self._resolve_qualified(name, table)
         return self._resolve_unqualified(name)

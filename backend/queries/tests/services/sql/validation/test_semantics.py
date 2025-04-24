@@ -70,6 +70,7 @@ class TestBasicSelects:
         [
             'SELECT * FROM products',
             'SELECT product_id, product_name FROM products',
+            'SELECT p.* FROM products p',
             'SELECT product_id AS id, product_name AS name FROM products',
             'SELECT product_id id, product_name name FROM products',  # Implicit alias
             'SELECT product_id, price * 1.1 AS increased_price FROM products',  # Expression
@@ -254,6 +255,8 @@ class TestOrderBy:
             'SELECT product_id, product_name FROM products ORDER BY 2 DESC',
             # ORDER BY expression
             'SELECT * FROM products ORDER BY price * 1.1',
+            # ORDER BY alias
+            'SELECT product_id AS id FROM products ORDER BY id',
             # ORDER BY with GROUP BY
             'SELECT category_id, COUNT(*) AS count FROM products GROUP BY category_id ORDER BY count',
         ],
