@@ -136,3 +136,9 @@ class DerivedColumnAliasRequiredError(SQLSemanticError):
 
     def __str__(self) -> str:
         return 'Derived column {expression} must have an alias'
+
+
+@dataclass
+class AggregateInWhereError(SQLSemanticError):
+    def __str__(self) -> str:
+        return 'Aggregate functions cannot be used in the WHERE clause'

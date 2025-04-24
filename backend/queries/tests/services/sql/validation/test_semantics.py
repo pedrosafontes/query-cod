@@ -2,6 +2,7 @@ import pytest
 from databases.types import DataType, Schema
 from queries.services.sql.parser import parse_sql
 from queries.services.sql.validation.errors import (
+    AggregateInWhereError,
     AmbiguousColumnError,
     CrossJoinConditionError,
     DerivedColumnAliasRequiredError,
@@ -113,6 +114,10 @@ class TestWhereConditions:
             ("SELECT * FROM products WHERE nonexistent_column = 'value'", UndefinedColumnError),
             ('SELECT * FROM products WHERE product_name > 10', TypeMismatchError),
             ('SELECT * FROM products WHERE 123', TypeMismatchError),  # Non-boolean expression
+            (
+                'SELECT * FROM products WHERE COUNT(*) > 5',
+                AggregateInWhereError,
+            ),  # Aggregate in WHERE
         ],
     )
     def test_invalid_where_conditions(

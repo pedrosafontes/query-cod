@@ -34,6 +34,7 @@ from sqlglot.expressions import (
 )
 
 from .errors import (
+    AggregateInWhereError,
     CrossJoinConditionError,
     DerivedColumnAliasRequiredError,
     GroupByClauseRequiredError,
@@ -108,7 +109,9 @@ class SQLSemanticAnalyzer:
     def _validate_where(self, select: Select, scope: Scope) -> None:
         where = select.args.get('where')
         if where:
-            condition_t = cast(DataType, self._validate_expression(where.this, scope))
+            condition_t = cast(
+                DataType, self._validate_expression(where.this, scope, in_where=True)
+            )
             self._assert_boolean(condition_t)
 
     def _validate_group_by(self, select: Select, scope: Scope) -> None:
@@ -221,6 +224,7 @@ class SQLSemanticAnalyzer:
         self,
         node: Expression,
         scope: Scope,
+        in_where: bool = False,
         in_group_by: bool = False,
         in_aggregate: bool = False,
         in_order_by: bool = False,
@@ -245,20 +249,20 @@ class SQLSemanticAnalyzer:
 
             case Alias():
                 return self._validate_expression(
-                    node.this, scope, in_group_by, in_aggregate, in_order_by
+                    node.this, scope, in_where, in_group_by, in_aggregate, in_order_by
                 )
 
             case And() | Or():
                 lt = cast(
                     DataType,
                     self._validate_expression(
-                        node.left, scope, in_group_by, in_aggregate, in_order_by
+                        node.left, scope, in_where, in_group_by, in_aggregate, in_order_by
                     ),
                 )
                 rt = cast(
                     DataType,
                     self._validate_expression(
-                        node.right, scope, in_group_by, in_aggregate, in_order_by
+                        node.right, scope, in_where, in_group_by, in_aggregate, in_order_by
                     ),
                 )
                 self._assert_boolean(lt)
@@ -269,13 +273,13 @@ class SQLSemanticAnalyzer:
                 lt = cast(
                     DataType,
                     self._validate_expression(
-                        node.left, scope, in_group_by, in_aggregate, in_order_by
+                        node.left, scope, in_where, in_group_by, in_aggregate, in_order_by
                     ),
                 )
                 rt = cast(
                     DataType,
                     self._validate_expression(
-                        node.right, scope, in_group_by, in_aggregate, in_order_by
+                        node.right, scope, in_where, in_group_by, in_aggregate, in_order_by
                     ),
                 )
                 self._assert_comparable(lt, rt)
@@ -285,13 +289,13 @@ class SQLSemanticAnalyzer:
                 lt = cast(
                     DataType,
                     self._validate_expression(
-                        node.left, scope, in_group_by, in_aggregate, in_order_by
+                        node.left, scope, in_where, in_group_by, in_aggregate, in_order_by
                     ),
                 )
                 rt = cast(
                     DataType,
                     self._validate_expression(
-                        node.right, scope, in_group_by, in_aggregate, in_order_by
+                        node.right, scope, in_where, in_group_by, in_aggregate, in_order_by
                     ),
                 )
                 self._assert_numeric(lt)
@@ -302,25 +306,39 @@ class SQLSemanticAnalyzer:
                 t = cast(
                     DataType,
                     self._validate_expression(
-                        node.this, scope, in_group_by, in_aggregate, in_order_by
+                        node.this, scope, in_where, in_group_by, in_aggregate, in_order_by
                     ),
                 )
                 self._assert_boolean(t)
                 return DataType.BOOLEAN
 
             case Count():
+                if in_where:
+                    raise AggregateInWhereError()
                 arg = node.this
                 if not isinstance(arg, Star):
                     self._validate_expression(
-                        arg, scope, in_group_by, in_aggregate=True, in_order_by=in_order_by
+                        arg,
+                        scope,
+                        in_where,
+                        in_group_by,
+                        in_aggregate=True,
+                        in_order_by=in_order_by,
                     )
                 return DataType.INTEGER
 
             case Avg() | Sum() | Min() | Max():
+                if in_where:
+                    raise AggregateInWhereError()
                 t = cast(
                     DataType,
                     self._validate_expression(
-                        node.this, scope, in_group_by, in_aggregate=True, in_order_by=in_order_by
+                        node.this,
+                        scope,
+                        in_where,
+                        in_group_by,
+                        in_aggregate=True,
+                        in_order_by=in_order_by,
                     ),
                 )
                 self._assert_numeric(t)

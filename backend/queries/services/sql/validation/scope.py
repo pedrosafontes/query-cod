@@ -137,7 +137,7 @@ class Scope:
             for col, t in schema.items():
                 column_types[col].append(t)
         return column_types
-    
+
     def validate_star_expansion(self, table: str | None = None) -> ResultSchema:
         schema = self.get_table_schema(table) if table else self.get_schema()
 
@@ -151,5 +151,5 @@ class Scope:
 
             if missing:
                 raise NonGroupedColumnError(missing)
-        
+
         return schema
