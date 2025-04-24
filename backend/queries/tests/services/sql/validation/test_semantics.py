@@ -136,6 +136,8 @@ class TestJoins:
             'SELECT * FROM products NATURAL JOIN orders',
             # Multiple JOINs
             'SELECT * FROM products p JOIN orders o ON p.product_id = o.product_id JOIN customers c ON o.customer_id = c.customer_id',
+            # Self JOIN
+            'SELECT p1.product_name, p2.product_name FROM products p1 JOIN products p2 ON p1.category_id = p2.category_id AND p1.product_id <> p2.product_id',
         ],
     )
     def test_valid_joins(self, query: str, schema: Schema) -> None:
@@ -191,7 +193,7 @@ class TestAggregatesAndGrouping:
             'SELECT COUNT(*) FROM products',
             'SELECT SUM(price) FROM products',
             'SELECT AVG(price) FROM products',
-            # 'SELECT MIN(price), MAX(price) FROM products',
+            'SELECT MIN(price), MAX(price) FROM products',
             # Group BY
             'SELECT category_id, COUNT(*) FROM products GROUP BY category_id',
             'SELECT category_id, AVG(price) FROM products GROUP BY category_id',
@@ -199,6 +201,10 @@ class TestAggregatesAndGrouping:
             # HAVING
             'SELECT category_id, COUNT(*) FROM products GROUP BY category_id HAVING COUNT(*) > 5',
             'SELECT category_id, AVG(price) FROM products GROUP BY category_id HAVING AVG(price) > 100',
+            # Multiple aggregate functions
+            'SELECT category_id, COUNT(*), SUM(price), AVG(price) FROM products GROUP BY category_id',
+            # Expressions in GROUP BY and HAVING
+            'SELECT category_id, price / 2 AS half_price FROM products GROUP BY category_id, price / 2',
             'SELECT category_id, COUNT(*) FROM products GROUP BY category_id HAVING SUM(price) / COUNT(*) > 50',
         ],
     )
