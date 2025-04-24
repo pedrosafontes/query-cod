@@ -101,6 +101,7 @@ class TestWhereConditions:
             'SELECT * FROM products WHERE product_id = 1',
             "SELECT * FROM products WHERE product_name = 'Test'",
             'SELECT * FROM products WHERE price > 10.5',
+            'SELECT * FROM products WHERE product_id IN (1, 2, 3)',
             "SELECT * FROM products WHERE price > 10 OR product_name = 'Test'",
             'SELECT * FROM products WHERE NOT in_stock',
         ],
@@ -309,6 +310,10 @@ class TestSubqueries:
             'SELECT * FROM products p WHERE price > (SELECT AVG(price) FROM products WHERE category_id = p.category_id)',
             # Subquery with alias in FROM
             'SELECT p.id, p.name FROM (SELECT product_id AS id, product_name AS name FROM products) AS p',
+            # Multiple subqueries
+            'SELECT * FROM products WHERE category_id IN (SELECT category_id FROM categories) AND price > (SELECT AVG(price) FROM products)',
+            # Nested subqueries
+            'SELECT * FROM products WHERE category_id IN (SELECT category_id FROM categories WHERE category_id IN (SELECT category_id FROM products GROUP BY category_id HAVING COUNT(*) > 5))',
         ],
     )
     def test_valid_subqueries(self, query: str, schema: Schema) -> None:

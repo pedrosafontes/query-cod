@@ -18,6 +18,7 @@ from sqlglot.expressions import (
     Div,
     From,
     Identifier,
+    In,
     Join,
     Literal,
     Max,
@@ -356,6 +357,25 @@ class SQLSemanticAnalyzer:
                 except ValueError:
                     raise ScalarSubqueryError() from None
                 return dtype
+
+            case In():
+                left_t = cast(
+                    DataType,
+                    self._validate_expression(
+                        node.this, scope, in_where, in_group_by, in_aggregate, in_order_by
+                    ),
+                )
+
+                for val in node.expressions:
+                    right_t = cast(
+                        DataType,
+                        self._validate_expression(
+                            val, scope, in_where, in_group_by, in_aggregate, in_order_by
+                        ),
+                    )
+                    self._assert_comparable(left_t, right_t)
+
+                return DataType.BOOLEAN
 
             case _:
                 raise NotImplementedError(f'Expression {type(node)} not supported')
