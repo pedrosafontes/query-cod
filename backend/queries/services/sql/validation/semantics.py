@@ -49,7 +49,7 @@ from .errors import (
     UndefinedTableError,
     UnorderableTypeError,
 )
-from .scope import ColumnBindings, Scope
+from .scope import ColumnBindings, ResultSchema, Scope
 from .utils import infer_literal_type
 
 
@@ -60,7 +60,7 @@ class SQLSemanticAnalyzer:
     def validate(self, expression: Select) -> None:
         self._validate_select(expression, outer_scope=None)
 
-    def _validate_select(self, select: Select, outer_scope: Scope | None) -> TableSchema:
+    def _validate_select(self, select: Select, outer_scope: Scope | None) -> ResultSchema:
         scope = Scope(outer_scope)
         self._populate_from(select, scope)
         self._validate_joins(select, scope)
@@ -132,10 +132,12 @@ class SQLSemanticAnalyzer:
         for expr in select.expressions:
             t = self._validate_expression(expr, scope)
             if isinstance(t, DataType):
-                scope.add_select_item(expr.alias_or_name, t)
+                print(f'Adding {expr.args.get('table')} {expr.alias_or_name} with type {t}')
+                scope.add_select_item(expr.args.get('table'), expr.alias_or_name, t)
             else:
-                for col, col_type in t.items():
-                    scope.add_select_item(col, col_type)
+                for table, columns in t.items():
+                    for col, col_type in columns.items():
+                        scope.add_select_item(table, col, col_type)
 
     def _validate_order_by(self, select: Select, scope: Scope) -> None:
         order = select.args.get('order')
@@ -155,7 +157,7 @@ class SQLSemanticAnalyzer:
 
             # in grouped queries must refer to output
             if scope.group_by:
-                if node not in select.expressions and node.name not in scope.projection_schema:
+                if node not in select.expressions and not scope.resolve_projection(node):
                     raise OrderByExpressionError(node)
             else:
                 t = cast(DataType, self._validate_expression(node, scope))
@@ -169,22 +171,22 @@ class SQLSemanticAnalyzer:
     ) -> None:
         for ident in using:
             col = ident.name
-            entries = left_cols.get(col, [])
-            if not entries:
+            col_types = left_cols.get(col, [])
+            if not col_types:
                 raise UndefinedColumnError(col)
             rhs = right_cols[col]
-            for _, lhs in entries:
+            for lhs in col_types:
                 self._assert_comparable(lhs, rhs)
 
     def _validate_natural_join(
         self, left_cols: ColumnBindings, right_cols: TableSchema, scope: Scope
     ) -> None:
-        shared = set(left_cols) & set(right_cols)
+        shared = set(left_cols.keys()) & set(right_cols)
         if not shared:
             raise NoCommonColumnsError()
         for col in shared:
             rhs = right_cols[col]
-            for _, lhs in scope.get_column_bindings(col):
+            for lhs in left_cols[col]:
                 self._assert_comparable(lhs, rhs)
 
     # ──────── Table & Expression ────────
@@ -197,7 +199,7 @@ class SQLSemanticAnalyzer:
                 table_schema = self.schema.get(name)
                 if table_schema is None:
                     raise UndefinedTableError(name)
-                scope.register_table(alias, name, table_schema)
+                scope.register_table(alias, table_schema)
             case Subquery():
                 alias = table.alias_or_name
                 if not alias:
@@ -206,26 +208,30 @@ class SQLSemanticAnalyzer:
                 for expr in sub_select.expressions:
                     if not expr.alias_or_name:
                         raise DerivedColumnAliasRequiredError(expr)
-                sub_schema = self._validate_select(sub_select, scope)
-                scope.register_table(alias, alias, sub_schema)
+                # TODO: Can a subquery's schema have more than one table?
+                [(_, sub_schema)] = self._validate_select(sub_select, scope).items()
+                scope.register_table(alias, sub_schema)
 
     def _validate_expression(
         self, node: Expression, scope: Scope, in_group_by: bool = False, in_aggregate: bool = False
-    ) -> DataType | TableSchema:
+    ) -> DataType | ResultSchema:
         match node:
             case Literal():
                 return infer_literal_type(node)
 
             case Column():
-                t = scope.resolve_column(node)
-                if (
-                    scope.group_by
-                    and not in_group_by
-                    and not in_aggregate
-                    and node.name not in scope.group_by
-                ):
-                    raise NonGroupedColumnError([node.name])
-                return t
+                if isinstance(node.this, Star):
+                    return scope.get_table_schema(node.table)
+                else:
+                    t = scope.resolve_column(node)
+                    if (
+                        scope.group_by
+                        and not in_group_by
+                        and not in_aggregate
+                        and node.name not in scope.group_by
+                    ):
+                        raise NonGroupedColumnError([node.name])
+                    return t
 
             case Alias():
                 return self._validate_expression(node.this, scope, in_group_by, in_aggregate)
@@ -297,7 +303,8 @@ class SQLSemanticAnalyzer:
                 sub_schema = self._validate_select(node.this, scope)
                 try:
                     self._assert_scalar(node)
-                    [(_, dtype)] = sub_schema.items()
+                    [(_, columns)] = sub_schema.items()
+                    [(_, dtype)] = columns.items()
                 except ValueError:
                     raise ScalarSubqueryError() from None
                 return dtype
