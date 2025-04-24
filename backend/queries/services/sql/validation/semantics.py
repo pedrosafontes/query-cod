@@ -116,27 +116,33 @@ class SQLSemanticAnalyzer:
         if not group:
             return
         for expr in group.expressions:
-            self._validate_expression(expr, scope, in_group_by=True)
-            scope.group_by.add(expr.name)
+            scope.add_group_by_expr(
+                expr, cast(DataType, self._validate_expression(expr, scope, in_group_by=True))
+            )
 
     def _validate_having(self, select: Select, scope: Scope) -> None:
         having = select.args.get('having')
         if not having:
             return
-        if not scope.group_by:
+        if not scope.is_grouped:
             raise GroupByClauseRequiredError()
         condition_t = cast(DataType, self._validate_expression(having.this, scope))
         self._assert_boolean(condition_t)
 
     def _validate_projection(self, select: Select, scope: Scope) -> None:
         for expr in select.expressions:
-            t = self._validate_expression(expr, scope)
+            t = (
+                scope.group_by_expr_t(expr)
+                if scope.is_group_by_expr(expr)
+                else self._validate_expression(expr, scope)
+            )
             if isinstance(t, DataType):
-                scope.add_select_item(expr.args.get('table'), expr.alias_or_name, t)
+                scope.add_projection(expr.args.get('table'), expr.alias_or_name, t)
             else:
+                t = cast(ResultSchema, t)
                 for table, columns in t.items():
                     for col, col_type in columns.items():
-                        scope.add_select_item(table, col, col_type)
+                        scope.add_projection(table, col, col_type)
 
     def _validate_order_by(self, select: Select, scope: Scope) -> None:
         order = select.args.get('order')
@@ -155,7 +161,7 @@ class SQLSemanticAnalyzer:
                 continue
 
             # in grouped queries must refer to output
-            if scope.group_by:
+            if scope.is_grouped:
                 if node not in select.expressions and not scope.is_projected(node):
                     raise OrderByExpressionError(node)
             else:
@@ -229,10 +235,10 @@ class SQLSemanticAnalyzer:
                 else:
                     t = scope.resolve_column(node, in_order_by)
                     if (
-                        scope.group_by
+                        scope.is_grouped
                         and not in_group_by
                         and not in_aggregate
-                        and node.name not in scope.group_by
+                        and not scope.is_group_by_expr(node)
                     ):
                         raise NonGroupedColumnError([node.name])
                     return t
@@ -321,10 +327,16 @@ class SQLSemanticAnalyzer:
                 return DataType.NUMERIC
 
             case Star():
-                if scope.group_by:
-                    missing = scope.get_columns() - scope.group_by
+                if scope.is_grouped:
+                    missing = []
+                    for table, schema in scope.get_schema().items():
+                        for col, _ in schema.items():
+                            # Construct a synthetic Column expression for comparison
+                            col_expr = Column(this=col, table=table)
+                            if not scope.is_group_by_expr(col_expr):
+                                missing.append(col)
                     if missing:
-                        raise NonGroupedColumnError(list(missing))
+                        raise NonGroupedColumnError(missing)
                 return scope.get_schema()
 
             case Subquery():

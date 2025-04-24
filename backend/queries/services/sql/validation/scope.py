@@ -24,45 +24,15 @@ class Scope:
     def __init__(self, parent: Scope | None = None):
         self.parent = parent
         self._table_schemas: ResultSchema = defaultdict(dict)
-        self.group_by: set[str] = set()
+        self._group_by_exprs: list[tuple[Expression, DataType]] = []
         self.projection_schema: ResultSchema = defaultdict(dict)
 
-    # ────── Table Registration ──────
+    # ────── Table & Column Resolution ──────
 
     def register_table(self, alias: str, schema: TableSchema) -> None:
         if alias in self._table_schemas:
             raise DuplicateAliasError(alias)
         self._table_schemas[alias] = schema
-
-    # ────── Projection Registration ──────
-
-    def add_select_item(self, table: str | None, alias: str, t: DataType) -> None:
-        if alias in self.projection_schema[table]:
-            raise DuplicateAliasError(alias)
-        self.projection_schema[table][alias] = t
-
-    def is_projected(self, expr: Expression) -> bool:
-        return self._resolve_projection(expr) is not None
-
-    def _resolve_projection(self, expr: Expression) -> DataType | None:
-        name = expr.name
-        table = expr.table if isinstance(expr, Column) else None
-
-        if table:
-            return self._resolve_qualified_projection(name, table)
-        return self._resolve_unqualified_projection(name)
-
-    def _resolve_qualified_projection(self, name: str, table: str) -> DataType | None:
-        return self.projection_schema[table].get(name)
-
-    def _resolve_unqualified_projection(self, name: str) -> DataType | None:
-        matches = self._find_projection_matches(name)
-        return matches[0] if matches else None
-
-    def _find_projection_matches(self, name: str) -> list[DataType]:
-        return [schema[name] for schema in self.projection_schema.values() if name in schema]
-
-    # ────── Column Resolution ──────
 
     def resolve_column(self, column: Column, in_order_by: bool = False) -> DataType:
         name = column.name
@@ -95,8 +65,57 @@ class Scope:
         [(_, t)] = matches
         return t
 
-    def get_column_type(self, name: str, table: str | None = None) -> DataType:
-        return self._resolve_qualified(name, table) if table else self._resolve_unqualified(name)
+    # ────── Projection Resolution ──────
+
+    def add_projection(self, table: str | None, alias: str, t: DataType) -> None:
+        if alias in self.projection_schema[table]:
+            raise DuplicateAliasError(alias)
+        self.projection_schema[table][alias] = t
+
+    def is_projected(self, expr: Expression) -> bool:
+        return self._resolve_projection(expr) is not None
+
+    def _resolve_projection(self, expr: Expression) -> DataType | None:
+        name = expr.name
+        table = expr.table if isinstance(expr, Column) else None
+
+        if table:
+            return self._resolve_qualified_projection(name, table)
+        return self._resolve_unqualified_projection(name)
+
+    def _resolve_qualified_projection(self, name: str, table: str) -> DataType | None:
+        return self.projection_schema[table].get(name)
+
+    def _resolve_unqualified_projection(self, name: str) -> DataType | None:
+        matches = self._find_projection_matches(name)
+        return matches[0] if matches else None
+
+    def _find_projection_matches(self, name: str) -> list[DataType]:
+        return [schema[name] for schema in self.projection_schema.values() if name in schema]
+
+    # ────── GROUP BY Expression Tracking ──────
+
+    @property
+    def is_grouped(self) -> bool:
+        return bool(self._group_by_exprs)
+
+    def add_group_by_expr(self, expr: Expression, t: DataType) -> None:
+        self._group_by_exprs.append((expr, t))
+
+    def is_group_by_expr(self, expr: Expression) -> bool:
+        return self._get_group_by_expr(expr) is not None
+
+    def group_by_expr_t(self, expr: Expression) -> DataType | None:
+        expr_t = self._get_group_by_expr(expr)
+        assert expr_t is not None  # noqa S101
+        _, t = expr_t
+        return t
+
+    def _get_group_by_expr(self, expr: Expression) -> tuple[Expression, DataType] | None:
+        for grouped, t in self._group_by_exprs:
+            if expr == grouped or expr.name == grouped.name:
+                return grouped, t
+        return None
 
     # ────── Schema Utilities ──────
 
