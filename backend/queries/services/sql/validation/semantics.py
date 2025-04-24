@@ -49,7 +49,7 @@ from .errors import (
     UndefinedTableError,
     UnorderableTypeError,
 )
-from .scope import ColumnBindings, ResultSchema, Scope
+from .scope import ColumnTypes, ResultSchema, Scope
 from .utils import infer_literal_type
 
 
@@ -157,7 +157,7 @@ class SQLSemanticAnalyzer:
 
             # in grouped queries must refer to output
             if scope.group_by:
-                if node not in select.expressions and not scope.resolve_projection(node):
+                if node not in select.expressions and not scope.is_projected(node):
                     raise OrderByExpressionError(node)
             else:
                 t = cast(DataType, self._validate_expression(node, scope))
@@ -167,7 +167,7 @@ class SQLSemanticAnalyzer:
     # ──────── Join Helpers ────────
 
     def _validate_using(
-        self, using: list[Identifier], left_cols: ColumnBindings, right_cols: TableSchema
+        self, using: list[Identifier], left_cols: ColumnTypes, right_cols: TableSchema
     ) -> None:
         for ident in using:
             col = ident.name
@@ -179,7 +179,7 @@ class SQLSemanticAnalyzer:
                 self._assert_comparable(lhs, rhs)
 
     def _validate_natural_join(
-        self, left_cols: ColumnBindings, right_cols: TableSchema, scope: Scope
+        self, left_cols: ColumnTypes, right_cols: TableSchema, scope: Scope
     ) -> None:
         shared = set(left_cols.keys()) & set(right_cols)
         if not shared:
