@@ -49,14 +49,20 @@ from .errors import (
     OrderByExpressionError,
     OrderByPositionError,
     ScalarSubqueryError,
-    TypeMismatchError,
     UndefinedColumnError,
     UndefinedTableError,
-    UnorderableTypeError,
 )
 from .scope import Scope
+from .type_checker import (
+    assert_boolean,
+    assert_comparable,
+    assert_integer_literal,
+    assert_numeric,
+    assert_orderable,
+    assert_scalar_subquery,
+    infer_literal_type,
+)
 from .types import ColumnTypes, ResultSchema
-from .utils import infer_literal_type
 
 
 class SQLSemanticAnalyzer:
@@ -108,16 +114,15 @@ class SQLSemanticAnalyzer:
             else:
                 if not condition:
                     raise MissingJoinConditionError()
-                self._assert_boolean(cast(DataType, self._validate_expression(condition, scope)))
+                assert_boolean(self._validate_simple_expression(condition, scope))
 
     def _validate_where(self, select: Select, scope: Scope) -> None:
         where = select.args.get('where')
         if where:
-            self._assert_boolean(
-                cast(
-                    DataType,
-                    self._validate_expression(where.this, scope, ValidationContext(in_where=True)),
-                )
+            assert_boolean(
+                self._validate_simple_expression(
+                    where.this, scope, ValidationContext(in_where=True)
+                ),
             )
 
     def _validate_group_by(self, select: Select, scope: Scope) -> None:
@@ -126,9 +131,8 @@ class SQLSemanticAnalyzer:
             for expr in group.expressions:
                 scope.group_by.add_expr(
                     expr,
-                    cast(
-                        DataType,
-                        self._validate_expression(expr, scope, ValidationContext(in_group_by=True)),
+                    self._validate_simple_expression(
+                        expr, scope, ValidationContext(in_group_by=True)
                     ),
                 )
 
@@ -137,7 +141,7 @@ class SQLSemanticAnalyzer:
         if having:
             if not scope.is_grouped:
                 raise GroupByClauseRequiredError()
-            self._assert_boolean(cast(DataType, self._validate_expression(having.this, scope)))
+            assert_boolean(self._validate_simple_expression(having.this, scope))
 
     def _validate_projection(self, select: Select, scope: Scope) -> None:
         for expr in select.expressions:
@@ -162,8 +166,7 @@ class SQLSemanticAnalyzer:
         for item in order.expressions:
             node = item.this
             if isinstance(node, Literal):
-                if not node.is_int:
-                    raise TypeMismatchError(DataType.INTEGER, infer_literal_type(node))
+                assert_integer_literal(node)
                 pos = int(node.this)
                 if not (1 <= pos <= num_projections):
                     raise OrderByPositionError(1, num_projections)
@@ -173,12 +176,11 @@ class SQLSemanticAnalyzer:
                 if node not in select.expressions and not scope.projections.contains(node):
                     raise OrderByExpressionError(node)
             else:
-                t = cast(
-                    DataType,
-                    self._validate_expression(node, scope, ValidationContext(in_order_by=True)),
+                assert_orderable(
+                    self._validate_simple_expression(
+                        node, scope, ValidationContext(in_order_by=True)
+                    ),
                 )
-                if not t.is_orderable():
-                    raise UnorderableTypeError(t)
 
     # ──────── Join Helpers ────────
 
@@ -190,7 +192,7 @@ class SQLSemanticAnalyzer:
             if col not in left:
                 raise UndefinedColumnError(col)
             for ltype in left[col]:
-                self._assert_comparable(ltype, right[col])
+                assert_comparable(ltype, right[col])
 
     def _validate_natural_join(self, left: ColumnTypes, right: TableSchema) -> None:
         shared = set(left) & set(right)
@@ -198,7 +200,7 @@ class SQLSemanticAnalyzer:
             raise NoCommonColumnsError()
         for col in shared:
             for ltype in left[col]:
-                self._assert_comparable(ltype, right[col])
+                assert_comparable(ltype, right[col])
 
     # ──────── Table & Expression Validation ────────
 
@@ -222,6 +224,14 @@ class SQLSemanticAnalyzer:
                         raise DerivedColumnAliasRequiredError(expr)
                 [(_, sub_schema)] = self._validate_select(sub_select, scope).items()
                 scope.tables.register(alias, sub_schema)
+
+    def _validate_simple_expression(
+        self,
+        node: Expression,
+        scope: Scope,
+        context: ValidationContext | None = None,
+    ) -> DataType:
+        return cast(DataType, self._validate_expression(node, scope, context))
 
     def _validate_expression(
         self,
@@ -253,73 +263,41 @@ class SQLSemanticAnalyzer:
                 return self._validate_expression(node.this, scope, context)
 
             case And() | Or():
-                lt = cast(
-                    DataType,
-                    self._validate_expression(node.left, scope, context),
-                )
-                rt = cast(
-                    DataType,
-                    self._validate_expression(node.right, scope, context),
-                )
-                self._assert_boolean(lt)
-                self._assert_boolean(rt)
+                lt = self._validate_simple_expression(node.left, scope, context)
+                rt = self._validate_simple_expression(node.right, scope, context)
+                assert_boolean(lt)
+                assert_boolean(rt)
                 return DataType.BOOLEAN
 
             case EQ() | NEQ() | LT() | LTE() | GT() | GTE():
-                lt = cast(
-                    DataType,
-                    self._validate_expression(node.left, scope, context),
-                )
-                rt = cast(
-                    DataType,
-                    self._validate_expression(node.right, scope, context),
-                )
-                self._assert_comparable(lt, rt)
+                lt = self._validate_simple_expression(node.left, scope, context)
+                rt = self._validate_simple_expression(node.right, scope, context)
+                assert_comparable(lt, rt)
                 return DataType.BOOLEAN
 
             case Add() | Sub() | Mul() | Div():
-                lt = cast(
-                    DataType,
-                    self._validate_expression(node.left, scope, context),
-                )
-                rt = cast(
-                    DataType,
-                    self._validate_expression(node.right, scope, context),
-                )
-                self._assert_numeric(lt)
-                self._assert_numeric(rt)
+                lt = self._validate_simple_expression(node.left, scope, context)
+                rt = self._validate_simple_expression(node.right, scope, context)
+                assert_numeric(lt)
+                assert_numeric(rt)
                 return DataType.NUMERIC
 
             case Not():
-                t = cast(
-                    DataType,
-                    self._validate_expression(node.this, scope, context),
-                )
-                self._assert_boolean(t)
+                assert_boolean(self._validate_simple_expression(node.this, scope, context))
                 return DataType.BOOLEAN
 
             case Count():
                 self._validate_aggregate(context)
                 arg = node.this
                 if not isinstance(arg, Star):
-                    self._validate_expression(
-                        arg,
-                        scope,
-                        context.enter_aggregate(),
-                    )
+                    self._validate_expression(arg, scope, context.enter_aggregate())
                 return DataType.INTEGER
 
             case Avg() | Sum() | Min() | Max():
                 self._validate_aggregate(context)
-                t = cast(
-                    DataType,
-                    self._validate_expression(
-                        node.this,
-                        scope,
-                        context.enter_aggregate(),
-                    ),
+                assert_numeric(
+                    self._validate_simple_expression(node.this, scope, context.enter_aggregate())
                 )
-                self._assert_numeric(t)
                 return DataType.NUMERIC
 
             case Star():
@@ -328,7 +306,7 @@ class SQLSemanticAnalyzer:
             case Subquery():
                 sub_schema = self._validate_select(node.this, scope)
                 try:
-                    self._assert_scalar(node)
+                    assert_scalar_subquery(node)
                     [(_, columns)] = sub_schema.items()
                     [(_, t)] = columns.items()
                 except ValueError:
@@ -336,16 +314,10 @@ class SQLSemanticAnalyzer:
                 return t
 
             case In():
-                lt = cast(
-                    DataType,
-                    self._validate_expression(node.this, scope, context),
-                )
+                lt = self._validate_simple_expression(node.this, scope, context)
                 for val in node.expressions:
-                    rt = cast(
-                        DataType,
-                        self._validate_expression(val, scope, context),
-                    )
-                    self._assert_comparable(lt, rt)
+                    rt = self._validate_simple_expression(val, scope, context)
+                    assert_comparable(lt, rt)
                 return DataType.BOOLEAN
 
             case Paren():
@@ -361,24 +333,3 @@ class SQLSemanticAnalyzer:
             raise AggregateInWhereError()
         if context.in_aggregate:
             raise NestedAggregateError()
-
-    # ──────── Type Assertions ────────
-
-    def _assert_comparable(self, lhs: DataType, rhs: DataType) -> None:
-        if not lhs.is_comparable_with(rhs):
-            raise TypeMismatchError(lhs, rhs)
-
-    def _assert_boolean(self, t: DataType) -> None:
-        if t is not DataType.BOOLEAN:
-            raise TypeMismatchError(DataType.BOOLEAN, t)
-
-    def _assert_numeric(self, t: DataType) -> None:
-        if not t.is_numeric():
-            raise TypeMismatchError(DataType.NUMERIC, t)
-
-    def _assert_scalar(self, subquery: Subquery) -> None:
-        select = subquery.this
-        [scalar] = select.expressions
-        group = select.args.get('group')
-        if not isinstance(scalar, Count | Sum | Avg | Min | Max) or group:
-            raise ScalarSubqueryError()
