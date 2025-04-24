@@ -102,7 +102,7 @@ class SQLSemanticAnalyzer:
             else:  # INNER/LEFT/RIGHT/FULL
                 if not condition:
                     raise MissingJoinConditionError()
-                condition_t = cast(DataType, self._validate_expression(condition.this, scope))
+                condition_t = cast(DataType, self._validate_expression(condition, scope))
                 self._assert_boolean(condition_t)
 
     def _validate_where(self, select: Select, scope: Scope) -> None:
