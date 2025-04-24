@@ -10,6 +10,7 @@ from queries.services.sql.validation.errors import (
     GroupByClauseRequiredError,
     MissingDerivedTableAliasError,
     MissingJoinConditionError,
+    NestedAggregateError,
     NoCommonColumnsError,
     NonGroupedColumnError,
     OrderByExpressionError,
@@ -86,6 +87,7 @@ class TestBasicSelects:
             ('SELECT unknown_column FROM products', UndefinedColumnError),
             ('SELECT * FROM nonexistent_table', UndefinedTableError),
             ('SELECT product_id AS id, price AS id FROM products', DuplicateAliasError),
+            ('SELECT COUNT(COUNT(*)) FROM products', NestedAggregateError),
         ],
     )
     def test_invalid_select_clauses(

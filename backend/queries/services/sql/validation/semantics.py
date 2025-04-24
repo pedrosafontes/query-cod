@@ -26,13 +26,13 @@ from sqlglot.expressions import (
     Mul,
     Not,
     Or,
+    Paren,
     Select,
     Star,
     Sub,
     Subquery,
     Sum,
     Table,
-    Paren,
 )
 
 from .errors import (
@@ -42,6 +42,7 @@ from .errors import (
     GroupByClauseRequiredError,
     MissingDerivedTableAliasError,
     MissingJoinConditionError,
+    NestedAggregateError,
     NoCommonColumnsError,
     NonGroupedColumnError,
     OrderByExpressionError,
@@ -218,7 +219,6 @@ class SQLSemanticAnalyzer:
                 for expr in sub_select.expressions:
                     if not expr.alias_or_name:
                         raise DerivedColumnAliasRequiredError(expr)
-                # TODO: Can a subquery's schema have more than one table?
                 [(_, sub_schema)] = self._validate_select(sub_select, scope).items()
                 scope.register_table(alias, sub_schema)
 
@@ -315,8 +315,7 @@ class SQLSemanticAnalyzer:
                 return DataType.BOOLEAN
 
             case Count():
-                if in_where:
-                    raise AggregateInWhereError()
+                self._validate_aggregate(in_where, in_aggregate)
                 arg = node.this
                 if not isinstance(arg, Star):
                     self._validate_expression(
@@ -330,8 +329,7 @@ class SQLSemanticAnalyzer:
                 return DataType.INTEGER
 
             case Avg() | Sum() | Min() | Max():
-                if in_where:
-                    raise AggregateInWhereError()
+                self._validate_aggregate(in_where, in_aggregate)
                 t = cast(
                     DataType,
                     self._validate_expression(
@@ -385,6 +383,12 @@ class SQLSemanticAnalyzer:
 
             case _:
                 raise NotImplementedError(f'Expression {type(node)} not supported')
+
+    def _validate_aggregate(self, in_where: bool, in_aggregate: bool) -> None:
+        if in_where:
+            raise AggregateInWhereError()
+        if in_aggregate:
+            raise NestedAggregateError()
 
     # ──────── Type Assertions ────────
 
