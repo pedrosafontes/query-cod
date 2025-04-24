@@ -69,7 +69,7 @@ class Scope:
     # ────── Projection Resolution ──────
 
     def add_projection(self, table: str | None, alias: str, t: DataType) -> None:
-        if alias in self.projection_schema[table]:
+        if alias and alias in self.projection_schema[table]:
             raise DuplicateAliasError(alias)
         self.projection_schema[table][alias] = t
 
