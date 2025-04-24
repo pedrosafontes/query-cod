@@ -231,7 +231,7 @@ class SQLSemanticAnalyzer:
 
             case Column():
                 if isinstance(node.this, Star):
-                    return scope.get_table_schema(node.table)
+                    return scope.validate_star_expansion(node.table)
                 else:
                     t = scope.resolve_column(node, in_order_by)
                     if (
@@ -327,17 +327,7 @@ class SQLSemanticAnalyzer:
                 return DataType.NUMERIC
 
             case Star():
-                if scope.is_grouped:
-                    missing = []
-                    for table, schema in scope.get_schema().items():
-                        for col, _ in schema.items():
-                            # Construct a synthetic Column expression for comparison
-                            col_expr = Column(this=col, table=table)
-                            if not scope.is_group_by_expr(col_expr):
-                                missing.append(col)
-                    if missing:
-                        raise NonGroupedColumnError(missing)
-                return scope.get_schema()
+                return scope.validate_star_expansion()
 
             case Subquery():
                 sub_schema = self._validate_select(node.this, scope)

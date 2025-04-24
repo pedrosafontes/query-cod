@@ -8,6 +8,7 @@ from sqlglot.expressions import Column, Expression
 from .errors import (
     AmbiguousColumnError,
     DuplicateAliasError,
+    NonGroupedColumnError,
     UndefinedColumnError,
     UndefinedTableError,
 )
@@ -136,3 +137,19 @@ class Scope:
             for col, t in schema.items():
                 column_types[col].append(t)
         return column_types
+    
+    def validate_star_expansion(self, table: str | None = None) -> ResultSchema:
+        schema = self.get_table_schema(table) if table else self.get_schema()
+
+        if self.is_grouped:
+            missing: list[str] = []
+            for table, table_schema in schema.items():
+                for col, _ in table_schema.items():
+                    col_expr = Column(this=col, table=table)
+                    if not self.is_group_by_expr(col_expr):
+                        missing.append(col)
+
+            if missing:
+                raise NonGroupedColumnError(missing)
+        
+        return schema
