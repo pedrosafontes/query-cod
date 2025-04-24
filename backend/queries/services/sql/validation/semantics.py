@@ -32,6 +32,7 @@ from sqlglot.expressions import (
     Subquery,
     Sum,
     Table,
+    Paren,
 )
 
 from .errors import (
@@ -376,6 +377,11 @@ class SQLSemanticAnalyzer:
                     self._assert_comparable(left_t, right_t)
 
                 return DataType.BOOLEAN
+
+            case Paren():
+                return self._validate_expression(
+                    node.this, scope, in_where, in_group_by, in_aggregate, in_order_by
+                )
 
             case _:
                 raise NotImplementedError(f'Expression {type(node)} not supported')

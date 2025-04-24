@@ -104,6 +104,7 @@ class TestWhereConditions:
             'SELECT * FROM products WHERE product_id IN (1, 2, 3)',
             "SELECT * FROM products WHERE price > 10 OR product_name = 'Test'",
             'SELECT * FROM products WHERE NOT in_stock',
+            'SELECT * FROM products WHERE (price > 10 AND in_stock) OR product_id = 1',
         ],
     )
     def test_valid_where_conditions(self, query: str, schema: Schema) -> None:
