@@ -103,37 +103,32 @@ class SQLSemanticAnalyzer:
             elif kind == 'CROSS':
                 if condition:
                     raise CrossJoinConditionError()
-            else:  # INNER/LEFT/RIGHT/FULL
+            else:
                 if not condition:
                     raise MissingJoinConditionError()
-                condition_t = cast(DataType, self._validate_expression(condition, scope))
-                self._assert_boolean(condition_t)
+                self._assert_boolean(cast(DataType, self._validate_expression(condition, scope)))
 
     def _validate_where(self, select: Select, scope: Scope) -> None:
         where = select.args.get('where')
         if where:
-            condition_t = cast(
-                DataType, self._validate_expression(where.this, scope, in_where=True)
+            self._assert_boolean(
+                cast(DataType, self._validate_expression(where.this, scope, in_where=True))
             )
-            self._assert_boolean(condition_t)
 
     def _validate_group_by(self, select: Select, scope: Scope) -> None:
         group = select.args.get('group')
-        if not group:
-            return
-        for expr in group.expressions:
-            scope.add_group_by_expr(
-                expr, cast(DataType, self._validate_expression(expr, scope, in_group_by=True))
-            )
+        if group:
+            for expr in group.expressions:
+                scope.add_group_by_expr(
+                    expr, cast(DataType, self._validate_expression(expr, scope, in_group_by=True))
+                )
 
     def _validate_having(self, select: Select, scope: Scope) -> None:
         having = select.args.get('having')
-        if not having:
-            return
-        if not scope.is_grouped:
-            raise GroupByClauseRequiredError()
-        condition_t = cast(DataType, self._validate_expression(having.this, scope))
-        self._assert_boolean(condition_t)
+        if having:
+            if not scope.is_grouped:
+                raise GroupByClauseRequiredError()
+            self._assert_boolean(cast(DataType, self._validate_expression(having.this, scope)))
 
     def _validate_projection(self, select: Select, scope: Scope) -> None:
         for expr in select.expressions:
@@ -145,8 +140,7 @@ class SQLSemanticAnalyzer:
             if isinstance(t, DataType):
                 scope.add_projection(expr.args.get('table'), expr.alias_or_name, t)
             else:
-                t = cast(ResultSchema, t)
-                for table, columns in t.items():
+                for table, columns in cast(ResultSchema, t).items():
                     for col, col_type in columns.items():
                         scope.add_projection(table, col, col_type)
 
@@ -166,7 +160,6 @@ class SQLSemanticAnalyzer:
                     raise OrderByPositionError(1, num_projections)
                 continue
 
-            # in grouped queries must refer to output
             if scope.is_grouped:
                 if node not in select.expressions and not scope.is_projected(node):
                     raise OrderByExpressionError(node)
@@ -178,29 +171,24 @@ class SQLSemanticAnalyzer:
     # ──────── Join Helpers ────────
 
     def _validate_using(
-        self, using: list[Identifier], left_cols: ColumnTypes, right_cols: TableSchema
+        self, using: list[Identifier], left: ColumnTypes, right: TableSchema
     ) -> None:
         for ident in using:
             col = ident.name
-            col_types = left_cols.get(col, [])
-            if not col_types:
+            if col not in left:
                 raise UndefinedColumnError(col)
-            rhs = right_cols[col]
-            for lhs in col_types:
-                self._assert_comparable(lhs, rhs)
+            for ltype in left[col]:
+                self._assert_comparable(ltype, right[col])
 
-    def _validate_natural_join(
-        self, left_cols: ColumnTypes, right_cols: TableSchema, scope: Scope
-    ) -> None:
-        shared = set(left_cols.keys()) & set(right_cols)
+    def _validate_natural_join(self, left: ColumnTypes, right: TableSchema, scope: Scope) -> None:
+        shared = set(left) & set(right)
         if not shared:
             raise NoCommonColumnsError()
         for col in shared:
-            rhs = right_cols[col]
-            for lhs in left_cols[col]:
-                self._assert_comparable(lhs, rhs)
+            for ltype in left[col]:
+                self._assert_comparable(ltype, right[col])
 
-    # ──────── Table & Expression ────────
+    # ──────── Table & Expression Validation ────────
 
     def _add_table(self, table: Table | Subquery, scope: Scope) -> None:
         match table:
@@ -211,6 +199,7 @@ class SQLSemanticAnalyzer:
                 if table_schema is None:
                     raise UndefinedTableError(name)
                 scope.register_table(alias, table_schema)
+
             case Subquery():
                 alias = table.alias_or_name
                 if not alias:
@@ -352,28 +341,26 @@ class SQLSemanticAnalyzer:
                 try:
                     self._assert_scalar(node)
                     [(_, columns)] = sub_schema.items()
-                    [(_, dtype)] = columns.items()
+                    [(_, t)] = columns.items()
                 except ValueError:
                     raise ScalarSubqueryError() from None
-                return dtype
+                return t
 
             case In():
-                left_t = cast(
+                lt = cast(
                     DataType,
                     self._validate_expression(
                         node.this, scope, in_where, in_group_by, in_aggregate, in_order_by
                     ),
                 )
-
                 for val in node.expressions:
-                    right_t = cast(
+                    rt = cast(
                         DataType,
                         self._validate_expression(
                             val, scope, in_where, in_group_by, in_aggregate, in_order_by
                         ),
                     )
-                    self._assert_comparable(left_t, right_t)
-
+                    self._assert_comparable(lt, rt)
                 return DataType.BOOLEAN
 
             case Paren():
@@ -383,6 +370,8 @@ class SQLSemanticAnalyzer:
 
             case _:
                 raise NotImplementedError(f'Expression {type(node)} not supported')
+
+    # ──────── Aggregate Validations ────────
 
     def _validate_aggregate(self, in_where: bool, in_aggregate: bool) -> None:
         if in_where:

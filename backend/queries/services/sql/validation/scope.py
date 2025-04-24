@@ -28,7 +28,7 @@ class Scope:
         self._group_by_exprs: list[tuple[Expression, DataType]] = []
         self.projection_schema: ResultSchema = defaultdict(dict)
 
-    # ────── Table & Column Resolution ──────
+    # ────── Table Registration & Resolution ──────
 
     def register_table(self, alias: str, schema: TableSchema) -> None:
         if alias in self._table_schemas:
@@ -40,9 +40,7 @@ class Scope:
         table = column.table
         if in_order_by and (t := self._resolve_projection(column)):
             return t
-        if table:
-            return self._resolve_qualified(name, table)
-        return self._resolve_unqualified(name)
+        return self._resolve_qualified(name, table) if table else self._resolve_unqualified(name)
 
     def _resolve_qualified(self, name: str, table: str) -> DataType:
         if table not in self._table_schemas:
@@ -66,7 +64,7 @@ class Scope:
         [(_, t)] = matches
         return t
 
-    # ────── Projection Resolution ──────
+    # ────── Projection Management ──────
 
     def add_projection(self, table: str | None, alias: str, t: DataType) -> None:
         if alias and alias in self.projection_schema[table]:
@@ -79,10 +77,11 @@ class Scope:
     def _resolve_projection(self, expr: Expression) -> DataType | None:
         name = expr.name
         table = expr.table if isinstance(expr, Column) else None
-
-        if table:
-            return self._resolve_qualified_projection(name, table)
-        return self._resolve_unqualified_projection(name)
+        return (
+            self._resolve_qualified_projection(name, table)
+            if table
+            else self._resolve_unqualified_projection(name)
+        )
 
     def _resolve_qualified_projection(self, name: str, table: str) -> DataType | None:
         return self.projection_schema[table].get(name)
@@ -107,10 +106,8 @@ class Scope:
         return self._get_group_by_expr(expr) is not None
 
     def group_by_expr_t(self, expr: Expression) -> DataType | None:
-        expr_t = self._get_group_by_expr(expr)
-        assert expr_t is not None  # noqa S101
-        _, t = expr_t
-        return t
+        match = self._get_group_by_expr(expr)
+        return match[1] if match else None
 
     def _get_group_by_expr(self, expr: Expression) -> tuple[Expression, DataType] | None:
         for grouped, t in self._group_by_exprs:
@@ -118,7 +115,7 @@ class Scope:
                 return grouped, t
         return None
 
-    # ────── Schema Utilities ──────
+    # ────── Schema & Snapshot Utilities ──────
 
     def get_columns(self) -> set[str]:
         return set([col for schema in self._table_schemas.values() for col in schema.keys()])
@@ -133,7 +130,7 @@ class Scope:
 
     def snapshot_columns(self) -> ColumnTypes:
         column_types = defaultdict(list)
-        for _, schema in self._table_schemas.items():
+        for schema in self._table_schemas.values():
             for col, t in schema.items():
                 column_types[col].append(t)
         return column_types
