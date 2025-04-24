@@ -53,7 +53,8 @@ from .errors import (
     UndefinedTableError,
     UnorderableTypeError,
 )
-from .scope import ColumnTypes, ResultSchema, Scope
+from .scope import Scope
+from .types import ColumnTypes, ResultSchema
 from .utils import infer_literal_type
 
 
@@ -73,7 +74,7 @@ class SQLSemanticAnalyzer:
         self._validate_having(select, scope)
         self._validate_projection(select, scope)
         self._validate_order_by(select, scope)
-        return scope.projection_schema
+        return scope.projections.schema
 
     # ──────── Clause Validators ────────
 
@@ -88,7 +89,7 @@ class SQLSemanticAnalyzer:
             if not isinstance(join, Join):
                 raise NotImplementedError(f'Unsupported join type: {type(join)}')
 
-            left_cols = scope.snapshot_columns()
+            left_cols = scope.tables.snapshot_columns()
             self._add_table(join.this, scope)
             right_cols = self.schema[join.this.name]
 
@@ -119,7 +120,7 @@ class SQLSemanticAnalyzer:
         group = select.args.get('group')
         if group:
             for expr in group.expressions:
-                scope.add_group_by_expr(
+                scope.group_by.add_expr(
                     expr, cast(DataType, self._validate_expression(expr, scope, in_group_by=True))
                 )
 
@@ -133,16 +134,16 @@ class SQLSemanticAnalyzer:
     def _validate_projection(self, select: Select, scope: Scope) -> None:
         for expr in select.expressions:
             t = (
-                scope.group_by_expr_t(expr)
-                if scope.is_group_by_expr(expr)
+                scope.group_by.type_of(expr)
+                if scope.group_by.contains(expr)
                 else self._validate_expression(expr, scope)
             )
             if isinstance(t, DataType):
-                scope.add_projection(expr.args.get('table'), expr.alias_or_name, t)
+                scope.projections.add(expr.args.get('table'), expr.alias_or_name, t)
             else:
                 for table, columns in cast(ResultSchema, t).items():
                     for col, col_type in columns.items():
-                        scope.add_projection(table, col, col_type)
+                        scope.projections.add(table, col, col_type)
 
     def _validate_order_by(self, select: Select, scope: Scope) -> None:
         order = select.args.get('order')
@@ -161,7 +162,7 @@ class SQLSemanticAnalyzer:
                 continue
 
             if scope.is_grouped:
-                if node not in select.expressions and not scope.is_projected(node):
+                if node not in select.expressions and not scope.projections.contains(node):
                     raise OrderByExpressionError(node)
             else:
                 t = cast(DataType, self._validate_expression(node, scope, in_order_by=True))
@@ -198,7 +199,7 @@ class SQLSemanticAnalyzer:
                 table_schema = self.schema.get(name)
                 if table_schema is None:
                     raise UndefinedTableError(name)
-                scope.register_table(alias, table_schema)
+                scope.tables.register(alias, table_schema)
 
             case Subquery():
                 alias = table.alias_or_name
@@ -209,7 +210,7 @@ class SQLSemanticAnalyzer:
                     if not expr.alias_or_name:
                         raise DerivedColumnAliasRequiredError(expr)
                 [(_, sub_schema)] = self._validate_select(sub_select, scope).items()
-                scope.register_table(alias, sub_schema)
+                scope.tables.register(alias, sub_schema)
 
     def _validate_expression(
         self,
@@ -233,7 +234,7 @@ class SQLSemanticAnalyzer:
                         scope.is_grouped
                         and not in_group_by
                         and not in_aggregate
-                        and not scope.is_group_by_expr(node)
+                        and not scope.group_by.contains(node)
                     ):
                         raise NonGroupedColumnError([node.name])
                     return t
