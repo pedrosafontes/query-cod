@@ -1,11 +1,16 @@
+from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from dataclasses import dataclass
 
 from databases.types import DataType
 from sqlglot import Expression
 
 
-class SQLSemanticError(Exception):
-    pass
+class SQLSemanticError(Exception, ABC):
+    @abstractmethod
+    def __str__(self) -> str:
+        """Provide a human-readable error message."""
+        pass
 
 
 @dataclass
@@ -44,14 +49,16 @@ class TypeMismatchError(SQLSemanticError):
 
 
 @dataclass
-class GroupByError(SQLSemanticError):
-    column: str
+class NonGroupedColumnError(SQLSemanticError):
+    """Raised when one or more non-aggregated columns are not in GROUP BY."""
+
+    columns: Sequence[str]
 
     def __str__(self) -> str:
-        return (
-            f"Column '{self.column}' must appear in the GROUP BY clause "
-            f'or be used in an aggregate function.'
-        )
+        if len(self.columns) == 1:
+            return f'column "{self.columns[0]}" must appear in the GROUP BY clause or be used in an aggregate function'
+        cols = '", "'.join(self.columns)
+        return f'columns "{cols}" must appear in the GROUP BY clause or be used in an aggregate function'
 
 
 @dataclass
@@ -60,10 +67,7 @@ class OrderByPositionError(SQLSemanticError):
     max_position: int
 
     def __str__(self) -> str:
-        return (
-            f'Invalid position {self.position} in ORDER BY - '
-            f'must be between 1 and number of select items.'
-        )
+        return f'ORDER BY position {self.position} is not in select list (valid positions: 1 to {self.max_position})'
 
 
 @dataclass
@@ -71,11 +75,9 @@ class OrderByExpressionError(SQLSemanticError):
     expression: Expression
 
     def __str__(self) -> str:
-        return (
-            f'Invalid expression {self.expression} in ORDER BY - '
-            f'must be a column name or an aggregate function.'
-        )
-    
+        return f'ORDER BY expression "{self.expression}" must appear in the SELECT list'
+
+
 @dataclass
 class DuplicateAliasError(SQLSemanticError):
     alias: str
@@ -83,14 +85,34 @@ class DuplicateAliasError(SQLSemanticError):
     def __str__(self) -> str:
         return f"Duplicate alias '{self.alias}' in the query."
 
+
 @dataclass
 class MissingJoinConditionError(SQLSemanticError):
     def __str__(self) -> str:
-        return f"Missing join condition."
-    
+        return 'JOIN requires an ON or USING clause'
+
+
 @dataclass
 class UnorderableTypeError(SQLSemanticError):
     data_type: DataType
 
     def __str__(self) -> str:
-        return f"Cannot order by type '{self.data_type.name}' - it is not orderable."
+        return f"Cannot order by type '{self.data_type.name}'."
+
+
+@dataclass
+class GroupByClauseRequiredError(SQLSemanticError):
+    def __str__(self) -> str:
+        return 'HAVING clause requires GROUP BY clause'
+
+
+@dataclass
+class CrossJoinConditionError(SQLSemanticError):
+    def __str__(self) -> str:
+        return 'CROSS JOIN does not support ON or USING clause'
+
+
+@dataclass
+class NoCommonColumnsError(SQLSemanticError):
+    def __str__(self) -> str:
+        return 'NATURAL JOIN requires at least one common column'

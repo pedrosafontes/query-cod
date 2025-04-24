@@ -3,11 +3,13 @@ from databases.types import DataType, Schema
 from queries.services.sql.parser import parse_sql
 from queries.services.sql.validation.errors import (
     AmbiguousColumnError,
+    CrossJoinConditionError,
     DuplicateAliasError,
-    GroupByError,
+    GroupByClauseRequiredError,
     MissingJoinConditionError,
+    NoCommonColumnsError,
+    NonGroupedColumnError,
     OrderByPositionError,
-    SQLSemanticError,
     TypeMismatchError,
     UndefinedColumnError,
     UndefinedTableError,
@@ -172,7 +174,7 @@ def test_valid_queries(query: str, schema: Schema) -> None:
         # Non-grouped column in SELECT
         (
             'SELECT customer_id, company_name, COUNT(*) FROM customers GROUP BY customer_id',
-            GroupByError,
+            NonGroupedColumnError,
         ),
         # Non-existent column in GROUP BY
         ('SELECT COUNT(*) FROM customers GROUP BY nonexistent_column', UndefinedColumnError),
@@ -197,7 +199,7 @@ def test_valid_queries(query: str, schema: Schema) -> None:
             UndefinedColumnError,
         ),
         # Unselected column in HAVING through *
-        ('SELECT customer_id FROM customers HAVING COUNT(*) > 5', SQLSemanticError),
+        ('SELECT customer_id FROM customers HAVING COUNT(*) > 5', GroupByClauseRequiredError),
         # Nested aggregate function
         # (
         #     'SELECT COUNT(COUNT(*)) FROM customers',
@@ -218,7 +220,7 @@ def test_valid_queries(query: str, schema: Schema) -> None:
         # Un-grouped columns in SELECT through *
         (
             'SELECT * FROM categories GROUP BY category_id',
-            SQLSemanticError,
+            NonGroupedColumnError,
         ),
         # Alias uniqueness: same alias “c” for two different tables
         (
@@ -272,12 +274,12 @@ def test_valid_queries(query: str, schema: Schema) -> None:
         # HAVING references an ungrouped but existing column
         (
             "SELECT customer_id FROM customers GROUP BY customer_id HAVING company_name = 'X'",
-            GroupByError,
+            NonGroupedColumnError,
         ),
         # CROSS JOIN with ON clause should raise an error
         (
             'SELECT * FROM customers CROSS JOIN orders ON customers.customer_id = orders.customer_id',
-            SQLSemanticError,
+            CrossJoinConditionError,
         ),
         # INNER JOIN without ON clause should raise an error
         (
@@ -297,12 +299,7 @@ def test_valid_queries(query: str, schema: Schema) -> None:
         # NATURAL JOIN when there are no shared columns
         (
             'SELECT * FROM customers NATURAL JOIN products',
-            SQLSemanticError,
-        ),
-        # Another example of NATURAL JOIN with no shared columns
-        (
-            'SELECT * FROM orders NATURAL JOIN categories',
-            SQLSemanticError,
+            NoCommonColumnsError,
         ),
     ],
 )

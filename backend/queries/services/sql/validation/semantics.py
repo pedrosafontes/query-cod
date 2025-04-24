@@ -31,17 +31,19 @@ from sqlglot.expressions import (
 )
 
 from .errors import (
-    GroupByError,
+    CrossJoinConditionError,
+    GroupByClauseRequiredError,
     MissingJoinConditionError,
+    NoCommonColumnsError,
+    NonGroupedColumnError,
     OrderByExpressionError,
     OrderByPositionError,
-    SQLSemanticError,
     TypeMismatchError,
     UndefinedColumnError,
     UndefinedTableError,
     UnorderableTypeError,
 )
-from .types import ColumnBindingsMap, Scope
+from .scope import ColumnBindings, Scope
 from .utils import infer_literal_type
 
 
@@ -50,219 +52,216 @@ class SQLSemanticAnalyzer:
         self.schema = schema
 
     def validate(self, expression: Select) -> None:
-        self._validate_query(expression)
-
-    def _validate_query(self, expression: Select, scope: Scope | None = None) -> None:
-        self._validate_select(expression, scope)
+        self._validate_select(expression, outer_scope=None)
 
     def _validate_select(self, select: Select, outer_scope: Scope | None) -> None:
         scope = Scope(outer_scope)
-        # 1. FROM clause - validate tables & populate scope
-        self._populate_from_scope(select, scope)
-
-        # 2. JOIN clause - validate joins & populate scope
+        self._populate_from(select, scope)
         self._validate_joins(select, scope)
+        self._validate_where(select, scope)
+        self._validate_group_by(select, scope)
+        self._validate_having(select, scope)
+        self._validate_projection(select, scope)
+        self._validate_order_by(select, scope)
 
-        # 3. WHERE - validate filter expressions
-        if where := select.args.get('where'):
-            self._assert_boolean(
-                self._validate_expression(where.this, scope),
-            )
+    # ──────── Clause Validators ────────
 
-        # 4. GROUP BY - validate grouping expressions
-        if group := select.args.get('group'):
-            for exp in group.expressions:
-                self._validate_expression(exp, scope, in_group_by=True)
-                scope.group_by_cols.add(exp.name)
-
-        # 5. HAVING - validate having expressions
-        if having := select.args.get('having'):
-            if not scope.group_by_cols:
-                raise SQLSemanticError('HAVING clause without GROUP BY')
-            self._assert_boolean(self._validate_expression(having.this, scope))
-
-        # 6. SELECT - validate select expressions
-        for proj in select.expressions:
-            self._validate_expression(proj, scope)
-            scope.add_select_item(proj)
-
-        # 7. ORDER BY - validate order expressions
-        if order := select.args.get('order'):
-            for ordered in order.expressions:
-                exp = ordered.this
-                if isinstance(exp, Literal):
-                    if not exp.is_int:
-                        raise TypeMismatchError(DataType.INTEGER, infer_literal_type(exp))
-
-                    num_projections = len(select.expressions)
-                    if not (1 <= int(exp.this) <= num_projections):
-                        raise OrderByPositionError(1, num_projections)
-                if scope.group_by_cols:
-                    if exp not in select.expressions and exp.name not in scope.select_items:
-                        raise OrderByExpressionError(exp)
-                else:
-                    if not (order_t := self._validate_expression(exp, scope)).is_orderable():
-                        raise UnorderableTypeError(order_t)
-
-    def _populate_from_scope(self, select: Select, scope: Scope) -> None:
+    def _populate_from(self, select: Select, scope: Scope) -> None:
         from_clause = select.args.get('from')
         if not isinstance(from_clause, From):
-            raise NotImplementedError(
-                f'FROM clause type {type(from_clause)} is not supported for validation'
-            )
-        self._validate_table_reference(from_clause.this, scope)
+            raise NotImplementedError(f'Unsupported FROM clause: {type(from_clause)}')
+        self._add_table(from_clause.this, scope)
 
     def _validate_joins(self, select: Select, scope: Scope) -> None:
         for join in select.args.get('joins', []):
-            assert isinstance(join, Join)  # noqa S101
-            left_cols = scope.columns.copy()
-            self._validate_table_reference(join.this, scope)
+            if not isinstance(join, Join):
+                raise NotImplementedError(f'Unsupported join type: {type(join)}')
+
+            left_cols = scope.snapshot_columns()
+            self._add_table(join.this, scope)
             right_cols = self.schema[join.this.name]
 
-            kind, using, condition = (
-                join.method or join.args.get('kind'),
-                join.args.get('using'),
-                join.args.get('on'),
-            )
+            kind = join.method or join.args.get('kind', 'INNER')
+            using = join.args.get('using')
+            condition = join.args.get('on')
 
             if using:
                 self._validate_using(using, left_cols, right_cols)
             elif kind == 'NATURAL':
                 self._validate_natural_join(left_cols, right_cols, scope)
             elif kind == 'CROSS':
-                if join.args.get('on'):
-                    raise SQLSemanticError('CROSS JOIN cannot have an ON clause')
-            else:
+                if condition:
+                    raise CrossJoinConditionError()
+            else:  # INNER/LEFT/RIGHT/FULL
                 if not condition:
                     raise MissingJoinConditionError()
                 self._assert_boolean(self._validate_expression(condition, scope))
 
+    def _validate_where(self, select: Select, scope: Scope) -> None:
+        where = select.args.get('where')
+        if where:
+            self._assert_boolean(self._validate_expression(where.this, scope))
+
+    def _validate_group_by(self, select: Select, scope: Scope) -> None:
+        group = select.args.get('group')
+        if not group:
+            return
+        for expr in group.expressions:
+            self._validate_expression(expr, scope, in_group_by=True)
+            scope.group_by.add(expr.name)
+
+    def _validate_having(self, select: Select, scope: Scope) -> None:
+        having = select.args.get('having')
+        if not having:
+            return
+        if not scope.group_by:
+            raise GroupByClauseRequiredError()
+        self._assert_boolean(self._validate_expression(having.this, scope))
+
+    def _validate_projection(self, select: Select, scope: Scope) -> None:
+        for expr in select.expressions:
+            self._validate_expression(expr, scope)
+            scope.add_select_item(expr.alias_or_name)
+
+    def _validate_order_by(self, select: Select, scope: Scope) -> None:
+        order = select.args.get('order')
+        if not order:
+            return
+
+        num_projections = len(select.expressions)
+        for item in order.expressions:
+            node = item.this
+            if isinstance(node, Literal):
+                if not node.is_int:
+                    raise TypeMismatchError(DataType.INTEGER, infer_literal_type(node))
+                pos = int(node.this)
+                if not (1 <= pos <= num_projections):
+                    raise OrderByPositionError(1, num_projections)
+                continue
+
+            # in grouped queries must refer to output
+            if scope.group_by:
+                if node not in select.expressions and node.name not in scope.select_list:
+                    raise OrderByExpressionError(node)
+            else:
+                t = self._validate_expression(node, scope)
+                if not t.is_orderable():
+                    raise UnorderableTypeError(t)
+
+    # ──────── Join Helpers ────────
+
     def _validate_using(
-        self, using: list[Identifier], left_cols: ColumnBindingsMap, right_cols: TableSchema
+        self, using: list[Identifier], left_cols: ColumnBindings, right_cols: TableSchema
     ) -> None:
         for ident in using:
             col = ident.name
-
-            if not left_cols[col]:
+            entries = left_cols.get(col, [])
+            if not entries:
                 raise UndefinedColumnError(col)
-
-            rhs_dtype = right_cols[col]
-            for _, lhs_dtype in left_cols[col]:
-                self._assert_comparable(lhs_dtype, rhs_dtype)
+            rhs = right_cols[col]
+            for _, lhs in entries:
+                self._assert_comparable(lhs, rhs)
 
     def _validate_natural_join(
-        self, left_cols: ColumnBindingsMap, right_cols: TableSchema, scope: Scope
+        self, left_cols: ColumnBindings, right_cols: TableSchema, scope: Scope
     ) -> None:
-        shared = set(right_cols.keys()) & set(left_cols.keys())
-
+        shared = set(left_cols) & set(right_cols)
         if not shared:
-            raise SQLSemanticError('NATURAL JOIN has no common columns')
-
+            raise NoCommonColumnsError()
         for col in shared:
-            rhs_dtype = right_cols[col]
-            for _, lhs_dtype in scope.columns[col]:
-                self._assert_comparable(lhs_dtype, rhs_dtype)
+            rhs = right_cols[col]
+            for _, lhs in scope.get_column_bindings(col):
+                self._assert_comparable(lhs, rhs)
 
-    def _validate_table_reference(self, table_ref: Table, scope: Scope) -> None:
-        match table_ref:
-            case Table():
-                table_name = table_ref.name
-                alias = table_ref.alias_or_name
-                table_schema = self.schema.get(table_name)
-                if table_schema is None:
-                    raise UndefinedTableError(table_name)
-                scope.add_table(alias, table_name)
-                for col, dtype in table_schema.items():
-                    scope.add_column(alias, col, dtype)
+    # ──────── Table & Expression ────────
 
-            case _:
-                # TODO: Check for other table types
-                raise NotImplementedError(
-                    f'Table reference type {type(table_ref)} is not supported for validation'
-                )
+    def _add_table(self, tbl: Table, scope: Scope) -> None:
+        if not isinstance(tbl, Table):
+            raise NotImplementedError(f'Unsupported table ref: {type(tbl)}')
+        name = tbl.name
+        alias = tbl.alias_or_name
+        table_schema = self.schema.get(name)
+        if table_schema is None:
+            raise UndefinedTableError(name)
+        scope.register_table(alias, name, table_schema)
 
     def _validate_expression(
-        self,
-        node: Expression,
-        scope: Scope,
-        in_group_by: bool = False,
-        in_aggregate: bool = False,
+        self, node: Expression, scope: Scope, in_group_by: bool = False, in_aggregate: bool = False
     ) -> DataType:
         match node:
             case Literal():
                 return infer_literal_type(node)
 
             case Column():
-                col_t = scope.resolve_column(node)
+                t = scope.resolve_column(node)
                 if (
-                    not in_group_by
+                    scope.group_by
+                    and not in_group_by
                     and not in_aggregate
-                    and scope.group_by_cols
-                    and node.name not in scope.group_by_cols
+                    and node.name not in scope.group_by
                 ):
-                    raise GroupByError(node.name)
-                return col_t
+                    raise NonGroupedColumnError([node.name])
+                return t
 
             case Alias():
                 return self._validate_expression(node.this, scope, in_group_by, in_aggregate)
 
             case And() | Or():
-                left_t = self._validate_expression(node.left, scope, in_group_by, in_aggregate)
-                right_t = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
-                self._assert_boolean(left_t)
-                self._assert_boolean(right_t)
+                lt = self._validate_expression(node.left, scope, in_group_by, in_aggregate)
+                rt = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
+                self._assert_boolean(lt)
+                self._assert_boolean(rt)
                 return DataType.BOOLEAN
 
             case EQ() | NEQ() | LT() | LTE() | GT() | GTE():
-                left_t = self._validate_expression(node.left, scope, in_group_by, in_aggregate)
-                right_t = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
-                self._assert_comparable(left_t, right_t)
+                lt = self._validate_expression(node.left, scope, in_group_by, in_aggregate)
+                rt = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
+                self._assert_comparable(lt, rt)
                 return DataType.BOOLEAN
 
             case Add() | Sub() | Mul() | Div():
-                left_t = self._validate_expression(node.left, scope, in_group_by, in_aggregate)
-                right_t = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
-                self._assert_numeric(left_t)
-                self._assert_numeric(right_t)
+                lt = self._validate_expression(node.left, scope, in_group_by, in_aggregate)
+                rt = self._validate_expression(node.right, scope, in_group_by, in_aggregate)
+                self._assert_numeric(lt)
+                self._assert_numeric(rt)
                 return DataType.NUMERIC
 
             case Not():
-                self._assert_boolean(
-                    self._validate_expression(node.this, scope, in_group_by, in_aggregate),
-                )
-
+                t = self._validate_expression(node.this, scope, in_group_by, in_aggregate)
+                self._assert_boolean(t)
                 return DataType.BOOLEAN
 
             case Count():
                 arg = node.this
                 if not isinstance(arg, Star):
-                    self._validate_expression(arg, scope, in_aggregate=True)
+                    self._validate_expression(arg, scope, in_group_by, in_aggregate=True)
                 return DataType.INTEGER
 
             case Avg() | Sum() | Min() | Max():
-                arg_t = self._validate_expression(node.this, scope, in_aggregate=True)
-                self._assert_numeric(arg_t)
+                t = self._validate_expression(node.this, scope, in_group_by, in_aggregate=True)
+                self._assert_numeric(t)
                 return DataType.NUMERIC
 
             case Star():
-                if scope.group_by_cols and scope.columns.keys() != scope.group_by_cols:
-                    raise SQLSemanticError()
+                if scope.group_by:
+                    missing = scope.get_columns() - scope.group_by
+                    if missing:
+                        raise NonGroupedColumnError(list(missing))
                 return None
+
             case _:
-                # TODO: Handle other expression types
-                raise NotImplementedError(
-                    f'Expression type {type(node)} is not supported for validation'
-                )
+                raise NotImplementedError(f'Expression {type(node)} not supported')
+
+    # ──────── Type Assertions ────────
 
     def _assert_comparable(self, lhs: DataType, rhs: DataType) -> None:
         if not lhs.is_comparable_with(rhs):
             raise TypeMismatchError(lhs, rhs)
 
-    def _assert_boolean(self, dtype: DataType) -> None:
-        if dtype is not DataType.BOOLEAN:
-            raise TypeMismatchError(DataType.BOOLEAN, dtype)
-        
-    def _assert_numeric(self, dtype: DataType) -> None:
-        if not dtype.is_numeric():
-            raise TypeMismatchError(DataType.NUMERIC, dtype)
+    def _assert_boolean(self, t: DataType) -> None:
+        if t is not DataType.BOOLEAN:
+            raise TypeMismatchError(DataType.BOOLEAN, t)
 
+    def _assert_numeric(self, t: DataType) -> None:
+        if not t.is_numeric():
+            raise TypeMismatchError(DataType.NUMERIC, t)
