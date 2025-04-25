@@ -23,10 +23,10 @@ docker_setup:
 	docker compose run --rm frontend npm run openapi-ts
 
 docker_test:
-	docker compose run backend pytest $(ARG) --reuse-db
+	docker compose run backend pytest -s $(ARG) --reuse-db
 
 docker_test_reset:
-	docker compose run backend pytest $(ARG)
+	docker compose run backend pytest -s $(ARG)
 
 docker_up:
 	docker compose up -d
