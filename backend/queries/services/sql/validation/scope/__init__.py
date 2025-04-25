@@ -18,7 +18,7 @@ class Scope:
 
     @property
     def is_grouped(self) -> bool:
-        return bool(self.group_by._group_by_exprs)
+        return bool(self.group_by._exprs)
 
     def validate_star_expansion(self, table: str | None = None) -> ResultSchema:
         schema = self.tables.get_table_schema(table) if table else self.tables.get_schema()

@@ -133,7 +133,7 @@ class SQLSemanticAnalyzer:
         if group:
             # Validate GROUP BY expressions
             for expr in group.expressions:
-                scope.group_by.add_expr(
+                scope.group_by.add(
                     expr,
                     self._validate_simple_expression(
                         expr, scope, ValidationContext(in_group_by=True)
@@ -266,6 +266,7 @@ class SQLSemanticAnalyzer:
                 else:
                     t = scope.resolve_column(node, context.in_order_by)
                     # If the query is grouped, the column must be in the GROUP BY clause or appear in an aggregate function
+                    # Validates HAVING, SELECT, and ORDER BY (occur after GROUP BY)
                     if (
                         scope.is_grouped
                         and not context.in_group_by  # Still in the GROUP BY clause
