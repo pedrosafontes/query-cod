@@ -73,6 +73,7 @@ class SQLSemanticAnalyzer:
         self._validate_select(expression, outer_scope=None)
 
     def _validate_select(self, select: Select, outer_scope: Scope | None) -> ResultSchema:
+        # Validate all clauses of a SELECT statement in the order of execution
         scope = Scope(outer_scope)
         self._populate_from(select, scope)
         self._validate_joins(select, scope)
@@ -109,9 +110,11 @@ class SQLSemanticAnalyzer:
             elif kind == 'NATURAL':
                 self._validate_natural_join(left_cols, right_cols)
             elif kind == 'CROSS':
+                # CROSS JOINS must not have a condition
                 if condition:
                     raise CrossJoinConditionError()
             else:
+                # INNER, LEFT, RIGHT, and FULL OUTER joins must have a condition
                 if not condition:
                     raise MissingJoinConditionError()
                 assert_boolean(self._validate_simple_expression(condition, scope))
@@ -122,12 +125,13 @@ class SQLSemanticAnalyzer:
             assert_boolean(
                 self._validate_simple_expression(
                     where.this, scope, ValidationContext(in_where=True)
-                ),
+                )
             )
 
     def _validate_group_by(self, select: Select, scope: Scope) -> None:
         group = select.args.get('group')
         if group:
+            # Validate GROUP BY expressions
             for expr in group.expressions:
                 scope.group_by.add_expr(
                     expr,
@@ -140,19 +144,24 @@ class SQLSemanticAnalyzer:
         having = select.args.get('having')
         if having:
             if not scope.is_grouped:
+                # If there is a HAVING clause, there must be a GROUP BY clause
                 raise GroupByClauseRequiredError()
             assert_boolean(self._validate_simple_expression(having.this, scope))
 
     def _validate_projection(self, select: Select, scope: Scope) -> None:
         for expr in select.expressions:
             t = (
-                scope.group_by.type_of(expr)
+                scope.group_by.type_of(
+                    expr
+                )  # Expression has already been validated if it is in group by
                 if scope.group_by.contains(expr)
                 else self._validate_expression(expr, scope)
             )
             if isinstance(t, DataType):
+                # Projection is a single column or expression
                 scope.projections.add(expr.args.get('table'), expr.alias_or_name, t)
             else:
+                # Projection contains star expansion
                 for table, columns in cast(ResultSchema, t).items():
                     for col, col_type in columns.items():
                         scope.projections.add(table, col, col_type)
@@ -166,6 +175,7 @@ class SQLSemanticAnalyzer:
         for item in order.expressions:
             node = item.this
             if isinstance(node, Literal):
+                # Positional ordering must be an integer literal in the range of projections
                 assert_integer_literal(node)
                 pos = int(node.this)
                 if not (1 <= pos <= num_projections):
@@ -173,7 +183,7 @@ class SQLSemanticAnalyzer:
                 continue
 
             if scope.is_grouped:
-                if node not in select.expressions and not scope.projections.contains(node):
+                if not (node in select.expressions or scope.projections.contains(node)):
                     raise OrderByExpressionError(node)
             else:
                 assert_orderable(
@@ -187,6 +197,7 @@ class SQLSemanticAnalyzer:
     def _validate_using(
         self, using: list[Identifier], left: ColumnTypes, right: TableSchema
     ) -> None:
+        # All columns in USING must be present in both tables
         for ident in using:
             col = ident.name
             if col not in left:
@@ -196,8 +207,10 @@ class SQLSemanticAnalyzer:
 
     def _validate_natural_join(self, left: ColumnTypes, right: TableSchema) -> None:
         shared = set(left) & set(right)
+        # NATURAL JOIN must have at least one common column
         if not shared:
             raise NoCommonColumnsError()
+        # All common columns must be comparable
         for col in shared:
             for ltype in left[col]:
                 assert_comparable(ltype, right[col])
@@ -216,10 +229,12 @@ class SQLSemanticAnalyzer:
 
             case Subquery():
                 alias = table.alias_or_name
+                # Derived tables must have an alias
                 if not alias:
                     raise MissingDerivedTableAliasError()
                 sub_select = table.this
                 for expr in sub_select.expressions:
+                    # Derived columns must have an alias
                     if not expr.alias_or_name:
                         raise DerivedColumnAliasRequiredError(expr)
                 [(_, sub_schema)] = self._validate_select(sub_select, scope).items()
@@ -250,11 +265,11 @@ class SQLSemanticAnalyzer:
                     return scope.validate_star_expansion(node.table)
                 else:
                     t = scope.resolve_column(node, context.in_order_by)
+                    # If the query is grouped, the column must be in the GROUP BY clause or appear in an aggregate function
                     if (
                         scope.is_grouped
-                        and not context.in_group_by
-                        and not context.in_aggregate
-                        and not scope.group_by.contains(node)
+                        and not context.in_group_by  # Still in the GROUP BY clause
+                        and not (scope.group_by.contains(node) or context.in_aggregate)
                     ):
                         raise NonGroupedColumnError([node.name])
                     return t
@@ -293,12 +308,18 @@ class SQLSemanticAnalyzer:
                     self._validate_expression(arg, scope, context.enter_aggregate())
                 return DataType.INTEGER
 
-            case Avg() | Sum() | Min() | Max():
+            case Avg() | Sum():
                 self._validate_aggregate(context)
                 assert_numeric(
                     self._validate_simple_expression(node.this, scope, context.enter_aggregate())
                 )
                 return DataType.NUMERIC
+
+            case Min() | Max():
+                self._validate_aggregate(context)
+                t = self._validate_simple_expression(node.this, scope, context.enter_aggregate())
+                assert_orderable(t)
+                return t
 
             case Star():
                 return scope.validate_star_expansion()
@@ -309,7 +330,8 @@ class SQLSemanticAnalyzer:
                     assert_scalar_subquery(node)
                     [(_, columns)] = sub_schema.items()
                     [(_, t)] = columns.items()
-                except ValueError:
+                except ValueError:  # Unpack error
+                    # Subquery must return a single table with a single column
                     raise ScalarSubqueryError() from None
                 return t
 
@@ -329,7 +351,9 @@ class SQLSemanticAnalyzer:
     # ──────── Aggregate Validations ────────
 
     def _validate_aggregate(self, context: ValidationContext) -> None:
+        # Cannot be used in the WHERE clause
         if context.in_where:
             raise AggregateInWhereError()
+        # Cannot be nested
         if context.in_aggregate:
             raise NestedAggregateError()
