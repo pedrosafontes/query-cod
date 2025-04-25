@@ -1,7 +1,9 @@
 import pytest
 from databases.types import DataType, Schema
 from queries.services.sql.parser import parse_sql
-from queries.services.sql.validation.errors import (
+from queries.services.sql.semantics import SQLSemanticAnalyzer
+
+from queries.services.sql.semantics.errors import (
     AggregateInWhereError,
     AmbiguousColumnError,
     ColumnCountMismatchError,
@@ -22,7 +24,6 @@ from queries.services.sql.validation.errors import (
     UndefinedTableError,
     UnorderableTypeError,
 )
-from queries.services.sql.validation.semantics import SQLSemanticAnalyzer
 
 
 @pytest.fixture
