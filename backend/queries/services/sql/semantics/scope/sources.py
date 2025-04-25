@@ -14,8 +14,8 @@ from ..errors import (
 from ..types import ColumnTypes, ResultSchema
 
 
-class TableScope:
-    def __init__(self, parent: TableScope | None = None) -> None:
+class SourcesScope:
+    def __init__(self, parent: SourcesScope | None = None) -> None:
         self.parent = parent
         self._table_schemas: ResultSchema = defaultdict(dict)
 

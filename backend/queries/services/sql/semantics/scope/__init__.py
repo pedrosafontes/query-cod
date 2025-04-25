@@ -7,12 +7,12 @@ from ..errors import NonGroupedColumnError
 from ..types import ResultSchema
 from .group_by import GroupByScope
 from .projection import ProjectionScope
-from .table import TableScope
+from .sources import SourcesScope
 
 
 class Scope:
     def __init__(self, parent: Scope | None = None):
-        self.tables: TableScope = TableScope(parent.tables if parent else None)
+        self.sources: SourcesScope = SourcesScope(parent.sources if parent else None)
         self.projections = ProjectionScope()
         self.group_by = GroupByScope()
 
@@ -21,7 +21,7 @@ class Scope:
         return bool(self.group_by._exprs)
 
     def validate_star_expansion(self, table: str | None = None) -> ResultSchema:
-        schema = self.tables.get_table_schema(table) if table else self.tables.get_schema()
+        schema = self.sources.get_table_schema(table) if table else self.sources.get_schema()
 
         if self.is_grouped:
             missing: list[str] = []
@@ -39,4 +39,4 @@ class Scope:
     def resolve_column(self, column: Column, in_order_by: bool = False) -> DataType:
         if in_order_by and (t := self.projections.resolve(column)):
             return t
-        return self.tables.resolve_column(column)
+        return self.sources.resolve_column(column)

@@ -1,18 +1,15 @@
 from databases.types import Schema, TableSchema
-from sqlglot.expressions import Identifier, Join, Subquery, Table
+from sqlglot.expressions import Identifier, Join
 
 from .errors import (
     CrossJoinConditionError,
-    DerivedColumnAliasRequiredError,
-    DerivedTableMultipleSchemasError,
-    MissingDerivedTableAliasError,
     MissingJoinConditionError,
     NoCommonColumnsError,
     UndefinedColumnError,
-    UndefinedTableError,
 )
 from .expression import ExpressionValidator
 from .scope import Scope
+from .source import SourceValidator
 from .type_utils import assert_boolean, assert_comparable
 from .types import ColumnTypes
 
@@ -30,10 +27,11 @@ class JoinValidator:
         self.scope = scope
         self.expr_validator = expr_validator
         self.query_validator = QueryValidator(schema)
+        self.source_validator = SourceValidator(schema, scope)
 
     def validate_join(self, join: Join) -> None:
-        left_cols = self.scope.tables.snapshot_columns()
-        self._add_table(join.this, self.scope)
+        left_cols = self.scope.sources.snapshot_columns()
+        self.source_validator.validate(join.this)
         right_cols = self.schema[join.this.name]
 
         kind = join.method or join.args.get('kind', 'INNER')
@@ -74,31 +72,3 @@ class JoinValidator:
         for col in shared:
             for ltype in left[col]:
                 assert_comparable(ltype, right[col])
-
-    def _add_table(self, table: Table | Subquery, scope: Scope) -> None:
-        match table:
-            case Table():
-                name = table.name
-                alias = table.alias_or_name
-                table_schema = self.schema.get(name)
-                if table_schema is None:
-                    raise UndefinedTableError(name)
-                scope.tables.add(alias, table_schema)
-
-            case Subquery():
-                alias = table.alias_or_name
-                # Derived tables must have an alias
-                if not alias:
-                    raise MissingDerivedTableAliasError()
-                sub_select = table.this
-                for expr in sub_select.expressions:
-                    # Derived columns must have an alias
-                    if not expr.alias_or_name:
-                        raise DerivedColumnAliasRequiredError(expr)
-                try:
-                    sub_schema = self.query_validator.validate(sub_select, scope).schema
-                    [(_, columns)] = sub_schema.items()
-                except ValueError:  # Unpack error
-                    # Derived tables must return a single table
-                    raise DerivedTableMultipleSchemasError() from None
-                scope.tables.add(alias, columns)
