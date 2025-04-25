@@ -83,7 +83,7 @@ class SQLSemanticAnalyzer:
     def validate(self, expression: Select) -> None:
         self._validate_query(expression, outer_scope=None)
 
-    def _validate_query(self, query: Expression, outer_scope: Scope | None) -> ResultSchema:
+    def _validate_query(self, query: Expression, outer_scope: Scope | None) -> ProjectionScope:
         match query:
             case Select():
                 return self._validate_select(query, outer_scope)
@@ -94,25 +94,22 @@ class SQLSemanticAnalyzer:
 
     def _validate_set_operation(
         self, query: Union | Intersect | Except, outer_scope: Scope | None
-    ) -> ResultSchema:
-        left_schema = self._validate_query(query.left, outer_scope)
-        right_schema = self._validate_query(query.right, outer_scope)
+    ) -> ProjectionScope:
+        left = self._validate_query(query.left, outer_scope)
+        right = self._validate_query(query.right, outer_scope)
 
-        left_types = ProjectionScope.flatten_result_schema(left_schema)
-        right_types = ProjectionScope.flatten_result_schema(right_schema)
-
-        if (l_len := len(left_types)) != (r_len := len(right_types)):
+        if (l_len := len(left.types)) != (r_len := len(right.types)):
             raise ColumnCountMismatchError(l_len, r_len)
 
-        for i, (lt, rt) in enumerate(zip(left_types, right_types, strict=False)):
+        for i, (lt, rt) in enumerate(zip(left.types, right.types, strict=True)):
             try:
                 assert_comparable(lt, rt)
             except TypeMismatchError:
                 raise ColumnTypeMismatchError(lt, rt, i) from None
 
-        return left_schema
+        return left
 
-    def _validate_select(self, select: Select, outer_scope: Scope | None) -> ResultSchema:
+    def _validate_select(self, select: Select, outer_scope: Scope | None) -> ProjectionScope:
         # Validate all clauses of a SELECT statement in the order of execution
         scope = Scope(outer_scope)
         self._populate_from(select, scope)
@@ -122,7 +119,7 @@ class SQLSemanticAnalyzer:
         self._validate_having(select, scope)
         self._validate_projection(select, scope)
         self._validate_order_by(select, scope)
-        return scope.projections.schema
+        return scope.projections
 
     # ──────── Clause Validators ────────
 
@@ -280,11 +277,12 @@ class SQLSemanticAnalyzer:
                     if not expr.alias_or_name:
                         raise DerivedColumnAliasRequiredError(expr)
                 try:
-                    [(_, sub_schema)] = self._validate_query(sub_select, scope).items()
+                    sub_schema = self._validate_query(sub_select, scope).schema
+                    [(_, columns)] = sub_schema.items()
                 except ValueError:  # Unpack error
                     # Derived tables must return a single table
                     raise DerivedTableMultipleSchemasError() from None
-                scope.tables.add(alias, sub_schema)
+                scope.tables.add(alias, columns)
 
     def _validate_simple_expression(
         self,
@@ -376,7 +374,7 @@ class SQLSemanticAnalyzer:
                 return scope.validate_star_expansion()
 
             case Subquery():
-                sub_schema = self._validate_query(node.this, scope)
+                sub_schema = self._validate_query(node.this, scope).schema
                 try:
                     assert_scalar_subquery(node)
                     [(_, columns)] = sub_schema.items()
@@ -431,7 +429,7 @@ class SQLSemanticAnalyzer:
     # ──────── Quantified Predicate Validations ────────
 
     def _validate_quantified_predicate_query(self, query: Expression, scope: Scope) -> DataType:
-        schema = self._validate_query(query, scope)
+        schema = self._validate_query(query, scope).schema
         try:
             [(_, columns)] = schema.items()
             [(_, rt)] = columns.items()
