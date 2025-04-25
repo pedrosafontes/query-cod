@@ -3,6 +3,7 @@ from __future__ import annotations
 from databases.types import DataType
 from sqlglot.expressions import Column
 
+from ..context import ValidationContext
 from ..errors import NonGroupedColumnError
 from ..types import ResultSchema
 from .group_by import GroupByScope
@@ -36,7 +37,7 @@ class Scope:
 
         return schema
 
-    def resolve_column(self, column: Column, in_order_by: bool = False) -> DataType:
-        if in_order_by and (t := self.projections.resolve(column)):
+    def resolve_column(self, column: Column, context: ValidationContext) -> DataType:
+        if context.in_order_by and (t := self.projections.resolve(column)):
             return t
         return self.sources.resolve_column(column)

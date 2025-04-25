@@ -83,7 +83,7 @@ class ExpressionValidator:
                 if isinstance(node.this, Star):
                     return self.scope.validate_star_expansion(node.table)
                 else:
-                    t = self.scope.resolve_column(node, context.in_order_by)
+                    t = self.scope.resolve_column(node, context)
 
                     if (
                         # If the query is grouped, the column must be in the GROUP BY clause or appear in an aggregate function
