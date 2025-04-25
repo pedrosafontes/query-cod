@@ -53,9 +53,6 @@ class TableScope:
 
     # ────── Utilities ──────
 
-    def get_columns(self) -> set[str]:
-        return set([col for schema in self._table_schemas.values() for col in schema.keys()])
-
     def get_schema(self) -> ResultSchema:
         return self._table_schemas
 
