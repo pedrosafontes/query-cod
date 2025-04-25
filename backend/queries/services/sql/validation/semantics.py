@@ -15,6 +15,7 @@ from sqlglot.expressions import (
     And,
     Any,
     Avg,
+    Boolean,
     Column,
     Count,
     Div,
@@ -410,6 +411,9 @@ class SQLSemanticAnalyzer:
 
             case Paren():
                 return self._validate_expression(node.this, scope, context)
+
+            case Boolean():
+                return DataType.BOOLEAN
 
             case _:
                 raise NotImplementedError(f'Expression {type(node)} not supported')
