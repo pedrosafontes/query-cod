@@ -11,7 +11,7 @@ from ..errors import (
 from ..types import ResultSchema
 
 
-class ProjectionScope:
+class ProjectionsScope:
     def __init__(self) -> None:
         self.schema: ResultSchema = defaultdict(dict)  # Track projections by alias
         self.expressions: dict[Expression, DataType] = {}  # Track projections by expression

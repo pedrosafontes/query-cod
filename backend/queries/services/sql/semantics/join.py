@@ -30,7 +30,7 @@ class JoinValidator:
         self.source_validator = SourceValidator(schema, scope)
 
     def validate_join(self, join: Join) -> None:
-        left_cols = self.scope.sources.snapshot_columns()
+        left_cols = self.scope.tables.snapshot_columns()
         self.source_validator.validate(join.this)
         right_cols = self.schema[join.this.name]
 

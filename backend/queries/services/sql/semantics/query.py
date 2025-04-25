@@ -14,7 +14,7 @@ from .errors import (
     TypeMismatchError,
 )
 from .scope import Scope
-from .scope.projection import ProjectionScope
+from .scope.projections import ProjectionsScope
 from .type_utils import (
     assert_comparable,
 )
@@ -24,7 +24,7 @@ class QueryValidator:
     def __init__(self, schema: Schema) -> None:
         self.schema = schema
 
-    def validate(self, query: Expression, outer_scope: Scope | None) -> ProjectionScope:
+    def validate(self, query: Expression, outer_scope: Scope | None) -> ProjectionsScope:
         match query:
             case Select():
                 return self._validate_select(query, outer_scope)
@@ -33,7 +33,7 @@ class QueryValidator:
             case _:
                 raise NotImplementedError(f'Unsupported query type: {type(query)}')
 
-    def _validate_select(self, select: Select, outer_scope: Scope | None) -> ProjectionScope:
+    def _validate_select(self, select: Select, outer_scope: Scope | None) -> ProjectionsScope:
         # Validate all clauses of a SELECT statement in the order of execution
         scope = Scope(outer_scope)
         validator = ClauseValidator(self.schema, scope)
@@ -49,7 +49,7 @@ class QueryValidator:
 
     def _validate_set_operation(
         self, query: Union | Intersect | Except, outer_scope: Scope | None
-    ) -> ProjectionScope:
+    ) -> ProjectionsScope:
         left = self.validate(query.left, outer_scope)
         right = self.validate(query.right, outer_scope)
 

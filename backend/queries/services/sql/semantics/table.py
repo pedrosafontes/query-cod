@@ -10,7 +10,7 @@ from .errors import (
 from .scope import Scope
 
 
-class SourceValidator:
+class TableValidator:
     def __init__(self, schema: Schema, scope: Scope) -> None:
         from .query import QueryValidator
 
@@ -26,7 +26,7 @@ class SourceValidator:
                 table_schema = self.schema.get(name)
                 if table_schema is None:
                     raise UndefinedTableError(name)
-                self.scope.sources.add(alias, table_schema)
+                self.scope.tables.add(alias, table_schema)
 
             case Subquery():
                 alias = table.alias_or_name
@@ -44,4 +44,4 @@ class SourceValidator:
                 except ValueError:  # Unpack error
                     # Derived tables must return a single table
                     raise DerivedTableMultipleSchemasError() from None
-                self.scope.sources.add(alias, columns)
+                self.scope.tables.add(alias, columns)

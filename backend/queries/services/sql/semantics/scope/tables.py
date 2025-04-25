@@ -14,8 +14,8 @@ from ..errors import (
 from ..types import ColumnTypes, ResultSchema
 
 
-class SourcesScope:
-    def __init__(self, parent: SourcesScope | None = None) -> None:
+class TablesScope:
+    def __init__(self, parent: TablesScope | None = None) -> None:
         self.parent = parent
         self._table_schemas: ResultSchema = defaultdict(dict)
 
@@ -25,7 +25,7 @@ class SourcesScope:
             raise DuplicateAliasError(alias)
         self._table_schemas[alias] = schema
 
-    def resolve_column(self, column: Column, in_order_by: bool = False) -> DataType:
+    def resolve_column(self, column: Column) -> DataType:
         name = column.name
         table = column.table
         return self._resolve_qualified(name, table) if table else self._resolve_unqualified(name)

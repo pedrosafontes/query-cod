@@ -214,7 +214,7 @@ class ExpressionValidator:
 
     def _validate_star_expansion(self, table: str | None = None) -> ResultSchema:
         schema = (
-            self.scope.sources.get_table_schema(table) if table else self.scope.sources.get_schema()
+            self.scope.tables.get_table_schema(table) if table else self.scope.tables.get_schema()
         )
 
         if self.scope.is_grouped:

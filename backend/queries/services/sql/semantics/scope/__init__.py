@@ -5,14 +5,14 @@ from sqlglot.expressions import Column
 
 from ..context import ValidationContext
 from .group_by import GroupByScope
-from .projection import ProjectionScope
-from .sources import SourcesScope
+from .projections import ProjectionsScope
+from .tables import TablesScope
 
 
 class Scope:
     def __init__(self, parent: Scope | None = None):
-        self.sources: SourcesScope = SourcesScope(parent.sources if parent else None)
-        self.projections = ProjectionScope()
+        self.tables: TablesScope = TablesScope(parent.tables if parent else None)
+        self.projections = ProjectionsScope()
         self.group_by = GroupByScope()
 
     @property
@@ -22,4 +22,4 @@ class Scope:
     def resolve_column(self, column: Column, context: ValidationContext) -> DataType:
         if context.in_order_by and (t := self.projections.resolve(column)):
             return t
-        return self.sources.resolve_column(column)
+        return self.tables.resolve_column(column)
