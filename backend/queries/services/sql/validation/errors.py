@@ -148,3 +148,22 @@ class AggregateInWhereError(SQLSemanticError):
 class NestedAggregateError(SQLSemanticError):
     def __str__(self) -> str:
         return 'Nested aggregate functions are not allowed'
+
+
+@dataclass
+class ColumnCountMismatchError(SQLSemanticError):
+    left_count: int
+    right_count: int
+
+    def __str__(self) -> str:
+        return f'Set operands must have the same number of columns: {self.left_count} vs {self.right_count}.'
+
+
+@dataclass
+class ColumnTypeMismatchError(SQLSemanticError):
+    left_type: DataType
+    right_type: DataType
+    index: int
+
+    def __str__(self) -> str:
+        return f'Set operands have incompatible column types at position {self.index + 1}: {self.left_type.name} vs {self.right_type.name}.'

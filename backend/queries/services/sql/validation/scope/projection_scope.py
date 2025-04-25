@@ -16,6 +16,13 @@ class ProjectionScope:
         self.schema: ResultSchema = defaultdict(dict)  # Track projections by alias
         self.expressions: dict[Expression, DataType] = {}  # Track projections by expression
 
+    @staticmethod
+    def flatten_result_schema(schema: ResultSchema) -> list[DataType]:
+        types: list[DataType] = []
+        for projection in schema.values():
+            types.extend(projection.values())
+        return types
+
     def add(self, expr: Expression, t: DataType) -> None:
         # Add to expressions
         self.expressions[expr] = t
