@@ -4,7 +4,6 @@ from databases.types import DataType
 from sqlglot.expressions import Avg, Count, Literal, Max, Min, Subquery, Sum
 
 from .errors import (
-    OrderByPositionError,
     ScalarSubqueryError,
     TypeMismatchError,
     UnorderableTypeError,
@@ -59,11 +58,7 @@ def infer_literal_type(node: Literal) -> DataType:
         return DataType.FLOAT
     elif node.is_string:
         value = str(value).lower()
-        if value in {'true', 'false'}:
-            return DataType.BOOLEAN
-        elif value in {'null', 'none'}:
-            return DataType.NULL
-        elif _is_date_format(value):
+        if _is_date_format(value):
             return DataType.DATE
         elif _is_time_format(value):
             return DataType.TIME
