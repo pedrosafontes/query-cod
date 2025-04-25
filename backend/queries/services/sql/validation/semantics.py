@@ -11,12 +11,15 @@ from sqlglot.expressions import (
     NEQ,
     Add,
     Alias,
+    All,
     And,
+    Any,
     Avg,
     Column,
     Count,
     Div,
     Except,
+    Exists,
     From,
     Identifier,
     In,
@@ -379,9 +382,24 @@ class SQLSemanticAnalyzer:
 
             case In():
                 lt = self._validate_simple_expression(node.this, scope, context)
-                for val in node.expressions:
-                    rt = self._validate_simple_expression(val, scope, context)
-                    assert_comparable(lt, rt)
+                if subquery := node.args.get('query'):
+                    self._validate_quantified_predicate_query(subquery.this, scope)
+                else:
+                    # If the IN clause is not a subquery, it must be a list of literals
+                    for val in node.expressions:
+                        rt = self._validate_simple_expression(val, scope, context)
+                        assert_comparable(lt, rt)
+                return DataType.BOOLEAN
+
+            case Any() | All():
+                query_expr = node.this
+                if isinstance(query_expr, Subquery):
+                    # Unwrap the subquery
+                    query_expr = query_expr.this
+                return self._validate_quantified_predicate_query(query_expr, scope)
+
+            case Exists():
+                self._validate_query(node.this, scope)
                 return DataType.BOOLEAN
 
             case Paren():
@@ -399,3 +417,14 @@ class SQLSemanticAnalyzer:
         # Cannot be nested
         if context.in_aggregate:
             raise NestedAggregateError()
+        
+    # ──────── Quantified Predicate Validations ────────
+
+    def _validate_quantified_predicate_query(self, query: Expression, scope: Scope) -> DataType:
+        schema = self._validate_query(query, scope)
+        try:
+            [(_, columns)] = schema.items()
+            [(_, rt)] = columns.items()
+        except ValueError:  # Unpack error
+            raise ColumnCountMismatchError(1, len(columns)) from None
+        return rt

@@ -452,3 +452,69 @@ class TestSetOperations:
         self, query: str, expected_exception: type[Exception], schema: Schema
     ) -> None:
         assert_invalid(query, schema, expected_exception)
+
+
+class TestQuantifiedSubqueries:
+    @pytest.mark.parametrize(
+        'query',
+        [
+            # ────── ANY / SOME ──────
+            # Valid comparison to scalar subquery result (same type)
+            'SELECT * FROM products WHERE price > ANY (SELECT price FROM products)',
+            # Valid integer comparison
+            'SELECT * FROM products WHERE category_id = ANY (SELECT category_id FROM categories)',
+            # Using SOME (synonym for ANY)
+            'SELECT * FROM products WHERE price < SOME (SELECT price FROM products WHERE in_stock)',
+            # Correlated ANY subquery
+            'SELECT * FROM products p WHERE price < ANY (SELECT price FROM products WHERE category_id = p.category_id)',
+            # ────── ALL ──────
+            'SELECT * FROM products WHERE price <= ALL (SELECT price FROM products WHERE in_stock)',
+            # ALL with subquery returning no rows should still be valid
+            'SELECT * FROM products WHERE product_id > ALL (SELECT product_id FROM products WHERE 1 = 0)',
+            # Correlated ALL subquery
+            'SELECT * FROM customers c WHERE customer_id = ALL (SELECT customer_id FROM orders o WHERE quantity > 5 AND o.customer_id = c.customer_id)',
+            # ────── EXISTS ──────
+            # Basic EXISTS
+            'SELECT * FROM products WHERE EXISTS (SELECT 1 FROM orders WHERE products.product_id = orders.product_id)',
+            # EXISTS with non-correlated filter
+            'SELECT * FROM categories WHERE EXISTS (SELECT * FROM products WHERE price > 100)',
+            # Correlated EXISTS
+            'SELECT * FROM customers c WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id)',
+            # EXISTS with scalar expression (allowed)
+            'SELECT * FROM customers WHERE EXISTS (SELECT MAX(quantity) FROM orders)',
+        ],
+    )
+    def test_valid_quantified_predicates(self, query: str, schema: Schema) -> None:
+        assert_valid(query, schema)
+
+    @pytest.mark.parametrize(
+        'query, expected_exception',
+        [
+            # ────── ANY / SOME ──────
+            # ANY with non-comparable types
+            (
+                'SELECT * FROM products WHERE product_name = ANY (SELECT price FROM products)',
+                TypeMismatchError,
+            ),
+            # ANY with multi-column subquery
+            (
+                'SELECT * FROM products WHERE product_id = ANY (SELECT product_id, price FROM products)',
+                ColumnCountMismatchError,
+            ),
+            # ────── ALL ──────
+            # ALL with incompatible types
+            (
+                'SELECT * FROM products WHERE price < ALL (SELECT product_name FROM products)',
+                TypeMismatchError,
+            ),
+            # ALL with multi-column subquery
+            (
+                'SELECT * FROM products WHERE category_id = ALL (SELECT category_id, category_name FROM categories)',
+                ColumnCountMismatchError,
+            ),
+        ],
+    )
+    def test_invalid_quantified_predicates(
+        self, query: str, expected_exception: type[Exception], schema: Schema
+    ) -> None:
+        assert_invalid(query, schema, expected_exception)

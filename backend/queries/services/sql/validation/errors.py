@@ -152,11 +152,11 @@ class NestedAggregateError(SQLSemanticError):
 
 @dataclass
 class ColumnCountMismatchError(SQLSemanticError):
-    left_count: int
-    right_count: int
+    expected: int
+    received: int
 
     def __str__(self) -> str:
-        return f'Set operands must have the same number of columns: {self.left_count} vs {self.right_count}.'
+        return f'Column count mismatch: expected {self.expected}, got {self.received}'
 
 
 @dataclass
