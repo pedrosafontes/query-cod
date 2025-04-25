@@ -101,12 +101,6 @@ class UnorderableTypeError(SQLSemanticError):
 
 
 @dataclass
-class GroupByClauseRequiredError(SQLSemanticError):
-    def __str__(self) -> str:
-        return 'HAVING clause requires GROUP BY clause'
-
-
-@dataclass
 class CrossJoinConditionError(SQLSemanticError):
     def __str__(self) -> str:
         return 'CROSS JOIN does not support ON or USING clause'

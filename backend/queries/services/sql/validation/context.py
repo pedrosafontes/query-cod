@@ -9,15 +9,7 @@ class ValidationContext:
     in_group_by: bool = False
     in_aggregate: bool = False
     in_order_by: bool = False
-
-    def enter_where(self) -> ValidationContext:
-        return replace(self, in_where=True)
-
-    def enter_group_by(self) -> ValidationContext:
-        return replace(self, in_group_by=True)
+    in_having: bool = False
 
     def enter_aggregate(self) -> ValidationContext:
         return replace(self, in_aggregate=True)
-
-    def enter_order_by(self) -> ValidationContext:
-        return replace(self, in_order_by=True)

@@ -9,7 +9,6 @@ from queries.services.sql.validation.errors import (
     CrossJoinConditionError,
     DerivedColumnAliasRequiredError,
     DuplicateAliasError,
-    GroupByClauseRequiredError,
     MissingDerivedTableAliasError,
     MissingJoinConditionError,
     NestedAggregateError,
@@ -238,8 +237,6 @@ class TestAggregatesAndGrouping:
             ('SELECT COUNT(*) FROM products GROUP BY nonexistent_column', UndefinedColumnError),
             # Invalid aggregate argument
             ('SELECT SUM(product_name) FROM products', TypeMismatchError),
-            # HAVING without GROUP BY
-            ('SELECT COUNT(*) FROM products HAVING COUNT(*) > 5', GroupByClauseRequiredError),
             # Non-grouped column in HAVING
             (
                 "SELECT category_id FROM products GROUP BY category_id HAVING product_name = 'test'",

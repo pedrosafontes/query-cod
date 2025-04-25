@@ -49,7 +49,6 @@ from .errors import (
     CrossJoinConditionError,
     DerivedColumnAliasRequiredError,
     DerivedTableMultipleSchemasError,
-    GroupByClauseRequiredError,
     MissingDerivedTableAliasError,
     MissingJoinConditionError,
     NestedAggregateError,
@@ -184,10 +183,11 @@ class SQLSemanticAnalyzer:
     def _validate_having(self, select: Select, scope: Scope) -> None:
         having = select.args.get('having')
         if having:
-            if not scope.is_grouped:
-                # If there is a HAVING clause, there must be a GROUP BY clause
-                raise GroupByClauseRequiredError()
-            assert_boolean(self._validate_simple_expression(having.this, scope))
+            assert_boolean(
+                self._validate_simple_expression(
+                    having.this, scope, ValidationContext(in_having=True)
+                )
+            )
 
     def _validate_projection(self, select: Select, scope: Scope) -> None:
         for expr in select.expressions:
@@ -310,12 +310,16 @@ class SQLSemanticAnalyzer:
                     return scope.validate_star_expansion(node.table)
                 else:
                     t = scope.resolve_column(node, context.in_order_by)
-                    # If the query is grouped, the column must be in the GROUP BY clause or appear in an aggregate function
-                    # Validates HAVING, SELECT, and ORDER BY (occur after GROUP BY)
+
                     if (
+                        # If the query is grouped, the column must be in the GROUP BY clause or appear in an aggregate function
+                        # Validates HAVING, SELECT, and ORDER BY (occur after GROUP BY)
                         scope.is_grouped
                         and not context.in_group_by  # Still in the GROUP BY clause
                         and not (scope.group_by.contains(node) or context.in_aggregate)
+                    ) or (
+                        # If the query is not grouped, columns in the HAVING clause must appear in an aggregate function
+                        not scope.is_grouped and context.in_having and not context.in_aggregate
                     ):
                         raise NonGroupedColumnError([node.name])
                     return t
