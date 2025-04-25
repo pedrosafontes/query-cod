@@ -41,6 +41,7 @@ from .errors import (
     NestedAggregateError,
     NonGroupedColumnError,
     ScalarSubqueryError,
+    UndefinedColumnError
 )
 from .scope import Scope
 from .type_utils import (
@@ -83,7 +84,7 @@ class ExpressionValidator:
                 if isinstance(node.this, Star):
                     return self._validate_star_expansion(node.table)
                 else:
-                    t = self.scope.resolve_column(node, context)
+                    t = self._validate_column(node, context)
 
                     if (
                         # If the query is grouped, the column must be in the GROUP BY clause or appear in an aggregate function
@@ -188,6 +189,18 @@ class ExpressionValidator:
 
             case _:
                 raise NotImplementedError(f'Expression {type(node)} not supported')
+            
+    # ──────── Column Validations ────────
+
+    def _validate_column(self, column: Column, context: ValidationContext) -> DataType:
+        t: DataType
+        if context.in_order_by and (t := self.scope.projections.resolve(column)):
+            return t
+
+        if (t:= self.scope.tables.resolve_column(column)):
+            return t
+        else:
+            raise UndefinedColumnError(column.name, column.table)
 
     # ──────── Aggregate Validations ────────
 

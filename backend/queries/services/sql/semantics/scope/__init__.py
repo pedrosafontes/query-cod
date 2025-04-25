@@ -19,7 +19,3 @@ class Scope:
     def is_grouped(self) -> bool:
         return bool(self.group_by._exprs)
 
-    def resolve_column(self, column: Column, context: ValidationContext) -> DataType:
-        if context.in_order_by and (t := self.projections.resolve(column)):
-            return t
-        return self.tables.resolve_column(column)
