@@ -67,6 +67,7 @@ class DataType(Enum):
     def is_orderable(self) -> bool:
         return self.is_numeric() or self.is_string() or self.is_temporal()
 
-
-TableSchema = dict[str, DataType]
-Schema = dict[str, TableSchema]
+TableName = str
+ColumnName = str
+TableSchema = dict[ColumnName, DataType]
+Schema = dict[TableName, TableSchema]
