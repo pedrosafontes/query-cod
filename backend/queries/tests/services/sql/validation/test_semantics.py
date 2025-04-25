@@ -462,6 +462,9 @@ class TestQuantifiedSubqueries:
     @pytest.mark.parametrize(
         'query',
         [
+            # ────── IN ──────
+            # Valid IN with scalar subquery
+            'SELECT * FROM products WHERE category_id NOT IN (SELECT category_id FROM categories)',
             # ────── ANY / SOME ──────
             # Valid comparison to scalar subquery result (same type)
             'SELECT * FROM products WHERE price > ANY (SELECT price FROM products)',
@@ -488,6 +491,18 @@ class TestQuantifiedSubqueries:
             'SELECT * FROM customers c WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id)',
             # EXISTS with scalar expression (allowed)
             'SELECT * FROM customers WHERE EXISTS (SELECT MAX(quantity) FROM orders)',
+            # ────── Complex ──────
+            # Nested
+            """
+            SELECT * FROM products 
+            WHERE EXISTS (
+            SELECT 1 FROM orders 
+            WHERE orders.product_id = products.product_id 
+            AND quantity > ANY (
+                SELECT quantity FROM orders WHERE customer_id = '123'
+            )
+            )
+            """,
         ],
     )
     def test_valid_quantified_predicates(self, query: str, schema: Schema) -> None:
@@ -496,6 +511,16 @@ class TestQuantifiedSubqueries:
     @pytest.mark.parametrize(
         'query, expected_exception',
         [
+            # ────── IN ──────
+            (
+                'SELECT * FROM products WHERE category_id IN (SELECT category_id, category_name FROM categories)',
+                ColumnCountMismatchError,
+            ),
+            # IN with incompatible types
+            (
+                'SELECT * FROM products WHERE category_id IN (SELECT category_name FROM categories)',
+                TypeMismatchError,
+            ),
             # ────── ANY / SOME ──────
             # ANY with non-comparable types
             (

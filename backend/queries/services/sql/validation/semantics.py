@@ -384,7 +384,8 @@ class SQLSemanticAnalyzer:
             case In():
                 lt = self._validate_simple_expression(node.this, scope, context)
                 if subquery := node.args.get('query'):
-                    self._validate_quantified_predicate_query(subquery.this, scope)
+                    rt = self._validate_quantified_predicate_query(subquery.this, scope)
+                    assert_comparable(lt, rt)
                 else:
                     # If the IN clause is not a subquery, it must be a list of literals
                     for val in node.expressions:
