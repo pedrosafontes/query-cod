@@ -5,7 +5,6 @@ from sqlglot.expressions import Column
 
 from ..errors import NonGroupedColumnError
 from ..types import ResultSchema
-
 from .group_by import GroupByScope
 from .projection import ProjectionScope
 from .table import TableScope

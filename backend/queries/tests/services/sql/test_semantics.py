@@ -2,7 +2,6 @@ import pytest
 from databases.types import DataType, Schema
 from queries.services.sql.parser import parse_sql
 from queries.services.sql.semantics import SQLSemanticAnalyzer
-
 from queries.services.sql.semantics.errors import (
     AggregateInWhereError,
     AmbiguousColumnError,

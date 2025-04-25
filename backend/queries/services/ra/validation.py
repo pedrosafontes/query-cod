@@ -4,8 +4,8 @@ from queries.types import QueryValidationResult
 
 from .parser import parse_ra
 from .parser.errors import RASyntaxError
-from .semantics.errors import RASemanticError
 from .semantics import RASemanticAnalyzer
+from .semantics.errors import RASemanticError
 
 
 def validate_ra(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationResult:

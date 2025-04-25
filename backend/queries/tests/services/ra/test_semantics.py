@@ -22,6 +22,7 @@ from queries.services.ra.parser.ast import (
     ThetaJoin,
     TopN,
 )
+from queries.services.ra.semantics import RASemanticAnalyzer
 from queries.services.ra.semantics.errors import (
     AmbiguousAttributeError,
     DivisionSchemaMismatchError,
@@ -32,7 +33,6 @@ from queries.services.ra.semantics.errors import (
     UndefinedRelationError,
     UnionCompatibilityError,
 )
-from queries.services.ra.semantics import RASemanticAnalyzer
 
 
 @pytest.fixture
