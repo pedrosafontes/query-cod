@@ -128,9 +128,10 @@ class SQLSemanticAnalyzer:
 
     def _populate_from(self, select: Select, scope: Scope) -> None:
         from_clause = select.args.get('from')
-        if not isinstance(from_clause, From):
-            raise NotImplementedError(f'Unsupported FROM clause: {type(from_clause)}')
-        self._add_table(from_clause.this, scope)
+        if from_clause:
+            if not isinstance(from_clause, From):
+                raise NotImplementedError(f'Unsupported FROM clause: {type(from_clause)}')
+            self._add_table(from_clause.this, scope)
 
     def _validate_joins(self, select: Select, scope: Scope) -> None:
         for join in select.args.get('joins', []):
@@ -417,7 +418,7 @@ class SQLSemanticAnalyzer:
         # Cannot be nested
         if context.in_aggregate:
             raise NestedAggregateError()
-        
+
     # ──────── Quantified Predicate Validations ────────
 
     def _validate_quantified_predicate_query(self, query: Expression, scope: Scope) -> DataType:

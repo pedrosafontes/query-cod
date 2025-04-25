@@ -78,6 +78,10 @@ class TestBasicSelects:
             'SELECT product_id AS id, product_name AS name FROM products',
             'SELECT product_id id, product_name name FROM products',  # Implicit alias
             'SELECT product_id, price * 1.1 AS increased_price FROM products',  # Expression
+            'SELECT 1',  # Literal value without FROM
+            "SELECT 1, 'hello' FROM products",  # Literal values
+            "SELECT product_id, 'fixed label', price * 1.1 FROM products",  # Mixed
+            'SELECT (price + 10) AS bumped_price FROM products',  # Expression
         ],
     )
     def test_valid_select_clauses(self, query: str, schema: Schema) -> None:
@@ -476,6 +480,8 @@ class TestQuantifiedSubqueries:
             # ────── EXISTS ──────
             # Basic EXISTS
             'SELECT * FROM products WHERE EXISTS (SELECT 1 FROM orders WHERE products.product_id = orders.product_id)',
+            # EXISTS with constant expression
+            'SELECT * FROM customers WHERE EXISTS (SELECT 1)',
             # EXISTS with non-correlated filter
             'SELECT * FROM categories WHERE EXISTS (SELECT * FROM products WHERE price > 100)',
             # Correlated EXISTS
