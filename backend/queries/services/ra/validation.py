@@ -2,9 +2,9 @@ from databases.models.database_connection_info import DatabaseConnectionInfo
 from databases.services.schema import get_schema
 from queries.types import QueryValidationResult
 
-from ..parser import parse_ra
-from ..parser.errors import RASyntaxError
-from .errors import RASemanticError
+from .parser import parse_ra
+from .parser.errors import RASyntaxError
+from .semantics.errors import RASemanticError
 from .semantics import RASemanticAnalyzer
 
 

@@ -7,7 +7,7 @@ from databases.utils.conversion import from_model
 from projects.models import Project
 from queries.types import QueryError, QueryValidationResult
 
-from .services.ra.validation.validate import validate_ra
+from .services.ra.validation import validate_ra
 from .services.sql.validation import validate_sql
 
 
