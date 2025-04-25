@@ -8,7 +8,6 @@ from sqlglot.expressions import Column
 from ..errors import (
     AmbiguousColumnError,
     DuplicateAliasError,
-    UndefinedColumnError,
     UndefinedTableError,
 )
 from ..types import ColumnTypes, ResultSchema

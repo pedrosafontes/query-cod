@@ -1,13 +1,13 @@
 from databases.types import Schema
 from sqlglot.expressions import Subquery, Table
 
-from .errors import (
+from ..errors import (
     DerivedColumnAliasRequiredError,
     DerivedTableMultipleSchemasError,
     MissingDerivedTableAliasError,
     UndefinedTableError,
 )
-from .scope import Scope
+from ..scope import Scope
 
 
 class TableValidator:

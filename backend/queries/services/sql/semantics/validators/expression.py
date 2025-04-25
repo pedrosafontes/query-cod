@@ -34,17 +34,17 @@ from sqlglot.expressions import (
     Sum,
 )
 
-from .context import ValidationContext
-from .errors import (
+from ..context import ValidationContext
+from ..errors import (
     AggregateInWhereError,
     ColumnCountMismatchError,
     NestedAggregateError,
     NonGroupedColumnError,
     ScalarSubqueryError,
-    UndefinedColumnError
+    UndefinedColumnError,
 )
-from .scope import Scope
-from .type_utils import (
+from ..scope import Scope
+from ..type_utils import (
     assert_boolean,
     assert_comparable,
     assert_numeric,
@@ -52,7 +52,7 @@ from .type_utils import (
     assert_scalar_subquery,
     infer_literal_type,
 )
-from .types import ResultSchema
+from ..types import ResultSchema
 
 
 class ExpressionValidator:
@@ -189,15 +189,15 @@ class ExpressionValidator:
 
             case _:
                 raise NotImplementedError(f'Expression {type(node)} not supported')
-            
+
     # ──────── Column Validations ────────
 
     def _validate_column(self, column: Column, context: ValidationContext) -> DataType:
-        t: DataType
+        t: DataType | None = None
         if context.in_order_by and (t := self.scope.projections.resolve(column)):
             return t
 
-        if (t:= self.scope.tables.resolve_column(column)):
+        if t := self.scope.tables.resolve_column(column):
             return t
         else:
             raise UndefinedColumnError(column.name, column.table)

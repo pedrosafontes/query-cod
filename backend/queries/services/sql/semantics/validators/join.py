@@ -1,17 +1,17 @@
 from databases.types import Schema, TableSchema
 from sqlglot.expressions import Identifier, Join
 
-from .errors import (
+from ..errors import (
     CrossJoinConditionError,
     MissingJoinConditionError,
     NoCommonColumnsError,
     UndefinedColumnError,
 )
+from ..scope import Scope
+from ..type_utils import assert_boolean, assert_comparable
+from ..types import ColumnTypes
 from .expression import ExpressionValidator
-from .scope import Scope
 from .table import TableValidator
-from .type_utils import assert_boolean, assert_comparable
-from .types import ColumnTypes
 
 
 class JoinValidator:

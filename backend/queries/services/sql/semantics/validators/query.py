@@ -7,17 +7,17 @@ from sqlglot.expressions import (
     Union,
 )
 
-from .clause import ClauseValidator
-from .errors import (
+from ..errors import (
     ColumnCountMismatchError,
     ColumnTypeMismatchError,
     TypeMismatchError,
 )
-from .scope import Scope
-from .scope.projections import ProjectionsScope
-from .type_utils import (
+from ..scope import Scope
+from ..scope.projections import ProjectionsScope
+from ..type_utils import (
     assert_comparable,
 )
+from .clause import ClauseValidator
 
 
 class QueryValidator:

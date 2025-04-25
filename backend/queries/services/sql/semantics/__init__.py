@@ -1,7 +1,7 @@
 from databases.types import Schema
 from sqlglot import Expression
 
-from .query import QueryValidator
+from .validators.query import QueryValidator
 
 
 class SQLSemanticAnalyzer:

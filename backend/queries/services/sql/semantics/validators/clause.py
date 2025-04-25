@@ -9,14 +9,14 @@ from sqlglot.expressions import (
     Select,
 )
 
-from .context import ValidationContext
-from .errors import OrderByExpressionError, OrderByPositionError
+from ..context import ValidationContext
+from ..errors import OrderByExpressionError, OrderByPositionError
+from ..scope import Scope
+from ..type_utils import assert_boolean, assert_integer_literal, assert_orderable
+from ..types import ResultSchema
 from .expression import ExpressionValidator
 from .join import JoinValidator
-from .scope import Scope
 from .table import TableValidator
-from .type_utils import assert_boolean, assert_integer_literal, assert_orderable
-from .types import ResultSchema
 
 
 class ClauseValidator:

@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-from databases.types import DataType
-from sqlglot.expressions import Column
-
-from ..context import ValidationContext
 from .group_by import GroupByScope
 from .projections import ProjectionsScope
 from .tables import TablesScope
@@ -18,4 +14,3 @@ class Scope:
     @property
     def is_grouped(self) -> bool:
         return bool(self.group_by._exprs)
-
