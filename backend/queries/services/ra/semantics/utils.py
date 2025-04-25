@@ -31,11 +31,3 @@ def type_of_value(value: ComparisonValue) -> DataType:
             return DataType.BOOLEAN
         case _:
             raise NotImplementedError(f'Unknown type: {type(value)}')
-
-
-def are_types_compatible(left: DataType, right: DataType) -> bool:
-    return (
-        left == right
-        or (left == DataType.INTEGER and right == DataType.FLOAT)
-        or (left == DataType.FLOAT and right == DataType.INTEGER)
-    )

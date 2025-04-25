@@ -32,7 +32,7 @@ from .errors import (
     UnionCompatibilityError,
 )
 from .types import TypedAttribute
-from .utils import are_types_compatible, type_of_function, type_of_value
+from .utils import type_of_function, type_of_value
 
 
 class RASemanticAnalyzer:
@@ -171,7 +171,7 @@ class RASemanticAnalyzer:
                 types.append(type_of_value(side))
 
         left_type, right_type = types
-        if not are_types_compatible(left_type, right_type):
+        if not left_type.is_comparable_with(right_type):
             raise TypeMismatchError(cond, left_type, right_type)
 
     def _resolve_attribute(self, attr: Attribute, context: list[TypedAttribute]) -> TypedAttribute:
