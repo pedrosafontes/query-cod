@@ -225,7 +225,7 @@ class SQLSemanticAnalyzer:
                 table_schema = self.schema.get(name)
                 if table_schema is None:
                     raise UndefinedTableError(name)
-                scope.tables.register(alias, table_schema)
+                scope.tables.add(alias, table_schema)
 
             case Subquery():
                 alias = table.alias_or_name
@@ -238,7 +238,7 @@ class SQLSemanticAnalyzer:
                     if not expr.alias_or_name:
                         raise DerivedColumnAliasRequiredError(expr)
                 [(_, sub_schema)] = self._validate_select(sub_select, scope).items()
-                scope.tables.register(alias, sub_schema)
+                scope.tables.add(alias, sub_schema)
 
     def _validate_simple_expression(
         self,

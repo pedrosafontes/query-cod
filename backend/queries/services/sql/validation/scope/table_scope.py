@@ -19,7 +19,8 @@ class TableScope:
         self.parent = parent
         self._table_schemas: ResultSchema = defaultdict(dict)
 
-    def register(self, alias: str, schema: TableSchema) -> None:
+    def add(self, alias: str, schema: TableSchema) -> None:
+        # Check for duplicate alias
         if alias in self._table_schemas:
             raise DuplicateAliasError(alias)
         self._table_schemas[alias] = schema
@@ -31,9 +32,11 @@ class TableScope:
 
     def _resolve_qualified(self, name: str, table: str) -> DataType:
         if table not in self._table_schemas:
+            # Check if the table is in the parent scope
             if self.parent:
                 return self.parent._resolve_qualified(name, table)
             raise UndefinedTableError(table)
+        # Table is in the current scope
         if name not in self._table_schemas[table]:
             raise UndefinedColumnError(name, table)
         return self._table_schemas[table][name]
@@ -43,11 +46,14 @@ class TableScope:
             (table, schema[name]) for table, schema in self._table_schemas.items() if name in schema
         ]
         if not matches:
+            # Check if the column is in the parent scope
             if self.parent:
                 return self.parent._resolve_unqualified(name)
             raise UndefinedColumnError(name)
+        # Check for ambiguous column
         if len(matches) > 1:
             raise AmbiguousColumnError(name, [table for table, _ in matches if table])
+        # There is only one match
         [(_, t)] = matches
         return t
 
