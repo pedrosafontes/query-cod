@@ -13,9 +13,16 @@ from ..types import ResultSchema
 
 class ProjectionScope:
     def __init__(self) -> None:
-        self.schema: ResultSchema = defaultdict(dict)
+        self.schema: ResultSchema = defaultdict(dict)  # Track projections by alias
+        self.expressions: dict[Expression, DataType] = {}  # Track projections by expression
 
-    def add(self, table: str | None, alias: str, t: DataType) -> None:
+    def add(self, expr: Expression, t: DataType) -> None:
+        # Add to expressions
+        self.expressions[expr] = t
+
+        # Add to schema
+        alias = expr.alias_or_name
+        table = expr.args.get('table')
         if alias and alias in self.schema[table]:
             raise DuplicateAliasError(alias)
         self.schema[table][alias] = t
@@ -24,7 +31,12 @@ class ProjectionScope:
         return self.resolve(expr) is not None
 
     def resolve(self, expr: Expression) -> DataType | None:
-        name = expr.name
+        if expr in self.expressions:
+            # Exact match
+            return self.expressions[expr]
+
+        # Resolve by alias
+        name = expr.alias_or_name
         table = expr.table if isinstance(expr, Column) else None
         return self._resolve_qualified(name, table) if table else self._resolve_unqualified(name)
 

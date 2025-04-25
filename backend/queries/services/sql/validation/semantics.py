@@ -159,19 +159,19 @@ class SQLSemanticAnalyzer:
             )
             if isinstance(t, DataType):
                 # Projection is a single column or expression
-                scope.projections.add(expr.args.get('table'), expr.alias_or_name, t)
+                scope.projections.add(expr, t)
             else:
                 # Projection contains star expansion
                 for table, columns in cast(ResultSchema, t).items():
                     for col, col_type in columns.items():
-                        scope.projections.add(table, col, col_type)
+                        scope.projections.add(Column(this=col, table=table), col_type)
 
     def _validate_order_by(self, select: Select, scope: Scope) -> None:
         order = select.args.get('order')
         if not order:
             return
 
-        num_projections = len(select.expressions)
+        num_projections = len(scope.projections.expressions)
         for item in order.expressions:
             node = item.this
             if isinstance(node, Literal):
@@ -183,14 +183,14 @@ class SQLSemanticAnalyzer:
                 continue
 
             if scope.is_grouped:
-                if not (node in select.expressions or scope.projections.contains(node)):
+                t = scope.projections.resolve(node)
+                if t is None:
                     raise OrderByExpressionError(node)
             else:
-                assert_orderable(
-                    self._validate_simple_expression(
-                        node, scope, ValidationContext(in_order_by=True)
-                    ),
+                t = self._validate_simple_expression(
+                    node, scope, ValidationContext(in_order_by=True)
                 )
+            assert_orderable(t)
 
     # ──────── Join Helpers ────────
 
