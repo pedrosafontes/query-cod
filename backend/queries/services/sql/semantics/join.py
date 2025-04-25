@@ -9,7 +9,7 @@ from .errors import (
 )
 from .expression import ExpressionValidator
 from .scope import Scope
-from .source import SourceValidator
+from .table import TableValidator
 from .type_utils import assert_boolean, assert_comparable
 from .types import ColumnTypes
 
@@ -27,11 +27,11 @@ class JoinValidator:
         self.scope = scope
         self.expr_validator = expr_validator
         self.query_validator = QueryValidator(schema)
-        self.source_validator = SourceValidator(schema, scope)
+        self.table_validator = TableValidator(schema, scope)
 
     def validate_join(self, join: Join) -> None:
         left_cols = self.scope.tables.snapshot_columns()
-        self.source_validator.validate(join.this)
+        self.table_validator.validate(join.this)
         right_cols = self.schema[join.this.name]
 
         kind = join.method or join.args.get('kind', 'INNER')

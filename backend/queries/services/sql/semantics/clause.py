@@ -14,7 +14,7 @@ from .errors import OrderByExpressionError, OrderByPositionError
 from .expression import ExpressionValidator
 from .join import JoinValidator
 from .scope import Scope
-from .source import SourceValidator
+from .table import TableValidator
 from .type_utils import assert_boolean, assert_integer_literal, assert_orderable
 from .types import ResultSchema
 
@@ -25,14 +25,14 @@ class ClauseValidator:
         self.scope = scope
         self.expr_validator = ExpressionValidator(schema, scope)
         self.join_validator = JoinValidator(schema, scope, self.expr_validator)
-        self.source_validator = SourceValidator(schema, scope)
+        self.table_validator = TableValidator(schema, scope)
 
     def populate_from(self, select: Select) -> None:
         from_clause = select.args.get('from')
         if from_clause:
             if not isinstance(from_clause, From):
                 raise NotImplementedError(f'Unsupported FROM clause: {type(from_clause)}')
-            self.source_validator.validate(from_clause.this)
+            self.table_validator.validate(from_clause.this)
 
     def validate_joins(self, select: Select) -> None:
         for join in select.args.get('joins', []):
