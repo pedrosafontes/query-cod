@@ -45,6 +45,7 @@ from .errors import (
     ColumnTypeMismatchError,
     CrossJoinConditionError,
     DerivedColumnAliasRequiredError,
+    DerivedTableMultipleSchemasError,
     GroupByClauseRequiredError,
     MissingDerivedTableAliasError,
     MissingJoinConditionError,
@@ -273,7 +274,11 @@ class SQLSemanticAnalyzer:
                     # Derived columns must have an alias
                     if not expr.alias_or_name:
                         raise DerivedColumnAliasRequiredError(expr)
-                [(_, sub_schema)] = self._validate_query(sub_select, scope).items()
+                try:
+                    [(_, sub_schema)] = self._validate_query(sub_select, scope).items()
+                except ValueError:  # Unpack error
+                    # Derived tables must return a single table
+                    raise DerivedTableMultipleSchemasError() from None
                 scope.tables.add(alias, sub_schema)
 
     def _validate_simple_expression(
