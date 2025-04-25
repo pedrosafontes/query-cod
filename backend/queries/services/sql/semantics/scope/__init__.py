@@ -4,8 +4,6 @@ from databases.types import DataType
 from sqlglot.expressions import Column
 
 from ..context import ValidationContext
-from ..errors import NonGroupedColumnError
-from ..types import ResultSchema
 from .group_by import GroupByScope
 from .projection import ProjectionScope
 from .sources import SourcesScope
@@ -20,22 +18,6 @@ class Scope:
     @property
     def is_grouped(self) -> bool:
         return bool(self.group_by._exprs)
-
-    def validate_star_expansion(self, table: str | None = None) -> ResultSchema:
-        schema = self.sources.get_table_schema(table) if table else self.sources.get_schema()
-
-        if self.is_grouped:
-            missing: list[str] = []
-            for table, table_schema in schema.items():
-                for col, _ in table_schema.items():
-                    col_expr = Column(this=col, table=table)
-                    if not self.group_by.contains(col_expr):
-                        missing.append(col)
-
-            if missing:
-                raise NonGroupedColumnError(missing)
-
-        return schema
 
     def resolve_column(self, column: Column, context: ValidationContext) -> DataType:
         if context.in_order_by and (t := self.projections.resolve(column)):

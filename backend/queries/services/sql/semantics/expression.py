@@ -81,7 +81,7 @@ class ExpressionValidator:
 
             case Column():
                 if isinstance(node.this, Star):
-                    return self.scope.validate_star_expansion(node.table)
+                    return self._validate_star_expansion(node.table)
                 else:
                     t = self.scope.resolve_column(node, context)
 
@@ -144,7 +144,7 @@ class ExpressionValidator:
                 return t
 
             case Star():
-                return self.scope.validate_star_expansion()
+                return self._validate_star_expansion()
 
             case Subquery():
                 sub_schema = self.query_validator.validate(node.this, self.scope).schema
@@ -209,3 +209,23 @@ class ExpressionValidator:
         except ValueError:  # Unpack error
             raise ColumnCountMismatchError(1, len(columns)) from None
         return rt
+
+    # ──────── Star Expansion Validations ────────
+
+    def _validate_star_expansion(self, table: str | None = None) -> ResultSchema:
+        schema = (
+            self.scope.sources.get_table_schema(table) if table else self.scope.sources.get_schema()
+        )
+
+        if self.scope.is_grouped:
+            missing: list[str] = []
+            for table, table_schema in schema.items():
+                for col, _ in table_schema.items():
+                    col_expr = Column(this=col, table=table)
+                    if not self.scope.group_by.contains(col_expr):
+                        missing.append(col)
+
+            if missing:
+                raise NonGroupedColumnError(missing)
+
+        return schema
