@@ -23,6 +23,7 @@ class ProjectionScope:
         # Add to schema
         alias = expr.alias_or_name
         table = expr.args.get('table')
+        # Check for duplicate alias
         if alias and alias in self.schema[table]:
             raise DuplicateAliasError(alias)
         self.schema[table][alias] = t
@@ -44,8 +45,5 @@ class ProjectionScope:
         return self.schema[table].get(name)
 
     def _resolve_unqualified(self, name: str) -> DataType | None:
-        matches = self._find_matches(name)
+        matches = [schema[name] for schema in self.schema.values() if name in schema]
         return matches[0] if matches else None
-
-    def _find_matches(self, name: str) -> list[DataType]:
-        return [schema[name] for schema in self.schema.values() if name in schema]
