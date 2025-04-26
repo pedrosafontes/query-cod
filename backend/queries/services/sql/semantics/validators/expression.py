@@ -88,14 +88,15 @@ class ExpressionValidator:
                     t = self._validate_column(node, context)
 
                     if (
-                        # If the query is grouped, the column must be in the GROUP BY clause or appear in an aggregate function
-                        # Validates HAVING, SELECT, and ORDER BY (occur after GROUP BY)
-                        self.scope.is_grouped
-                        and not context.in_group_by  # Still in the GROUP BY clause
+                        # Scenario: Grouped HAVING, SELECT, or ORDER BY
+                        (self.scope.is_grouped and not context.in_group_by)
+                        # Condition: Column must be in the GROUP BY clause or appear in an aggregate function
                         and not (self.scope.group_by.contains(node) or context.in_aggregate)
                     ) or (
-                        # If the query is not grouped, columns in the HAVING clause must appear in an aggregate function
-                        not self.scope.is_grouped and context.in_having and not context.in_aggregate
+                        # Scenario: Grouped HAVING
+                        (not self.scope.is_grouped and context.in_having)
+                        # Condition: Column must be in an aggregate function
+                        and not context.in_aggregate
                     ):
                         raise NonGroupedColumnError([node.name])
                     return t
@@ -128,19 +129,19 @@ class ExpressionValidator:
                 return DataType.BOOLEAN
 
             case Count():
-                self._validate_aggregate(context)
+                self._validate_aggregate_context(context)
                 arg = node.this
                 if not isinstance(arg, Star):
                     self.validate(arg, context.enter_aggregate())
                 return DataType.INTEGER
 
             case Avg() | Sum():
-                self._validate_aggregate(context)
+                self._validate_aggregate_context(context)
                 assert_numeric(self.validate_basic(node.this, context.enter_aggregate()))
                 return DataType.NUMERIC
 
             case Min() | Max():
-                self._validate_aggregate(context)
+                self._validate_aggregate_context(context)
                 t = self.validate_basic(node.this, context.enter_aggregate())
                 assert_orderable(t)
                 return t
@@ -195,9 +196,6 @@ class ExpressionValidator:
 
     def _validate_column(self, column: Column, context: ValidationContext) -> DataType:
         t: DataType | None = None
-        if context.in_order_by and (t := self.scope.projections.resolve(column)):
-            return t
-
         if t := self.scope.tables.resolve_column(column):
             return t
         else:
@@ -205,7 +203,7 @@ class ExpressionValidator:
 
     # ──────── Aggregate Validations ────────
 
-    def _validate_aggregate(self, context: ValidationContext) -> None:
+    def _validate_aggregate_context(self, context: ValidationContext) -> None:
         # Cannot be used in the WHERE clause
         if context.in_where:
             raise AggregateInWhereError()

@@ -281,6 +281,8 @@ class TestOrderBy:
             'SELECT product_id AS id FROM products ORDER BY id',
             # ORDER BY with GROUP BY
             'SELECT category_id, COUNT(*) AS count FROM products GROUP BY category_id ORDER BY count',
+            # ORDER BY with GROUP BY using aggregate function in ORDER BY but not in SELECT
+            'SELECT category_id FROM products GROUP BY category_id ORDER BY COUNT(*) DESC',
         ],
     )
     def test_valid_order_by(self, query: str, schema: Schema) -> None:

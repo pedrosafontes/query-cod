@@ -14,7 +14,7 @@ class GroupByScope:
     def contains(self, expr: Expression) -> bool:
         return self._get(expr) is not None
 
-    def type_of(self, expr: Expression) -> DataType | None:
+    def resolve(self, expr: Expression) -> DataType | None:
         return self._get(expr)
 
     def _get(self, expr: Expression) -> DataType | None:

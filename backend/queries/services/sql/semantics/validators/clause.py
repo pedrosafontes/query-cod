@@ -13,7 +13,7 @@ from sqlglot.expressions import (
 from ..context import ValidationContext
 from ..errors import OrderByExpressionError, OrderByPositionError
 from ..scope import Scope
-from ..type_utils import assert_boolean, assert_integer_literal, assert_orderable
+from ..type_utils import assert_boolean, assert_integer_literal, assert_orderable, is_aggregate
 from ..types import ResultSchema
 from .expression import ExpressionValidator
 from .join import JoinValidator
@@ -71,7 +71,7 @@ class ClauseValidator:
     def validate_projection(self, select: Select) -> None:
         for expr in select.expressions:
             t = (
-                self.scope.group_by.type_of(
+                self.scope.group_by.resolve(
                     expr
                 )  # Expression has already been validated if it is in group by
                 if self.scope.group_by.contains(expr)
@@ -103,9 +103,14 @@ class ClauseValidator:
                 continue
 
             if self.scope.is_grouped:
-                t = self.scope.projections.resolve(node)
+                t: DataType | None = (
+                    self.scope.projections.resolve(node)
+                    or self.scope.group_by.resolve(node)
+                    or (is_aggregate(node) and self.expr_validator.validate(node))
+                    or None
+                )
                 if t is None:
                     raise OrderByExpressionError(node)
             else:
-                t = self.expr_validator.validate_basic(node, ValidationContext(in_order_by=True))
+                t = self.scope.projections.resolve(node) or self.expr_validator.validate_basic(node)
             assert_orderable(t)

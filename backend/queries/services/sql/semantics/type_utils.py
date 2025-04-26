@@ -1,6 +1,7 @@
 import re
 
 from ra_sql_visualisation.types import DataType
+from sqlglot import Expression
 from sqlglot.expressions import Avg, Count, Literal, Max, Min, Subquery, Sum
 
 from .errors import (
@@ -45,8 +46,12 @@ def assert_scalar_subquery(subquery: Subquery) -> None:
     [scalar] = expressions
     group = select.args.get('group')
 
-    if not isinstance(scalar, Count | Sum | Avg | Min | Max) or group:
+    if not is_aggregate(scalar) or group:
         raise ScalarSubqueryError()
+
+
+def is_aggregate(expr: Expression) -> bool:
+    return isinstance(expr, Count | Sum | Avg | Min | Max)
 
 
 def infer_literal_type(node: Literal) -> DataType:
