@@ -106,7 +106,7 @@ class ClauseValidator:
                 t: DataType | None = (
                     self.scope.projections.resolve(node)
                     or self.scope.group_by.resolve(node)
-                    or (is_aggregate(node) and self.expr_validator.validate(node))
+                    or (is_aggregate(node) and self.expr_validator.validate_basic(node))
                     or None
                 )
                 if t is None:
