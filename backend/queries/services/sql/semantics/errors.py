@@ -161,9 +161,3 @@ class ColumnTypeMismatchError(SQLSemanticError):
 
     def __str__(self) -> str:
         return f'Set operands have incompatible column types at position {self.index + 1}: {self.left_type.name} vs {self.right_type.name}.'
-
-
-@dataclass
-class DerivedTableMultipleSchemasError(SQLSemanticError):
-    def __str__(self) -> str:
-        return 'Derived table must return a single table schema.'

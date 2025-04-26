@@ -3,7 +3,7 @@ from sqlglot.expressions import Subquery, Table
 
 from ..errors import (
     DerivedColumnAliasRequiredError,
-    DerivedTableMultipleSchemasError,
+    DuplicateAliasError,
     MissingDerivedTableAliasError,
     UndefinedTableError,
 )
@@ -22,27 +22,37 @@ class TableValidator:
     def validate(self, table: Table | Subquery) -> tuple[str, ProjectionSchema]:
         match table:
             case Table():
-                name = table.name
-                alias = table.alias_or_name
-                table_schema = self.schema.get(name)
-                if table_schema is None:
-                    raise UndefinedTableError(name)
-                return alias, table_schema
+                return self._validate_table(table)
 
             case Subquery():
-                alias = table.alias_or_name
-                # Derived tables must have an alias
-                if not alias:
-                    raise MissingDerivedTableAliasError()
-                sub_select = table.this
-                for expr in sub_select.expressions:
-                    # Derived columns must have an alias
-                    if not expr.alias_or_name:
-                        raise DerivedColumnAliasRequiredError(expr)
-                try:
-                    sub_schema = self.query_validator.validate(sub_select, self.scope).schema
-                    [(_, columns)] = sub_schema.items()
-                except ValueError:  # Unpack error
-                    # Derived tables must return a single table
-                    raise DerivedTableMultipleSchemasError() from None
-                return alias, columns
+                return self._validate_derived_table(table)
+
+    def _validate_table(self, table: Table) -> tuple[str, ProjectionSchema]:
+        name = table.name
+        alias = table.alias_or_name
+        table_schema = self.schema.get(name)
+        if table_schema is None:
+            raise UndefinedTableError(name)
+        return alias, table_schema
+
+    def _validate_derived_table(self, subquery: Subquery) -> tuple[str, ProjectionSchema]:
+        # Derived tables must have an alias
+        alias = subquery.alias_or_name
+        if not alias:
+            raise MissingDerivedTableAliasError()
+
+        # Derived columns must have a unique alias
+        query = subquery.this
+        col_aliases = []
+        for expr in query.expressions:
+            col_alias = expr.alias_or_name
+
+            if not col_alias:
+                raise DerivedColumnAliasRequiredError(expr)
+
+            if col_alias in col_aliases:
+                raise DuplicateAliasError(expr)
+
+            col_aliases.append(col_alias)
+
+        return alias, self.query_validator.validate(query, self.scope).to_derived_table_schema()
