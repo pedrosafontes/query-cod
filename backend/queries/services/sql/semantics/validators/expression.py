@@ -85,21 +85,7 @@ class ExpressionValidator:
                 if isinstance(node.this, Star):
                     return self._validate_star_expansion(node.table)
                 else:
-                    t = self._validate_column(node, context)
-
-                    if (
-                        # Scenario: Grouped HAVING, SELECT, or ORDER BY
-                        (self.scope.is_grouped and not context.in_group_by)
-                        # Condition: Column must be in the GROUP BY clause or appear in an aggregate function
-                        and not (self.scope.group_by.contains(node) or context.in_aggregate)
-                    ) or (
-                        # Scenario: Grouped HAVING
-                        (not self.scope.is_grouped and context.in_having)
-                        # Condition: Column must be in an aggregate function
-                        and not context.in_aggregate
-                    ):
-                        raise NonGroupedColumnError([node.name])
-                    return t
+                    return self._validate_column(node, context)
 
             case Alias():
                 return self.validate(node.this, context)
@@ -122,7 +108,7 @@ class ExpressionValidator:
                 rt = self.validate_basic(node.right, context)
                 assert_numeric(lt)
                 assert_numeric(rt)
-                return DataType.NUMERIC
+                return DataType.dominant([lt, rt])
 
             case Not():
                 assert_boolean(self.validate_basic(node.this, context))
@@ -153,8 +139,8 @@ class ExpressionValidator:
                 sub_schema = self.query_validator.validate(node.this, self.scope).schema
                 try:
                     assert_scalar_subquery(node)
-                    [(_, columns)] = sub_schema.items()
-                    [(_, t)] = columns.items()
+                    [(_, columns)] = sub_schema.items()  # Single table
+                    [(_, t)] = columns.items()  # Single column
                 except ValueError:  # Unpack error
                     # Subquery must return a single table with a single column
                     raise ScalarSubqueryError() from None
@@ -192,16 +178,25 @@ class ExpressionValidator:
             case _:
                 raise NotImplementedError(f'Expression {type(node)} not supported')
 
-    # ──────── Column Validations ────────
-
     def _validate_column(self, column: Column, context: ValidationContext) -> DataType:
-        t: DataType | None = None
-        if t := self.scope.tables.resolve_column(column):
-            return t
-        else:
+        t = self.scope.tables.resolve_column(column)
+
+        if t is None:
             raise UndefinedColumnError(column.name, column.table)
 
-    # ──────── Aggregate Validations ────────
+        if (
+            # Scenario: Grouped HAVING, SELECT, or ORDER BY
+            (self.scope.is_grouped and not context.in_group_by)
+            # Condition: Column must be in the GROUP BY clause or appear in an aggregate function
+            and not (self.scope.group_by.contains(column) or context.in_aggregate)
+        ) or (
+            # Scenario: Ungrouped HAVING
+            (not self.scope.is_grouped and context.in_having)
+            # Condition: Column must be in an aggregate function
+            and not context.in_aggregate
+        ):
+            raise NonGroupedColumnError([column.name])
+        return t
 
     def _validate_aggregate_context(self, context: ValidationContext) -> None:
         # Cannot be used in the WHERE clause
@@ -211,13 +206,11 @@ class ExpressionValidator:
         if context.in_aggregate:
             raise NestedAggregateError()
 
-    # ──────── Quantified Predicate Validations ────────
-
     def _validate_quantified_predicate_query(self, query: Expression) -> DataType:
         schema = self.query_validator.validate(query, self.scope).schema
         try:
-            [(_, columns)] = schema.items()
-            [(_, rt)] = columns.items()
+            [(_, columns)] = schema.items()  # Single table
+            [(_, rt)] = columns.items()  # Single column
         except ValueError:  # Unpack error
             raise ColumnCountMismatchError(1, len(columns)) from None
         return rt
