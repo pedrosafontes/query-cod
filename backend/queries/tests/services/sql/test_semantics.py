@@ -1,5 +1,5 @@
 import pytest
-from databases.types import DataType, Schema
+from databases.types import Schema
 from queries.services.sql.parser import parse_sql
 from queries.services.sql.semantics import SQLSemanticAnalyzer
 from queries.services.sql.semantics.errors import (
@@ -23,6 +23,7 @@ from queries.services.sql.semantics.errors import (
     UndefinedTableError,
     UnorderableTypeError,
 )
+from ra_sql_visualisation.types import DataType
 
 
 @pytest.fixture
@@ -393,8 +394,8 @@ class TestComplexQueries:
             """,
             # Complex GROUP BY with multiple aggregate functions
             """
-            SELECT c.category_name, 
-                   COUNT(p.product_id) AS count, 
+            SELECT c.category_name,
+                   COUNT(p.product_id) AS count,
                    SUM(p.price) AS total_price,
                    AVG(p.price) AS avg_price,
                    MAX(p.price) AS max_price,
@@ -407,8 +408,7 @@ class TestComplexQueries:
         ],
     )
     def test_valid_complex_queries(self, query: str, schema: Schema) -> None:
-        select = parse_sql(query)
-        SQLSemanticAnalyzer(schema).validate(select)
+        assert_valid(query, schema)
 
 
 class TestSetOperations:
@@ -494,10 +494,10 @@ class TestQuantifiedSubqueries:
             # ────── Complex ──────
             # Nested
             """
-            SELECT * FROM products 
+            SELECT * FROM products
             WHERE EXISTS (
-            SELECT 1 FROM orders 
-            WHERE orders.product_id = products.product_id 
+            SELECT 1 FROM orders
+            WHERE orders.product_id = products.product_id
             AND quantity > ANY (
                 SELECT quantity FROM orders WHERE customer_id = '123'
             )

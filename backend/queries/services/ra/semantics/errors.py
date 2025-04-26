@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from databases.types import DataType
+from ra_sql_visualisation.types import DataType
 
 from ..parser.ast import AggregationFunction, ASTNode, Attribute, SetOperator
 from .types import TypedAttribute

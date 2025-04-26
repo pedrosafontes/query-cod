@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from databases.types import DataType, TableSchema
+from databases.types import TableSchema
+from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import Column
 
 from ..errors import (
@@ -10,7 +11,7 @@ from ..errors import (
     DuplicateAliasError,
     UndefinedTableError,
 )
-from ..types import ColumnTypes, ResultSchema
+from ..types import ResultSchema
 
 
 class TablesScope:
@@ -60,9 +61,15 @@ class TablesScope:
             raise UndefinedTableError(table)
         return {table: self._table_schemas[table]}
 
-    def snapshot_columns(self) -> ColumnTypes:
-        column_types = defaultdict(list)
+    def get_columns(self) -> TableSchema:
+        # Get all column types from all tables
+        all_column_types = defaultdict(list)
         for schema in self._table_schemas.values():
             for col, t in schema.items():
-                column_types[col].append(t)
+                all_column_types[col].append(t)
+        # Get the dominant type for each column
+        column_types = {}
+        for col, types in all_column_types.items():
+            column_types[col] = DataType.dominant(types)
+
         return column_types

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from databases.types import DataType
+from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import Expression
 
 

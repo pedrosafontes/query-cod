@@ -1,5 +1,5 @@
 import pytest
-from databases.types import DataType, Schema
+from databases.types import Schema
 from queries.services.ra.parser.ast import (
     Aggregation,
     AggregationFunction,
@@ -33,6 +33,7 @@ from queries.services.ra.semantics.errors import (
     UndefinedRelationError,
     UnionCompatibilityError,
 )
+from ra_sql_visualisation.types import DataType
 
 
 @pytest.fixture

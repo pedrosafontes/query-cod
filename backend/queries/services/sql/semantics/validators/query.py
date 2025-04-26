@@ -38,7 +38,7 @@ class QueryValidator:
         scope = Scope(outer_scope)
         validator = ClauseValidator(self.schema, scope)
 
-        validator.populate_from(select)
+        validator.process_from(select)
         validator.validate_joins(select)
         validator.validate_where(select)
         validator.validate_group_by(select)

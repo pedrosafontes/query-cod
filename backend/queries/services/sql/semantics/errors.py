@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from databases.types import DataType
+from ra_sql_visualisation.types import DataType
 from sqlglot import Expression
 
 

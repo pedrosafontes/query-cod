@@ -1,6 +1,7 @@
 from typing import cast
 
-from databases.types import DataType, Schema
+from databases.types import Schema
+from ra_sql_visualisation.types import DataType
 from sqlglot import Expression
 from sqlglot.expressions import (
     EQ,

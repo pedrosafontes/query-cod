@@ -1,6 +1,7 @@
 from collections.abc import Callable
 
-from databases.types import DataType, Schema
+from databases.types import Schema
+from ra_sql_visualisation.types import DataType
 
 from ..parser.ast import (
     Attribute,

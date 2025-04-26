@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from databases.types import DataType
+from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import Column, Expression
 
 from ..errors import (

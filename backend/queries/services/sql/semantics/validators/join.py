@@ -9,7 +9,6 @@ from ..errors import (
 )
 from ..scope import Scope
 from ..type_utils import assert_boolean, assert_comparable
-from ..types import ColumnTypes
 from .expression import ExpressionValidator
 from .table import TableValidator
 
@@ -20,19 +19,17 @@ class JoinValidator:
         schema: Schema,
         scope: Scope,
         expr_validator: ExpressionValidator,
+        table_validator: TableValidator,
     ) -> None:
-        from .query import QueryValidator
-
         self.schema = schema
         self.scope = scope
         self.expr_validator = expr_validator
-        self.query_validator = QueryValidator(schema)
-        self.table_validator = TableValidator(schema, scope)
+        self.table_validator = table_validator
 
     def validate_join(self, join: Join) -> None:
-        left_cols = self.scope.tables.snapshot_columns()
-        self.table_validator.validate(join.this)
-        right_cols = self.schema[join.this.name]
+        left_cols = self.scope.tables.get_columns()
+        alias, right_cols = self.table_validator.validate(join.this)
+        self.scope.tables.add(alias, right_cols)
 
         kind = join.method or join.args.get('kind', 'INNER')
         using = join.args.get('using')
@@ -53,22 +50,20 @@ class JoinValidator:
             assert_boolean(self.expr_validator.validate_basic(condition))
 
     def _validate_using(
-        self, using: list[Identifier], left: ColumnTypes, right: TableSchema
+        self, using: list[Identifier], left: TableSchema, right: TableSchema
     ) -> None:
         # All columns in USING must be present in both tables
         for ident in using:
             col = ident.name
             if col not in left:
                 raise UndefinedColumnError(col)
-            for ltype in left[col]:
-                assert_comparable(ltype, right[col])
+            assert_comparable(left[col], right[col])
 
-    def _validate_natural_join(self, left: ColumnTypes, right: TableSchema) -> None:
+    def _validate_natural_join(self, left: TableSchema, right: TableSchema) -> None:
         shared = set(left) & set(right)
         # NATURAL JOIN must have at least one common column
         if not shared:
             raise NoCommonColumnsError()
         # All common columns must be comparable
         for col in shared:
-            for ltype in left[col]:
-                assert_comparable(ltype, right[col])
+            assert_comparable(left[col], right[col])

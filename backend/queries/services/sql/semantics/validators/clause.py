@@ -1,6 +1,7 @@
 from typing import cast
 
-from databases.types import DataType, Schema
+from databases.types import Schema
+from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import (
     Column,
     From,
@@ -24,15 +25,18 @@ class ClauseValidator:
         self.schema = schema
         self.scope = scope
         self.expr_validator = ExpressionValidator(schema, scope)
-        self.join_validator = JoinValidator(schema, scope, self.expr_validator)
         self.table_validator = TableValidator(schema, scope)
+        self.join_validator = JoinValidator(
+            schema, scope, self.expr_validator, self.table_validator
+        )
 
-    def populate_from(self, select: Select) -> None:
+    def process_from(self, select: Select) -> None:
         from_clause = select.args.get('from')
         if from_clause:
             if not isinstance(from_clause, From):
                 raise NotImplementedError(f'Unsupported FROM clause: {type(from_clause)}')
-            self.table_validator.validate(from_clause.this)
+            alias, schema = self.table_validator.validate(from_clause.this)
+            self.scope.tables.add(alias, schema)
 
     def validate_joins(self, select: Select) -> None:
         for join in select.args.get('joins', []):

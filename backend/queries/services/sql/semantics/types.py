@@ -1,8 +1,7 @@
-from databases.types import DataType
+from ra_sql_visualisation.types import DataType
 
 
 TableAlias = str
 ColumnName = str
 ProjectionSchema = dict[ColumnName, DataType]
 ResultSchema = dict[TableAlias | None, ProjectionSchema]
-ColumnTypes = dict[ColumnName, list[DataType]]

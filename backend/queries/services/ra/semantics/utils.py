@@ -1,4 +1,4 @@
-from databases.types import DataType
+from ra_sql_visualisation.types import DataType
 
 from ..parser.ast import AggregationFunction, ComparisonValue
 from .types import TypedAttribute

@@ -8,6 +8,7 @@ from ..errors import (
     UndefinedTableError,
 )
 from ..scope import Scope
+from ..types import ProjectionSchema
 
 
 class TableValidator:
@@ -18,7 +19,7 @@ class TableValidator:
         self.scope = scope
         self.query_validator = QueryValidator(schema)
 
-    def validate(self, table: Table | Subquery) -> None:
+    def validate(self, table: Table | Subquery) -> tuple[str, ProjectionSchema]:
         match table:
             case Table():
                 name = table.name
@@ -26,7 +27,7 @@ class TableValidator:
                 table_schema = self.schema.get(name)
                 if table_schema is None:
                     raise UndefinedTableError(name)
-                self.scope.tables.add(alias, table_schema)
+                return alias, table_schema
 
             case Subquery():
                 alias = table.alias_or_name
@@ -44,4 +45,4 @@ class TableValidator:
                 except ValueError:  # Unpack error
                     # Derived tables must return a single table
                     raise DerivedTableMultipleSchemasError() from None
-                self.scope.tables.add(alias, columns)
+                return alias, columns

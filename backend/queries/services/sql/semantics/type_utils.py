@@ -1,6 +1,6 @@
 import re
 
-from databases.types import DataType
+from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import Avg, Count, Literal, Max, Min, Subquery, Sum
 
 from .errors import (
