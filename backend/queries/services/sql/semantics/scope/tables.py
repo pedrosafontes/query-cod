@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 
 from databases.types import TableSchema
-from queries.services.types import ResultSchema, merge_common_column
+from queries.services.types import RelationalSchema, merge_common_column
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import Column
 
@@ -17,7 +17,7 @@ from ..errors import (
 class TablesScope:
     def __init__(self, parent: TablesScope | None = None) -> None:
         self.parent = parent
-        self._table_schemas: ResultSchema = defaultdict(dict)
+        self._table_schemas: RelationalSchema = defaultdict(dict)
 
     def add(self, alias: str, schema: TableSchema) -> None:
         # Check for duplicate alias
@@ -56,10 +56,10 @@ class TablesScope:
 
     # ────── Utilities ──────
 
-    def get_schema(self) -> ResultSchema:
+    def get_schema(self) -> RelationalSchema:
         return self._table_schemas
 
-    def get_table_schema(self, table: str) -> ResultSchema:
+    def get_table_schema(self, table: str) -> RelationalSchema:
         if table not in self._table_schemas:
             raise UndefinedTableError(table)
         return {table: self._table_schemas[table]}

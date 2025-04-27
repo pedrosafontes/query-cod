@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from queries.services.types import ProjectionSchema, ResultSchema
+from queries.services.types import AttributeSchema, RelationalSchema
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import Column, Expression
 
@@ -13,7 +13,7 @@ from ..errors import (
 
 class ProjectionsScope:
     def __init__(self) -> None:
-        self.schema: ResultSchema = defaultdict(dict)  # Track projections by alias
+        self.schema: RelationalSchema = defaultdict(dict)  # Track projections by alias
         self.expressions: dict[Expression, DataType] = {}  # Track projections by expression
 
     @property
@@ -52,8 +52,8 @@ class ProjectionsScope:
         matches = [schema[name] for schema in self.schema.values() if name in schema]
         return matches[0] if matches else None
 
-    def to_derived_table_schema(self) -> ProjectionSchema:
-        derived_table_schema: ProjectionSchema = {}
+    def to_derived_table_schema(self) -> AttributeSchema:
+        derived_table_schema: AttributeSchema = {}
         for table_schema in self.schema.values():
             for name, t in table_schema.items():
                 derived_table_schema[name] = t

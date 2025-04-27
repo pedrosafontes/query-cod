@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from queries.services.types import ProjectionSchema
+from queries.services.types import AttributeSchema
 from ra_sql_visualisation.types import DataType
 
 from ..parser.ast import AggregationFunction, ASTNode, Attribute, SetOperator
@@ -101,8 +101,8 @@ class JoinAttributeTypeMismatchError(RATypeError):
 
 @dataclass
 class DivisionSchemaMismatchError(RATypeError):
-    dividend_attrs: ProjectionSchema
-    divisor_attrs: ProjectionSchema
+    dividend_attrs: AttributeSchema
+    divisor_attrs: AttributeSchema
 
     def _message(self) -> str:
         dividend_attrs = f'({', '.join(attr for attr in self.dividend_attrs.keys())})'

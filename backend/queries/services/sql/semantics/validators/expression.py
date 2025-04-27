@@ -1,7 +1,7 @@
 from typing import cast
 
 from databases.types import Schema
-from queries.services.types import ResultSchema
+from queries.services.types import RelationalSchema
 from ra_sql_visualisation.types import DataType
 from sqlglot import Expression
 from sqlglot.expressions import (
@@ -74,7 +74,7 @@ class ExpressionValidator:
         self,
         node: Expression,
         context: ValidationContext | None = None,
-    ) -> DataType | ResultSchema:
+    ) -> DataType | RelationalSchema:
         if context is None:
             context = ValidationContext()
         match node:
@@ -234,7 +234,7 @@ class ExpressionValidator:
 
     # ──────── Star Expansion Validations ────────
 
-    def _validate_star_expansion(self, table: str | None = None) -> ResultSchema:
+    def _validate_star_expansion(self, table: str | None = None) -> RelationalSchema:
         schema = (
             self.scope.tables.get_table_schema(table) if table else self.scope.tables.get_schema()
         )

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from queries.services.types import ResultSchema
+from queries.services.types import RelationalSchema
 from ra_sql_visualisation.types import DataType
 
 
@@ -10,4 +10,7 @@ class TypedAttribute:
     data_type: DataType
 
 
-Output = tuple[ResultSchema, list[TypedAttribute]]
+@dataclass
+class RelationOutput:
+    schema: RelationalSchema
+    attrs: list[TypedAttribute]

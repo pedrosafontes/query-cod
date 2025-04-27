@@ -2,12 +2,12 @@ from databases.types import TableSchema
 from ra_sql_visualisation.types import DataType
 
 
-TableAlias = str
-ProjectionSchema = TableSchema
-ResultSchema = dict[TableAlias | None, ProjectionSchema]
+RelationName = str
+AttributeSchema = TableSchema
+RelationalSchema = dict[RelationName | None, AttributeSchema]
 
 
-def merge_common_column(result_schema: ResultSchema, col: str) -> None:
+def merge_common_column(result_schema: RelationalSchema, col: str) -> None:
     types = []
     for schema in result_schema.values():
         if col in schema:

@@ -1,5 +1,5 @@
 from databases.types import Schema
-from queries.services.types import ProjectionSchema
+from queries.services.types import AttributeSchema
 from sqlglot.expressions import Subquery, Table
 
 from ..errors import (
@@ -19,7 +19,7 @@ class TableValidator:
         self.scope = scope
         self.query_validator = QueryValidator(schema)
 
-    def validate(self, table: Table | Subquery) -> tuple[str, ProjectionSchema]:
+    def validate(self, table: Table | Subquery) -> tuple[str, AttributeSchema]:
         match table:
             case Table():
                 return self._validate_table(table)
@@ -27,7 +27,7 @@ class TableValidator:
             case Subquery():
                 return self._validate_derived_table(table)
 
-    def _validate_table(self, table: Table) -> tuple[str, ProjectionSchema]:
+    def _validate_table(self, table: Table) -> tuple[str, AttributeSchema]:
         name = table.name
         alias = table.alias_or_name
         table_schema = self.schema.get(name)
@@ -35,7 +35,7 @@ class TableValidator:
             raise UndefinedTableError(name)
         return alias, table_schema
 
-    def _validate_derived_table(self, subquery: Subquery) -> tuple[str, ProjectionSchema]:
+    def _validate_derived_table(self, subquery: Subquery) -> tuple[str, AttributeSchema]:
         # Derived tables must have an alias
         alias = subquery.alias_or_name
         if not alias:

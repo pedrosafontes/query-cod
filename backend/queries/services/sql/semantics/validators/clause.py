@@ -1,7 +1,7 @@
 from typing import cast
 
 from databases.types import Schema
-from queries.services.types import ResultSchema
+from queries.services.types import RelationalSchema
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import (
     Column,
@@ -82,7 +82,7 @@ class ClauseValidator:
                 self.scope.projections.add(expr, t)
             else:
                 # Projection contains star expansion
-                for table, columns in cast(ResultSchema, t).items():
+                for table, columns in cast(RelationalSchema, t).items():
                     for col, col_type in columns.items():
                         self.scope.projections.add(Column(this=col, table=table), col_type)
 
