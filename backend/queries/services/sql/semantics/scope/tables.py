@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from databases.types import TableSchema
+from databases.types import ColumnSchema
 from queries.services.types import RelationalSchema, merge_common_column
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import Column
@@ -19,7 +19,7 @@ class TablesScope:
         self.parent = parent
         self._table_schemas: RelationalSchema = defaultdict(dict)
 
-    def add(self, alias: str, schema: TableSchema) -> None:
+    def add(self, alias: str, schema: ColumnSchema) -> None:
         # Check for duplicate alias
         if alias in self._table_schemas:
             raise DuplicateAliasError(alias)
@@ -64,7 +64,7 @@ class TablesScope:
             raise UndefinedTableError(table)
         return {table: self._table_schemas[table]}
 
-    def get_columns(self) -> TableSchema:
+    def get_columns(self) -> ColumnSchema:
         # Get all column types from all tables
         all_column_types = defaultdict(list)
         for schema in self._table_schemas.values():

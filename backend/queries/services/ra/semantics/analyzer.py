@@ -47,7 +47,9 @@ class RASemanticAnalyzer:
         self._validate(expr)
 
     def _validate(self, expr: RAExpression) -> RelationOutput:  # noqa: N802
-        method: Callable[[RAExpression], RelationOutput] = getattr(self, f'_validate_{type(expr).__name__}')
+        method: Callable[[RAExpression], RelationOutput] = getattr(
+            self, f'_validate_{type(expr).__name__}'
+        )
         return method(expr)
 
     def _validate_Relation(self, rel: Relation) -> RelationOutput:  # noqa: N802
@@ -130,7 +132,9 @@ class RASemanticAnalyzer:
                 raise DivisionTypeMismatchError(div, name, dividend_schema[name], t)
 
         output_attrs = [attr for attr in dividend.attrs if attr not in divisor.attrs]
-        output_schema: RelationalSchema = {None: {attr.name: attr.data_type for attr in output_attrs}}
+        output_schema: RelationalSchema = {
+            None: {attr.name: attr.data_type for attr in output_attrs}
+        }
         return RelationOutput(output_schema, output_attrs)
 
     def _validate_GroupedAggregation(self, agg: GroupedAggregation) -> RelationOutput:  # noqa: N802
@@ -235,7 +239,10 @@ class RASemanticAnalyzer:
         return {None: flat}
 
     def _merge_schemas(
-        self, operator: Join | ThetaJoin | SetOperation, left: RelationalSchema, right: RelationalSchema
+        self,
+        operator: Join | ThetaJoin | SetOperation,
+        left: RelationalSchema,
+        right: RelationalSchema,
     ) -> RelationalSchema:
         merged: RelationalSchema = dict(left)
         for rel, attrs in right.items():

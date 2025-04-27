@@ -10,5 +10,5 @@ class QueryExecutionResult(TypedDict):
 
 TableName = str
 ColumnName = str
-TableSchema = dict[ColumnName, DataType]
-Schema = dict[TableName, TableSchema]
+ColumnSchema = dict[ColumnName, DataType]
+Schema = dict[TableName, ColumnSchema]

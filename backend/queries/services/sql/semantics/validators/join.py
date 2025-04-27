@@ -1,4 +1,4 @@
-from databases.types import Schema, TableSchema
+from databases.types import ColumnSchema, Schema
 from sqlglot.expressions import Identifier, Join
 
 from ..errors import (
@@ -50,7 +50,7 @@ class JoinValidator:
             assert_boolean(self.expr_validator.validate_basic(condition))
 
     def _validate_using(
-        self, using: list[Identifier], left: TableSchema, right: TableSchema
+        self, using: list[Identifier], left: ColumnSchema, right: ColumnSchema
     ) -> None:
         # All columns in USING must be present in both tables
         for ident in using:
@@ -60,7 +60,7 @@ class JoinValidator:
             assert_comparable(left[col], right[col])
             self.scope.tables.merge_common_column(col)
 
-    def _validate_natural_join(self, left: TableSchema, right: TableSchema) -> None:
+    def _validate_natural_join(self, left: ColumnSchema, right: ColumnSchema) -> None:
         shared = set(left) & set(right)
         # NATURAL JOIN must have at least one common column
         if not shared:

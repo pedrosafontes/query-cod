@@ -1,9 +1,9 @@
-from databases.types import TableSchema
+from databases.types import ColumnSchema
 from ra_sql_visualisation.types import DataType
 
 
 RelationName = str
-AttributeSchema = TableSchema
+AttributeSchema = ColumnSchema
 RelationalSchema = dict[RelationName | None, AttributeSchema]
 
 
