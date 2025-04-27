@@ -51,6 +51,13 @@ class TablesScope:
         [(_, t)] = matches
         return t
 
+    def merge_common_column(self, col: str) -> None:
+        types = []
+        for schema in self._table_schemas.values():
+            if col in schema:
+                types.append(schema.pop(col))
+        self._table_schemas[None][col] = DataType.dominant(types)
+
     # ────── Utilities ──────
 
     def get_schema(self) -> ResultSchema:

@@ -58,6 +58,7 @@ class JoinValidator:
             if col not in left:
                 raise UndefinedColumnError(col)
             assert_comparable(left[col], right[col])
+            self.scope.tables.merge_common_column(col)
 
     def _validate_natural_join(self, left: TableSchema, right: TableSchema) -> None:
         shared = set(left) & set(right)
@@ -67,3 +68,4 @@ class JoinValidator:
         # All common columns must be comparable
         for col in shared:
             assert_comparable(left[col], right[col])
+            self.scope.tables.merge_common_column(col)

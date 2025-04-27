@@ -152,6 +152,8 @@ class TestJoins:
             # USING clause and NATURAL JOINs
             'SELECT * FROM products JOIN orders USING (product_id)',
             'SELECT * FROM products NATURAL JOIN orders',
+            'SELECT product_id FROM products JOIN orders USING (product_id)',
+            'SELECT product_id FROM products NATURAL JOIN orders',
             # Multiple JOINs
             'SELECT * FROM products p JOIN orders o ON p.product_id = o.product_id JOIN customers c ON o.customer_id = c.customer_id',
             # Self JOIN
