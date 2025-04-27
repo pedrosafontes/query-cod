@@ -121,10 +121,27 @@ class ExpressionValidator:
                     self.validate(arg, context.enter_aggregate())
                 return DataType.INTEGER
 
-            case Avg() | Sum():
+            case Sum():
                 self._validate_aggregate_context(context)
-                assert_numeric(self.validate_basic(node.this, context.enter_aggregate()))
-                return DataType.NUMERIC
+                t = self.validate_basic(node.this, context.enter_aggregate())
+                assert_numeric(t)
+
+                # Promotes small integers to integers to avoid overflow
+                if t == DataType.SMALLINT:
+                    return DataType.INTEGER
+                else:
+                    return t
+
+            case Avg():
+                self._validate_aggregate_context(context)
+                t = self.validate_basic(node.this, context.enter_aggregate())
+                assert_numeric(t)
+
+                # Promotes to allow fractional results
+                if t in {DataType.SMALLINT, DataType.INTEGER}:
+                    return DataType.NUMERIC
+                else:
+                    return t
 
             case Min() | Max():
                 self._validate_aggregate_context(context)
