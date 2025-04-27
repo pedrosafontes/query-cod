@@ -1,13 +1,11 @@
 from ra_sql_visualisation.types import DataType
 
 from ..parser.ast import AggregationFunction, ComparisonValue
-from .types import TypedAttribute
 
 
 def type_of_function(
-    func: AggregationFunction, attr: TypedAttribute
+    func: AggregationFunction, input_type: DataType
 ) -> tuple[list[DataType], DataType]:
-    input_type = attr.data_type
     match func:
         case AggregationFunction.COUNT:
             return ([input_type], DataType.INTEGER)

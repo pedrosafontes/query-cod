@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from queries.services.types import ResultSchema
 from ra_sql_visualisation.types import DataType
 
 
@@ -7,4 +8,6 @@ from ra_sql_visualisation.types import DataType
 class TypedAttribute:
     name: str
     data_type: DataType
-    relations: set[str] | None = None
+
+
+Output = tuple[ResultSchema, list[TypedAttribute]]

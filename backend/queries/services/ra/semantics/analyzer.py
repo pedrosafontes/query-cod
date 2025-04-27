@@ -1,9 +1,12 @@
+from collections import defaultdict
 from collections.abc import Callable
 
 from databases.types import Schema
+from queries.services.types import ProjectionSchema, ResultSchema, merge_common_column
 from ra_sql_visualisation.types import DataType
 
 from ..parser.ast import (
+    ASTNode,
     Attribute,
     BinaryBooleanExpression,
     BooleanExpression,
@@ -32,7 +35,7 @@ from .errors import (
     UndefinedRelationError,
     UnionCompatibilityError,
 )
-from .types import TypedAttribute
+from .types import Output, TypedAttribute
 from .utils import type_of_function, type_of_value
 
 
@@ -43,131 +46,152 @@ class RASemanticAnalyzer:
     def validate(self, expr: RAExpression) -> None:
         self._validate(expr)
 
-    def _validate(self, expr: RAExpression) -> list[TypedAttribute]:
-        method: Callable[[RAExpression], list[TypedAttribute]] = getattr(
-            self, f'_validate_{type(expr).__name__}'
-        )
+    def _validate(self, expr: RAExpression) -> Output:
+        method: Callable[[RAExpression], Output] = getattr(self, f'_validate_{type(expr).__name__}')
         return method(expr)
 
-    def _validate_Relation(self, rel: Relation) -> list[TypedAttribute]:  # noqa: N802
-        attrs = self.schema.get(rel.name)
-        if attrs is None:
+    def _validate_Relation(self, rel: Relation) -> Output:  # noqa: N802
+        if rel.name not in self.schema:
             raise UndefinedRelationError(rel, rel.name)
+        rel_schema = self.schema[rel.name]
+        return {rel.name: rel_schema}, [TypedAttribute(attr, t) for attr, t in rel_schema.items()]
 
-        return [
-            TypedAttribute(attr, relations={rel.name}, data_type=data_type)
-            for attr, data_type in attrs.items()
-        ]
+    def _validate_Projection(self, proj: Projection) -> Output:  # noqa: N802
+        input_schema, _ = self._validate(proj.expression)
+        output_schema: ResultSchema = defaultdict(ProjectionSchema)
+        output_attrs = []
 
-    def _validate_Projection(self, proj: Projection) -> list[TypedAttribute]:  # noqa: N802
-        input_attrs = self._validate(proj.expression)
-        return [self._resolve_attribute(attr, input_attrs) for attr in proj.attributes]
+        for attr in proj.attributes:
+            t = self._resolve_attribute(attr, input_schema)
+            output_schema[attr.relation][attr.name] = t
+            output_attrs.append(TypedAttribute(attr.name, t))
+        return output_schema, output_attrs
 
-    def _validate_Selection(self, sel: Selection) -> list[TypedAttribute]:  # noqa: N802
-        input_attrs = self._validate(sel.expression)
-        self._validate_condition(sel.condition, input_attrs)
-        return input_attrs
+    def _validate_Selection(self, sel: Selection) -> Output:  # noqa: N802
+        input_schema, input_attrs = self._validate(sel.expression)
+        self._validate_condition(sel.condition, input_schema)
+        return input_schema, input_attrs
 
-    def _validate_SetOperation(self, op: SetOperation) -> list[TypedAttribute]:  # noqa: N802
-        left_attrs = self._validate(op.left)
-        right_attrs = self._validate(op.right)
+    def _validate_SetOperation(self, op: SetOperation) -> Output:  # noqa: N802
+        left_schema, left_attrs = self._validate(op.left)
+        right_schema, right_attrs = self._validate(op.right)
 
         match op.operator:
             case SetOperator.CARTESIAN:
-                return left_attrs + right_attrs
+                return self._merge_schemas(op, left_schema, right_schema), left_attrs + right_attrs
             case _:
                 union_compatible = all(
-                    a.name == b.name and a.data_type == b.data_type
+                    a == b
                     for a, b in zip(
-                        sorted(left_attrs, key=lambda a: a.name),
-                        sorted(right_attrs, key=lambda a: a.name),
+                        left_attrs,
+                        right_attrs,
                         strict=False,
                     )
                 )
 
                 if not union_compatible:
                     raise UnionCompatibilityError(op, op.operator, left_attrs, right_attrs)
+                return self._flatten(op, left_schema), left_attrs
 
-                return [TypedAttribute(name=a.name, data_type=a.data_type) for a in left_attrs]
+    def _validate_Join(self, join: Join) -> Output:  # noqa: N802
+        left_schema, left_attrs = self._validate(join.left)
+        right_schema, right_attrs = self._validate(join.right)
+        merged_schema = self._merge_schemas(join, left_schema, right_schema)
 
-    def _validate_Join(self, join: Join) -> list[TypedAttribute]:  # noqa: N802
-        left_attrs = self._validate(join.left)
-        right_attrs = self._validate(join.right)
-        return self._merge_schemas(join, left_attrs, right_attrs)
+        left_names = [attr.name for attr in left_attrs]
+        right_names = [attr.name for attr in right_attrs]
+        shared_names = set(left_names) & set(right_names)
+        shared_attrs = []
+        # All common columns must be comparable
+        for name in shared_names:
+            left_type = self._resolve_attribute(Attribute(name), left_schema, source=join)
+            right_type = self._resolve_attribute(Attribute(name), right_schema, source=join)
+            if left_type != right_type:
+                raise JoinAttributeTypeMismatchError(join, name, left_type, right_type)
+            merge_common_column(merged_schema, name)
+            shared_attrs.append(TypedAttribute(name, DataType.dominant([left_type, right_type])))
 
-    def _validate_ThetaJoin(self, join: ThetaJoin) -> list[TypedAttribute]:  # noqa: N802
-        left_attrs = self._validate(join.left)
-        right_attrs = self._validate(join.right)
-        self._validate_condition(join.condition, left_attrs + right_attrs)
-        return self._merge_schemas(join, left_attrs, right_attrs)
+        left_attrs = [attr for attr in left_attrs if attr.name not in shared_names]
+        right_attrs = [attr for attr in right_attrs if attr.name not in shared_names]
+        return merged_schema, left_attrs + shared_attrs + right_attrs
 
-    def _validate_Division(self, div: Division) -> list[TypedAttribute]:  # noqa: N802
-        dividend_attrs = self._validate(div.dividend)
-        divisor_attrs = self._validate(div.divisor)
+    def _validate_ThetaJoin(self, join: ThetaJoin) -> Output:  # noqa: N802
+        left_schema, left_attrs = self._validate(join.left)
+        right_schema, right_attrs = self._validate(join.right)
+        join_schema = self._merge_schemas(join, left_schema, right_schema)
+        self._validate_condition(join.condition, join_schema)
+        return join_schema, left_attrs + right_attrs
 
-        dividend_lookup = {a.name: a for a in dividend_attrs}
+    def _validate_Division(self, div: Division) -> Output:  # noqa: N802
+        input_dividend_schema, dividend_attrs = self._validate(div.dividend)
+        input_divisor_schema, divisor_attrs = self._validate(div.divisor)
 
-        for attr in divisor_attrs:
-            match = dividend_lookup.get(attr.name)
-            if match is None:
-                raise DivisionSchemaMismatchError(div, dividend_attrs, divisor_attrs)
-            if match.data_type != attr.data_type:
-                raise DivisionTypeMismatchError(div, match, attr)
+        [(_, dividend_schema)] = self._flatten(div.dividend, input_dividend_schema).items()
+        [(_, divisor_schema)] = self._flatten(div.divisor, input_divisor_schema).items()
 
-        divisor_attr_names = {b.name for b in divisor_attrs}
-        return [a for a in dividend_attrs if a.name not in divisor_attr_names]
+        for name, t in divisor_schema.items():
+            if name not in dividend_schema:
+                raise DivisionSchemaMismatchError(div, dividend_schema, divisor_schema)
+            if dividend_schema[name] != t:
+                raise DivisionTypeMismatchError(div, name, dividend_schema[name], t)
 
-    def _validate_GroupedAggregation(self, agg: GroupedAggregation) -> list[TypedAttribute]:  # noqa: N802
-        input_attrs = self._validate(agg.expression)
+        output_attrs = [attr for attr in dividend_attrs if attr not in divisor_attrs]
+        output_schema = dict([(attr.name, attr.data_type) for attr in output_attrs])
+        return {None: output_schema}, output_attrs
+
+    def _validate_GroupedAggregation(self, agg: GroupedAggregation) -> Output:  # noqa: N802
+        input_schema, _ = self._validate(agg.expression)
+        output_schema: ResultSchema = defaultdict(ProjectionSchema)
+        output_attrs = []
 
         # Validate group by attributes
         for attr in agg.group_by:
-            self._resolve_attribute(attr, input_attrs)
+            t = self._resolve_attribute(attr, input_schema)
+            output_schema[attr.relation][attr.name] = t
+            output_attrs.append(TypedAttribute(attr.name, t))
 
         # Validate aggregation functions and their arguments
         for a in agg.aggregations:
-            input_attr = self._resolve_attribute(a.input, input_attrs)
-            input_types, _ = type_of_function(a.aggregation_function, input_attr)
+            t = self._resolve_attribute(a.input, input_schema)
+            input_types, output_type = type_of_function(a.aggregation_function, t)
 
-            if input_attr.data_type not in input_types:
+            if t not in input_types:
                 raise InvalidFunctionArgumentError(
                     source=agg,
                     function=a.aggregation_function,
                     expected=input_types,
-                    actual=input_attr.data_type,
+                    actual=t,
                 )
 
-        return self._compute_aggregation_schema(agg, input_attrs)
+            output_schema[None][a.output] = output_type
+            output_attrs.append(TypedAttribute(a.output, t))
 
-    def _validate_TopN(self, top: TopN) -> list[TypedAttribute]:  # noqa: N802
-        input_attrs = self._validate(top.expression)
-        self._resolve_attribute(top.attribute, input_attrs)
-        return input_attrs
+        return output_schema, output_attrs
 
-    def _validate_condition(self, cond: BooleanExpression, attrs: list[TypedAttribute]) -> None:
+    def _validate_TopN(self, top: TopN) -> Output:  # noqa: N802
+        input_schema, input_attrs = self._validate(top.expression)
+        self._resolve_attribute(top.attribute, input_schema)
+        return input_schema, input_attrs
+
+    def _validate_condition(self, cond: BooleanExpression, schema: ResultSchema) -> None:
         match cond:
             case Attribute():
-                typed_attr = self._resolve_attribute(cond, attrs)
-                if typed_attr.data_type != DataType.BOOLEAN:
-                    raise TypeMismatchError(cond, DataType.BOOLEAN, typed_attr.data_type)
-
+                t = self._resolve_attribute(cond, schema)
+                if t != DataType.BOOLEAN:
+                    raise TypeMismatchError(cond, DataType.BOOLEAN, t)
             case Comparison():
-                self._validate_comparison(cond, attrs)
-
+                self._validate_comparison(cond, schema)
             case BinaryBooleanExpression(left=left, right=right):
-                self._validate_condition(left, attrs)
-                self._validate_condition(right, attrs)
-
+                self._validate_condition(left, schema)
+                self._validate_condition(right, schema)
             case NotExpression(expression=inner):
-                self._validate_condition(inner, attrs)
+                self._validate_condition(inner, schema)
 
-    def _validate_comparison(self, cond: Comparison, attrs: list[TypedAttribute]) -> None:
-        types: list[DataType] = []
-
+    def _validate_comparison(self, cond: Comparison, schema: ResultSchema) -> None:
+        types = []
         for side in (cond.left, cond.right):
             if isinstance(side, Attribute):
-                typed_attr = self._resolve_attribute(side, attrs)
-                types.append(typed_attr.data_type)
+                types.append(self._resolve_attribute(side, schema))
             else:
                 types.append(type_of_value(side))
 
@@ -175,66 +199,63 @@ class RASemanticAnalyzer:
         if not left_type.is_comparable_with(right_type):
             raise TypeMismatchError(cond, left_type, right_type)
 
-    def _resolve_attribute(self, attr: Attribute, context: list[TypedAttribute]) -> TypedAttribute:
+    def _resolve_attribute(
+        self, attr: Attribute, schema: ResultSchema, source: ASTNode | None = None
+    ) -> DataType:
+        if source is None:
+            source = attr
+        if attr.relation:
+            return self._resolve_qualified(source, attr, schema)
+        else:
+            return self._resolve_unqualified(source, attr, schema)
+
+    def _resolve_qualified(
+        self, source: ASTNode, attr: Attribute, schema: ResultSchema
+    ) -> DataType:
+        if attr.relation not in schema:
+            raise UndefinedRelationError(source, str(attr.relation))
+        if attr.name not in schema[attr.relation]:
+            raise UndefinedAttributeError(source, attr)
+        return schema[attr.relation][attr.name]
+
+    def _resolve_unqualified(
+        self, source: ASTNode, attr: Attribute, schema: ResultSchema
+    ) -> DataType:
         matches = [
-            a
-            for a in context
-            if a.name == attr.name
-            and (attr.relation is None or (a.relations and attr.relation in a.relations))
+            (table, schema[attr.name]) for table, schema in schema.items() if attr.name in schema
         ]
         if not matches:
-            raise UndefinedAttributeError(attr, attr)
-        if len(matches) > 1 and attr.relation is None:
+            raise UndefinedAttributeError(source, attr)
+        # Check for ambiguous column
+        if len(matches) > 1:
             raise AmbiguousAttributeError(
-                attr, attr.name, [a.relations for a in matches if a.relations is not None]
+                source, attr.name, [table for table, _ in matches if table]
             )
-        return matches[0]
+        # There is only one match
+        [(_, t)] = matches
+        return t
+
+    def _flatten(self, node: ASTNode, schema: ResultSchema) -> ResultSchema:
+        flat: ProjectionSchema = {}
+        for attributes in schema.values():
+            for attr, t in attributes.items():
+                if attr in flat and not flat[attr] != t:
+                    raise TypeMismatchError(node, flat[attr], t)
+                elif attr not in flat:
+                    flat[attr] = t
+        return {None: flat}
 
     def _merge_schemas(
-        self,
-        join: Join | ThetaJoin,
-        left_attrs: list[TypedAttribute],
-        right_attrs: list[TypedAttribute],
-    ) -> list[TypedAttribute]:
-        merged: dict[str, TypedAttribute] = {}
-
-        for attr in left_attrs + right_attrs:
-            if attr.name in merged:
-                existing = merged[attr.name]
-                if attr.data_type != existing.data_type:
-                    raise JoinAttributeTypeMismatchError(join, existing, attr)
-
-                # Merge relation sets
-                existing.relations = (existing.relations or set()).union(attr.relations or set())
+        self, operator: Join | ThetaJoin | SetOperation, left: ResultSchema, right: ResultSchema
+    ) -> ResultSchema:
+        merged: ResultSchema = dict(left)
+        for rel, attrs in right.items():
+            if rel in merged:
+                for attr, t in attrs.items():
+                    if attr in merged[rel] and not merged[rel][attr] != t:
+                        raise JoinAttributeTypeMismatchError(operator, attr, merged[rel][attr], t)
+                    else:
+                        merged[rel][attr] = t
             else:
-                # Copy to avoid modifying the original
-                merged[attr.name] = TypedAttribute(
-                    name=attr.name,
-                    data_type=attr.data_type,
-                    relations=attr.relations,
-                )
-
-        return list(merged.values())
-
-    def _compute_aggregation_schema(
-        self, agg: GroupedAggregation, input_attrs: list[TypedAttribute]
-    ) -> list[TypedAttribute]:
-        group_by_attrs = list(
-            filter(
-                lambda a: any(a.name == b.name for b in agg.group_by),
-                input_attrs,
-            )
-        )
-
-        aggregation_attrs = []
-        for a in agg.aggregations:
-            input_attr = self._resolve_attribute(a.input, input_attrs)
-            _, output_type = type_of_function(a.aggregation_function, input_attr)
-            aggregation_attrs.append(
-                TypedAttribute(
-                    name=a.output,
-                    data_type=output_type,
-                )
-            )
-
-        return aggregation_attrs + group_by_attrs
+                merged[rel] = dict(attrs)
+        return merged

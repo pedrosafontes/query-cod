@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from queries.services.types import ProjectionSchema
 from ra_sql_visualisation.types import DataType
 
 from ..parser.ast import AggregationFunction, ASTNode, Attribute, SetOperator
@@ -45,11 +46,10 @@ class UndefinedAttributeError(RASemanticError):
 @dataclass
 class AmbiguousAttributeError(RASemanticError):
     attribute: str
-    relations: list[set[str]]
+    relations: list[str]
 
     def _message(self) -> str:
-        relation_list = ', '.join([f"[{', '.join(rel)}]" for rel in self.relations])
-        return f"Attribute '{self.attribute}' is ambiguous - it exists in multiple relations: {relation_list}"
+        return f"Attribute '{self.attribute}' is ambiguous - it exists in multiple relations: {', '.join(self.relations)}"
 
 
 class RATypeError(RASemanticError):
@@ -91,28 +91,30 @@ class TypeMismatchError(RATypeError):
 
 @dataclass
 class JoinAttributeTypeMismatchError(RATypeError):
-    left_attr: TypedAttribute
-    right_attr: TypedAttribute
+    name: str
+    left_t: DataType
+    right_t: DataType
 
     def _message(self) -> str:
-        return f"Type mismatch in join: attribute '{self.left_attr}' has type {self.left_attr.data_type}, but attribute '{self.right_attr}' has type {self.right_attr.data_type}"
+        return f"Type mismatch in join: attribute '{self.name}' has type {self.left_t} in left relation, but type {self.right_t} in right relation"
 
 
 @dataclass
 class DivisionSchemaMismatchError(RATypeError):
-    dividend_attrs: list[TypedAttribute]
-    divisor_attrs: list[TypedAttribute]
+    dividend_attrs: ProjectionSchema
+    divisor_attrs: ProjectionSchema
 
     def _message(self) -> str:
-        dividend_attrs = f'({', '.join(attr.name for attr in self.dividend_attrs)})'
-        divisor_attrs = f'({', '.join(attr.name for attr in self.divisor_attrs)})'
+        dividend_attrs = f'({', '.join(attr for attr in self.dividend_attrs.keys())})'
+        divisor_attrs = f'({', '.join(attr for attr in self.divisor_attrs.keys())})'
         return f'Division schema mismatch: divisor schema is not a subset of dividend schema. Dividend schema: {dividend_attrs}, Divisor schema: {divisor_attrs}'
 
 
 @dataclass
 class DivisionTypeMismatchError(RATypeError):
-    dividend_attr: TypedAttribute
-    divisor_attr: TypedAttribute
+    name: str
+    dividend_t: DataType
+    divisor_t: DataType
 
     def _message(self) -> str:
-        return f'Attributes of dividend and divisor must match in name and type. Attribute {self.dividend_attr.name} has type {self.dividend_attr.data_type} in dividend and type {self.divisor_attr.data_type} in divisor'
+        return f'Attributes of dividend and divisor must match in name and type. Attribute {self.name} has type {self.dividend_t} in dividend and type {self.divisor_t} in divisor'
