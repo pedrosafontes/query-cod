@@ -1,4 +1,5 @@
 from databases.types import Schema
+from queries.services.types import ProjectionSchema
 from sqlglot.expressions import Subquery, Table
 
 from ..errors import (
@@ -8,7 +9,6 @@ from ..errors import (
     UndefinedTableError,
 )
 from ..scope import Scope
-from ..types import ProjectionSchema
 
 
 class TableValidator:

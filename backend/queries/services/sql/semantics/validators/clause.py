@@ -1,6 +1,7 @@
 from typing import cast
 
 from databases.types import Schema
+from queries.services.types import ResultSchema
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import (
     Column,
@@ -14,7 +15,6 @@ from ..context import ValidationContext
 from ..errors import OrderByExpressionError, OrderByPositionError
 from ..scope import Scope
 from ..type_utils import assert_boolean, assert_integer_literal, assert_orderable, is_aggregate
-from ..types import ResultSchema
 from .expression import ExpressionValidator
 from .join import JoinValidator
 from .table import TableValidator

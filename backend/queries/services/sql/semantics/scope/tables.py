@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 
 from databases.types import TableSchema
+from queries.services.types import ResultSchema, merge_common_column
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import Column
 
@@ -11,7 +12,6 @@ from ..errors import (
     DuplicateAliasError,
     UndefinedTableError,
 )
-from ..types import ResultSchema
 
 
 class TablesScope:
@@ -52,11 +52,7 @@ class TablesScope:
         return t
 
     def merge_common_column(self, col: str) -> None:
-        types = []
-        for schema in self._table_schemas.values():
-            if col in schema:
-                types.append(schema.pop(col))
-        self._table_schemas[None][col] = DataType.dominant(types)
+        merge_common_column(self._table_schemas, col)
 
     # ────── Utilities ──────
 

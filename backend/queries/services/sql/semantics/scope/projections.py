@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from collections import defaultdict
 
+from queries.services.types import ProjectionSchema, ResultSchema
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import Column, Expression
 
 from ..errors import (
     DuplicateAliasError,
 )
-from ..types import ProjectionSchema, ResultSchema
 
 
 class ProjectionsScope:

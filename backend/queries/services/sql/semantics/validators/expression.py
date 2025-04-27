@@ -1,6 +1,7 @@
 from typing import cast
 
 from databases.types import Schema
+from queries.services.types import ResultSchema
 from ra_sql_visualisation.types import DataType
 from sqlglot import Expression
 from sqlglot.expressions import (
@@ -53,7 +54,6 @@ from ..type_utils import (
     assert_scalar_subquery,
     infer_literal_type,
 )
-from ..types import ResultSchema
 
 
 class ExpressionValidator:
