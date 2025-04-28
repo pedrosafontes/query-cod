@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from queries.services.types import AttributeSchema, RelationalSchema
+from queries.services.types import RelationalSchema
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import Column, Expression
 
@@ -51,10 +51,3 @@ class ProjectionsScope:
     def _resolve_unqualified(self, name: str) -> DataType | None:
         matches = [schema[name] for schema in self.schema.values() if name in schema]
         return matches[0] if matches else None
-
-    def to_derived_table_schema(self) -> AttributeSchema:
-        derived_table_schema: AttributeSchema = {}
-        for table_schema in self.schema.values():
-            for name, t in table_schema.items():
-                derived_table_schema[name] = t
-        return derived_table_schema

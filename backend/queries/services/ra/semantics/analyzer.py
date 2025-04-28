@@ -2,7 +2,7 @@ from collections import defaultdict
 from collections.abc import Callable
 
 from databases.types import Schema
-from queries.services.types import AttributeSchema, RelationalSchema, merge_common_column
+from queries.services.types import AttributeSchema, RelationalSchema, flatten, merge_common_column
 from ra_sql_visualisation.types import DataType
 
 from ..parser.ast import (
@@ -86,7 +86,7 @@ class RASemanticAnalyzer:
                 # Check if the schemas are union compatible
                 if not all(a == b for a, b in zip(left.attrs, right.attrs, strict=False)):
                     raise UnionCompatibilityError(op, op.operator, left.attrs, right.attrs)
-                flat_schema = self._flatten(op, left.schema)
+                flat_schema: RelationalSchema = {None: flatten(left.schema)}
                 return RelationOutput(flat_schema, left.attrs)
 
     def _validate_Join(self, join: Join) -> RelationOutput:  # noqa: N802
@@ -122,8 +122,8 @@ class RASemanticAnalyzer:
         dividend = self._validate(div.dividend)
         divisor = self._validate(div.divisor)
 
-        [(_, dividend_schema)] = self._flatten(div.dividend, dividend.schema).items()
-        [(_, divisor_schema)] = self._flatten(div.divisor, divisor.schema).items()
+        dividend_schema = flatten(dividend.schema)
+        divisor_schema = flatten(divisor.schema)
 
         for name, t in divisor_schema.items():
             if name not in dividend_schema:
@@ -228,15 +228,6 @@ class RASemanticAnalyzer:
         # There is only one match
         [(_, t)] = matches
         return t
-
-    def _flatten(self, source: ASTNode, schema: RelationalSchema) -> RelationalSchema:
-        flat: AttributeSchema = {}
-        for attributes in schema.values():
-            for attr, t in attributes.items():
-                if attr in flat and flat[attr] != t:
-                    raise TypeMismatchError(source, flat[attr], t)
-                flat[attr] = t
-        return {None: flat}
 
     def _merge_schemas(
         self,

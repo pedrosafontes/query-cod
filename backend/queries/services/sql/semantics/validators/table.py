@@ -1,5 +1,5 @@
 from databases.types import Schema
-from queries.services.types import AttributeSchema
+from queries.services.types import AttributeSchema, flatten
 from sqlglot.expressions import Subquery, Table
 
 from ..errors import (
@@ -55,4 +55,4 @@ class TableValidator:
 
             col_aliases.append(col_alias)
 
-        return alias, self.query_validator.validate(query, self.scope).to_derived_table_schema()
+        return alias, flatten(self.query_validator.validate(query, self.scope).schema)
