@@ -2,7 +2,13 @@ from collections import defaultdict
 from collections.abc import Callable
 
 from databases.types import Schema
-from queries.services.types import AttributeSchema, RelationalSchema, flatten, merge_common_column
+from queries.services.ra.semantics.utils.schema import merge_schemas
+from queries.services.types import (
+    AttributeSchema,
+    RelationalSchema,
+    flatten,
+    merge_common_column,
+)
 from ra_sql_visualisation.types import DataType
 
 from ..parser.ast import (
@@ -35,8 +41,8 @@ from .errors import (
     UndefinedRelationError,
     UnionCompatibilityError,
 )
-from .types import RelationOutput, TypedAttribute
-from .utils import type_of_function, type_of_value
+from .types import Match, RelationOutput, TypedAttribute
+from .utils.type import type_of_function, type_of_value
 
 
 class RASemanticAnalyzer:
@@ -65,14 +71,14 @@ class RASemanticAnalyzer:
         output_schema: RelationalSchema = defaultdict(AttributeSchema)
         output_attrs = []
         for attr in proj.attributes:
-            t = self._resolve_attribute(attr, input_.schema)
+            t = self._validate_attribute(attr, [input_])
             output_schema[attr.relation][attr.name] = t
             output_attrs.append(TypedAttribute(attr.name, t))
         return RelationOutput(output_schema, output_attrs)
 
     def _validate_Selection(self, sel: Selection) -> RelationOutput:  # noqa: N802
         input_ = self._validate(sel.expression)
-        self._validate_condition(sel.condition, input_.schema)
+        self._validate_condition(sel.condition, [input_])
         return input_
 
     def _validate_SetOperation(self, op: SetOperation) -> RelationOutput:  # noqa: N802
@@ -80,8 +86,9 @@ class RASemanticAnalyzer:
         right = self._validate(op.right)
         match op.operator:
             case SetOperator.CARTESIAN:
-                merged_schema = self._merge_schemas(op, left.schema, right.schema)
-                return RelationOutput(merged_schema, left.attrs + right.attrs)
+                return RelationOutput(
+                    merge_schemas(op, left.schema, right.schema), left.attrs + right.attrs
+                )
             case _:
                 # Check if the schemas are union compatible
                 if not all(a == b for a, b in zip(left.attrs, right.attrs, strict=False)):
@@ -92,7 +99,7 @@ class RASemanticAnalyzer:
     def _validate_Join(self, join: Join) -> RelationOutput:  # noqa: N802
         left = self._validate(join.left)
         right = self._validate(join.right)
-        merged_schema = self._merge_schemas(join, left.schema, right.schema)
+        merged_schema = merge_schemas(join, left.schema, right.schema)
 
         left_names = {attr.name for attr in left.attrs}
         right_names = {attr.name for attr in right.attrs}
@@ -100,8 +107,8 @@ class RASemanticAnalyzer:
         shared_attrs = []
 
         for name in shared_names:
-            left_type = self._resolve_attribute(Attribute(name), left.schema, source=join)
-            right_type = self._resolve_attribute(Attribute(name), right.schema, source=join)
+            left_type = self._validate_attribute(Attribute(name), [left], source=join)
+            right_type = self._validate_attribute(Attribute(name), [right], source=join)
             if left_type != right_type:
                 raise JoinAttributeTypeMismatchError(join, name, left_type, right_type)
             merge_common_column(merged_schema, name)
@@ -114,9 +121,10 @@ class RASemanticAnalyzer:
     def _validate_ThetaJoin(self, join: ThetaJoin) -> RelationOutput:  # noqa: N802
         left = self._validate(join.left)
         right = self._validate(join.right)
-        merged_schema = self._merge_schemas(join, left.schema, right.schema)
-        self._validate_condition(join.condition, merged_schema)
-        return RelationOutput(merged_schema, left.attrs + right.attrs)
+        self._validate_condition(join.condition, [left, right])
+        return RelationOutput(
+            merge_schemas(join, left.schema, right.schema), left.attrs + right.attrs
+        )
 
     def _validate_Division(self, div: Division) -> RelationOutput:  # noqa: N802
         dividend = self._validate(div.dividend)
@@ -143,12 +151,12 @@ class RASemanticAnalyzer:
         output_attrs = []
 
         for attr in agg.group_by:
-            t = self._resolve_attribute(attr, input_.schema)
+            t = self._validate_attribute(attr, [input_])
             output_schema[attr.relation][attr.name] = t
             output_attrs.append(TypedAttribute(attr.name, t))
 
         for a in agg.aggregations:
-            t = self._resolve_attribute(a.input, input_.schema)
+            t = self._validate_attribute(a.input, [input_])
             input_types, output_type = type_of_function(a.aggregation_function, t)
             if t not in input_types:
                 raise InvalidFunctionArgumentError(
@@ -164,28 +172,28 @@ class RASemanticAnalyzer:
 
     def _validate_TopN(self, top: TopN) -> RelationOutput:  # noqa: N802
         input_ = self._validate(top.expression)
-        self._resolve_attribute(top.attribute, input_.schema)
+        self._validate_attribute(top.attribute, [input_])
         return input_
 
-    def _validate_condition(self, cond: BooleanExpression, schema: RelationalSchema) -> None:
+    def _validate_condition(self, cond: BooleanExpression, inputs: list[RelationOutput]) -> None:
         match cond:
             case Attribute():
-                t = self._resolve_attribute(cond, schema)
+                t = self._validate_attribute(cond, inputs)
                 if t != DataType.BOOLEAN:
                     raise TypeMismatchError(cond, DataType.BOOLEAN, t)
             case Comparison():
-                self._validate_comparison(cond, schema)
+                self._validate_comparison(cond, inputs)
             case BinaryBooleanExpression(left=left, right=right):
-                self._validate_condition(left, schema)
-                self._validate_condition(right, schema)
+                self._validate_condition(left, inputs)
+                self._validate_condition(right, inputs)
             case NotExpression(expression=inner):
-                self._validate_condition(inner, schema)
+                self._validate_condition(inner, inputs)
 
-    def _validate_comparison(self, cond: Comparison, schema: RelationalSchema) -> None:
+    def _validate_comparison(self, cond: Comparison, inputs: list[RelationOutput]) -> None:
         types = []
         for side in (cond.left, cond.right):
             if isinstance(side, Attribute):
-                types.append(self._resolve_attribute(side, schema))
+                types.append(self._validate_attribute(side, inputs))
             else:
                 types.append(type_of_value(side))
 
@@ -193,55 +201,22 @@ class RASemanticAnalyzer:
         if not left_type.is_comparable_with(right_type):
             raise TypeMismatchError(cond, left_type, right_type)
 
-    def _resolve_attribute(
-        self, attr: Attribute, schema: RelationalSchema, source: ASTNode | None = None
+    def _validate_attribute(
+        self, attr: Attribute, inputs: list[RelationOutput], source: ASTNode | None = None
     ) -> DataType:
         if source is None:
             source = attr
-        if attr.relation:
-            return self._resolve_qualified(source, attr, schema)
-        else:
-            return self._resolve_unqualified(source, attr, schema)
 
-    def _resolve_qualified(
-        self, source: ASTNode, attr: Attribute, schema: RelationalSchema
-    ) -> DataType:
-        if attr.relation not in schema:
-            raise UndefinedRelationError(source, str(attr.relation))
-        if attr.name not in schema[attr.relation]:
-            raise UndefinedAttributeError(source, attr)
-        return schema[attr.relation][attr.name]
+        # Collect all matches across all inputs
+        matches: list[Match] = []
+        for input_ in inputs:
+            matches.extend(input_.resolve(attr))
 
-    def _resolve_unqualified(
-        self, source: ASTNode, attr: Attribute, schema: RelationalSchema
-    ) -> DataType:
-        matches = [
-            (table, schema[attr.name]) for table, schema in schema.items() if attr.name in schema
-        ]
         if not matches:
             raise UndefinedAttributeError(source, attr)
         # Check for ambiguous column
         if len(matches) > 1:
-            raise AmbiguousAttributeError(
-                source, attr.name, [table for table, _ in matches if table]
-            )
+            raise AmbiguousAttributeError(source, attr.name, [rel for rel, _ in matches])
         # There is only one match
         [(_, t)] = matches
         return t
-
-    def _merge_schemas(
-        self,
-        operator: Join | ThetaJoin | SetOperation,
-        left: RelationalSchema,
-        right: RelationalSchema,
-    ) -> RelationalSchema:
-        merged: RelationalSchema = dict(left)
-        for rel, attrs in right.items():
-            if rel in merged:
-                for attr, t in attrs.items():
-                    if attr in merged[rel] and merged[rel][attr] != t:
-                        raise JoinAttributeTypeMismatchError(operator, attr, merged[rel][attr], t)
-                    merged[rel][attr] = t
-            else:
-                merged[rel] = dict(attrs)
-        return merged

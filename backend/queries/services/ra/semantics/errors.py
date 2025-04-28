@@ -46,10 +46,13 @@ class UndefinedAttributeError(RASemanticError):
 @dataclass
 class AmbiguousAttributeError(RASemanticError):
     attribute: str
-    relations: list[str]
+    relations: list[str | None]
+
+    def relation_names(self) -> list[str]:
+        return [r or 'Unqualified' for r in self.relations]
 
     def _message(self) -> str:
-        return f"Attribute '{self.attribute}' is ambiguous - it exists in multiple relations: {', '.join(self.relations)}"
+        return f"Attribute '{self.attribute}' is ambiguous - it exists in multiple relations: {', '.join(self.relation_names())}"
 
 
 class RATypeError(RASemanticError):

@@ -1,6 +1,5 @@
+from queries.services.ra.parser.ast import AggregationFunction, ComparisonValue
 from ra_sql_visualisation.types import DataType
-
-from ..parser.ast import AggregationFunction, ComparisonValue
 
 
 def type_of_function(
