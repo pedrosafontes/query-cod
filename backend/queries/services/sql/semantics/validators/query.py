@@ -54,12 +54,12 @@ class QueryValidator:
         right = self.validate(query.right, outer_scope)
 
         if (l_len := len(left.types)) != (r_len := len(right.types)):
-            raise ColumnCountMismatchError(l_len, r_len)
+            raise ColumnCountMismatchError(query, l_len, r_len)
 
         for i, (lt, rt) in enumerate(zip(left.types, right.types, strict=True)):
             try:
-                assert_comparable(lt, rt)
+                assert_comparable(lt, rt, query)
             except TypeMismatchError:
-                raise ColumnTypeMismatchError(lt, rt, i) from None
+                raise ColumnTypeMismatchError(query, lt, rt, i) from None
 
         return left

@@ -14,7 +14,7 @@ from sqlglot.expressions import (
 from ..context import ValidationContext
 from ..errors import OrderByExpressionError, OrderByPositionError
 from ..scope import Scope
-from ..type_utils import assert_boolean, assert_integer_literal, assert_orderable, is_aggregate
+from ..type_utils import assert_integer_literal, assert_orderable, is_aggregate
 from .expression import ExpressionValidator
 from .join import JoinValidator
 from .table import TableValidator
@@ -35,8 +35,8 @@ class ClauseValidator:
         if from_clause:
             if not isinstance(from_clause, From):
                 raise NotImplementedError(f'Unsupported FROM clause: {type(from_clause)}')
-            alias, schema = self.table_validator.validate(from_clause.this)
-            self.scope.tables.add(alias, schema)
+            schema = self.table_validator.validate(from_clause.this)
+            self.scope.tables.add(from_clause.this, schema)
 
     def validate_joins(self, select: Select) -> None:
         for join in select.args.get('joins', []):
@@ -47,9 +47,7 @@ class ClauseValidator:
     def validate_where(self, select: Select) -> None:
         where = select.args.get('where')
         if where:
-            assert_boolean(
-                self.expr_validator.validate_basic(where.this, ValidationContext(in_where=True))
-            )
+            self.expr_validator._validate_boolean(where.this, ValidationContext(in_where=True))
 
     def validate_group_by(self, select: Select) -> None:
         group = select.args.get('group')
@@ -64,9 +62,7 @@ class ClauseValidator:
     def validate_having(self, select: Select) -> None:
         having = select.args.get('having')
         if having:
-            assert_boolean(
-                self.expr_validator.validate_basic(having.this, ValidationContext(in_having=True))
-            )
+            self.expr_validator._validate_boolean(having.this, ValidationContext(in_having=True))
 
     def validate_projection(self, select: Select) -> None:
         for expr in select.expressions:
@@ -99,7 +95,7 @@ class ClauseValidator:
                 assert_integer_literal(node)
                 pos = int(node.this)
                 if not (1 <= pos <= num_projections):
-                    raise OrderByPositionError(1, num_projections)
+                    raise OrderByPositionError(node, 1, num_projections)
                 continue
 
             if self.scope.is_grouped:
@@ -113,4 +109,4 @@ class ClauseValidator:
                     raise OrderByExpressionError(node)
             else:
                 t = self.scope.projections.resolve(node) or self.expr_validator.validate_basic(node)
-            assert_orderable(t)
+            assert_orderable(t, node)

@@ -19,7 +19,7 @@ class TableValidator:
         self.scope = scope
         self.query_validator = QueryValidator(schema)
 
-    def validate(self, table: Table | Subquery) -> tuple[str, AttributeSchema]:
+    def validate(self, table: Table | Subquery) -> AttributeSchema:
         match table:
             case Table():
                 return self._validate_table(table)
@@ -27,19 +27,17 @@ class TableValidator:
             case Subquery():
                 return self._validate_derived_table(table)
 
-    def _validate_table(self, table: Table) -> tuple[str, AttributeSchema]:
+    def _validate_table(self, table: Table) -> AttributeSchema:
         name = table.name
-        alias = table.alias_or_name
         table_schema = self.schema.get(name)
         if table_schema is None:
-            raise UndefinedTableError(name)
-        return alias, table_schema
+            raise UndefinedTableError(table)
+        return table_schema
 
-    def _validate_derived_table(self, subquery: Subquery) -> tuple[str, AttributeSchema]:
+    def _validate_derived_table(self, subquery: Subquery) -> AttributeSchema:
         # Derived tables must have an alias
-        alias = subquery.alias_or_name
-        if not alias:
-            raise MissingDerivedTableAliasError()
+        if not subquery.alias_or_name:
+            raise MissingDerivedTableAliasError(subquery)
 
         # Derived columns must have a unique alias
         query = subquery.this
@@ -55,4 +53,4 @@ class TableValidator:
 
             col_aliases.append(col_alias)
 
-        return alias, flatten(self.query_validator.validate(query, self.scope).schema)
+        return flatten(self.query_validator.validate(query, self.scope).schema)

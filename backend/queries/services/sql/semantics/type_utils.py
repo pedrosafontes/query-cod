@@ -11,29 +11,29 @@ from .errors import (
 )
 
 
-def assert_comparable(lhs: DataType, rhs: DataType) -> None:
+def assert_comparable(lhs: DataType, rhs: DataType, source: Expression) -> None:
     if not lhs.is_comparable_with(rhs):
-        raise TypeMismatchError(lhs, rhs)
+        raise TypeMismatchError(source, lhs, rhs)
 
 
-def assert_boolean(t: DataType) -> None:
+def assert_boolean(t: DataType, source: Expression) -> None:
     if t is not DataType.BOOLEAN:
-        raise TypeMismatchError(DataType.BOOLEAN, t)
+        raise TypeMismatchError(source, DataType.BOOLEAN, t)
 
 
-def assert_numeric(t: DataType) -> None:
+def assert_numeric(t: DataType, source: Expression) -> None:
     if not t.is_numeric():
-        raise TypeMismatchError(DataType.NUMERIC, t)
+        raise TypeMismatchError(source, DataType.NUMERIC, t)
 
 
-def assert_orderable(t: DataType) -> None:
+def assert_orderable(t: DataType, source: Expression) -> None:
     if not t.is_orderable():
-        raise UnorderableTypeError(t)
+        raise UnorderableTypeError(source, t)
 
 
 def assert_integer_literal(literal: Literal) -> None:
     if not literal.is_int:
-        raise TypeMismatchError(DataType.INTEGER, infer_literal_type(literal))
+        raise TypeMismatchError(literal, DataType.INTEGER, infer_literal_type(literal))
 
 
 def assert_scalar_subquery(subquery: Subquery) -> None:
@@ -41,13 +41,13 @@ def assert_scalar_subquery(subquery: Subquery) -> None:
     expressions = select.expressions
 
     if len(expressions) != 1:
-        raise ScalarSubqueryError()
+        raise ScalarSubqueryError(subquery)
 
     [scalar] = expressions
     group = select.args.get('group')
 
     if not is_aggregate(scalar) or group:
-        raise ScalarSubqueryError()
+        raise ScalarSubqueryError(subquery)
 
 
 def is_aggregate(expr: Expression) -> bool:

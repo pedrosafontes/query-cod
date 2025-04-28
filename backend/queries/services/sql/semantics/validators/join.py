@@ -4,11 +4,10 @@ from sqlglot.expressions import Identifier, Join
 from ..errors import (
     CrossJoinConditionError,
     MissingJoinConditionError,
-    NoCommonColumnsError,
     UndefinedColumnError,
 )
 from ..scope import Scope
-from ..type_utils import assert_boolean, assert_comparable
+from ..type_utils import assert_comparable
 from .expression import ExpressionValidator
 from .table import TableValidator
 
@@ -28,44 +27,41 @@ class JoinValidator:
 
     def validate_join(self, join: Join) -> None:
         left_cols = self.scope.tables.get_columns()
-        alias, right_cols = self.table_validator.validate(join.this)
-        self.scope.tables.add(alias, right_cols)
+        right_cols = self.table_validator.validate(join.this)
+        self.scope.tables.add(join.this, right_cols)
 
         kind = join.method or join.args.get('kind', 'INNER')
         using = join.args.get('using')
         condition = join.args.get('on')
 
         if using:
-            self._validate_using(using, left_cols, right_cols)
+            self._validate_using(using, left_cols, right_cols, join)
         elif kind == 'NATURAL':
-            self._validate_natural_join(left_cols, right_cols)
+            self._validate_natural_join(left_cols, right_cols, join)
         elif kind == 'CROSS':
             # CROSS JOINS must not have a condition
             if condition:
-                raise CrossJoinConditionError()
+                raise CrossJoinConditionError(condition)
         else:
             # INNER, LEFT, RIGHT, and FULL OUTER joins must have a condition
             if not condition:
-                raise MissingJoinConditionError()
-            assert_boolean(self.expr_validator.validate_basic(condition))
+                raise MissingJoinConditionError(join)
+            self.expr_validator._validate_boolean(condition)
 
     def _validate_using(
-        self, using: list[Identifier], left: ColumnSchema, right: ColumnSchema
+        self, using: list[Identifier], left: ColumnSchema, right: ColumnSchema, join: Join
     ) -> None:
         # All columns in USING must be present in both tables
         for ident in using:
             col = ident.name
             if col not in left:
-                raise UndefinedColumnError(col)
-            assert_comparable(left[col], right[col])
+                raise UndefinedColumnError.from_expression(join, col)
+            assert_comparable(left[col], right[col], join)
             self.scope.tables.merge_common_column(col)
 
-    def _validate_natural_join(self, left: ColumnSchema, right: ColumnSchema) -> None:
+    def _validate_natural_join(self, left: ColumnSchema, right: ColumnSchema, join: Join) -> None:
         shared = set(left) & set(right)
-        # NATURAL JOIN must have at least one common column
-        if not shared:
-            raise NoCommonColumnsError()
         # All common columns must be comparable
         for col in shared:
-            assert_comparable(left[col], right[col])
+            assert_comparable(left[col], right[col], join)
             self.scope.tables.merge_common_column(col)

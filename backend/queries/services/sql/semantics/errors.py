@@ -4,9 +4,25 @@ from dataclasses import dataclass
 
 from ra_sql_visualisation.types import DataType
 from sqlglot import Expression
+from sqlglot.expressions import Column
 
 
+@dataclass
 class SQLSemanticError(Exception, ABC):
+    source: Expression
+
+    def __post_init__(self) -> None:
+        source_pos = self.source.args.get('position')
+        if source_pos:
+            start_line, start_col, _, end_col = source_pos
+            self.position = {
+                'line': start_line,
+                'start_col': start_col,
+                'end_col': end_col,
+            }
+        else:
+            self.position = None
+
     @abstractmethod
     def __str__(self) -> str:
         """Provide a human-readable error message."""
@@ -15,25 +31,37 @@ class SQLSemanticError(Exception, ABC):
 
 @dataclass
 class UndefinedTableError(SQLSemanticError):
-    table: str
+    name: str | None = None
 
     def __str__(self) -> str:
-        return f"Table '{self.table}' does not exist"
+        return f"Table '{self.name or self.source.name}' does not exist"
 
 
 @dataclass
 class UndefinedColumnError(SQLSemanticError):
-    column: str
+    name: str
     table: str | None = None
 
+    @classmethod
+    def from_column(cls, column: Column) -> 'UndefinedColumnError':
+        return cls(column, column.alias_or_name, column.table)
+
+    @classmethod
+    def from_expression(cls, expr: Expression, column: str) -> 'UndefinedColumnError':
+        return cls(expr, column)
+
     def __str__(self) -> str:
-        return f"Column '{self.column}' is not defined in {self.table if self.table else 'the current context'}"
+        return f"Column '{self.name}' is not defined in {self.table if self.table else 'the current context'}"
 
 
 @dataclass
 class AmbiguousColumnError(SQLSemanticError):
-    column: str
     tables: list[str]
+
+    def __init__(self, column: Column, tables: list[str]) -> None:
+        super().__init__(column)
+        self.column = column
+        self.tables = tables
 
     def __str__(self) -> str:
         return f"Ambiguous column reference '{self.column}' -  exists in multiple tables: {', '.join(self.tables)}."
@@ -63,27 +91,23 @@ class NonGroupedColumnError(SQLSemanticError):
 
 @dataclass
 class OrderByPositionError(SQLSemanticError):
-    position: int
+    order_by_pos: int
     max_position: int
 
     def __str__(self) -> str:
-        return f'ORDER BY position {self.position} is not in select list (valid positions: 1 to {self.max_position})'
+        return f'ORDER BY position {self.order_by_pos} is not in select list (valid positions: 1 to {self.max_position})'
 
 
 @dataclass
 class OrderByExpressionError(SQLSemanticError):
-    expression: Expression
-
     def __str__(self) -> str:
-        return f'ORDER BY expression "{self.expression}" must appear in the SELECT list'
+        return f'ORDER BY expression "{self.source}" must appear in the SELECT list'
 
 
 @dataclass
 class DuplicateAliasError(SQLSemanticError):
-    alias: str
-
     def __str__(self) -> str:
-        return f"Duplicate alias '{self.alias}' in the query."
+        return f"Duplicate alias '{self.source.alias_or_name}' in the query."
 
 
 @dataclass
@@ -107,12 +131,6 @@ class CrossJoinConditionError(SQLSemanticError):
 
 
 @dataclass
-class NoCommonColumnsError(SQLSemanticError):
-    def __str__(self) -> str:
-        return 'NATURAL JOIN requires at least one common column'
-
-
-@dataclass
 class MissingDerivedTableAliasError(SQLSemanticError):
     def __str__(self) -> str:
         return 'Every derived table must have its own alias'
@@ -126,10 +144,8 @@ class ScalarSubqueryError(SQLSemanticError):
 
 @dataclass
 class DerivedColumnAliasRequiredError(SQLSemanticError):
-    expression: Expression
-
     def __str__(self) -> str:
-        return 'Derived column {expression} must have an alias'
+        return f'Derived column {self.source} must have an alias'
 
 
 @dataclass

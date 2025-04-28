@@ -13,7 +13,6 @@ from queries.services.sql.semantics.errors import (
     MissingDerivedTableAliasError,
     MissingJoinConditionError,
     NestedAggregateError,
-    NoCommonColumnsError,
     NonGroupedColumnError,
     OrderByExpressionError,
     OrderByPositionError,
@@ -183,8 +182,6 @@ class TestJoins:
                 'SELECT category_id FROM products JOIN categories ON products.category_id = categories.category_id',
                 AmbiguousColumnError,
             ),
-            # No common columns for NATURAL JOIN
-            ('SELECT * FROM products NATURAL JOIN customers', NoCommonColumnsError),
             # Non-boolean JOIN condition
             ('SELECT * FROM products p JOIN categories c ON p.product_id', TypeMismatchError),
             # USING on non-existent column

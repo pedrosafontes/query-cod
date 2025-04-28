@@ -83,7 +83,7 @@ class ExpressionValidator:
 
             case Column():
                 if isinstance(node.this, Star):
-                    return self._validate_star_expansion(node.table)
+                    return self._validate_star_expansion(node, node.table)
                 else:
                     return self._validate_column(node, context)
 
@@ -91,40 +91,35 @@ class ExpressionValidator:
                 return self.validate(node.this, context)
 
             case And() | Or():
-                lt = self.validate_basic(node.left, context)
-                rt = self.validate_basic(node.right, context)
-                assert_boolean(lt)
-                assert_boolean(rt)
+                self._validate_boolean(node.left, context)
+                self._validate_boolean(node.right, context)
                 return DataType.BOOLEAN
 
             case EQ() | NEQ() | LT() | LTE() | GT() | GTE():
                 lt = self.validate_basic(node.left, context)
                 rt = self.validate_basic(node.right, context)
-                assert_comparable(lt, rt)
+                assert_comparable(lt, rt, node)
                 return DataType.BOOLEAN
 
             case Add() | Sub() | Mul() | Div():
-                lt = self.validate_basic(node.left, context)
-                rt = self.validate_basic(node.right, context)
-                assert_numeric(lt)
-                assert_numeric(rt)
+                lt = self._validate_numeric(node.left, context)
+                rt = self._validate_numeric(node.right, context)
                 return DataType.dominant([lt, rt])
 
             case Not():
-                assert_boolean(self.validate_basic(node.this, context))
+                self._validate_boolean(node.this, context)
                 return DataType.BOOLEAN
 
             case Count():
-                self._validate_aggregate_context(context)
+                self._validate_aggregate_context(node, context)
                 arg = node.this
                 if not isinstance(arg, Star):
                     self.validate(arg, context.enter_aggregate())
                 return DataType.INTEGER
 
             case Sum():
-                self._validate_aggregate_context(context)
-                t = self.validate_basic(node.this, context.enter_aggregate())
-                assert_numeric(t)
+                self._validate_aggregate_context(node, context)
+                t = self._validate_numeric(node.this, context.enter_aggregate())
 
                 # Promotes small integers to integers to avoid overflow
                 if t == DataType.SMALLINT:
@@ -133,9 +128,8 @@ class ExpressionValidator:
                     return t
 
             case Avg():
-                self._validate_aggregate_context(context)
-                t = self.validate_basic(node.this, context.enter_aggregate())
-                assert_numeric(t)
+                self._validate_aggregate_context(node, context)
+                t = self._validate_numeric(node.this, context.enter_aggregate())
 
                 # Promotes to allow fractional results
                 if t in {DataType.SMALLINT, DataType.INTEGER}:
@@ -144,13 +138,12 @@ class ExpressionValidator:
                     return t
 
             case Min() | Max():
-                self._validate_aggregate_context(context)
-                t = self.validate_basic(node.this, context.enter_aggregate())
-                assert_orderable(t)
+                self._validate_aggregate_context(node, context)
+                t = self._validate_orderable(node.this, context.enter_aggregate())
                 return t
 
             case Star():
-                return self._validate_star_expansion()
+                return self._validate_star_expansion(node)
 
             case Subquery():
                 sub_schema = self.query_validator.validate(node.this, self.scope).schema
@@ -160,19 +153,19 @@ class ExpressionValidator:
                     [(_, t)] = columns.items()  # Single column
                 except ValueError:  # Unpack error
                     # Subquery must return a single table with a single column
-                    raise ScalarSubqueryError() from None
+                    raise ScalarSubqueryError(node) from None
                 return t
 
             case In():
                 lt = self.validate_basic(node.this, context)
                 if subquery := node.args.get('query'):
                     rt = self._validate_quantified_predicate_query(subquery.this)
-                    assert_comparable(lt, rt)
+                    assert_comparable(lt, rt, node)
                 else:
                     # If the IN clause is not a subquery, it must be a list of literals
                     for val in node.expressions:
                         rt = self.validate_basic(val, context)
-                        assert_comparable(lt, rt)
+                        assert_comparable(lt, rt, node)
                 return DataType.BOOLEAN
 
             case Any() | All():
@@ -199,7 +192,7 @@ class ExpressionValidator:
         t = self.scope.tables.resolve_column(column)
 
         if t is None:
-            raise UndefinedColumnError(column.name, column.table)
+            raise UndefinedColumnError.from_column(column)
 
         if (
             # Scenario: Grouped HAVING, SELECT, or ORDER BY
@@ -212,16 +205,16 @@ class ExpressionValidator:
             # Condition: Column must be in an aggregate function
             and not context.in_aggregate
         ):
-            raise NonGroupedColumnError([column.name])
+            raise NonGroupedColumnError(column, [column.name])
         return t
 
-    def _validate_aggregate_context(self, context: ValidationContext) -> None:
+    def _validate_aggregate_context(self, source: Expression, context: ValidationContext) -> None:
         # Cannot be used in the WHERE clause
         if context.in_where:
-            raise AggregateInWhereError()
+            raise AggregateInWhereError(source)
         # Cannot be nested
         if context.in_aggregate:
-            raise NestedAggregateError()
+            raise NestedAggregateError(source)
 
     def _validate_quantified_predicate_query(self, query: Expression) -> DataType:
         schema = self.query_validator.validate(query, self.scope).schema
@@ -229,14 +222,18 @@ class ExpressionValidator:
             [(_, columns)] = schema.items()  # Single table
             [(_, rt)] = columns.items()  # Single column
         except ValueError:  # Unpack error
-            raise ColumnCountMismatchError(1, len(columns)) from None
+            raise ColumnCountMismatchError(query, 1, len(columns)) from None
         return rt
 
     # ──────── Star Expansion Validations ────────
 
-    def _validate_star_expansion(self, table: str | None = None) -> RelationalSchema:
+    def _validate_star_expansion(
+        self, source: Expression, table: str | None = None
+    ) -> RelationalSchema:
         schema = (
-            self.scope.tables.get_table_schema(table) if table else self.scope.tables.get_schema()
+            self.scope.tables.get_table_schema(table, source)
+            if table
+            else self.scope.tables.get_schema()
         )
 
         if self.scope.is_grouped:
@@ -248,6 +245,21 @@ class ExpressionValidator:
                         missing.append(col)
 
             if missing:
-                raise NonGroupedColumnError(missing)
+                raise NonGroupedColumnError(source, missing)
 
         return schema
+
+    # ──────── Type Utilities ────────
+
+    def _validate_boolean(self, expr: Expression, context: ValidationContext | None = None) -> None:
+        assert_boolean(self.validate_basic(expr, context), expr)
+
+    def _validate_numeric(self, expr: Expression, context: ValidationContext) -> DataType:
+        t = self.validate_basic(expr, context)
+        assert_numeric(t, expr)
+        return t
+
+    def _validate_orderable(self, expr: Expression, context: ValidationContext) -> DataType:
+        t = self.validate_basic(expr, context)
+        assert_orderable(t, expr)
+        return t

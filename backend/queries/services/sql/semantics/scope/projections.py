@@ -29,7 +29,7 @@ class ProjectionsScope:
         table = expr.args.get('table')
         # Check for duplicate alias
         if alias and alias in self.schema[table]:
-            raise DuplicateAliasError(alias)
+            raise DuplicateAliasError(expr)
         self.schema[table][alias] = t
 
     def contains(self, expr: Expression) -> bool:
