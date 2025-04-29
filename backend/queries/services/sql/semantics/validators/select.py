@@ -20,7 +20,7 @@ from .join import JoinValidator
 from .table import TableValidator
 
 
-class ClauseValidator:
+class SelectValidator:
     def __init__(self, schema: Schema, scope: Scope) -> None:
         self.schema = schema
         self.scope = scope
@@ -29,6 +29,15 @@ class ClauseValidator:
         self.join_validator = JoinValidator(
             schema, scope, self.expr_validator, self.table_validator
         )
+
+    def validate(self, select: Select) -> None:
+        self.process_from(select)
+        self.validate_joins(select)
+        self.validate_where(select)
+        self.validate_group_by(select)
+        self.validate_having(select)
+        self.validate_projection(select)
+        self.validate_order_by(select)
 
     def process_from(self, select: Select) -> None:
         from_clause = select.args.get('from')

@@ -102,7 +102,7 @@ def convert_sqlglot_type(sqlglot_type: SQLGLotDataType) -> DataType:
         SQLGLotDataType.Type.BOOLEAN: DataType.BOOLEAN,
         SQLGLotDataType.Type.CHAR: DataType.CHAR,
         SQLGLotDataType.Type.VARCHAR: DataType.VARCHAR,
-        SQLGLotDataType.Type.TEXT: DataType.VARCHAR,  # Assuming TEXT maps to VARCHAR
+        SQLGLotDataType.Type.TEXT: DataType.VARCHAR,
         SQLGLotDataType.Type.INT: DataType.INTEGER,
         SQLGLotDataType.Type.SMALLINT: DataType.SMALLINT,
         SQLGLotDataType.Type.FLOAT: DataType.FLOAT,
