@@ -21,7 +21,6 @@ from queries.services.sql.semantics.errors import (
     TypeMismatchError,
     UndefinedColumnError,
     UndefinedTableError,
-    UnorderableTypeError,
 )
 from ra_sql_visualisation.types import DataType
 
@@ -295,8 +294,6 @@ class TestOrderBy:
             ('SELECT * FROM products ORDER BY nonexistent_column', UndefinedColumnError),
             # Invalid ORDER BY position
             ('SELECT product_id FROM products ORDER BY 2', OrderByPositionError),
-            # Unorderable data type
-            ('SELECT * FROM products ORDER BY binary_data', UnorderableTypeError),
             # ORDER BY column not in SELECT with GROUP BY
             (
                 'SELECT category_id, COUNT(*) FROM products GROUP BY category_id ORDER BY price',

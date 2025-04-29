@@ -7,7 +7,6 @@ from sqlglot.expressions import Avg, Count, Literal, Max, Min, Subquery, Sum
 from .errors import (
     ScalarSubqueryError,
     TypeMismatchError,
-    UnorderableTypeError,
 )
 
 
@@ -29,11 +28,6 @@ def assert_numeric(t: DataType, source: Expression) -> None:
 def assert_string(t: DataType, source: Expression) -> None:
     if not t.is_string():
         raise TypeMismatchError(source, DataType.VARCHAR, t)
-
-
-def assert_orderable(t: DataType, source: Expression) -> None:
-    if not t.is_orderable():
-        raise UnorderableTypeError(source, t)
 
 
 def assert_integer_literal(literal: Literal) -> None:

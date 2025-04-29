@@ -14,7 +14,7 @@ from sqlglot.expressions import (
 from ..context import ValidationContext
 from ..errors import OrderByExpressionError, OrderByPositionError
 from ..scope import Scope
-from ..type_utils import assert_integer_literal, assert_orderable, is_aggregate
+from ..type_utils import assert_integer_literal, is_aggregate
 from .expression import ExpressionValidator
 from .join import JoinValidator
 from .table import TableValidator
@@ -96,17 +96,15 @@ class ClauseValidator:
                 pos = int(node.this)
                 if not (1 <= pos <= num_projections):
                     raise OrderByPositionError(node, 1, num_projections)
-                continue
-
-            if self.scope.is_grouped:
-                t: DataType | None = (
-                    self.scope.projections.resolve(node)
-                    or self.scope.group_by.resolve(node)
-                    or (is_aggregate(node) and self.expr_validator.validate_basic(node))
-                    or None
-                )
-                if t is None:
-                    raise OrderByExpressionError(node)
             else:
-                t = self.scope.projections.resolve(node) or self.expr_validator.validate_basic(node)
-            assert_orderable(t, node)
+                resolved = self.scope.projections.resolve(node)
+                if self.scope.is_grouped:
+                    resolved = resolved or self.scope.group_by.resolve(node)
+                    if not resolved:
+                        if is_aggregate(node):
+                            self.expr_validator.validate_basic(node)
+                        else:
+                            raise OrderByExpressionError(node)
+                else:
+                    if not resolved:
+                        self.expr_validator.validate_basic(node)

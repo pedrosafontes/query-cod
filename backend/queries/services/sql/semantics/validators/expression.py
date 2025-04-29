@@ -51,7 +51,6 @@ from ..type_utils import (
     assert_boolean,
     assert_comparable,
     assert_numeric,
-    assert_orderable,
     assert_scalar_subquery,
     assert_string,
     infer_literal_type,
@@ -129,7 +128,7 @@ class ExpressionValidator:
 
             case Min() | Max():
                 self._validate_aggregate_context(node, context)
-                return self._validate_orderable(node.this, context.enter_aggregate())
+                return self.validate_basic(node.this, context.enter_aggregate())
 
             case Star():
                 return self._validate_star_expansion(node)
@@ -285,11 +284,6 @@ class ExpressionValidator:
     def _validate_numeric(self, expr: Expression, context: ValidationContext) -> DataType:
         t = self.validate_basic(expr, context)
         assert_numeric(t, expr)
-        return t
-
-    def _validate_orderable(self, expr: Expression, context: ValidationContext) -> DataType:
-        t = self.validate_basic(expr, context)
-        assert_orderable(t, expr)
         return t
 
     def _validate_string(self, expr: Expression, context: ValidationContext) -> DataType:

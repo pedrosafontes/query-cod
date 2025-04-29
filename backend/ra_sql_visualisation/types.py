@@ -50,6 +50,7 @@ class DataType(Enum):
     def is_comparable_with(self, other: 'DataType') -> bool:
         return (
             self == other
+            # null is a valid value for all data types
             or self == DataType.NULL
             or other == DataType.NULL
             or (self.is_numeric() and other.is_numeric())
@@ -57,9 +58,6 @@ class DataType(Enum):
             or (self.is_string() and other.is_string())
             or (self.is_bit() and other.is_bit())
         )
-
-    def is_orderable(self) -> bool:
-        return self.is_numeric() or self.is_string() or self.is_temporal()
 
     @classmethod
     def _precedence_list(cls) -> list['DataType']:

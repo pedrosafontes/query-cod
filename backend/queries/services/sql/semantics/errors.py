@@ -105,14 +105,6 @@ class MissingJoinConditionError(SQLSemanticError):
 
 
 @dataclass
-class UnorderableTypeError(SQLSemanticError):
-    data_type: DataType
-
-    def __str__(self) -> str:
-        return f"Cannot order by type '{self.data_type.name}'."
-
-
-@dataclass
 class CrossJoinConditionError(SQLSemanticError):
     def __str__(self) -> str:
         return 'CROSS JOIN does not support ON or USING clause'
