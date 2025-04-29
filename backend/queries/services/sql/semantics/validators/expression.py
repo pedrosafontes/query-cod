@@ -21,6 +21,7 @@ from sqlglot.expressions import (
     Count,
     Exists,
     In,
+    Length,
     Literal,
     Max,
     Min,
@@ -49,6 +50,7 @@ from ..type_utils import (
     assert_numeric,
     assert_orderable,
     assert_scalar_subquery,
+    assert_string,
     infer_literal_type,
 )
 from ..types import ArithmeticOperation
@@ -164,6 +166,10 @@ class ExpressionValidator:
             case Boolean():
                 return DataType.BOOLEAN
 
+            case Length():
+                self._validate_string(node.this, context)
+                return DataType.INTEGER
+
             case _:
                 raise NotImplementedError(f'Expression {type(node)} not supported')
 
@@ -252,4 +258,9 @@ class ExpressionValidator:
     def _validate_orderable(self, expr: Expression, context: ValidationContext) -> DataType:
         t = self.validate_basic(expr, context)
         assert_orderable(t, expr)
+        return t
+
+    def _validate_string(self, expr: Expression, context: ValidationContext) -> DataType:
+        t = self.validate_basic(expr, context)
+        assert_string(t, expr)
         return t

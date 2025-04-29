@@ -26,6 +26,11 @@ def assert_numeric(t: DataType, source: Expression) -> None:
         raise TypeMismatchError(source, DataType.NUMERIC, t)
 
 
+def assert_string(t: DataType, source: Expression) -> None:
+    if not t.is_string():
+        raise TypeMismatchError(source, DataType.VARCHAR, t)
+
+
 def assert_orderable(t: DataType, source: Expression) -> None:
     if not t.is_orderable():
         raise UnorderableTypeError(source, t)

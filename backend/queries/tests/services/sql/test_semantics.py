@@ -550,3 +550,26 @@ class TestQuantifiedSubqueries:
         self, query: str, expected_exception: type[Exception], schema: Schema
     ) -> None:
         assert_invalid(query, schema, expected_exception)
+
+
+class TestStringFunctions:
+    @pytest.mark.parametrize(
+        'query',
+        [
+            'SELECT CHAR_LENGTH(product_name) FROM products',
+            'SELECT CHARACTER_LENGTH(product_name) FROM products',
+        ],
+    )
+    def test_valid_string_functions(self, query: str, schema: Schema) -> None:
+        assert_valid(query, schema)
+
+    @pytest.mark.parametrize(
+        'query, expected_exception',
+        [
+            ('SELECT CHAR_LENGTH(unknown_column) FROM products', UndefinedColumnError),
+        ],
+    )
+    def test_invalid_string_functions(
+        self, query: str, expected_exception: type[Exception], schema: Schema
+    ) -> None:
+        assert_invalid(query, schema, expected_exception)
