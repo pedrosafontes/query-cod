@@ -16,6 +16,7 @@ from queries.services.sql.semantics.errors import (
     NonGroupedColumnError,
     OrderByExpressionError,
     OrderByPositionError,
+    ScalarExpressionExpectedError,
     ScalarSubqueryError,
     TypeMismatchError,
     UndefinedColumnError,
@@ -558,6 +559,12 @@ class TestStringFunctions:
         [
             'SELECT CHAR_LENGTH(product_name) FROM products',
             'SELECT CHARACTER_LENGTH(product_name) FROM products',
+            'SELECT LOWER(product_name) FROM products',
+            'SELECT UPPER(product_name) FROM products',
+            'SELECT TRIM(product_name) FROM products',
+            'SELECT SUBSTRING(product_name FROM 1 FOR 3) FROM products',
+            "SELECT POSITION('pro' IN product_name) FROM products",
+            "SELECT product_name || ' (SALE)' FROM products",
         ],
     )
     def test_valid_string_functions(self, query: str, schema: Schema) -> None:
@@ -567,6 +574,9 @@ class TestStringFunctions:
         'query, expected_exception',
         [
             ('SELECT CHAR_LENGTH(unknown_column) FROM products', UndefinedColumnError),
+            ("SELECT POSITION('x' IN 42) FROM products", TypeMismatchError),
+            ('SELECT LOWER(*) FROM products', ScalarExpressionExpectedError),
+            ("SELECT SUBSTRING(product_name FROM 'x') FROM products", TypeMismatchError),
         ],
     )
     def test_invalid_string_functions(

@@ -1,5 +1,3 @@
-from typing import cast
-
 from databases.types import Schema
 from queries.services.types import RelationalSchema
 from ra_sql_visualisation.types import DataType
@@ -19,6 +17,7 @@ from sqlglot.expressions import (
     Boolean,
     Column,
     Count,
+    DPipe,
     Exists,
     In,
     Length,
@@ -29,7 +28,9 @@ from sqlglot.expressions import (
     Or,
     Paren,
     Star,
+    StrPosition,
     Subquery,
+    Substring,
     Sum,
 )
 
@@ -42,6 +43,7 @@ from ..errors import (
     NonGroupedColumnError,
     ScalarExpressionExpectedError,
     ScalarSubqueryError,
+    TypeMismatchError,
     UndefinedColumnError,
 )
 from ..scope import Scope
@@ -54,7 +56,7 @@ from ..type_utils import (
     assert_string,
     infer_literal_type,
 )
-from ..types import ArithmeticOperation
+from ..types import ArithmeticOperation, StringOperation
 
 
 class ExpressionValidator:
@@ -174,6 +176,30 @@ class ExpressionValidator:
 
             case Length():
                 self._validate_string(node.this, context)
+                return DataType.INTEGER
+
+            case op if isinstance(op, StringOperation):
+                return self._validate_string(node.this, context)
+
+            case Substring():
+                self._validate_string(node.this, context)
+                if start := node.args.get('start'):
+                    self._validate_numeric(start, context)
+                if length := node.args.get('length'):
+                    self._validate_numeric(length, context)
+                return DataType.VARCHAR
+
+            case DPipe():
+                self._validate_string(node.left, context)
+                self._validate_string(node.right, context)
+                return DataType.VARCHAR
+
+            case StrPosition():
+                self._validate_string(node.this, context)
+                if substr := node.args.get('substr'):
+                    self._validate_string(substr, context)
+                else:
+                    raise TypeMismatchError(node, DataType.VARCHAR, DataType.NULL)
                 return DataType.INTEGER
 
             case _:
