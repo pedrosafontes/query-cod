@@ -17,7 +17,7 @@ class TypeMismatchError(SQLTypeError):
     received: DataType
 
     def __str__(self) -> str:
-        return f'Type mismatch: expected {self.expected.name}, got {self.received.name}.'
+        return f'Type mismatch: expected {self.expected.name}, but got {self.received.name}.'
 
 
 @dataclass
@@ -27,7 +27,7 @@ class ColumnTypeMismatchError(SQLTypeError):
     index: int
 
     def __str__(self) -> str:
-        return f'Set operands have incompatible column types at position {self.index + 1}: {self.left_type.name} vs {self.right_type.name}.'
+        return f'Column type mismatch at position {self.index + 1}: left type {self.left_type.name}, right type {self.right_type.name}.'
 
 
 @dataclass
@@ -42,7 +42,7 @@ class ArithmeticTypeMismatchError(SQLTypeError):
 @dataclass
 class NonScalarExpressionError(SQLTypeError):
     def __str__(self) -> str:
-        return f'Scalar expression expected, but got {self.source}'
+        return f'Expected a scalar expression, but got {self.source}'
 
 
 @dataclass

@@ -16,7 +16,7 @@ class RelationNotFoundError(SQLSemanticError):
     name: str | None = None
 
     def __str__(self) -> str:
-        return f"Table '{self.name or self.source.name}' does not exist"
+        return f"Relation '{self.name or self.source.name}' does not exist"
 
 
 @dataclass
@@ -46,4 +46,4 @@ class AmbiguousColumnReferenceError(SQLSemanticError):
         self.tables = tables
 
     def __str__(self) -> str:
-        return f"Ambiguous column reference '{self.column}' -  exists in multiple tables: {', '.join(self.tables)}."
+        return f"Ambiguous reference to column '{self.column}'; it exists in multiple tables: {', '.join(self.tables)}."
