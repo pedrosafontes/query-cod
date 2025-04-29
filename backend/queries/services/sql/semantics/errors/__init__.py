@@ -1,26 +1,29 @@
 from .base import SQLSemanticError
-from .column import (
-    AmbiguousColumnError,
-    NonGroupedColumnError,
-    UndefinedColumnError,
-)
-from .derived_table import (
-    DerivedColumnAliasRequiredError,
-    MissingDerivedTableAliasError,
-)
-from .join import CrossJoinConditionError, MissingJoinConditionError
-from .order_by import OrderByExpressionError, OrderByPositionError
-from .query import DuplicateAliasError
-from .set_function import AggregateInWhereError, NestedAggregateError
-from .table import UndefinedTableError
-from .type import (
+from .data_type import (
     ArithmeticTypeMismatchError,
-    ColumnCountMismatchError,
     ColumnTypeMismatchError,
     InvalidCastError,
     ScalarExpressionExpectedError,
     ScalarSubqueryError,
     TypeMismatchError,
+)
+from .object_reference import (
+    AmbiguousColumnError,
+    UndefinedColumnError,
+    UndefinedTableError,
+)
+from .query_structure import (
+    AggregateInWhereError,
+    ColumnCountMismatchError,
+    CrossJoinConditionError,
+    DerivedColumnAliasRequiredError,
+    DuplicateAliasError,
+    MissingDerivedTableAliasError,
+    MissingJoinConditionError,
+    NestedAggregateError,
+    OrderByExpressionError,
+    OrderByPositionError,
+    UngroupedColumnError,
 )
 
 
@@ -32,7 +35,7 @@ __all__ = [
     'MissingDerivedTableAliasError',
     'UndefinedColumnError',
     'AmbiguousColumnError',
-    'NonGroupedColumnError',
+    'UngroupedColumnError',
     'AggregateInWhereError',
     'NestedAggregateError',
     'MissingJoinConditionError',

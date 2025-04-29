@@ -14,7 +14,6 @@ from queries.services.sql.semantics.errors import (
     MissingDerivedTableAliasError,
     MissingJoinConditionError,
     NestedAggregateError,
-    NonGroupedColumnError,
     OrderByExpressionError,
     OrderByPositionError,
     ScalarExpressionExpectedError,
@@ -22,6 +21,7 @@ from queries.services.sql.semantics.errors import (
     TypeMismatchError,
     UndefinedColumnError,
     UndefinedTableError,
+    UngroupedColumnError,
 )
 from ra_sql_visualisation.types import DataType
 
@@ -256,7 +256,7 @@ class TestAggregatesAndGrouping:
             # Non-grouped column in SELECT
             (
                 'SELECT product_id, category_id, COUNT(*) FROM products GROUP BY category_id',
-                NonGroupedColumnError,
+                UngroupedColumnError,
             ),
             # Non-existent column in GROUP BY
             ('SELECT COUNT(*) FROM products GROUP BY nonexistent_column', UndefinedColumnError),
@@ -265,7 +265,7 @@ class TestAggregatesAndGrouping:
             # Non-grouped column in HAVING
             (
                 "SELECT category_id FROM products GROUP BY category_id HAVING product_name = 'test'",
-                NonGroupedColumnError,
+                UngroupedColumnError,
             ),
             # Invalid HAVING condition type
             (
@@ -274,7 +274,7 @@ class TestAggregatesAndGrouping:
             ),
             (
                 'SELECT * FROM categories GROUP BY category_id',
-                NonGroupedColumnError,
+                UngroupedColumnError,
             ),
         ],
     )

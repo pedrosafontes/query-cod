@@ -1,8 +1,22 @@
+from abc import ABC
 from dataclasses import dataclass
 
 from sqlglot.expressions import Column, Expression
 
-from . import SQLSemanticError
+from .base import SQLSemanticError
+
+
+@dataclass
+class ObjectReferenceError(SQLSemanticError, ABC):
+    pass
+
+
+@dataclass
+class UndefinedTableError(SQLSemanticError):
+    name: str | None = None
+
+    def __str__(self) -> str:
+        return f"Table '{self.name or self.source.name}' does not exist"
 
 
 @dataclass
@@ -33,16 +47,3 @@ class AmbiguousColumnError(SQLSemanticError):
 
     def __str__(self) -> str:
         return f"Ambiguous column reference '{self.column}' -  exists in multiple tables: {', '.join(self.tables)}."
-
-
-@dataclass
-class NonGroupedColumnError(SQLSemanticError):
-    """Raised when one or more non-aggregated columns are not in GROUP BY."""
-
-    columns: list[str]
-
-    def __str__(self) -> str:
-        if len(self.columns) == 1:
-            return f'column "{self.columns[0]}" must appear in the GROUP BY clause or be used in an aggregate function'
-        cols = '", "'.join(self.columns)
-        return f'columns "{cols}" must appear in the GROUP BY clause or be used in an aggregate function'

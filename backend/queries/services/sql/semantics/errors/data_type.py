@@ -1,3 +1,4 @@
+from abc import ABC
 from dataclasses import dataclass
 
 from ra_sql_visualisation.types import DataType
@@ -6,7 +7,12 @@ from . import SQLSemanticError
 
 
 @dataclass
-class TypeMismatchError(SQLSemanticError):
+class SQLTypeError(SQLSemanticError, ABC):
+    pass
+
+
+@dataclass
+class TypeMismatchError(SQLTypeError):
     expected: DataType
     received: DataType
 
@@ -15,22 +21,13 @@ class TypeMismatchError(SQLSemanticError):
 
 
 @dataclass
-class ScalarSubqueryError(SQLSemanticError):
+class ScalarSubqueryError(SQLTypeError):
     def __str__(self) -> str:
         return 'scalar subquery must return exactly one column'
 
 
 @dataclass
-class ColumnCountMismatchError(SQLSemanticError):
-    expected: int
-    received: int
-
-    def __str__(self) -> str:
-        return f'Column count mismatch: expected {self.expected}, got {self.received}'
-
-
-@dataclass
-class ColumnTypeMismatchError(SQLSemanticError):
+class ColumnTypeMismatchError(SQLTypeError):
     left_type: DataType
     right_type: DataType
     index: int
@@ -40,7 +37,7 @@ class ColumnTypeMismatchError(SQLSemanticError):
 
 
 @dataclass
-class ArithmeticTypeMismatchError(SQLSemanticError):
+class ArithmeticTypeMismatchError(SQLTypeError):
     left_t: DataType
     right_t: DataType
 
@@ -49,13 +46,13 @@ class ArithmeticTypeMismatchError(SQLSemanticError):
 
 
 @dataclass
-class ScalarExpressionExpectedError(SQLSemanticError):
+class ScalarExpressionExpectedError(SQLTypeError):
     def __str__(self) -> str:
         return f'Scalar expression expected, but got {self.source}'
 
 
 @dataclass
-class InvalidCastError(SQLSemanticError):
+class InvalidCastError(SQLTypeError):
     source_t: DataType
     target_t: DataType
 
