@@ -11,18 +11,6 @@ from sqlglot.expressions import Column
 class SQLSemanticError(Exception, ABC):
     source: Expression
 
-    def __post_init__(self) -> None:
-        source_pos = self.source.args.get('position')
-        if source_pos:
-            start_line, start_col, _, end_col = source_pos
-            self.position = {
-                'line': start_line,
-                'start_col': start_col,
-                'end_col': end_col,
-            }
-        else:
-            self.position = None
-
     @abstractmethod
     def __str__(self) -> str:
         """Provide a human-readable error message."""
