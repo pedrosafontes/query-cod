@@ -3,22 +3,18 @@ import re
 from ra_sql_visualisation.types import DataType
 from sqlglot import Expression
 from sqlglot.expressions import (
-    Avg,
-    Count,
-    Literal,
-    Max,
-    Min,
-    Subquery,
-    Sum,
+    DataType as SQLGLotDataType,
 )
 from sqlglot.expressions import (
-    DataType as SQLGLotDataType,
+    Literal,
+    Subquery,
 )
 
 from .errors import (
     ScalarSubqueryError,
     TypeMismatchError,
 )
+from .types import AggregateFunction
 
 
 def assert_comparable(lhs: DataType, rhs: DataType, source: Expression) -> None:
@@ -61,7 +57,7 @@ def assert_scalar_subquery(subquery: Subquery) -> None:
 
 
 def is_aggregate(expr: Expression) -> bool:
-    return isinstance(expr, Count | Sum | Avg | Min | Max)
+    return isinstance(expr, AggregateFunction)
 
 
 def infer_literal_type(node: Literal) -> DataType:
