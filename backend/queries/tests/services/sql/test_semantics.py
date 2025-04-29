@@ -588,6 +588,8 @@ class TestPredicateValidation:
         [
             'SELECT * FROM products WHERE price BETWEEN 10 AND 20',
             "SELECT * FROM products WHERE product_name LIKE 'A%'",
+            'SELECT * FROM products WHERE category_id IS NULL',
+            'SELECT * FROM products WHERE category_id IS NOT NULL',
         ],
     )
     def test_valid_predicates(self, query: str, schema: Schema) -> None:

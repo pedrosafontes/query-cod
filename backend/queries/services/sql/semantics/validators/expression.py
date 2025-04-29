@@ -21,6 +21,7 @@ from sqlglot.expressions import (
     DPipe,
     Exists,
     In,
+    Is,
     Length,
     Like,
     Literal,
@@ -212,6 +213,10 @@ class ExpressionValidator:
             case Like():
                 self._validate_string(node.this, context)
                 self._validate_string(node.expression, context)
+                return DataType.BOOLEAN
+
+            case Is():
+                self.validate_basic(node.this, context)
                 return DataType.BOOLEAN
 
             case _:
