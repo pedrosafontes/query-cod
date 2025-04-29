@@ -174,3 +174,9 @@ class ArithmeticTypeMismatchError(SQLSemanticError):
 
     def __str__(self) -> str:
         return f'Invalid operand types for {self.source}: {self.left_t} and {self.right_t}'
+
+
+@dataclass
+class ScalarExpressionExpectedError(SQLSemanticError):
+    def __str__(self) -> str:
+        return f'Scalar expression expected, but got {self.source}'

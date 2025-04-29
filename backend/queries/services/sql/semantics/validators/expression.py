@@ -40,6 +40,7 @@ from ..errors import (
     ColumnCountMismatchError,
     NestedAggregateError,
     NonGroupedColumnError,
+    ScalarExpressionExpectedError,
     ScalarSubqueryError,
     UndefinedColumnError,
 )
@@ -68,7 +69,12 @@ class ExpressionValidator:
         node: Expression,
         context: ValidationContext | None = None,
     ) -> DataType:
-        return cast(DataType, self.validate(node, context))
+        t = self.validate(node, context)
+
+        if isinstance(t, DataType):
+            return t
+        else:
+            raise ScalarExpressionExpectedError(node)
 
     def validate(
         self,
