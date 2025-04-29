@@ -587,6 +587,7 @@ class TestPredicateValidation:
         'query',
         [
             'SELECT * FROM products WHERE price BETWEEN 10 AND 20',
+            "SELECT * FROM products WHERE product_name LIKE 'A%'",
         ],
     )
     def test_valid_predicates(self, query: str, schema: Schema) -> None:
@@ -596,6 +597,7 @@ class TestPredicateValidation:
         'query, expected_exception',
         [
             ("SELECT * FROM products WHERE price BETWEEN 'low' AND 'high'", TypeMismatchError),
+            ('SELECT * FROM products WHERE product_name LIKE 123', TypeMismatchError),
         ],
     )
     def test_invalid_predicates(

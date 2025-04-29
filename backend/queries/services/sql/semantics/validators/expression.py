@@ -22,6 +22,7 @@ from sqlglot.expressions import (
     Exists,
     In,
     Length,
+    Like,
     Literal,
     Max,
     Min,
@@ -206,6 +207,11 @@ class ExpressionValidator:
                 assert_comparable(t, low_t, node)
                 assert_comparable(t, high_t, node)
 
+                return DataType.BOOLEAN
+
+            case Like():
+                self._validate_string(node.this, context)
+                self._validate_string(node.expression, context)
                 return DataType.BOOLEAN
 
             case _:
