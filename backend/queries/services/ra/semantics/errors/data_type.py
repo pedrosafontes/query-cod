@@ -1,61 +1,15 @@
+from abc import ABC
 from dataclasses import dataclass
 
+from queries.services.ra.parser.ast import AggregationFunction, SetOperator
 from queries.services.types import AttributeSchema
 from ra_sql_visualisation.types import DataType
 
-from ..parser.ast import AggregationFunction, ASTNode, Attribute, SetOperator
-from .types import TypedAttribute
+from ..types import TypedAttribute
+from .base import RASemanticError
 
 
-@dataclass
-class RASemanticError(Exception):
-    source: ASTNode
-
-    def __post_init__(self) -> None:
-        if self.source.position:
-            start_col, end_col = self.source.position
-            self.start_col = start_col
-            self.end_col = end_col
-
-    def _message(self) -> str:
-        raise NotImplementedError('Subclasses must implement _message()')
-
-    def __str__(self) -> str:
-        msg = self._message()
-        if self.source.position:
-            return f'{msg} (Columns {self.start_col}-{self.end_col})'
-        return msg
-
-
-@dataclass
-class UndefinedRelationError(RASemanticError):
-    relation: str
-
-    def _message(self) -> str:
-        return f"Relation '{self.relation}' does not exist"
-
-
-@dataclass
-class UndefinedAttributeError(RASemanticError):
-    attribute: Attribute
-
-    def _message(self) -> str:
-        return f"Attribute '{self.attribute}' is not defined in the current context"
-
-
-@dataclass
-class AmbiguousAttributeError(RASemanticError):
-    attribute: str
-    relations: list[str | None]
-
-    def relation_names(self) -> list[str]:
-        return [r or 'Unqualified' for r in self.relations]
-
-    def _message(self) -> str:
-        return f"Attribute '{self.attribute}' is ambiguous - it exists in multiple relations: {', '.join(self.relation_names())}"
-
-
-class RATypeError(RASemanticError):
+class RATypeError(RASemanticError, ABC):
     pass
 
 
