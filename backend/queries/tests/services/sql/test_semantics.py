@@ -10,6 +10,7 @@ from queries.services.sql.semantics.errors import (
     CrossJoinConditionError,
     DerivedColumnAliasRequiredError,
     DuplicateAliasError,
+    InvalidCastError,
     MissingDerivedTableAliasError,
     MissingJoinConditionError,
     NestedAggregateError,
@@ -58,11 +59,13 @@ def schema() -> Schema:
 
 def assert_valid(query: str, schema: Schema) -> None:
     select = parse_sql(query)
+    print(select.to_s())
     SQLSemanticAnalyzer(schema).validate(select)
 
 
 def assert_invalid(query: str, schema: Schema, exc: type[Exception]) -> None:
     select = parse_sql(query)
+    print(select.to_s())
     with pytest.raises(exc):
         SQLSemanticAnalyzer(schema).validate(select)
 
@@ -603,6 +606,30 @@ class TestPredicateValidation:
         ],
     )
     def test_invalid_predicates(
+        self, query: str, expected_exception: type[Exception], schema: Schema
+    ) -> None:
+        assert_invalid(query, schema, expected_exception)
+
+
+class TestCastFunction:
+    @pytest.mark.parametrize(
+        'query',
+        [
+            'SELECT CAST(price AS INTEGER) FROM products',
+            "SELECT CAST('2025-04-29' AS DATE)",
+            'SELECT CAST(product_id AS VARCHAR) FROM products',
+        ],
+    )
+    def test_valid_casts(self, query: str, schema: Schema) -> None:
+        assert_valid(query, schema)
+
+    @pytest.mark.parametrize(
+        'query, expected_exception',
+        [
+            ('SELECT CAST(price AS DATE) FROM products', InvalidCastError),
+        ],
+    )
+    def test_invalid_casts(
         self, query: str, expected_exception: type[Exception], schema: Schema
     ) -> None:
         assert_invalid(query, schema, expected_exception)

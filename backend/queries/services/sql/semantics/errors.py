@@ -172,3 +172,12 @@ class ArithmeticTypeMismatchError(SQLSemanticError):
 class ScalarExpressionExpectedError(SQLSemanticError):
     def __str__(self) -> str:
         return f'Scalar expression expected, but got {self.source}'
+
+
+@dataclass
+class InvalidCastError(SQLSemanticError):
+    source_t: DataType
+    target_t: DataType
+
+    def __str__(self) -> str:
+        return f"Cannot cast '{self.source}' of type {self.source_t} to type {self.target_t}"

@@ -54,9 +54,34 @@ class DataType(Enum):
             or self == DataType.NULL
             or other == DataType.NULL
             or (self.is_numeric() and other.is_numeric())
-            or (self.is_temporal() and other.is_temporal())
             or (self.is_string() and other.is_string())
             or (self.is_bit() and other.is_bit())
+        )
+
+    def can_cast_to(self, target: 'DataType') -> bool:
+        same_type = self == target
+        null_cast = self == DataType.NULL
+        string_cast = not self.is_bit() and (self.is_string() or target.is_string())
+        numeric_cast = self.is_numeric() and target.is_numeric()
+        boolean_bit_cast = (self.is_bit() or self == DataType.BOOLEAN) and (
+            target.is_bit() or target == DataType.BOOLEAN
+        )
+        temporal_cast = (
+            self.is_temporal()
+            and target.is_temporal()
+            and not (
+                (self == DataType.DATE and target == DataType.TIME)
+                or (self == DataType.TIME and target == DataType.DATE)
+            )
+        )
+
+        return (
+            same_type
+            or null_cast
+            or string_cast
+            or numeric_cast
+            or boolean_bit_cast
+            or temporal_cast
         )
 
     @classmethod

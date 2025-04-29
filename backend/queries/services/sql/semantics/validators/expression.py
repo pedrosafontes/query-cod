@@ -16,6 +16,7 @@ from sqlglot.expressions import (
     Avg,
     Between,
     Boolean,
+    Cast,
     Column,
     Count,
     DPipe,
@@ -42,6 +43,7 @@ from ..errors import (
     AggregateInWhereError,
     ArithmeticTypeMismatchError,
     ColumnCountMismatchError,
+    InvalidCastError,
     NestedAggregateError,
     NonGroupedColumnError,
     ScalarExpressionExpectedError,
@@ -55,6 +57,7 @@ from ..type_utils import (
     assert_numeric,
     assert_scalar_subquery,
     assert_string,
+    convert_sqlglot_type,
     infer_literal_type,
 )
 from ..types import ArithmeticOperation, StringOperation
@@ -218,6 +221,15 @@ class ExpressionValidator:
             case Is():
                 self.validate_basic(node.this, context)
                 return DataType.BOOLEAN
+
+            case Cast():
+                source_t = self.validate_basic(node.this, context)
+                target_t = convert_sqlglot_type(node.args['to'])
+
+                if not source_t.can_cast_to(target_t):
+                    raise InvalidCastError(node, source_t, target_t)
+
+                return target_t
 
             case _:
                 raise NotImplementedError(f'Expression {type(node)} not supported')
