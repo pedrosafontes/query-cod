@@ -19,6 +19,9 @@ from sqlglot.expressions import (
     Cast,
     Column,
     Count,
+    CurrentDate,
+    CurrentTime,
+    CurrentTimestamp,
     DPipe,
     Exists,
     In,
@@ -230,6 +233,15 @@ class ExpressionValidator:
                     raise InvalidCastError(node, source_t, target_t)
 
                 return target_t
+
+            case CurrentTime():
+                return DataType.TIME
+
+            case CurrentDate():
+                return DataType.DATE
+
+            case CurrentTimestamp():
+                return DataType.TIMESTAMP
 
             case _:
                 raise NotImplementedError(f'Expression {type(node)} not supported')
