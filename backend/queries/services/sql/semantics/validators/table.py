@@ -3,10 +3,10 @@ from queries.services.types import AttributeSchema, flatten
 from sqlglot.expressions import Subquery, Table
 
 from ..errors import (
-    DerivedColumnAliasRequiredError,
     DuplicateAliasError,
+    MissingDerivedColumnAliasError,
     MissingDerivedTableAliasError,
-    UndefinedTableError,
+    RelationNotFoundError,
 )
 from ..scope import Scope
 
@@ -31,7 +31,7 @@ class TableValidator:
         name = table.name
         table_schema = self.schema.get(name)
         if table_schema is None:
-            raise UndefinedTableError(table)
+            raise RelationNotFoundError(table)
         return table_schema
 
     def _validate_derived_table(self, subquery: Subquery) -> AttributeSchema:
@@ -46,7 +46,7 @@ class TableValidator:
             col_alias = expr.alias_or_name
 
             if not col_alias:
-                raise DerivedColumnAliasRequiredError(expr)
+                raise MissingDerivedColumnAliasError(expr)
 
             if col_alias in col_aliases:
                 raise DuplicateAliasError(expr)

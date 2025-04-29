@@ -12,7 +12,7 @@ class ObjectReferenceError(SQLSemanticError, ABC):
 
 
 @dataclass
-class UndefinedTableError(SQLSemanticError):
+class RelationNotFoundError(SQLSemanticError):
     name: str | None = None
 
     def __str__(self) -> str:
@@ -20,16 +20,16 @@ class UndefinedTableError(SQLSemanticError):
 
 
 @dataclass
-class UndefinedColumnError(SQLSemanticError):
+class ColumnNotFoundError(SQLSemanticError):
     name: str
     table: str | None = None
 
     @classmethod
-    def from_column(cls, column: Column) -> 'UndefinedColumnError':
+    def from_column(cls, column: Column) -> 'ColumnNotFoundError':
         return cls(column, column.alias_or_name, column.table)
 
     @classmethod
-    def from_expression(cls, expr: Expression, column: str) -> 'UndefinedColumnError':
+    def from_expression(cls, expr: Expression, column: str) -> 'ColumnNotFoundError':
         return cls(expr, column)
 
     def __str__(self) -> str:
@@ -37,7 +37,7 @@ class UndefinedColumnError(SQLSemanticError):
 
 
 @dataclass
-class AmbiguousColumnError(SQLSemanticError):
+class AmbiguousColumnReferenceError(SQLSemanticError):
     tables: list[str]
 
     def __init__(self, column: Column, tables: list[str]) -> None:

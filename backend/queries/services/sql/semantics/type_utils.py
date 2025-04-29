@@ -11,7 +11,7 @@ from sqlglot.expressions import (
 )
 
 from .errors import (
-    ScalarSubqueryError,
+    NonScalarExpressionError,
     TypeMismatchError,
 )
 from .types import AggregateFunction
@@ -47,13 +47,13 @@ def assert_scalar_subquery(subquery: Subquery) -> None:
     expressions = select.expressions
 
     if len(expressions) != 1:
-        raise ScalarSubqueryError(subquery)
+        raise NonScalarExpressionError(subquery)
 
     [scalar] = expressions
     group = select.args.get('group')
 
     if not is_aggregate(scalar) or group:
-        raise ScalarSubqueryError(subquery)
+        raise NonScalarExpressionError(subquery)
 
 
 def is_aggregate(expr: Expression) -> bool:

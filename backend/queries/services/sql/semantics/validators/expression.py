@@ -43,11 +43,10 @@ from ..errors import (
     AggregateInWhereError,
     ArithmeticTypeMismatchError,
     ColumnCountMismatchError,
+    ColumnNotFoundError,
     InvalidCastError,
     NestedAggregateError,
-    ScalarExpressionExpectedError,
-    ScalarSubqueryError,
-    UndefinedColumnError,
+    NonScalarExpressionError,
     UngroupedColumnError,
 )
 from ..scope import Scope
@@ -86,7 +85,7 @@ class ExpressionValidator:
         if isinstance(t, DataType):
             return t
         else:
-            raise ScalarExpressionExpectedError(node)
+            raise NonScalarExpressionError(node)
 
     def validate(
         self,
@@ -187,7 +186,7 @@ class ExpressionValidator:
         t = self.scope.tables.resolve_column(column)
 
         if t is None:
-            raise UndefinedColumnError.from_column(column)
+            raise ColumnNotFoundError.from_column(column)
 
         if (
             # Scenario: Grouped HAVING, SELECT, or ORDER BY
@@ -233,7 +232,7 @@ class ExpressionValidator:
             [(_, t)] = columns.items()  # Single column
         except ValueError:  # Unpack error
             # Subquery must return a single table with a single column
-            raise ScalarSubqueryError(subquery) from None
+            raise NonScalarExpressionError(subquery) from None
         return t
 
     # ──────── Comparison ────────

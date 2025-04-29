@@ -21,12 +21,6 @@ class TypeMismatchError(SQLTypeError):
 
 
 @dataclass
-class ScalarSubqueryError(SQLTypeError):
-    def __str__(self) -> str:
-        return 'scalar subquery must return exactly one column'
-
-
-@dataclass
 class ColumnTypeMismatchError(SQLTypeError):
     left_type: DataType
     right_type: DataType
@@ -46,7 +40,7 @@ class ArithmeticTypeMismatchError(SQLTypeError):
 
 
 @dataclass
-class ScalarExpressionExpectedError(SQLTypeError):
+class NonScalarExpressionError(SQLTypeError):
     def __str__(self) -> str:
         return f'Scalar expression expected, but got {self.source}'
 

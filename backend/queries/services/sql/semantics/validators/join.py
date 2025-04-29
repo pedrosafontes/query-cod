@@ -2,9 +2,9 @@ from databases.types import ColumnSchema, Schema
 from sqlglot.expressions import Identifier, Join
 
 from ..errors import (
-    CrossJoinConditionError,
+    ColumnNotFoundError,
+    InvalidJoinConditionError,
     MissingJoinConditionError,
-    UndefinedColumnError,
 )
 from ..scope import Scope
 from ..type_utils import assert_comparable
@@ -41,7 +41,7 @@ class JoinValidator:
         elif kind == 'CROSS':
             # CROSS JOINS must not have a condition
             if condition:
-                raise CrossJoinConditionError(condition)
+                raise InvalidJoinConditionError(condition)
         else:
             # INNER, LEFT, RIGHT, and FULL OUTER joins must have a condition
             if not condition:
@@ -55,7 +55,7 @@ class JoinValidator:
         for ident in using:
             col = ident.name
             if col not in left:
-                raise UndefinedColumnError.from_expression(join, col)
+                raise ColumnNotFoundError.from_expression(join, col)
             assert_comparable(left[col], right[col], join)
             self.scope.tables.merge_common_column(col)
 

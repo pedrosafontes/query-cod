@@ -9,9 +9,9 @@ from sqlglot import Expression
 from sqlglot.expressions import Column, Subquery, Table
 
 from ..errors import (
-    AmbiguousColumnError,
+    AmbiguousColumnReferenceError,
     DuplicateAliasError,
-    UndefinedTableError,
+    RelationNotFoundError,
 )
 
 
@@ -50,7 +50,7 @@ class TablesScope:
             return self.parent._resolve_unqualified(column) if self.parent else None
         # Check for ambiguous column
         if len(matches) > 1:
-            raise AmbiguousColumnError(column, [table for table, _ in matches if table])
+            raise AmbiguousColumnReferenceError(column, [table for table, _ in matches if table])
         # There is only one match
         [(_, t)] = matches
         return t
@@ -65,7 +65,7 @@ class TablesScope:
 
     def get_table_schema(self, table: str, source: Expression) -> RelationalSchema:
         if table not in self._table_schemas:
-            raise UndefinedTableError(source, table)
+            raise RelationNotFoundError(source, table)
         return {table: self._table_schemas[table]}
 
     def get_columns(self) -> ColumnSchema:

@@ -4,23 +4,22 @@ from queries.services.sql.parser import parse_sql
 from queries.services.sql.semantics import SQLSemanticAnalyzer
 from queries.services.sql.semantics.errors import (
     AggregateInWhereError,
-    AmbiguousColumnError,
+    AmbiguousColumnReferenceError,
     ColumnCountMismatchError,
+    ColumnNotFoundError,
     ColumnTypeMismatchError,
-    CrossJoinConditionError,
-    DerivedColumnAliasRequiredError,
     DuplicateAliasError,
     InvalidCastError,
+    InvalidJoinConditionError,
+    MissingDerivedColumnAliasError,
     MissingDerivedTableAliasError,
     MissingJoinConditionError,
     NestedAggregateError,
+    NonScalarExpressionError,
     OrderByExpressionError,
     OrderByPositionError,
-    ScalarExpressionExpectedError,
-    ScalarSubqueryError,
+    RelationNotFoundError,
     TypeMismatchError,
-    UndefinedColumnError,
-    UndefinedTableError,
     UngroupedColumnError,
 )
 from ra_sql_visualisation.types import DataType
@@ -111,8 +110,8 @@ class TestBasicSelects:
     @pytest.mark.parametrize(
         'query, expected_exception',
         [
-            ('SELECT unknown_column FROM products', UndefinedColumnError),
-            ('SELECT * FROM nonexistent_table', UndefinedTableError),
+            ('SELECT unknown_column FROM products', ColumnNotFoundError),
+            ('SELECT * FROM nonexistent_table', RelationNotFoundError),
             ('SELECT product_id AS id, price AS id FROM products', DuplicateAliasError),
             ('SELECT COUNT(COUNT(*)) FROM products', NestedAggregateError),
         ],
@@ -144,7 +143,7 @@ class TestWhereConditions:
     @pytest.mark.parametrize(
         'query, expected_exception',
         [
-            ("SELECT * FROM products WHERE nonexistent_column = 'value'", UndefinedColumnError),
+            ("SELECT * FROM products WHERE nonexistent_column = 'value'", ColumnNotFoundError),
             ('SELECT * FROM products WHERE product_name > 10', TypeMismatchError),
             ('SELECT * FROM products WHERE price = TRUE', TypeMismatchError),
             ('SELECT * FROM products WHERE 123', TypeMismatchError),  # Non-boolean expression
@@ -197,24 +196,24 @@ class TestJoins:
             # CROSS JOIN with condition
             (
                 'SELECT * FROM products CROSS JOIN categories ON products.category_id = categories.category_id',
-                CrossJoinConditionError,
+                InvalidJoinConditionError,
             ),
             # Ambiguous columns
             (
                 'SELECT category_id FROM products JOIN categories ON products.category_id = categories.category_id',
-                AmbiguousColumnError,
+                AmbiguousColumnReferenceError,
             ),
             # Non-boolean JOIN condition
             ('SELECT * FROM products p JOIN categories c ON p.product_id', TypeMismatchError),
             # USING on non-existent column
             (
                 'SELECT * FROM products JOIN categories USING (nonexistent_column)',
-                UndefinedColumnError,
+                ColumnNotFoundError,
             ),
             # Ambiguous columns in SELECT with JOIN
             (
                 'SELECT customer_id FROM customers c JOIN orders o ON c.customer_id = o.customer_id',
-                AmbiguousColumnError,
+                AmbiguousColumnReferenceError,
             ),
         ],
     )
@@ -259,7 +258,7 @@ class TestAggregatesAndGrouping:
                 UngroupedColumnError,
             ),
             # Non-existent column in GROUP BY
-            ('SELECT COUNT(*) FROM products GROUP BY nonexistent_column', UndefinedColumnError),
+            ('SELECT COUNT(*) FROM products GROUP BY nonexistent_column', ColumnNotFoundError),
             # Invalid aggregate argument
             ('SELECT SUM(product_name) FROM products', TypeMismatchError),
             # Non-grouped column in HAVING
@@ -313,7 +312,7 @@ class TestOrderBy:
         'query, expected_exception',
         [
             # Non-existent column
-            ('SELECT * FROM products ORDER BY nonexistent_column', UndefinedColumnError),
+            ('SELECT * FROM products ORDER BY nonexistent_column', ColumnNotFoundError),
             # Invalid ORDER BY position
             ('SELECT product_id FROM products ORDER BY 2', OrderByPositionError),
             # ORDER BY column not in SELECT with GROUP BY
@@ -358,17 +357,17 @@ class TestSubqueries:
             # Non-scalar subquery in comparison
             (
                 'SELECT * FROM products WHERE price = (SELECT price FROM products)',
-                ScalarSubqueryError,
+                NonScalarExpressionError,
             ),
             # Missing alias for derived column
             (
                 'SELECT * FROM (SELECT product_id, price * 1.1 FROM products) AS p',
-                DerivedColumnAliasRequiredError,
+                MissingDerivedColumnAliasError,
             ),
             # Undefined column in subquery
             (
                 'SELECT * FROM products WHERE price > (SELECT AVG(unknown_column) FROM products)',
-                UndefinedColumnError,
+                ColumnNotFoundError,
             ),
             # Subquery type mismatch
             (
@@ -592,9 +591,9 @@ class TestStringFunctions:
     @pytest.mark.parametrize(
         'query, expected_exception',
         [
-            ('SELECT CHAR_LENGTH(unknown_column) FROM products', UndefinedColumnError),
+            ('SELECT CHAR_LENGTH(unknown_column) FROM products', ColumnNotFoundError),
             ("SELECT POSITION('x' IN 42) FROM products", TypeMismatchError),
-            ('SELECT LOWER(*) FROM products', ScalarExpressionExpectedError),
+            ('SELECT LOWER(*) FROM products', NonScalarExpressionError),
             ("SELECT SUBSTRING(product_name FROM 'x') FROM products", TypeMismatchError),
         ],
     )

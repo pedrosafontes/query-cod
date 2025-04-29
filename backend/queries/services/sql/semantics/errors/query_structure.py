@@ -41,7 +41,7 @@ class MissingJoinConditionError(JoinError):
 
 
 @dataclass
-class CrossJoinConditionError(JoinError):
+class InvalidJoinConditionError(JoinError):
     def __str__(self) -> str:
         return 'CROSS JOIN does not support ON or USING clause'
 
@@ -58,7 +58,7 @@ class MissingDerivedTableAliasError(AliasError):
 
 
 @dataclass
-class DerivedColumnAliasRequiredError(AliasError):
+class MissingDerivedColumnAliasError(AliasError):
     def __str__(self) -> str:
         return f'Derived column {self.source} must have an alias'
 
