@@ -141,9 +141,9 @@ export default function RAKeyboard({ onInsert, className }: RAKeyboardProps) {
       example: "\\Gamma_{(dept), ((salary, avg, avg_salary))}(Employee)",
     },
     {
-      label: "T",
-      expr: "T_{(\\placeholder{n}, \\placeholder{attr})}#0",
-      displayExpr: "T_{(n, attr)}(R)",
+      label: "\\operatorname{T}",
+      expr: "\\operatorname{T}_{(\\placeholder{n}, \\placeholder{attr})}#0",
+      displayExpr: "\\operatorname{T}_{(n, attr)}(R)",
       name: "Top-N",
       description: "Returns the top-N tuples ordered by a given attribute.",
       args: [
@@ -151,7 +151,7 @@ export default function RAKeyboard({ onInsert, className }: RAKeyboardProps) {
         { name: "attr", description: "attribute to sort by" },
         { name: "R", description: "input relation" },
       ],
-      example: "T_{(3, salary)}(Employee)",
+      example: "\\operatorname{T}_{(3, salary)}(Employee)",
     },
   ];
 

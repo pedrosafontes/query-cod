@@ -1,0 +1,100 @@
+?expr: set_expr
+
+?set_expr: join_expr
+         | set_expr _UNION join_expr     -> union
+         | set_expr _DIFF join_expr      -> difference
+         | set_expr _INTERSECT join_expr -> intersection
+         | set_expr _CARTESIAN join_expr -> cartesian
+
+?join_expr: unary_expr
+          | join_expr _NATURAL_JOIN unary_expr    -> natural_join
+          | join_expr _theta_join_op unary_expr   -> theta_join
+          | join_expr _SEMIJOIN unary_expr        -> semi_join
+          | join_expr _DIV unary_expr             -> division
+
+?unary_expr: projection
+           | selection
+           | grouped_aggregation
+           | topn
+           | sub_expr
+
+?sub_expr: relation
+         | "(" expr ")"
+
+projection: _PI _subscript{nonempty_list{attribute}} expr
+
+selection: _SIGMA _subscript{bool_expr} expr
+
+?bool_expr: and_expr
+          | bool_expr "\\lor" and_expr -> or_
+
+?and_expr: bool_atom
+         | and_expr "\\land" bool_atom -> and_
+
+?bool_atom: "\\lnot" bool_atom -> not_
+          | "(" bool_expr ")"
+          | comparison
+          | attribute
+
+comparison: value comparator value
+comparator: "=" -> eq
+          | "\\neq" -> neq
+          | ("<" | "\\lt") -> lt
+          | "\\leq" -> leq
+          | (">" | "\\gt") -> gt
+          | "\\geq" -> geq
+
+?value: SIGNED_FLOAT  -> float
+      | SIGNED_INT -> int
+      | ESCAPED_STRING -> string
+      | attribute
+
+grouped_aggregation: _GAMMA _subscript{_grouped_aggregation_params} expr
+_grouped_aggregation_params: "(" _grouping_attrs "," _aggregations ")"
+_grouping_attrs: "(" list{attribute} ")"
+_aggregations: "(" nonempty_list{aggregation} ")"
+aggregation: "(" attribute "," aggregation_function "," attribute ")"
+aggregation_function: "count" -> count
+                    | "sum" -> sum
+                    | "avg" -> avg
+                    | "min" -> min
+                    | "max" -> max
+
+topn: _TOPN _subscript{_topn_params} expr
+_topn_params: "(" INT "," attribute ")"
+
+_theta_join_op: _overset{bool_expr, "\\bowtie"}
+
+relation: _identifier
+attribute: (relation ".")? _identifier
+_identifier: CNAME | "\\text" "{" CNAME "}"
+
+placeholder: "\\placeholder" "{" CNAME? "}"
+
+_PI: "\\pi"
+_SIGMA: "\\sigma"
+_GAMMA: "\\Gamma"
+_TOPN: "\\operatorname{T}"
+_UNION: "\\cup"
+_DIFF: "-"
+_INTERSECT: "\\cap"
+_CARTESIAN: "\\times"
+_NATURAL_JOIN: "\\Join"
+_SEMIJOIN: "\\ltimes"
+_DIV: "\\div"
+
+nonempty_list{item}: _nonempty_list_helper{item} -> item_list
+list{item}: -> item_list
+          | _nonempty_list_helper{item} -> item_list
+_nonempty_list_helper{item}: item ("," item)*
+
+_subscript{content}: "_" "{" content "}"
+_overset{superscript, operator}: "\\overset" "{" superscript "}" "{" operator "}"
+
+%import common.CNAME
+%import common.INT
+%import common.SIGNED_INT
+%import common.SIGNED_FLOAT
+%import common.ESCAPED_STRING
+%import common.WS_INLINE
+%ignore WS_INLINE

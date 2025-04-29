@@ -1,6 +1,6 @@
-@layer base {
+@layer components {
   math-field[contenteditable]:not([read-only]) {
-    @apply rounded-md border border-input bg-background px-3 py-2 ring-offset-background text-base;
+    @apply rounded-md border border-input bg-background px-3 py-2 text-base;
     display: block;
 
     --hue: theme(colors.primary.DEFAULT);
@@ -20,7 +20,7 @@
     --incorrect-color: theme(colors.destructive);
 
     &:focus-within {
-      @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background rounded-md;
+      @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
     }
 
     &::part(menu-toggle) {
@@ -29,6 +29,30 @@
 
     &::part(virtual-keyboard-toggle) {
       display: none;
+    }
+  }
+
+  #mathlive-suggestion-popover {
+    background-color: theme("colors.background") !important;
+    color: theme("colors.foreground") !important;
+    border-radius: theme("borderRadius.md") !important;
+    box-shadow: theme("boxShadow.md") !important;
+    padding: theme("spacing.1") !important;
+
+    &::after {
+      border: 0 !important;
+    }
+  
+    li {
+      width: 100% !important;
+      margin: 0 !important;
+      margin-bottom: theme("spacing.1") !important;
+      padding: theme("spacing.1") !important;
+      border-radius: theme("borderRadius.DEFAULT") !important;
+  
+      &:hover {
+        background-color: theme("colors.muted.DEFAULT") !important;
+      }
     }
   }
 }
