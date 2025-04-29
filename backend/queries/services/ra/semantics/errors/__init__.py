@@ -1,7 +1,7 @@
 from .base import RASemanticError
 from .data_type import (
-    DivisionSchemaMismatchError,
-    DivisionTypeMismatchError,
+    DivisionAttributeTypeMismatchError,
+    DivisionSchemaCompatibilityError,
     InvalidFunctionArgumentError,
     JoinAttributeTypeMismatchError,
     RATypeError,
@@ -9,24 +9,24 @@ from .data_type import (
     UnionCompatibilityError,
 )
 from .reference import (
-    AmbiguousAttributeError,
+    AmbiguousAttributeReferenceError,
+    AttributeNotFoundError,
     RAReferenceError,
-    UndefinedAttributeError,
-    UndefinedRelationError,
+    RelationNotFoundError,
 )
 
 
 __all__ = [
     'RASemanticError',
     'RAReferenceError',
-    'UndefinedRelationError',
-    'UndefinedAttributeError',
-    'AmbiguousAttributeError',
+    'RelationNotFoundError',
+    'AttributeNotFoundError',
+    'AmbiguousAttributeReferenceError',
     'RATypeError',
     'TypeMismatchError',
     'JoinAttributeTypeMismatchError',
     'UnionCompatibilityError',
-    'DivisionSchemaMismatchError',
-    'DivisionTypeMismatchError',
+    'DivisionSchemaCompatibilityError',
+    'DivisionAttributeTypeMismatchError',
     'InvalidFunctionArgumentError',
 ]

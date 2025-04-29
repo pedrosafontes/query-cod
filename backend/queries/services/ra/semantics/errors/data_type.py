@@ -57,7 +57,7 @@ class JoinAttributeTypeMismatchError(RATypeError):
 
 
 @dataclass
-class DivisionSchemaMismatchError(RATypeError):
+class DivisionSchemaCompatibilityError(RATypeError):
     dividend_attrs: AttributeSchema
     divisor_attrs: AttributeSchema
 
@@ -68,7 +68,7 @@ class DivisionSchemaMismatchError(RATypeError):
 
 
 @dataclass
-class DivisionTypeMismatchError(RATypeError):
+class DivisionAttributeTypeMismatchError(RATypeError):
     name: str
     dividend_t: DataType
     divisor_t: DataType

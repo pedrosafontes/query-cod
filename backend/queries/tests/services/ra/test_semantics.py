@@ -24,13 +24,13 @@ from queries.services.ra.parser.ast import (
 )
 from queries.services.ra.semantics import RASemanticAnalyzer
 from queries.services.ra.semantics.errors import (
-    AmbiguousAttributeError,
-    DivisionSchemaMismatchError,
-    DivisionTypeMismatchError,
+    AmbiguousAttributeReferenceError,
+    AttributeNotFoundError,
+    DivisionAttributeTypeMismatchError,
+    DivisionSchemaCompatibilityError,
     InvalidFunctionArgumentError,
+    RelationNotFoundError,
     TypeMismatchError,
-    UndefinedAttributeError,
-    UndefinedRelationError,
     UnionCompatibilityError,
 )
 from ra_sql_visualisation.types import DataType
@@ -123,18 +123,18 @@ def test_valid_ast_expressions(expr: RAExpression, schema: Schema) -> None:
 @pytest.mark.parametrize(
     'expr, expected_exception',
     [
-        (Relation('X'), UndefinedRelationError),
+        (Relation('X'), RelationNotFoundError),
         (
             Join(JoinOperator.NATURAL, Relation('R'), Relation('X')),
-            UndefinedRelationError,
+            RelationNotFoundError,
         ),
-        (Projection([Attribute('Z')], Relation('R')), UndefinedAttributeError),
+        (Projection([Attribute('Z')], Relation('R')), AttributeNotFoundError),
         (
             Selection(
                 Comparison(ComparisonOperator.GREATER_THAN, Attribute('Z'), 10),
                 Relation('R'),
             ),
-            UndefinedAttributeError,
+            AttributeNotFoundError,
         ),
         (
             Selection(Comparison(ComparisonOperator.EQUAL, Attribute('B'), 10), Relation('R')),
@@ -164,7 +164,7 @@ def test_valid_ast_expressions(expr: RAExpression, schema: Schema) -> None:
                 Relation('S'),
                 Comparison(ComparisonOperator.EQUAL, Attribute('A'), Attribute('G')),
             ),
-            UndefinedAttributeError,
+            AttributeNotFoundError,
         ),
         (
             ThetaJoin(
@@ -180,7 +180,7 @@ def test_valid_ast_expressions(expr: RAExpression, schema: Schema) -> None:
                 [Aggregation(Attribute('A'), AggregationFunction.SUM, 'X')],
                 Relation('R'),
             ),
-            UndefinedAttributeError,
+            AttributeNotFoundError,
         ),
         (
             GroupedAggregation(
@@ -188,7 +188,7 @@ def test_valid_ast_expressions(expr: RAExpression, schema: Schema) -> None:
                 [Aggregation(Attribute('Z'), AggregationFunction.SUM, 'X')],
                 Relation('R'),
             ),
-            UndefinedAttributeError,
+            AttributeNotFoundError,
         ),
         (
             GroupedAggregation(
@@ -204,14 +204,14 @@ def test_valid_ast_expressions(expr: RAExpression, schema: Schema) -> None:
             ),
             InvalidFunctionArgumentError,
         ),
-        (TopN(10, Attribute('Z'), Relation('R')), UndefinedAttributeError),
+        (TopN(10, Attribute('Z'), Relation('R')), AttributeNotFoundError),
         (
             ThetaJoin(
                 Relation('R'),
                 Relation('T'),
                 Comparison(ComparisonOperator.EQUAL, Attribute('A'), Attribute('B')),
             ),
-            AmbiguousAttributeError,
+            AmbiguousAttributeReferenceError,
         ),
         (
             Projection(
@@ -222,7 +222,7 @@ def test_valid_ast_expressions(expr: RAExpression, schema: Schema) -> None:
                     Relation('T'),
                 ),
             ),
-            AmbiguousAttributeError,
+            AmbiguousAttributeReferenceError,
         ),
         (
             Selection(
@@ -233,7 +233,7 @@ def test_valid_ast_expressions(expr: RAExpression, schema: Schema) -> None:
                     Relation('T'),
                 ),
             ),
-            AmbiguousAttributeError,
+            AmbiguousAttributeReferenceError,
         ),
         # AND between non-booleans
         (
@@ -285,7 +285,7 @@ def test_valid_ast_expressions(expr: RAExpression, schema: Schema) -> None:
                 dividend=Relation('R'),
                 divisor=Relation('S'),
             ),
-            DivisionSchemaMismatchError,
+            DivisionSchemaCompatibilityError,
         ),
         # Attribute types must match
         (
@@ -293,7 +293,7 @@ def test_valid_ast_expressions(expr: RAExpression, schema: Schema) -> None:
                 dividend=Relation('R'),
                 divisor=Relation('V'),
             ),
-            DivisionTypeMismatchError,
+            DivisionAttributeTypeMismatchError,
         ),
     ],
 )

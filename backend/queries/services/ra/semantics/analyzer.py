@@ -31,14 +31,14 @@ from ..parser.ast import (
     TopN,
 )
 from .errors import (
-    AmbiguousAttributeError,
-    DivisionSchemaMismatchError,
-    DivisionTypeMismatchError,
+    AmbiguousAttributeReferenceError,
+    AttributeNotFoundError,
+    DivisionAttributeTypeMismatchError,
+    DivisionSchemaCompatibilityError,
     InvalidFunctionArgumentError,
     JoinAttributeTypeMismatchError,
+    RelationNotFoundError,
     TypeMismatchError,
-    UndefinedAttributeError,
-    UndefinedRelationError,
     UnionCompatibilityError,
 )
 from .types import Match, RelationOutput, TypedAttribute
@@ -60,7 +60,7 @@ class RASemanticAnalyzer:
 
     def _validate_Relation(self, rel: Relation) -> RelationOutput:  # noqa: N802
         if rel.name not in self.schema:
-            raise UndefinedRelationError(rel, rel.name)
+            raise RelationNotFoundError(rel, rel.name)
         rel_schema = self.schema[rel.name]
         return RelationOutput(
             {rel.name: rel_schema}, [TypedAttribute(attr, t) for attr, t in rel_schema.items()]
@@ -135,9 +135,9 @@ class RASemanticAnalyzer:
 
         for name, t in divisor_schema.items():
             if name not in dividend_schema:
-                raise DivisionSchemaMismatchError(div, dividend_schema, divisor_schema)
+                raise DivisionSchemaCompatibilityError(div, dividend_schema, divisor_schema)
             if dividend_schema[name] != t:
-                raise DivisionTypeMismatchError(div, name, dividend_schema[name], t)
+                raise DivisionAttributeTypeMismatchError(div, name, dividend_schema[name], t)
 
         output_attrs = [attr for attr in dividend.attrs if attr not in divisor.attrs]
         output_schema: RelationalSchema = {
@@ -213,10 +213,10 @@ class RASemanticAnalyzer:
             matches.extend(input_.resolve(attr))
 
         if not matches:
-            raise UndefinedAttributeError(source, attr)
+            raise AttributeNotFoundError(source, attr)
         # Check for ambiguous column
         if len(matches) > 1:
-            raise AmbiguousAttributeError(source, attr.name, [rel for rel, _ in matches])
+            raise AmbiguousAttributeReferenceError(source, attr.name, [rel for rel, _ in matches])
         # There is only one match
         [(_, t)] = matches
         return t

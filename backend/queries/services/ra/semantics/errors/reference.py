@@ -11,7 +11,7 @@ class RAReferenceError(RASemanticError):
 
 
 @dataclass
-class UndefinedRelationError(RAReferenceError):
+class RelationNotFoundError(RAReferenceError):
     relation: str
 
     def _message(self) -> str:
@@ -19,7 +19,7 @@ class UndefinedRelationError(RAReferenceError):
 
 
 @dataclass
-class UndefinedAttributeError(RAReferenceError):
+class AttributeNotFoundError(RAReferenceError):
     attribute: Attribute
 
     def _message(self) -> str:
@@ -27,7 +27,7 @@ class UndefinedAttributeError(RAReferenceError):
 
 
 @dataclass
-class AmbiguousAttributeError(RAReferenceError):
+class AmbiguousAttributeReferenceError(RAReferenceError):
     attribute: str
     relations: list[str | None]
 
