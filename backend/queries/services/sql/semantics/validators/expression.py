@@ -14,6 +14,7 @@ from sqlglot.expressions import (
     And,
     Any,
     Avg,
+    Between,
     Boolean,
     Column,
     Count,
@@ -43,7 +44,6 @@ from ..errors import (
     NonGroupedColumnError,
     ScalarExpressionExpectedError,
     ScalarSubqueryError,
-    TypeMismatchError,
     UndefinedColumnError,
 )
 from ..scope import Scope
@@ -195,11 +195,18 @@ class ExpressionValidator:
 
             case StrPosition():
                 self._validate_string(node.this, context)
-                if substr := node.args.get('substr'):
-                    self._validate_string(substr, context)
-                else:
-                    raise TypeMismatchError(node, DataType.VARCHAR, DataType.NULL)
+                self._validate_string(node.args['substr'], context)
                 return DataType.INTEGER
+
+            case Between():
+                t = self.validate_basic(node.this, context)
+                low_t = self.validate_basic(node.args['low'], context)
+                high_t = self.validate_basic(node.args['high'], context)
+
+                assert_comparable(t, low_t, node)
+                assert_comparable(t, high_t, node)
+
+                return DataType.BOOLEAN
 
             case _:
                 raise NotImplementedError(f'Expression {type(node)} not supported')

@@ -580,3 +580,25 @@ class TestStringFunctions:
         self, query: str, expected_exception: type[Exception], schema: Schema
     ) -> None:
         assert_invalid(query, schema, expected_exception)
+
+
+class TestPredicateValidation:
+    @pytest.mark.parametrize(
+        'query',
+        [
+            'SELECT * FROM products WHERE price BETWEEN 10 AND 20',
+        ],
+    )
+    def test_valid_predicates(self, query: str, schema: Schema) -> None:
+        assert_valid(query, schema)
+
+    @pytest.mark.parametrize(
+        'query, expected_exception',
+        [
+            ("SELECT * FROM products WHERE price BETWEEN 'low' AND 'high'", TypeMismatchError),
+        ],
+    )
+    def test_invalid_predicates(
+        self, query: str, expected_exception: type[Exception], schema: Schema
+    ) -> None:
+        assert_invalid(query, schema, expected_exception)
