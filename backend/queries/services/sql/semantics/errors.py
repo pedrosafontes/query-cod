@@ -165,3 +165,12 @@ class ColumnTypeMismatchError(SQLSemanticError):
 
     def __str__(self) -> str:
         return f'Set operands have incompatible column types at position {self.index + 1}: {self.left_type.name} vs {self.right_type.name}.'
+
+
+@dataclass
+class ArithmeticTypeMismatchError(SQLSemanticError):
+    left_t: DataType
+    right_t: DataType
+
+    def __str__(self) -> str:
+        return f'Invalid operand types for {self.source}: {self.left_t} and {self.right_t}'

@@ -11,7 +11,6 @@ from sqlglot.expressions import (
     LT,
     LTE,
     NEQ,
-    Add,
     Alias,
     All,
     And,
@@ -20,18 +19,15 @@ from sqlglot.expressions import (
     Boolean,
     Column,
     Count,
-    Div,
     Exists,
     In,
     Literal,
     Max,
     Min,
-    Mul,
     Not,
     Or,
     Paren,
     Star,
-    Sub,
     Subquery,
     Sum,
 )
@@ -39,6 +35,7 @@ from sqlglot.expressions import (
 from ..context import ValidationContext
 from ..errors import (
     AggregateInWhereError,
+    ArithmeticTypeMismatchError,
     ColumnCountMismatchError,
     NestedAggregateError,
     NonGroupedColumnError,
@@ -54,6 +51,7 @@ from ..type_utils import (
     assert_scalar_subquery,
     infer_literal_type,
 )
+from ..types import ArithmeticOperation
 
 
 class ExpressionValidator:
@@ -101,10 +99,8 @@ class ExpressionValidator:
                 assert_comparable(lt, rt, node)
                 return DataType.BOOLEAN
 
-            case Add() | Sub() | Mul() | Div():
-                lt = self._validate_numeric(node.left, context)
-                rt = self._validate_numeric(node.right, context)
-                return DataType.dominant([lt, rt])
+            case op if isinstance(op, ArithmeticOperation):
+                return self._validate_arithmetic_operation(node, context)
 
             case Not():
                 self._validate_boolean(node.this, context)
@@ -231,6 +227,17 @@ class ExpressionValidator:
                 raise NonGroupedColumnError(source, missing)
 
         return schema
+
+    def _validate_arithmetic_operation(
+        self, op: ArithmeticOperation, context: ValidationContext
+    ) -> DataType:
+        lt = self.validate_basic(op.left, context)
+        rt = self.validate_basic(op.right, context)
+
+        if lt.is_numeric() and rt.is_numeric():
+            return DataType.dominant([lt, rt])
+
+        raise ArithmeticTypeMismatchError(op, lt, rt)
 
     # ──────── Type Utilities ────────
 
