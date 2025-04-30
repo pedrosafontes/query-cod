@@ -176,8 +176,12 @@ export const $PatchedQuery = {
       items: {
         type: "object",
         properties: {
-          message: {
+          title: {
             type: "string",
+          },
+          description: {
+            type: "string",
+            nullable: true,
           },
           position: {
             type: "object",
@@ -196,7 +200,7 @@ export const $PatchedQuery = {
             nullable: true,
           },
         },
-        required: ["message"],
+        required: ["description", "title"],
       },
       readOnly: true,
     },
@@ -321,8 +325,12 @@ export const $Query = {
       items: {
         type: "object",
         properties: {
-          message: {
+          title: {
             type: "string",
+          },
+          description: {
+            type: "string",
+            nullable: true,
           },
           position: {
             type: "object",
@@ -341,7 +349,7 @@ export const $Query = {
             nullable: true,
           },
         },
-        required: ["message"],
+        required: ["description", "title"],
       },
       readOnly: true,
     },

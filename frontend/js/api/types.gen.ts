@@ -54,7 +54,8 @@ export type PatchedQuery = {
   readonly created?: string;
   readonly modified?: string;
   readonly validation_errors?: Array<{
-    message: string;
+    title: string;
+    description: string | null;
     position?: {
       line: number;
       start_col: number;
@@ -90,7 +91,8 @@ export type Query = {
   readonly created: string;
   readonly modified: string;
   readonly validation_errors: Array<{
-    message: string;
+    title: string;
+    description: string | null;
     position?: {
       line: number;
       start_col: number;

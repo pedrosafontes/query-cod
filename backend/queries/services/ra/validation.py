@@ -16,12 +16,8 @@ def validate_ra(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationR
             'valid': False,
             'errors': [
                 {
-                    'message': str(e),
-                    'position': {
-                        'line': e.line,
-                        'start_col': e.column,
-                        'end_col': e.column + 1,
-                    },
+                    'title': 'Syntax Error',
+                    'description': str(e),
                 }
             ],
         }
@@ -33,7 +29,15 @@ def validate_ra(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationR
             'valid': False,
             'errors': [
                 {
-                    'message': str(e),
+                    'title': e.title,
+                    'description': e.description,
+                    'position': {
+                        'line': 0,
+                        'start_col': e.start_col,
+                        'end_col': e.end_col,
+                    }
+                    if e.source.position
+                    else None,
                 }
             ],
         }
