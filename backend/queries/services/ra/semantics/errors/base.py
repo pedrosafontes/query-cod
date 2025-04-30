@@ -14,11 +14,16 @@ class RASemanticError(Exception, ABC):
             self.start_col = start_col
             self.end_col = end_col
 
-    def _message(self) -> str:
-        raise NotImplementedError('Subclasses must implement _message()')
+    @property
+    def title(self) -> str:
+        raise NotImplementedError('Subclasses must have a title')
+
+    @property
+    def description(self) -> str | None:
+        return None
 
     def __str__(self) -> str:
-        msg = self._message()
+        msg = f'{self.title}:  {self.description}'
         if self.source.position:
             return f'{msg} (Columns {self.start_col}-{self.end_col})'
         return msg

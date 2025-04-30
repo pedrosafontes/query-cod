@@ -19,9 +19,14 @@ class InvalidFunctionArgumentError(RATypeError):
     expected: list[DataType]
     actual: DataType
 
-    def _message(self) -> str:
+    @property
+    def title(self) -> str:
+        return f'Invalid argument type for function {self.function.name}'
+
+    @property
+    def description(self) -> str:
         expected_types = ', '.join(str(t) for t in self.expected)
-        return f'Invalid argument type for function {self.function.name}: expected one of ({expected_types}), got {self.actual.name}.'
+        return f'Expected one of ({expected_types}), got {self.actual.name}.'
 
 
 @dataclass
@@ -30,10 +35,15 @@ class UnionCompatibilityError(RATypeError):
     left_attrs: list[TypedAttribute]
     right_attrs: list[TypedAttribute]
 
-    def _message(self) -> str:
+    @property
+    def title(self) -> str:
+        return f'Relations in {self.operation.name} are not union-compatible'
+
+    @property
+    def description(self) -> str:
         left_attrs = f'({', '.join(attr.name for attr in self.left_attrs)})'
         right_attrs = f'({', '.join(attr.name for attr in self.right_attrs)})'
-        return f'Relations in {self.operation.name} are not union-compatible. Left schema: {left_attrs}, Right schema: {right_attrs}'
+        return f'Left schema: {left_attrs}\n\n' f'Right schema: {right_attrs}'
 
 
 @dataclass
@@ -42,8 +52,13 @@ class TypeMismatchError(RATypeError):
     received: DataType
     operation: str = 'operation'
 
-    def _message(self) -> str:
-        return f'Type mismatch in {self.operation}: expected {self.expected}, got {self.received}'
+    @property
+    def title(self) -> str:
+        return f'Type mismatch in {self.operation}'
+
+    @property
+    def description(self) -> str:
+        return f'Expected {self.expected}, got {self.received}'
 
 
 @dataclass
@@ -52,8 +67,13 @@ class JoinAttributeTypeMismatchError(RATypeError):
     left_t: DataType
     right_t: DataType
 
-    def _message(self) -> str:
-        return f"Type mismatch in join: attribute '{self.name}' has type {self.left_t} in left relation, but type {self.right_t} in right relation"
+    @property
+    def title(self) -> str:
+        return 'Type mismatch in join'
+
+    @property
+    def description(self) -> str:
+        return f"Attribute '{self.name}' has type {self.left_t} in left relation, but type {self.right_t} in right relation"
 
 
 @dataclass
@@ -61,10 +81,15 @@ class DivisionSchemaCompatibilityError(RATypeError):
     dividend_attrs: AttributeSchema
     divisor_attrs: AttributeSchema
 
-    def _message(self) -> str:
+    @property
+    def title(self) -> str:
+        return 'Divisor schema is not a subset of dividend schema'
+
+    @property
+    def description(self) -> str:
         dividend_attrs = f'({', '.join(attr for attr in self.dividend_attrs.keys())})'
         divisor_attrs = f'({', '.join(attr for attr in self.divisor_attrs.keys())})'
-        return f'Division schema mismatch: divisor schema is not a subset of dividend schema. Dividend schema: {dividend_attrs}, Divisor schema: {divisor_attrs}'
+        return f'Dividend schema: {dividend_attrs}</br></br>Divisor schema: {divisor_attrs}'
 
 
 @dataclass
@@ -73,5 +98,10 @@ class DivisionAttributeTypeMismatchError(RATypeError):
     dividend_t: DataType
     divisor_t: DataType
 
-    def _message(self) -> str:
-        return f'Attributes of dividend and divisor must match in name and type. Attribute {self.name} has type {self.dividend_t} in dividend and type {self.divisor_t} in divisor'
+    @property
+    def title(self) -> str:
+        return 'Attribute type mismatch in division'
+
+    @property
+    def description(self) -> str:
+        return f'Attribute {self.name} has type {self.dividend_t} in dividend and type {self.divisor_t} in divisor'
