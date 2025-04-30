@@ -1,0 +1,45 @@
+from collections.abc import Callable
+
+import pytest
+from queries.services.ra.parser.ast import RAExpression, Relation, SetOperation, SetOperator
+from queries.services.ra.semantics.errors import UnionCompatibilityError
+
+
+@pytest.mark.parametrize(
+    'query',
+    [
+        SetOperation(SetOperator.CARTESIAN, Relation('R'), Relation('S')),
+        SetOperation(SetOperator.UNION, Relation('R'), Relation('U')),
+        SetOperation(SetOperator.INTERSECT, Relation('R'), Relation('U')),
+        SetOperation(SetOperator.DIFFERENCE, Relation('R'), Relation('U')),
+    ],
+)
+def test_valid_set_operation(
+    query: RAExpression, assert_valid: Callable[[RAExpression], None]
+) -> None:
+    assert_valid(query)
+
+
+@pytest.mark.parametrize(
+    'query, expected_exception',
+    [
+        (
+            SetOperation(SetOperator.UNION, Relation('R'), Relation('S')),
+            UnionCompatibilityError,
+        ),
+        (
+            SetOperation(SetOperator.INTERSECT, Relation('R'), Relation('S')),
+            UnionCompatibilityError,
+        ),
+        (
+            SetOperation(SetOperator.DIFFERENCE, Relation('R'), Relation('S')),
+            UnionCompatibilityError,
+        ),
+    ],
+)
+def test_invalid_set_operation(
+    query: RAExpression,
+    expected_exception: type[Exception],
+    assert_invalid: Callable[[RAExpression, type[Exception]], None],
+) -> None:
+    assert_invalid(query, expected_exception)
