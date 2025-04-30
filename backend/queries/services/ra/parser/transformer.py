@@ -162,5 +162,5 @@ class RATransformer(Transformer[Relation, RAExpression]):
     def sub_expr(self, args: tuple[RAExpression]) -> RAExpression:
         return args[0]
 
-    def CNAME(self, token: Token) -> str:  # noqa: N802
+    def IDENT(self, token: Token) -> str:  # noqa: N802
         return str(token.value)

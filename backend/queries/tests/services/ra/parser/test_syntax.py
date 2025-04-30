@@ -1,10 +1,22 @@
 import pytest
 from queries.services.ra.parser import parse_ra
+from queries.services.ra.parser.ast import Division, RAExpression, Relation
 from queries.services.ra.parser.errors import (
     InvalidOperatorError,
     MismatchedParenthesisError,
     MissingOperandError,
 )
+
+
+@pytest.mark.parametrize(
+    'query, expected',
+    [
+        ('\\left(R\\right)', Relation('R')),
+        ('\\left(R \\div S\\right)', Division(Relation('R'), Relation('S'))),
+    ],
+)
+def test_valid_syntax(query: str, expected: RAExpression) -> None:
+    assert parse_ra(query) == expected
 
 
 @pytest.mark.parametrize(
@@ -24,6 +36,6 @@ from queries.services.ra.parser.errors import (
         ('R - (S', MismatchedParenthesisError),
     ],
 )
-def test_syntax_errors(query: str, expected_error: type) -> None:
+def test_invalid_syntax(query: str, expected_error: type) -> None:
     with pytest.raises(expected_error):
         parse_ra(query)
