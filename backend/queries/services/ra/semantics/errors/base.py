@@ -2,17 +2,16 @@ from abc import ABC
 from dataclasses import dataclass
 
 from queries.services.ra.parser.ast import ASTNode
+from queries.types import ErrorPosition
 
 
 @dataclass
 class RASemanticError(Exception, ABC):
     source: ASTNode
 
-    def __post_init__(self) -> None:
-        if self.source.position:
-            start_col, end_col = self.source.position
-            self.start_col = start_col
-            self.end_col = end_col
+    @property
+    def position(self) -> ErrorPosition | None:
+        return self.source.position
 
     @property
     def title(self) -> str:

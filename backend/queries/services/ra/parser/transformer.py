@@ -32,7 +32,11 @@ class RATransformer(Transformer[Relation, RAExpression]):
     def _transform_tree(self, tree: Tree[Relation]) -> RAExpression:
         node = super()._transform_tree(tree)  # type: ignore[no-untyped-call]
         if isinstance(node, RAExpression):
-            node.position = (tree.meta.column, tree.meta.end_column)
+            node.position = {
+                'line': tree.meta.line,
+                'start_col': tree.meta.column,
+                'end_col': tree.meta.end_column,
+            }
         return cast(RAExpression, node)
 
     def relation(self, args: list[Token]) -> Relation:
