@@ -133,4 +133,4 @@ def parse_ra(ra_text: str) -> RAExpression:
         if not exc_class:
             exc_class = RASyntaxError
 
-        raise exc_class(line=u.line, column=u.column, context=u.get_context(ra_text)) from u
+        raise exc_class(line=u.line, column=u.column) from u

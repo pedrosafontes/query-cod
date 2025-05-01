@@ -1,6 +1,6 @@
 @layer components {
   math-field[contenteditable]:not([read-only]) {
-    @apply rounded-md border border-input bg-background px-3 py-2 text-base;
+    @apply rounded-md border border-input bg-background px-3 py-2 text-base w-full;
     display: block;
 
     --hue: theme(colors.primary.DEFAULT);

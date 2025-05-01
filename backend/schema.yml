@@ -931,7 +931,11 @@ components:
           items:
             type: object
             properties:
-              message:
+              title:
+                type: string
+              description:
+                type: string
+              hint:
                 type: string
               position:
                 type: object
@@ -946,9 +950,8 @@ components:
                 - end_col
                 - line
                 - start_col
-                nullable: true
             required:
-            - message
+            - title
           readOnly: true
     PatchedUser:
       type: object
@@ -1038,7 +1041,11 @@ components:
           items:
             type: object
             properties:
-              message:
+              title:
+                type: string
+              description:
+                type: string
+              hint:
                 type: string
               position:
                 type: object
@@ -1053,9 +1060,8 @@ components:
                 - end_col
                 - line
                 - start_col
-                nullable: true
             required:
-            - message
+            - title
           readOnly: true
       required:
       - created

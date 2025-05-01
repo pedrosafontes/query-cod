@@ -14,7 +14,8 @@ class RAReferenceError(RASemanticError):
 class RelationNotFoundError(RAReferenceError):
     relation: str
 
-    def _message(self) -> str:
+    @property
+    def title(self) -> str:
         return f"Relation '{self.relation}' does not exist"
 
 
@@ -22,8 +23,13 @@ class RelationNotFoundError(RAReferenceError):
 class AttributeNotFoundError(RAReferenceError):
     attribute: Attribute
 
-    def _message(self) -> str:
+    @property
+    def title(self) -> str:
         return f"Attribute '{self.attribute}' is not defined in the current context"
+
+    @property
+    def hint(self) -> str:
+        return "Confirm that the attribute is defined in the input relation and that you're referencing it correctly."
 
 
 @dataclass
@@ -34,5 +40,13 @@ class AmbiguousAttributeReferenceError(RAReferenceError):
     def relation_names(self) -> list[str]:
         return [r or 'Unqualified' for r in self.relations]
 
-    def _message(self) -> str:
-        return f"Attribute '{self.attribute}' is ambiguous - it exists in multiple relations: {', '.join(self.relation_names())}"
+    @property
+    def title(self) -> str:
+        return f"Attribute '{self.attribute}' is ambiguous"
+
+    def _description(self) -> str:
+        return f"It exists in multiple relations: {', '.join(self.relation_names())}"
+
+    @property
+    def hint(self) -> str:
+        return 'Qualify the attribute with its relation, e.g. `R.a` instead of just `a`.'

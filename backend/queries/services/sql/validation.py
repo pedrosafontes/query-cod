@@ -21,7 +21,8 @@ def validate_sql(query_text: str, db: DatabaseConnectionInfo) -> QueryValidation
     except ParseError as e:
         syntax_errors: list[QueryError] = [
             {
-                'message': err['description'],
+                'title': 'Syntax Error',
+                'description': err['description'],
                 'position': to_error_position(err['line'], err['col'], len(err['highlight'])),
             }
             for err in e.errors
@@ -33,16 +34,19 @@ def validate_sql(query_text: str, db: DatabaseConnectionInfo) -> QueryValidation
     try:
         SQLSemanticAnalyzer(get_schema(db)).validate(tree)
     except SQLSemanticError as e:
-        semantic_error: QueryError = {
-            'message': str(e),
-        }
+        semantic_error: QueryError = {'title': e.title}
+        if e.description:
+            semantic_error['description'] = e.description
+        if e.hint:
+            semantic_error['hint'] = e.hint
         return {'valid': False, 'errors': [semantic_error]}
 
     try:
         execute_sql(f'EXPLAIN {query_text}', db)
     except SQLAlchemyError as e:
         explain_error: QueryError = {
-            'message': f'{e.__class__.__name__}: {e}',
+            'title': 'Error during EXPLAIN',
+            'description': str(e),
         }
         return {'valid': False, 'errors': [explain_error]}
 

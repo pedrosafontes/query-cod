@@ -168,10 +168,10 @@ describe("ProjectSidebar", () => {
 
       test("enters rename mode on double click", async () => {
         renderComponent();
-      
+
         const queryItem = screen.getByText("Query 1");
         await userEvent.dblClick(queryItem);
-      
+
         const input = await screen.findByDisplayValue("Query 1");
         expect(input).toBeInTheDocument();
       });

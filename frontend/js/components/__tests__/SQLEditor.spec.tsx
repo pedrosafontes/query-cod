@@ -8,6 +8,9 @@ import { useAutosave } from "hooks/useAutosave";
 
 import SQLEditor from "../SQLEditor";
 
+jest.mock("react-markdown");
+jest.mock("rehype-raw");
+
 // Mock MonacoEditor
 jest.mock("@monaco-editor/react", () => ({
   __esModule: true,
@@ -88,7 +91,7 @@ describe("SQLEditor", () => {
       ...mockQuery,
       validation_errors: [
         {
-          message: "Syntax error",
+          title: "Syntax error",
           position: {
             line: 1,
             start_col: 1,
@@ -121,5 +124,40 @@ describe("SQLEditor", () => {
 
     const editor = screen.getByTestId("monaco-editor");
     expect(editor).toHaveValue("");
+  });
+
+  test("displays ErrorAlert when there are general errors", () => {
+    const mockErrorQuery = {
+      ...mockQuery,
+      validation_errors: [
+        { title: "General error 1" },
+        { title: "General error 2" },
+      ],
+    };
+
+    render(
+      <SQLEditor query={mockErrorQuery} onErrorsChange={mockOnErrorsChange} />,
+    );
+
+    expect(screen.getByText("General error 1")).toBeInTheDocument();
+    expect(screen.getByText("General error 2")).toBeInTheDocument();
+  });
+
+  test("doesn't display ErrorAlert when there are no general errors", () => {
+    const mockErrorQuery = {
+      ...mockQuery,
+      validation_errors: [
+        {
+          title: "Error with position",
+          position: { line: 1, start_col: 5, end_col: 10 },
+        },
+      ],
+    };
+
+    render(
+      <SQLEditor query={mockErrorQuery} onErrorsChange={mockOnErrorsChange} />,
+    );
+
+    expect(screen.queryByText("Error with position")).not.toBeInTheDocument();
   });
 });

@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass
 
 from sqlglot import Expression
@@ -8,7 +8,17 @@ from sqlglot import Expression
 class SQLSemanticError(Exception, ABC):
     source: Expression
 
-    @abstractmethod
+    @property
+    def title(self) -> str:
+        raise NotImplementedError('Subclasses must have a title')
+
+    @property
+    def description(self) -> str | None:
+        return None
+
+    @property
+    def hint(self) -> str | None:
+        return None
+
     def __str__(self) -> str:
-        """Provide a human-readable error message."""
-        pass
+        return f'{self.title}:  {self.description}'

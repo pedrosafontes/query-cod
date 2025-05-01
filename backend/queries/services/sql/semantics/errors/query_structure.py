@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import cast, get_args
 
-from sqlglot.expressions import Select
+from sqlglot.expressions import Expression, Select
 
 from ..types import AggregateFunction
 from .base import SQLSemanticError
@@ -23,13 +23,23 @@ class OrderByPositionError(OrderByError):
     order_by_pos: int
     max_position: int
 
-    def __str__(self) -> str:
-        return f'ORDER BY position {self.order_by_pos} is invalid; must be between 1 and {self.max_position}.'
+    @property
+    def title(self) -> str:
+        return f'ORDER BY position {self.order_by_pos} is invalid'
+
+    @property
+    def description(self) -> str:
+        return f'Must be between 1 and {self.max_position}.'
 
 
 @dataclass
 class OrderByExpressionError(OrderByError):
-    def __str__(self) -> str:
+    @property
+    def title(self) -> str:
+        return 'Invalid ORDER BY expression'
+
+    @property
+    def description(self) -> str:
         return f'ORDER BY expression "{self.source}" must be present in the SELECT list.'
 
 
@@ -40,13 +50,15 @@ class JoinError(QueryStructureError, ABC):
 
 @dataclass
 class MissingJoinConditionError(JoinError):
-    def __str__(self) -> str:
+    @property
+    def title(self) -> str:
         return 'JOIN operation requires an ON or USING clause.'
 
 
 @dataclass
 class InvalidJoinConditionError(JoinError):
-    def __str__(self) -> str:
+    @property
+    def title(self) -> str:
         return 'CROSS JOIN must not specify ON or USING clauses.'
 
 
@@ -57,20 +69,41 @@ class AliasError(QueryStructureError, ABC):
 
 @dataclass
 class MissingDerivedTableAliasError(AliasError):
-    def __str__(self) -> str:
+    @property
+    def description(self) -> str:
         return f'Derived column "{self.source}" must have an explicit alias.'
+
+    @property
+    def hint(self) -> str:
+        return (
+            'Use `SELECT ... FROM (subquery) **AS alias**` to give a name to the subquery result.'
+        )
 
 
 @dataclass
 class MissingDerivedColumnAliasError(AliasError):
-    def __str__(self) -> str:
+    @property
+    def description(self) -> str:
         return f'Derived column "{self.source}" must have an alias.'
+
+    @property
+    def hint(self) -> str:
+        return 'Use `SELECT expression **AS alias**` to name derived columns.'
 
 
 @dataclass
 class DuplicateAliasError(AliasError):
-    def __str__(self) -> str:
+    @property
+    def title(self) -> str:
+        return 'Duplicate alias'
+
+    @property
+    def description(self) -> str:
         return f"Duplicate alias detected: '{self.source.alias_or_name}'. Aliases must be unique within a query."
+
+    @property
+    def hint(self) -> str:
+        return 'Ensure each alias is used only once per `SELECT` or `FROM` clause.'
 
 
 @dataclass
@@ -80,16 +113,30 @@ class AggregateError(QueryStructureError, ABC):
 
 @dataclass
 class AggregateInWhereError(AggregateError):
-    def __str__(self) -> str:
-        where = cast(Select, self.source.find_ancestor(Select)).args['where']
-        return f'Aggregate functions are not permitted in the WHERE clause: {where}.'
+    @property
+    def title(self) -> str:
+        return 'Aggregate functions are not permitted in the WHERE clause'
+
+    @property
+    def description(self) -> str:
+        where: Select = cast(Select, self.source.find_ancestor(Select)).args['where']
+        return where.sql()
+
+    @property
+    def hint(self) -> str:
+        return 'Move the aggregate expression to the `HAVING` clause instead.'
 
 
 @dataclass
 class NestedAggregateError(AggregateError):
-    def __str__(self) -> str:
-        outer = self.source.find_ancestor(*get_args(AggregateFunction))
-        return f'Nested aggregate functions are not permitted: {outer}'
+    @property
+    def title(self) -> str:
+        return 'Nested aggregate functions are not permitted'
+
+    @property
+    def description(self) -> str | None:
+        outer: Expression | None = self.source.find_ancestor(*get_args(AggregateFunction))
+        return outer.sql() if outer else None
 
 
 @dataclass
@@ -97,17 +144,34 @@ class ColumnCountMismatchError(QueryStructureError):
     expected: int
     received: int
 
-    def __str__(self) -> str:
-        return f'Column count mismatch: expected {self.expected}, got {self.received}'
+    @property
+    def title(self) -> str:
+        return 'Column count mismatch'
+
+    @property
+    def description(self) -> str:
+        return f'Expected {self.expected}, got {self.received}'
 
 
 @dataclass
 class UngroupedColumnError(QueryStructureError):
     columns: list[str]
 
-    def __str__(self) -> str:
-        if len(self.columns) == 1:
+    def _single_column(self) -> bool:
+        return len(self.columns) == 1
+
+    @property
+    def title(self) -> str:
+        return f'Invalid column reference{'' if self._single_column() else 's'}'
+
+    @property
+    def description(self) -> str:
+        if self._single_column():
             start = f'Column "{self.columns[0]}"'
         else:
             start = f'Columns {', '.join(self.columns)}'
         return f'{start} must appear in the GROUP BY clause or be used in an aggregate function'
+
+    @property
+    def hint(self) -> str:
+        return 'Add the column(s) to the `GROUP BY` clause or wrap them in an aggregate function like `MAX()` or `SUM()`.'

@@ -15,8 +15,13 @@ class ObjectReferenceError(SQLSemanticError, ABC):
 class RelationNotFoundError(SQLSemanticError):
     name: str | None = None
 
-    def __str__(self) -> str:
+    @property
+    def title(self) -> str:
         return f"Relation '{self.name or self.source.name}' does not exist"
+
+    @property
+    def hint(self) -> str:
+        return 'Make sure the relation name is correct and visible from the current query scope.'
 
 
 @dataclass
@@ -32,8 +37,13 @@ class ColumnNotFoundError(SQLSemanticError):
     def from_expression(cls, expr: Expression, column: str) -> 'ColumnNotFoundError':
         return cls(expr, column)
 
-    def __str__(self) -> str:
+    @property
+    def title(self) -> str:
         return f"Column '{self.name}' is not defined in {self.table if self.table else 'the current context'}"
+
+    @property
+    def hint(self) -> str:
+        return 'Make sure the column name is correct and visible from the current query scope.'
 
 
 @dataclass
@@ -45,5 +55,14 @@ class AmbiguousColumnReferenceError(SQLSemanticError):
         self.column = column
         self.tables = tables
 
-    def __str__(self) -> str:
-        return f"Ambiguous reference to column '{self.column}'; it exists in multiple tables: {', '.join(self.tables)}."
+    @property
+    def title(self) -> str:
+        return f"Ambiguous reference to column '{self.column.name}'"
+
+    @property
+    def description(self) -> str:
+        return f"It exists in multiple tables: {', '.join(self.tables)}."
+
+    @property
+    def hint(self) -> str:
+        return 'Qualify the column with its table or alias, e.g. `R.column_name`.'

@@ -19,7 +19,7 @@
            | sub_expr
 
 ?sub_expr: relation
-         | "(" expr ")"
+         | _LPAREN expr _RPAREN
 
 projection: _PI _subscript{nonempty_list{attribute}} expr
 
@@ -32,7 +32,7 @@ selection: _SIGMA _subscript{bool_expr} expr
          | and_expr "\\land" bool_atom -> and_
 
 ?bool_atom: "\\lnot" bool_atom -> not_
-          | "(" bool_expr ")"
+          | _LPAREN bool_expr _RPAREN
           | comparison
           | attribute
 
@@ -50,10 +50,10 @@ comparator: "=" -> eq
       | attribute
 
 grouped_aggregation: _GAMMA _subscript{_grouped_aggregation_params} expr
-_grouped_aggregation_params: "(" _grouping_attrs "," _aggregations ")"
-_grouping_attrs: "(" list{attribute} ")"
-_aggregations: "(" nonempty_list{aggregation} ")"
-aggregation: "(" attribute "," aggregation_function "," attribute ")"
+_grouped_aggregation_params: _LPAREN _grouping_attrs "," _aggregations _RPAREN
+_grouping_attrs: _LPAREN list{attribute} _RPAREN
+_aggregations: _LPAREN nonempty_list{aggregation} _RPAREN
+aggregation: _LPAREN attribute "," aggregation_function "," attribute _RPAREN
 aggregation_function: "count" -> count
                     | "sum" -> sum
                     | "avg" -> avg
@@ -61,13 +61,13 @@ aggregation_function: "count" -> count
                     | "max" -> max
 
 topn: _TOPN _subscript{_topn_params} expr
-_topn_params: "(" INT "," attribute ")"
+_topn_params: _LPAREN INT "," attribute _RPAREN
 
 _theta_join_op: _overset{bool_expr, "\\bowtie"}
 
 relation: _identifier
 attribute: (relation ".")? _identifier
-_identifier: CNAME | "\\text" "{" CNAME "}"
+_identifier: CNAME | _text{IDENT}
 
 placeholder: "\\placeholder" "{" CNAME? "}"
 
@@ -90,6 +90,11 @@ _nonempty_list_helper{item}: item ("," item)*
 
 _subscript{content}: "_" "{" content "}"
 _overset{superscript, operator}: "\\overset" "{" superscript "}" "{" operator "}"
+_text{content}: "\\text" "{" content "}"
+
+IDENT: /[a-zA-Z_][a-zA-Z0-9_\\]*/
+_LPAREN: ("\\left")? "("
+_RPAREN: ("\\right")? ")" 
 
 %import common.CNAME
 %import common.INT

@@ -10,8 +10,10 @@ class ErrorPosition(TypedDict):
 
 
 class QueryError(TypedDict):
-    message: str
-    position: NotRequired[ErrorPosition | None]
+    title: str
+    description: NotRequired[str]
+    hint: NotRequired[str]
+    position: NotRequired[ErrorPosition]
 
 
 class QueryValidationResult(TypedDict):
