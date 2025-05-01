@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from model_bakery import baker
 from rest_framework.test import APIClient
@@ -22,3 +24,19 @@ def auth_client(user: User) -> APIClient:
 @pytest.fixture
 def unauth_client() -> APIClient:
     return APIClient()
+
+
+@pytest.fixture(autouse=True)
+def mock_get_schema():
+    with patch('databases.services.schema.get_schema') as mock:
+        mock.return_value = {
+            'users': {
+                'id': {
+                    'type': 'INTEGER',
+                    'nullable': False,
+                    'primary_key': True,
+                    'references': None,
+                }
+            }
+        }
+        yield mock
