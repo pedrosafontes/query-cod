@@ -1,5 +1,4 @@
 import pytest
-from databases.types import Schema
 from queries.services.sql.semantics.errors import (
     ColumnNotFoundError,
     MissingDerivedColumnAliasError,
@@ -7,6 +6,7 @@ from queries.services.sql.semantics.errors import (
     NonScalarExpressionError,
     TypeMismatchError,
 )
+from queries.services.types import RelationalSchema
 
 from .conftest import assert_invalid, assert_valid
 
@@ -28,7 +28,7 @@ from .conftest import assert_invalid, assert_valid
         'SELECT * FROM products WHERE category_id IN (SELECT category_id FROM categories WHERE category_id IN (SELECT category_id FROM products GROUP BY category_id HAVING COUNT(*) > 5))',
     ],
 )
-def test_valid_subqueries(query: str, schema: Schema) -> None:
+def test_valid_subqueries(query: str, schema: RelationalSchema) -> None:
     assert_valid(query, schema)
 
 
@@ -60,6 +60,6 @@ def test_valid_subqueries(query: str, schema: Schema) -> None:
     ],
 )
 def test_invalid_subqueries(
-    query: str, expected_exception: type[Exception], schema: Schema
+    query: str, expected_exception: type[Exception], schema: RelationalSchema
 ) -> None:
     assert_invalid(query, schema, expected_exception)

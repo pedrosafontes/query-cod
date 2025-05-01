@@ -2,6 +2,7 @@ from databases.models.database_connection_info import DatabaseConnectionInfo
 from databases.services.schema import get_schema
 from queries.types import QueryError, QueryValidationResult
 
+from ..types import to_relational_schema
 from .parser import parse_ra
 from .parser.errors import RASyntaxError
 from .semantics import RASemanticAnalyzer
@@ -21,7 +22,8 @@ def validate_ra(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationR
         }
 
     try:
-        RASemanticAnalyzer(get_schema(db)).validate(expr)
+        schema = to_relational_schema(get_schema(db))
+        RASemanticAnalyzer(schema).validate(expr)
     except RASemanticError as e:
         semantic_error: QueryError = {'title': e.title}
         if e.description:

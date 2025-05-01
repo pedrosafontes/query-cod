@@ -1,5 +1,4 @@
 import pytest
-from databases.types import Schema
 from queries.services.ra.parser.ast import (
     Attribute,
     BinaryBooleanExpression,
@@ -12,6 +11,7 @@ from queries.services.ra.parser.ast import (
     Selection,
 )
 from queries.services.ra.semantics import RASemanticAnalyzer
+from queries.services.types import RelationalSchema
 
 
 @pytest.mark.parametrize(
@@ -41,6 +41,6 @@ from queries.services.ra.semantics import RASemanticAnalyzer
         ),
     ],
 )
-def test_valid_complex_queries(expr: RAExpression, schema: Schema) -> None:
+def test_valid_complex_queries(expr: RAExpression, schema: RelationalSchema) -> None:
     analyzer = RASemanticAnalyzer(schema)
     analyzer.validate(expr)

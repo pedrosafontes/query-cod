@@ -1,10 +1,9 @@
 from collections import defaultdict
 from collections.abc import Callable
 
-from databases.types import Schema
 from queries.services.ra.semantics.utils.schema import merge_schemas
 from queries.services.types import (
-    AttributeSchema,
+    Attributes,
     RelationalSchema,
     flatten,
     merge_common_column,
@@ -46,7 +45,7 @@ from .utils.type import type_of_function, type_of_value
 
 
 class RASemanticAnalyzer:
-    def __init__(self, schema: Schema):
+    def __init__(self, schema: RelationalSchema):
         self.schema = schema
 
     def validate(self, expr: RAExpression) -> None:
@@ -61,14 +60,14 @@ class RASemanticAnalyzer:
     def _validate_Relation(self, rel: Relation) -> RelationOutput:  # noqa: N802
         if rel.name not in self.schema:
             raise RelationNotFoundError(rel, rel.name)
-        rel_schema = self.schema[rel.name]
+        attributes = self.schema[rel.name]
         return RelationOutput(
-            {rel.name: rel_schema}, [TypedAttribute(attr, t) for attr, t in rel_schema.items()]
+            {rel.name: attributes}, [TypedAttribute(attr, t) for attr, t in attributes.items()]
         )
 
     def _validate_Projection(self, proj: Projection) -> RelationOutput:  # noqa: N802
         input_ = self._validate(proj.expression)
-        output_schema: RelationalSchema = defaultdict(AttributeSchema)
+        output_schema: RelationalSchema = defaultdict(Attributes)
         output_attrs = []
         for attr in proj.attributes:
             t = self._validate_attribute(attr, [input_])
@@ -130,14 +129,14 @@ class RASemanticAnalyzer:
         dividend = self._validate(div.dividend)
         divisor = self._validate(div.divisor)
 
-        dividend_schema = flatten(dividend.schema)
-        divisor_schema = flatten(divisor.schema)
+        dividend_attrs = flatten(dividend.schema)
+        divisor_attrs = flatten(divisor.schema)
 
-        for name, t in divisor_schema.items():
-            if name not in dividend_schema:
-                raise DivisionSchemaCompatibilityError(div, dividend_schema, divisor_schema)
-            if dividend_schema[name] != t:
-                raise DivisionAttributeTypeMismatchError(div, name, dividend_schema[name], t)
+        for name, t in divisor_attrs.items():
+            if name not in dividend_attrs:
+                raise DivisionSchemaCompatibilityError(div, dividend_attrs, divisor_attrs)
+            if dividend_attrs[name] != t:
+                raise DivisionAttributeTypeMismatchError(div, name, dividend_attrs[name], t)
 
         output_attrs = [attr for attr in dividend.attrs if attr not in divisor.attrs]
         output_schema: RelationalSchema = {
@@ -147,7 +146,7 @@ class RASemanticAnalyzer:
 
     def _validate_GroupedAggregation(self, agg: GroupedAggregation) -> RelationOutput:  # noqa: N802
         input_ = self._validate(agg.expression)
-        output_schema: RelationalSchema = defaultdict(AttributeSchema)
+        output_schema: RelationalSchema = defaultdict(Attributes)
         output_attrs = []
 
         for attr in agg.group_by:

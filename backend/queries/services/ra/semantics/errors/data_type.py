@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 
 from queries.services.ra.parser.ast import AggregationFunction, SetOperator
-from queries.services.types import AttributeSchema
+from queries.services.types import Attributes
 from ra_sql_visualisation.types import DataType
 
 from ..types import TypedAttribute
@@ -86,8 +86,8 @@ class JoinAttributeTypeMismatchError(RATypeError):
 
 @dataclass
 class DivisionSchemaCompatibilityError(RATypeError):
-    dividend_attrs: AttributeSchema
-    divisor_attrs: AttributeSchema
+    dividend_attrs: Attributes
+    divisor_attrs: Attributes
 
     @property
     def title(self) -> str:

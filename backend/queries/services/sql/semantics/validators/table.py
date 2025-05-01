@@ -1,5 +1,4 @@
-from databases.types import Schema
-from queries.services.types import AttributeSchema, flatten
+from queries.services.types import Attributes, RelationalSchema, flatten
 from sqlglot.expressions import Subquery, Table
 
 from ..errors import (
@@ -12,14 +11,14 @@ from ..scope import Scope
 
 
 class TableValidator:
-    def __init__(self, schema: Schema, scope: Scope) -> None:
+    def __init__(self, schema: RelationalSchema, scope: Scope) -> None:
         from .query import QueryValidator
 
         self.schema = schema
         self.scope = scope
         self.query_validator = QueryValidator(schema)
 
-    def validate(self, table: Table | Subquery) -> AttributeSchema:
+    def validate(self, table: Table | Subquery) -> Attributes:
         match table:
             case Table():
                 return self._validate_table(table)
@@ -27,14 +26,14 @@ class TableValidator:
             case Subquery():
                 return self._validate_derived_table(table)
 
-    def _validate_table(self, table: Table) -> AttributeSchema:
+    def _validate_table(self, table: Table) -> Attributes:
         name = table.name
-        table_schema = self.schema.get(name)
-        if table_schema is None:
+        columns = self.schema.get(name)
+        if columns is None:
             raise RelationNotFoundError(table)
-        return table_schema
+        return columns
 
-    def _validate_derived_table(self, subquery: Subquery) -> AttributeSchema:
+    def _validate_derived_table(self, subquery: Subquery) -> Attributes:
         # Derived tables must have an alias
         if not subquery.alias_or_name:
             raise MissingDerivedTableAliasError(subquery)

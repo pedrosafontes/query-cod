@@ -1,14 +1,14 @@
 from collections.abc import Callable
 
 import pytest
-from databases.types import Schema
 from queries.services.ra.parser.ast import RAExpression
 from queries.services.ra.semantics.analyzer import RASemanticAnalyzer
+from queries.services.types import RelationalSchema
 from ra_sql_visualisation.types import DataType
 
 
 @pytest.fixture
-def schema() -> Schema:
+def schema() -> RelationalSchema:
     return {
         'R': {'A': DataType.INTEGER, 'B': DataType.VARCHAR, 'C': DataType.FLOAT},
         'S': {'D': DataType.INTEGER, 'E': DataType.VARCHAR, 'F': DataType.FLOAT},
@@ -30,7 +30,7 @@ def schema() -> Schema:
 
 
 @pytest.fixture
-def assert_valid(schema: Schema) -> Callable[[RAExpression], None]:
+def assert_valid(schema: RelationalSchema) -> Callable[[RAExpression], None]:
     def _assert_valid(query: RAExpression) -> None:
         RASemanticAnalyzer(schema).validate(query)
 
@@ -38,7 +38,7 @@ def assert_valid(schema: Schema) -> Callable[[RAExpression], None]:
 
 
 @pytest.fixture
-def assert_invalid(schema: Schema) -> Callable[[RAExpression, type[Exception]], None]:
+def assert_invalid(schema: RelationalSchema) -> Callable[[RAExpression, type[Exception]], None]:
     def _assert_invalid(query: RAExpression, expected_exception: type[Exception]) -> None:
         with pytest.raises(expected_exception):
             RASemanticAnalyzer(schema).validate(query)

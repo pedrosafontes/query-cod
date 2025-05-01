@@ -1,11 +1,11 @@
 import pytest
-from databases.types import Schema
 from queries.services.sql.semantics.errors import (
     ColumnNotFoundError,
     DuplicateAliasError,
     NestedAggregateError,
     RelationNotFoundError,
 )
+from queries.services.types import RelationalSchema
 
 from .conftest import assert_invalid, assert_valid
 
@@ -25,7 +25,7 @@ from .conftest import assert_invalid, assert_valid
         'SELECT (price + 10) AS bumped_price FROM products',  # Expression
     ],
 )
-def test_valid_select_clauses(query: str, schema: Schema) -> None:
+def test_valid_select_clauses(query: str, schema: RelationalSchema) -> None:
     assert_valid(query, schema)
 
 
@@ -39,6 +39,6 @@ def test_valid_select_clauses(query: str, schema: Schema) -> None:
     ],
 )
 def test_invalid_select_clauses(
-    query: str, expected_exception: type[Exception], schema: Schema
+    query: str, expected_exception: type[Exception], schema: RelationalSchema
 ) -> None:
     assert_invalid(query, schema, expected_exception)

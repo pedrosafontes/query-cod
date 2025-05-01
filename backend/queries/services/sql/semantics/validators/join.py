@@ -1,4 +1,4 @@
-from databases.types import ColumnSchema, Schema
+from queries.services.types import Attributes, RelationalSchema
 from sqlglot.expressions import Identifier, Join
 
 from ..errors import (
@@ -15,7 +15,7 @@ from .table import TableValidator
 class JoinValidator:
     def __init__(
         self,
-        schema: Schema,
+        schema: RelationalSchema,
         scope: Scope,
         expr_validator: ExpressionValidator,
         table_validator: TableValidator,
@@ -49,7 +49,7 @@ class JoinValidator:
             self.expr_validator._validate_boolean(condition)
 
     def _validate_using(
-        self, using: list[Identifier], left: ColumnSchema, right: ColumnSchema, join: Join
+        self, using: list[Identifier], left: Attributes, right: Attributes, join: Join
     ) -> None:
         # All columns in USING must be present in both tables
         for ident in using:
@@ -59,7 +59,7 @@ class JoinValidator:
             assert_comparable(left[col], right[col], join)
             self.scope.tables.merge_common_column(col)
 
-    def _validate_natural_join(self, left: ColumnSchema, right: ColumnSchema, join: Join) -> None:
+    def _validate_natural_join(self, left: Attributes, right: Attributes, join: Join) -> None:
         shared = set(left) & set(right)
         # All common columns must be comparable
         for col in shared:

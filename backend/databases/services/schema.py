@@ -1,7 +1,7 @@
 from typing import Any
 
 from databases.models.database_connection_info import DatabaseConnectionInfo
-from databases.types import Schema
+from databases.types import ForeignKey, Schema
 from ra_sql_visualisation.types import DataType
 from sqlalchemy import (
     CHAR,
@@ -26,13 +26,30 @@ from sqlalchemy.types import TypeEngine
 def get_schema(db: DatabaseConnectionInfo) -> Schema:
     engine = db.to_sqlalchemy_engine()
     inspector = inspect(engine)
-    schema = {
-        table: {
-            col['name']: _sqlalchemy_type_to_data_type(col['type'])
-            for col in inspector.get_columns(table)
+    schema: Schema = {}
+
+    for table_name in inspector.get_table_names():
+        columns = inspector.get_columns(table_name)
+        primary_keys = inspector.get_pk_constraint(table_name).get('constrained_columns', [])
+
+        foreign_keys: dict[str, ForeignKey] = {
+            fk['constrained_columns'][0]: {
+                'table': fk['referred_table'],
+                'column': fk['referred_columns'][0],
+            }
+            for fk in inspector.get_foreign_keys(table_name)
         }
-        for table in inspector.get_table_names()
-    }
+
+        schema[table_name] = {
+            col['name']: {
+                'type': _sqlalchemy_type_to_data_type(col['type']),
+                'nullable': col['nullable'],
+                'primary_key': col['name'] in primary_keys,
+                'references': foreign_keys.get(col['name']),
+            }
+            for col in columns
+        }
+
     return schema
 
 

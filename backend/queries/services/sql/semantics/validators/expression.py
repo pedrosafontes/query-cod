@@ -1,4 +1,3 @@
-from databases.types import Schema
 from queries.services.types import RelationalSchema
 from ra_sql_visualisation.types import DataType
 from sqlglot import Expression
@@ -69,7 +68,7 @@ from ..types import (
 
 
 class ExpressionValidator:
-    def __init__(self, schema: Schema, scope: Scope) -> None:
+    def __init__(self, schema: RelationalSchema, scope: Scope) -> None:
         from .query import QueryValidator
 
         self.scope = scope

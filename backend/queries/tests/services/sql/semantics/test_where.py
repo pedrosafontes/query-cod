@@ -1,10 +1,10 @@
 import pytest
-from databases.types import Schema
 from queries.services.sql.semantics.errors import (
     AggregateInWhereError,
     ColumnNotFoundError,
     TypeMismatchError,
 )
+from queries.services.types import RelationalSchema
 
 from .conftest import assert_invalid, assert_valid
 
@@ -23,7 +23,7 @@ from .conftest import assert_invalid, assert_valid
         'SELECT * FROM products WHERE (price > 10 AND in_stock) OR product_id = 1',
     ],
 )
-def test_valid_where_conditions(query: str, schema: Schema) -> None:
+def test_valid_where_conditions(query: str, schema: RelationalSchema) -> None:
     assert_valid(query, schema)
 
 
@@ -41,6 +41,6 @@ def test_valid_where_conditions(query: str, schema: Schema) -> None:
     ],
 )
 def test_invalid_where_conditions(
-    query: str, expected_exception: type[Exception], schema: Schema
+    query: str, expected_exception: type[Exception], schema: RelationalSchema
 ) -> None:
     assert_invalid(query, schema, expected_exception)
