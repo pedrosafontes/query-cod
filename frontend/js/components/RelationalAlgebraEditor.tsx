@@ -76,9 +76,10 @@ const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
       {errors.length > 0 &&
         errors.map((error) => (
           <ErrorAlert
-            key={error.description}
+            key={error.title + error.description}
             className="mt-4"
             description={error.description}
+            hint={error.hint}
             title={error.title}
           />
         ))}

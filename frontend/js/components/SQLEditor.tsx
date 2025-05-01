@@ -102,9 +102,10 @@ const SQLEditor = ({ query, onErrorsChange }: SQLEditorProps) => {
       {generalErrors.length > 0 &&
         generalErrors.map((error) => (
           <ErrorAlert
-            key={error.description}
+            key={error.title + error.description}
             className="mt-4"
             description={error.description}
+            hint={error.hint}
             title={error.title}
           />
         ))}
