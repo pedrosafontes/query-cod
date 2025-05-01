@@ -75,6 +75,17 @@ module.exports = {
           }
         ]
       }
+    },
+    {
+      files: ["**/__tests__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)"],
+      rules: {
+        "import/no-extraneous-dependencies": [
+          "error",
+          {
+            devDependencies: true,
+          },
+        ],
+      },
     }
   ],
 };
