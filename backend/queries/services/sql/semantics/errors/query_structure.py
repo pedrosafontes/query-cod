@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import cast, get_args
 
-from sqlglot.expressions import Select
+from sqlglot.expressions import Expression, Select
 
 from ..types import AggregateFunction
 from .base import SQLSemanticError
@@ -73,12 +73,22 @@ class MissingDerivedTableAliasError(AliasError):
     def description(self) -> str:
         return f'Derived column "{self.source}" must have an explicit alias.'
 
+    @property
+    def hint(self) -> str:
+        return (
+            'Use `SELECT ... FROM (subquery) **AS alias**` to give a name to the subquery result.'
+        )
+
 
 @dataclass
 class MissingDerivedColumnAliasError(AliasError):
     @property
     def description(self) -> str:
         return f'Derived column "{self.source}" must have an alias.'
+
+    @property
+    def hint(self) -> str:
+        return 'Use `SELECT expression **AS alias**` to name derived columns.'
 
 
 @dataclass
@@ -90,6 +100,10 @@ class DuplicateAliasError(AliasError):
     @property
     def description(self) -> str:
         return f"Duplicate alias detected: '{self.source.alias_or_name}'. Aliases must be unique within a query."
+
+    @property
+    def hint(self) -> str:
+        return 'Ensure each alias is used only once per `SELECT` or `FROM` clause.'
 
 
 @dataclass
@@ -105,8 +119,12 @@ class AggregateInWhereError(AggregateError):
 
     @property
     def description(self) -> str:
-        where = cast(Select, self.source.find_ancestor(Select)).args['where']
-        return where.to_sql()
+        where: Select = cast(Select, self.source.find_ancestor(Select)).args['where']
+        return where.sql()
+
+    @property
+    def hint(self) -> str:
+        return 'Move the aggregate expression to the `HAVING` clause instead.'
 
 
 @dataclass
@@ -116,9 +134,9 @@ class NestedAggregateError(AggregateError):
         return 'Nested aggregate functions are not permitted'
 
     @property
-    def description(self) -> str:
-        outer = self.source.find_ancestor(*get_args(AggregateFunction))
-        return outer.to_sql()
+    def description(self) -> str | None:
+        outer: Expression | None = self.source.find_ancestor(*get_args(AggregateFunction))
+        return outer.sql() if outer else None
 
 
 @dataclass
@@ -153,3 +171,7 @@ class UngroupedColumnError(QueryStructureError):
         else:
             start = f'Columns {', '.join(self.columns)}'
         return f'{start} must appear in the GROUP BY clause or be used in an aggregate function'
+
+    @property
+    def hint(self) -> str:
+        return 'Add the column(s) to the `GROUP BY` clause or wrap them in an aggregate function like `MAX()` or `SUM()`.'

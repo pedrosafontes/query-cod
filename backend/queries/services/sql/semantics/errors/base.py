@@ -16,5 +16,9 @@ class SQLSemanticError(Exception, ABC):
     def description(self) -> str | None:
         return None
 
+    @property
+    def hint(self) -> str | None:
+        return None
+
     def __str__(self) -> str:
         return f'{self.title}:  {self.description}'

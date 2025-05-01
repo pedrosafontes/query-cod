@@ -19,6 +19,10 @@ class RelationNotFoundError(SQLSemanticError):
     def title(self) -> str:
         return f"Relation '{self.name or self.source.name}' does not exist"
 
+    @property
+    def hint(self) -> str:
+        return 'Make sure the relation name is correct and visible from the current query scope.'
+
 
 @dataclass
 class ColumnNotFoundError(SQLSemanticError):
@@ -37,6 +41,10 @@ class ColumnNotFoundError(SQLSemanticError):
     def title(self) -> str:
         return f"Column '{self.name}' is not defined in {self.table if self.table else 'the current context'}"
 
+    @property
+    def hint(self) -> str:
+        return 'Make sure the column name is correct and visible from the current query scope.'
+
 
 @dataclass
 class AmbiguousColumnReferenceError(SQLSemanticError):
@@ -54,3 +62,7 @@ class AmbiguousColumnReferenceError(SQLSemanticError):
     @property
     def description(self) -> str:
         return f"It exists in multiple tables: {', '.join(self.tables)}."
+
+    @property
+    def hint(self) -> str:
+        return 'Qualify the column with its table or alias, e.g. `R.column_name`.'

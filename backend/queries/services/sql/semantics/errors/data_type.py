@@ -63,3 +63,7 @@ class InvalidCastError(SQLTypeError):
     @property
     def description(self) -> str:
         return f"Cannot cast '{self.source}' of type {self.source_t} to type {self.target_t}"
+
+    @property
+    def hint(self) -> str:
+        return 'Check if the value is valid for the target type, or use an intermediate cast if needed.'
