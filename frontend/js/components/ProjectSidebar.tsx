@@ -1,4 +1,9 @@
-import { ArrowLeft, FilePlus } from "lucide-react";
+import {
+  ArrowLeft,
+  FilePlus,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 
@@ -11,7 +16,9 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 import { ProjectsService, QueriesService, Query, type Project } from "../api";
@@ -95,63 +102,76 @@ const ProjectSidebar = ({
     }
   };
 
+  const { open, toggleSidebar } = useSidebar();
+
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem className="flex items-center">
-            <Button
-              className="mr-2 h-10"
-              size="icon-inline"
-              variant="link"
-              onClick={() => navigate("/projects")}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <h1 className="text-sm">{project.name}</h1>
+        <SidebarMenu
+          className={open ? "flex flex-row justify-between" : ""}
+        >
+          {open && (
+            <SidebarMenuItem className="flex items-center">
+              <Button
+                className="mr-2 h-10"
+                size="icon-inline"
+                variant="link"
+                onClick={() => navigate("/projects")}
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <h1 className="text-sm text-ellipsis">{project.name}</h1>
+            </SidebarMenuItem>
+          )}
+          <SidebarMenuItem className="text-sm text-muted-foreground inline">
+            <SidebarMenuButton onClick={toggleSidebar}>
+              {open ? <PanelLeftClose /> : <PanelLeftOpen />}
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="flex items-center justify-between">
-            <span>Queries</span>
-            <Button
-              aria-label="Create Query"
-              className="justify-end"
-              size="icon"
-              variant="ghost"
-              onClick={createQuery}
-            >
-              <FilePlus />
-            </Button>
-          </SidebarGroupLabel>
+      {open && (
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel className="flex items-center justify-between">
+              <span>Queries</span>
+              <Button
+                aria-label="Create Query"
+                className="justify-end"
+                size="icon"
+                variant="ghost"
+                onClick={createQuery}
+              >
+                <FilePlus />
+              </Button>
+            </SidebarGroupLabel>
 
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {queries.map(({ id, name }) => (
-                <QueryMenuItem
-                  key={id}
-                  isActive={currentQueryId === id}
-                  isCreating={creatingQueryId === id}
-                  name={name}
-                  onCreationEnd={() => setCreatingQueryId(null)}
-                  onDelete={() => deleteQuery(id)}
-                  onRename={(name: string) => renameQuery(id, name)}
-                  onSelect={() => onSelect(id)}
-                />
-              ))}
-              {queries.length === 0 && (
-                <span className="text-sm text-muted-foreground p-2">
-                  Click the{" "}
-                  <FilePlus className="inline align-baseline h-4 w-4" /> button
-                  to create your first query.
-                </span>
-              )}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {queries.map(({ id, name }) => (
+                  <QueryMenuItem
+                    key={id}
+                    isActive={currentQueryId === id}
+                    isCreating={creatingQueryId === id}
+                    name={name}
+                    onCreationEnd={() => setCreatingQueryId(null)}
+                    onDelete={() => deleteQuery(id)}
+                    onRename={(name: string) => renameQuery(id, name)}
+                    onSelect={() => onSelect(id)}
+                  />
+                ))}
+                {queries.length === 0 && (
+                  <span className="text-sm text-muted-foreground p-2">
+                    Click the{" "}
+                    <FilePlus className="inline align-baseline h-4 w-4" />{" "}
+                    button to create your first query.
+                  </span>
+                )}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+      )}
     </Sidebar>
   );
 };

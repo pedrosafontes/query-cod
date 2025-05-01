@@ -34,7 +34,7 @@ from queries.services.ra.parser.ast import (
             ),
         ),
         (
-            '\\Gamma_{((deptno),((salary,avg,\\text{avg_sal})))} (\\pi_{deptno, salary} (\\sigma_{location = "HQ"} Employee))',
+            '\\Gamma_{((deptno),((salary,avg,\\text{avg_sal})))} (\\pi_{deptno, salary} (\\sigma_{location = \\text{"HQ"}} Employee))',
             GroupedAggregation(
                 group_by=[Attribute('deptno')],
                 aggregations=[

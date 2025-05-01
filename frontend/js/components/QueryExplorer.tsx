@@ -65,8 +65,8 @@ const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
   }, [queryId]);
 
   return (
-    <div className="grid grid-cols-3 h-full">
-      <div className="col-span-1 px-3 py-5 border-r">
+    <div className="flex h-full">
+      <div className="w-[400px] px-3 py-5 h-full border-r overflow-auto">
         <div className="flex justify-between mb-5 w-full">
           {query && (
             <QueryLanguageTabs
@@ -102,7 +102,7 @@ const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
           />
         )}
       </div>
-      <div className="col-span-2 px-3 py-5 flex flex-col justify-end h-full bg-gray-50">
+      <div className="flex-1 px-3 py-5 flex flex-col justify-end h-full bg-gray-50">
         {queryResult && (
           <QueryResult isLoading={isExecuting} result={queryResult} />
         )}

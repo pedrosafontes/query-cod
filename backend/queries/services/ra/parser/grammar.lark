@@ -46,7 +46,7 @@ comparator: "=" -> eq
 
 ?value: SIGNED_FLOAT  -> float
       | SIGNED_INT -> int
-      | ESCAPED_STRING -> string
+      | _text{ESCAPED_STRING} -> string
       | attribute
 
 grouped_aggregation: _GAMMA _subscript{_grouped_aggregation_params} expr
