@@ -6,6 +6,9 @@ import { useAutosave } from "hooks/useAutosave";
 
 import RelationalAlgebraEditor from "../RelationalAlgebraEditor";
 
+jest.mock("react-markdown");
+jest.mock("rehype-raw");
+
 jest.mock("mathlive");
 
 jest.mock("hooks/useAutosave", () => ({
@@ -77,5 +80,22 @@ describe("RelationalAlgebraEditor", () => {
     );
 
     expect(screen.getByText(/saving/i)).toBeInTheDocument();
+  });
+
+  test("displays ErrorAlert when there are errors", () => {
+    const mockErrorQuery = {
+      ...mockQuery,
+      validation_errors: [{ title: "Error 1" }, { title: "Error 2" }],
+    };
+
+    render(
+      <RelationalAlgebraEditor
+        query={mockErrorQuery}
+        onErrorsChange={mockOnErrorsChange}
+      />,
+    );
+
+    expect(screen.getByText("Error 1")).toBeInTheDocument();
+    expect(screen.getByText("Error 2")).toBeInTheDocument();
   });
 });
