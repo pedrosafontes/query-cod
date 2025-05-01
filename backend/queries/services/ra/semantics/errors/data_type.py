@@ -89,7 +89,7 @@ class DivisionSchemaCompatibilityError(RATypeError):
     def description(self) -> str:
         dividend_attrs = f'({', '.join(attr for attr in self.dividend_attrs.keys())})'
         divisor_attrs = f'({', '.join(attr for attr in self.divisor_attrs.keys())})'
-        return f'Dividend schema: {dividend_attrs}<br /><br />Divisor schema: {divisor_attrs}'
+        return f'**Dividend schema**: {dividend_attrs}<br>**Divisor schema**: {divisor_attrs}'
 
 
 @dataclass
