@@ -181,7 +181,9 @@ export const $PatchedQuery = {
           },
           description: {
             type: "string",
-            nullable: true,
+          },
+          hint: {
+            type: "string",
           },
           position: {
             type: "object",
@@ -197,10 +199,9 @@ export const $PatchedQuery = {
               },
             },
             required: ["end_col", "line", "start_col"],
-            nullable: true,
           },
         },
-        required: ["description", "title"],
+        required: ["title"],
       },
       readOnly: true,
     },
@@ -330,7 +331,9 @@ export const $Query = {
           },
           description: {
             type: "string",
-            nullable: true,
+          },
+          hint: {
+            type: "string",
           },
           position: {
             type: "object",
@@ -346,10 +349,9 @@ export const $Query = {
               },
             },
             required: ["end_col", "line", "start_col"],
-            nullable: true,
           },
         },
-        required: ["description", "title"],
+        required: ["title"],
       },
       readOnly: true,
     },

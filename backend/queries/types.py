@@ -11,8 +11,9 @@ class ErrorPosition(TypedDict):
 
 class QueryError(TypedDict):
     title: str
-    description: str | None
-    position: NotRequired[ErrorPosition | None]
+    description: NotRequired[str]
+    hint: NotRequired[str]
+    position: NotRequired[ErrorPosition]
 
 
 class QueryValidationResult(TypedDict):

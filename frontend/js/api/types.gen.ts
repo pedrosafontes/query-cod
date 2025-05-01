@@ -55,12 +55,13 @@ export type PatchedQuery = {
   readonly modified?: string;
   readonly validation_errors?: Array<{
     title: string;
-    description: string | null;
+    description?: string;
+    hint?: string;
     position?: {
       line: number;
       start_col: number;
       end_col: number;
-    } | null;
+    };
   }>;
 };
 
@@ -92,12 +93,13 @@ export type Query = {
   readonly modified: string;
   readonly validation_errors: Array<{
     title: string;
-    description: string | null;
+    description?: string;
+    hint?: string;
     position?: {
       line: number;
       start_col: number;
       end_col: number;
-    } | null;
+    };
   }>;
 };
 

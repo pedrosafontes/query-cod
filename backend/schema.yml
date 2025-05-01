@@ -935,7 +935,8 @@ components:
                 type: string
               description:
                 type: string
-                nullable: true
+              hint:
+                type: string
               position:
                 type: object
                 properties:
@@ -949,9 +950,7 @@ components:
                 - end_col
                 - line
                 - start_col
-                nullable: true
             required:
-            - description
             - title
           readOnly: true
     PatchedUser:
@@ -1046,7 +1045,8 @@ components:
                 type: string
               description:
                 type: string
-                nullable: true
+              hint:
+                type: string
               position:
                 type: object
                 properties:
@@ -1060,9 +1060,7 @@ components:
                 - end_col
                 - line
                 - start_col
-                nullable: true
             required:
-            - description
             - title
           readOnly: true
       required:
