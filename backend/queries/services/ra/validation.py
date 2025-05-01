@@ -28,6 +28,8 @@ def validate_ra(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationR
             semantic_error['description'] = e.description
         if e.position:
             semantic_error['position'] = e.position
+        if e.hint:
+            semantic_error['hint'] = e.hint
         return {
             'valid': False,
             'errors': [semantic_error],

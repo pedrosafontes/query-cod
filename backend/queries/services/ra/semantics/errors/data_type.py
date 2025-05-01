@@ -43,7 +43,11 @@ class UnionCompatibilityError(RATypeError):
     def description(self) -> str:
         left_attrs = f'({', '.join(attr.name for attr in self.left_attrs)})'
         right_attrs = f'({', '.join(attr.name for attr in self.right_attrs)})'
-        return f'Left schema: {left_attrs}\n\n' f'Right schema: {right_attrs}'
+        return f'**Left schema**: {left_attrs}<br>**Right schema**: {right_attrs}'
+
+    @property
+    def hint(self) -> str:
+        return 'Ensure both relations in the operation have the same number and type of attributes, in the same order.'
 
 
 @dataclass
@@ -74,6 +78,10 @@ class JoinAttributeTypeMismatchError(RATypeError):
     @property
     def description(self) -> str:
         return f"Attribute '{self.name}' has type {self.left_t} in left relation, but type {self.right_t} in right relation"
+
+    @property
+    def hint(self) -> str:
+        return f'Ensure that attribute `{self.name}` has matching types in both relations before joining. Use explicit casting if needed.'
 
 
 @dataclass
