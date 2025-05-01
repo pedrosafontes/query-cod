@@ -34,10 +34,11 @@ def validate_sql(query_text: str, db: DatabaseConnectionInfo) -> QueryValidation
     try:
         SQLSemanticAnalyzer(get_schema(db)).validate(tree)
     except SQLSemanticError as e:
-        semantic_error: QueryError = {
-            'title': e.title,
-            'description': e.description,
-        }
+        semantic_error: QueryError = {'title': e.title}
+        if e.description:
+            semantic_error['description'] = e.description
+        if e.hint:
+            semantic_error['hint'] = e.hint
         return {'valid': False, 'errors': [semantic_error]}
 
     try:
