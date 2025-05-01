@@ -1,6 +1,6 @@
 from databases.models.database_connection_info import DatabaseConnectionInfo
 from databases.services.schema import get_schema
-from queries.types import QueryValidationResult
+from queries.types import QueryError, QueryValidationResult
 
 from .parser import parse_ra
 from .parser.errors import RASyntaxError
@@ -12,34 +12,25 @@ def validate_ra(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationR
     try:
         expr = parse_ra(query_text)
     except RASyntaxError as e:
+        syntax_error: QueryError = {'title': e.title}
+        if e.description:
+            syntax_error['description'] = e.description
         return {
             'valid': False,
-            'errors': [
-                {
-                    'title': e.title,
-                    'description': e.description,
-                }
-            ],
+            'errors': [syntax_error],
         }
 
     try:
         RASemanticAnalyzer(get_schema(db)).validate(expr)
     except RASemanticError as e:
+        semantic_error: QueryError = {'title': e.title}
+        if e.description:
+            semantic_error['description'] = e.description
+        if e.position:
+            semantic_error['position'] = e.position
         return {
             'valid': False,
-            'errors': [
-                {
-                    'title': e.title,
-                    'description': e.description,
-                    'position': {
-                        'line': 0,
-                        'start_col': e.start_col,
-                        'end_col': e.end_col,
-                    }
-                    if e.source.position
-                    else None,
-                }
-            ],
+            'errors': [semantic_error],
         }
 
     return {'valid': True}
