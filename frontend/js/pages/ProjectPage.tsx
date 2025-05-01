@@ -41,7 +41,7 @@ const ProjectPage = () => {
         <ProjectSidebar
           currentQueryId={currentQueryId}
           project={project}
-          onSelect={setCurrentQueryId}
+          setCurrentQueryId={setCurrentQueryId}
           onSuccess={fetchProject}
         />
       )}

@@ -42,7 +42,7 @@ const renderComponent = (props = {}) =>
         <ProjectSidebar
           currentQueryId={101}
           project={mockProject}
-          onSelect={jest.fn()}
+          setCurrentQueryId={jest.fn()}
           onSuccess={jest.fn()}
           {...props}
         />
@@ -59,7 +59,7 @@ const openQueryDropdown = async (queryName: string) => {
 };
 
 describe("ProjectSidebar", () => {
-  const onSelect = jest.fn();
+  const setCurrentQueryId = jest.fn();
   const onSuccess = jest.fn();
 
   beforeEach(() => {
@@ -87,11 +87,11 @@ describe("ProjectSidebar", () => {
     });
   });
 
-  test("calls onSelect for a query click", async () => {
-    renderComponent({ onSelect });
+  test("calls setCurrentQueryId for a query click", async () => {
+    renderComponent({ setCurrentQueryId });
 
     await userEvent.click(screen.getByText("Query 2"));
-    expect(onSelect).toHaveBeenCalledWith(102);
+    expect(setCurrentQueryId).toHaveBeenCalledWith(102);
   });
 
   describe("Query CRUD operations", () => {
