@@ -113,8 +113,8 @@ const ProjectSidebar = ({
           {open && (
             <SidebarMenuItem className="flex items-center">
               <Button
-                className="mr-2 h-10"
-                size="icon-inline"
+                className="mr-2"
+                size="inline"
                 variant="link"
                 onClick={() => navigate("/projects")}
               >
@@ -123,7 +123,7 @@ const ProjectSidebar = ({
               <h1 className="text-sm text-ellipsis">{project.name}</h1>
             </SidebarMenuItem>
           )}
-          <SidebarMenuItem className="text-sm text-muted-foreground inline">
+          <SidebarMenuItem className={`text-sm ${open ? "text-muted-foreground" : "text-primary"} inline`}>
             <SidebarMenuButton onClick={toggleSidebar}>
               {open ? <PanelLeftClose /> : <PanelLeftOpen />}
             </SidebarMenuButton>
