@@ -9,6 +9,7 @@ import { useAutosave } from "hooks/useAutosave";
 import { QueryError } from "types/query";
 
 import AutosaveStatus from "./AutosaveStatus";
+import ErrorAlert from "./ErrorAlert";
 import RAKeyboard from "./RAKeyboard";
 
 type RelationalAlgebraEditorProps = {
@@ -22,6 +23,7 @@ const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
 }) => {
   const [value, setValue] = useState<string | undefined>(query.ra_text);
   const mf = useRef<MathfieldElement>(null);
+  const [errors, setErrors] = useState<QueryError[]>(query.validation_errors);
 
   useEffect(() => {
     const el = mf.current;
@@ -38,13 +40,17 @@ const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
     MathfieldElement.soundsDirectory = null;
   }, []);
 
+  useEffect(() => {
+    onErrorsChange(errors);
+  }, [errors]);
+
   const updateRaText = async (value: string) => {
     const result = await QueriesService.queriesPartialUpdate({
       id: query.id,
       requestBody: { ra_text: value },
     });
 
-    onErrorsChange(result.validation_errors);
+    setErrors(result.validation_errors);
   };
 
   const status = useAutosave({ data: value, onSave: updateRaText });
@@ -66,6 +72,16 @@ const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
         className="mt-4"
         onInsert={(expr) => mf.current?.executeCommand(["insert", expr])}
       />
+
+      {errors.length > 0 &&
+        errors.map((error) => (
+          <ErrorAlert
+            key={error.description}
+            className="mt-4"
+            description={error.description}
+            title={error.title}
+          />
+        ))}
     </>
   );
 };

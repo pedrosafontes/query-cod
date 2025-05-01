@@ -1,11 +1,11 @@
 import { AlertCircle } from "lucide-react";
-import * as React from "react";
+import Markdown from "react-markdown";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface ErrorAlertProps {
   title?: string;
-  description?: React.ReactNode;
+  description?: string | null;
   className?: string;
 }
 
@@ -13,14 +13,18 @@ const ErrorAlert = ({ title, description, className }: ErrorAlertProps) => {
   if (!title && !description) return null;
 
   return (
-    <Alert className={className} variant="destructive">
+    <Alert className={`${className} p-3`} variant="destructive">
       {title && (
         <>
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>{title}</AlertTitle>
+          <AlertTitle className="text-sm">{title}</AlertTitle>
         </>
       )}
-      <AlertDescription>{description}</AlertDescription>
+      {description && (
+        <AlertDescription className="text-xs text-muted-foreground">
+          <Markdown>{description}</Markdown>
+        </AlertDescription>
+      )}
     </Alert>
   );
 };

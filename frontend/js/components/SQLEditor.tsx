@@ -1,4 +1,5 @@
 import MonacoEditor, { Monaco } from "@monaco-editor/react";
+import partition from "lodash/partition";
 import { editor } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
@@ -8,6 +9,7 @@ import { useAutosave } from "hooks/useAutosave";
 import { QueryError } from "types/query";
 
 import AutosaveStatus from "./AutosaveStatus";
+import ErrorAlert from "./ErrorAlert";
 
 type SQLEditorProps = {
   onErrorsChange: (errors: QueryError[]) => void;
@@ -19,6 +21,7 @@ const SQLEditor = ({ query, onErrorsChange }: SQLEditorProps) => {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [value, setValue] = useState<string | undefined>(query.sql_text);
   const [errors, setErrors] = useState<QueryError[]>(query.validation_errors);
+  const [editorErrors, generalErrors] = partition(errors, (e) => e.position);
 
   const updateErrorMarkers = () => {
     if (!monacoRef.current || !editorRef.current) return;
@@ -27,18 +30,16 @@ const SQLEditor = ({ query, onErrorsChange }: SQLEditorProps) => {
     if (!model) return;
 
     if (errors.length > 0) {
-      const markers = errors
-        .filter(({ position }) => !!position)
-        .map(({ message, position }) => {
-          return {
-            startLineNumber: position!.line,
-            endLineNumber: position!.line,
-            startColumn: position!.start_col,
-            endColumn: position!.end_col,
-            message,
-            severity: monacoRef.current!.MarkerSeverity.Error,
-          };
-        });
+      const markers = editorErrors.map(({ description, position }) => {
+        return {
+          startLineNumber: position!.line,
+          endLineNumber: position!.line,
+          startColumn: position!.start_col,
+          endColumn: position!.end_col,
+          message: description as string,
+          severity: monacoRef.current!.MarkerSeverity.Error,
+        };
+      });
       monacoRef.current.editor.setModelMarkers(
         model,
         "autosave-feedback",
@@ -51,8 +52,11 @@ const SQLEditor = ({ query, onErrorsChange }: SQLEditorProps) => {
 
   useEffect(() => {
     onErrorsChange(errors);
-    updateErrorMarkers();
   }, [errors]);
+
+  useEffect(() => {
+    updateErrorMarkers();
+  }, [generalErrors]);
 
   const updateSqlText = async (value: string) => {
     const result = await QueriesService.queriesPartialUpdate({
@@ -94,6 +98,16 @@ const SQLEditor = ({ query, onErrorsChange }: SQLEditorProps) => {
       <div className="flex justify-end text-xs mt-2">
         <AutosaveStatus status={status} />
       </div>
+
+      {generalErrors.length > 0 &&
+        generalErrors.map((error) => (
+          <ErrorAlert
+            key={error.description}
+            className="mt-4"
+            description={error.description}
+            title={error.title}
+          />
+        ))}
     </>
   );
 };
