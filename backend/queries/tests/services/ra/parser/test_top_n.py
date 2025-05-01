@@ -23,7 +23,7 @@ from queries.services.ra.parser.errors import (
             TopN(limit=5, attribute=Attribute('score'), expression=Relation('R')),
         ),
         (
-            '\\operatorname{T}_{(10,price)} (\\sigma_{category = "electronics"} Products)',
+            '\\operatorname{T}_{(10,price)} (\\sigma_{category = \\text{"electronics"}} Products)',
             TopN(
                 limit=10,
                 attribute=Attribute('price'),
