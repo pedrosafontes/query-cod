@@ -29,14 +29,14 @@ import QueryMenuItem from "./QueryMenuItem";
 type ProjectSidebarProps = {
   project: Project;
   currentQueryId?: number;
-  onSelect: (id: number | undefined) => void;
+  setCurrentQueryId: (id: number | undefined) => void;
   onSuccess: () => void;
 };
 
 const ProjectSidebar = ({
   project,
   currentQueryId,
-  onSelect,
+  setCurrentQueryId,
   onSuccess,
 }: ProjectSidebarProps) => {
   const [creatingQueryId, setCreatingQueryId] = useState<number | null>(null);
@@ -49,9 +49,9 @@ const ProjectSidebar = ({
 
   useEffect(() => {
     if (!currentQueryId && queries.length > 0) {
-      onSelect(queries[0].id);
+      setCurrentQueryId(queries[0].id);
     }
-  }, [queries, currentQueryId, onSelect]);
+  }, [queries, currentQueryId, setCurrentQueryId]);
 
   const createQuery = async (): Promise<void> => {
     try {
@@ -61,7 +61,9 @@ const ProjectSidebar = ({
           name: "Untitled",
         } as Query,
       });
+      setOpen(true);
       onSuccess();
+      setCurrentQueryId(newQuery.id);
       setCreatingQueryId(newQuery.id);
     } catch (error) {
       toast({
@@ -93,7 +95,7 @@ const ProjectSidebar = ({
       });
       await onSuccess();
       if (currentQueryId === id) {
-        onSelect(undefined);
+        setCurrentQueryId(undefined);
       }
     } catch (error) {
       toast({
@@ -102,14 +104,12 @@ const ProjectSidebar = ({
     }
   };
 
-  const { open, toggleSidebar } = useSidebar();
+  const { open, toggleSidebar, setOpen } = useSidebar();
 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <SidebarMenu
-          className={open ? "flex flex-row justify-between" : ""}
-        >
+        <SidebarMenu className={open ? "flex flex-row justify-between" : ""}>
           {open && (
             <SidebarMenuItem className="flex items-center">
               <Button
@@ -130,7 +130,8 @@ const ProjectSidebar = ({
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      {open && (
+
+      {open ? (
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel className="flex items-center justify-between">
@@ -154,10 +155,10 @@ const ProjectSidebar = ({
                     isActive={currentQueryId === id}
                     isCreating={creatingQueryId === id}
                     name={name}
+                    onSelect={() => setCurrentQueryId(id)}
                     onCreationEnd={() => setCreatingQueryId(null)}
                     onDelete={() => deleteQuery(id)}
                     onRename={(name: string) => renameQuery(id, name)}
-                    onSelect={() => onSelect(id)}
                   />
                 ))}
                 {queries.length === 0 && (
@@ -167,6 +168,20 @@ const ProjectSidebar = ({
                     button to create your first query.
                   </span>
                 )}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+      ) : (
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton onClick={createQuery}>
+                    <FilePlus />
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
