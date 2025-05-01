@@ -8,13 +8,13 @@ class DataType(Enum):
     NUMERIC = 'numeric'
     REAL = 'real'
     FLOAT = 'float'
-    DOUBLE_PRECISION = 'double_precision'
+    DOUBLE_PRECISION = 'double-precision'
 
     CHAR = 'char'
     VARCHAR = 'varchar'
 
     BIT = 'bit'
-    BIT_VARYING = 'bit_varying'
+    BIT_VARYING = 'bit-varying'
 
     DATE = 'date'
     TIME = 'time'
