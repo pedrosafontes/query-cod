@@ -3,6 +3,9 @@ import { formatDistanceToNow } from "date-fns";
 import { Plus } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 
+import { DataTable } from "@/components/common/DataTable";
+import ProjectActions from "@/components/project/ProjectActions";
+import ProjectForm from "@/components/project/ProjectForm";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,9 +16,6 @@ import {
 } from "@/components/ui/dialog";
 import { ProjectsService, type Project } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
-import { DataTable } from "js/components/common/DataTable";
-import ProjectActions from "js/components/project/ProjectActions";
-import ProjectForm from "js/components/project/ProjectForm";
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState<Project[]>([]);
