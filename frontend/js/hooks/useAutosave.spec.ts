@@ -1,6 +1,6 @@
 import { renderHook, act } from "@testing-library/react";
 
-import { useAutosave } from "../useAutosave";
+import { useAutosave } from "./useAutosave";
 
 jest.useFakeTimers();
 

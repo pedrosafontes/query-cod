@@ -3,7 +3,7 @@ import { MemoryRouter } from "react-router";
 
 import { useAuth } from "contexts/AuthContext";
 
-import LoginPage from "../LoginPage";
+import LoginPage from "./LoginPage";
 
 const mockNavigate = jest.fn();
 jest.mock("react-router", () => ({

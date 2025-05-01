@@ -5,7 +5,7 @@ import { ProjectsService } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 import { QueryExplorerProps } from "js/components/query/QueryExplorer";
 
-import ProjectsPage from "../ProjectPage";
+import ProjectsPage from "./ProjectPage";
 
 jest.mock("api", () => ({
   ProjectsService: {

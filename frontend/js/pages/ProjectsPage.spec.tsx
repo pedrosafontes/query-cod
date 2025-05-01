@@ -3,7 +3,7 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import { ProjectsService } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
-import ProjectsPage from "../ProjectsPage";
+import ProjectsPage from "./ProjectsPage";
 
 jest.mock("api", () => ({
   ProjectsService: {

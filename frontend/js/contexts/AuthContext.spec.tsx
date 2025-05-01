@@ -3,7 +3,7 @@ import React from "react";
 
 import { AuthService, User } from "api";
 
-import { AuthProvider, useAuth } from "../AuthContext";
+import { AuthProvider, useAuth } from "./AuthContext";
 
 function AuthConsumer() {
   const { user, isAuthenticated, isLoading, login, logout } = useAuth();

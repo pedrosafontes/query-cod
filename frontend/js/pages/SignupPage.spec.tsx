@@ -4,7 +4,7 @@ import { MemoryRouter } from "react-router";
 import { AuthService } from "api";
 import { useAuth } from "contexts/AuthContext";
 
-import SignupPage from "../SignupPage";
+import SignupPage from "./SignupPage";
 
 const mockNavigate = jest.fn();
 jest.mock("react-router", () => ({
