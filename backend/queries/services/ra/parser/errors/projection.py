@@ -5,5 +5,10 @@ from .base import RASyntaxError
 
 @dataclass
 class MissingProjectionAttributesError(RASyntaxError):
-    def __str__(self) -> str:
+    @property
+    def title(self) -> str:
         return 'Missing Projection Attributes'
+
+    @property
+    def description(self) -> str:
+        return 'A projection must specify one or more attributes to retain.'

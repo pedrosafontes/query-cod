@@ -10,11 +10,21 @@ class TopNSyntaxError(RASyntaxError):
 
 @dataclass
 class InvalidTopNLimitError(TopNSyntaxError):
-    def __str__(self) -> str:
-        return 'Invalid Top N Limit'
+    @property
+    def title(self) -> str:
+        return 'Invalid Top-N Limit'
+
+    @property
+    def description(self) -> str:
+        return 'The Top-N operator requires a valid positive integer limit.'
 
 
 @dataclass
 class InvalidTopNOrderByError(TopNSyntaxError):
-    def __str__(self) -> str:
-        return 'Invalid Top N Order By'
+    @property
+    def title(self) -> str:
+        return 'Invalid Top-N Order By Attribute'
+
+    @property
+    def description(self) -> str:
+        return 'A Top-N operator requires a valid attribute to sort by.'

@@ -23,7 +23,4 @@ class RASemanticError(Exception, ABC):
         return None
 
     def __str__(self) -> str:
-        msg = f'{self.title}:  {self.description}'
-        if self.source.position:
-            return f'{msg} (Columns {self.start_col}-{self.end_col})'
-        return msg
+        return f'{self.title}:  {self.description}'

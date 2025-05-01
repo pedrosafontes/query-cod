@@ -10,11 +10,17 @@ class SelectionSyntaxError(RASyntaxError):
 
 @dataclass
 class MissingSelectionConditionError(SelectionSyntaxError):
-    def __str__(self) -> str:
+    @property
+    def title(self) -> str:
         return 'Missing Selection Condition'
+
+    @property
+    def description(self) -> str:
+        return 'A selection operation must include a condition to filter rows.'
 
 
 @dataclass
 class InvalidSelectionConditionError(SelectionSyntaxError):
-    def __str__(self) -> str:
+    @property
+    def description(self) -> str:
         return 'Invalid Selection Condition'

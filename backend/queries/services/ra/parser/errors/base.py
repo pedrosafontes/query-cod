@@ -7,29 +7,41 @@ class RASyntaxError(Exception, ABC):
     line: int
     column: int
 
-    def __str__(self) -> str:
+    @property
+    def title(self) -> str:
         return 'Syntax Error'
+
+    @property
+    def description(self) -> str | None:
+        return None
+
+    def __str__(self) -> str:
+        return f'{self.title}:  {self.description}'
 
 
 @dataclass
 class MismatchedParenthesisError(RASyntaxError):
-    def __str__(self) -> str:
+    @property
+    def description(self) -> str:
         return 'Mismatched Parenthesis'
 
 
 @dataclass
 class MissingCommaError(RASyntaxError):
-    def __str__(self) -> str:
+    @property
+    def description(self) -> str:
         return 'Missing Comma in List'
 
 
 @dataclass
 class MissingOperandError(RASyntaxError):
-    def __str__(self) -> str:
+    @property
+    def description(self) -> str:
         return 'Missing Operand'
 
 
 @dataclass
 class InvalidOperatorError(RASyntaxError):
-    def __str__(self) -> str:
+    @property
+    def description(self) -> str:
         return 'Invalid Operator'

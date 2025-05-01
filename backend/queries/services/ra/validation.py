@@ -16,8 +16,8 @@ def validate_ra(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationR
             'valid': False,
             'errors': [
                 {
-                    'title': 'Syntax Error',
-                    'description': str(e),
+                    'title': e.title,
+                    'description': e.description,
                 }
             ],
         }
