@@ -24,8 +24,60 @@ export const $Database = {
       type: "string",
       maxLength: 255,
     },
+    schema: {
+      type: "object",
+      additionalProperties: {
+        type: "object",
+        additionalProperties: {
+          type: "object",
+          properties: {
+            type: {
+              enum: [
+                "smallint",
+                "integer",
+                "decimal",
+                "numeric",
+                "real",
+                "float",
+                "double-precision",
+                "char",
+                "varchar",
+                "bit",
+                "bit-varying",
+                "date",
+                "time",
+                "timestamp",
+                "null",
+                "boolean",
+              ],
+            },
+            nullable: {
+              type: "boolean",
+            },
+            primary_key: {
+              type: "boolean",
+            },
+            references: {
+              type: "object",
+              properties: {
+                table: {
+                  type: "string",
+                },
+                column: {
+                  type: "string",
+                },
+              },
+              required: ["column", "table"],
+              nullable: true,
+            },
+          },
+          required: ["nullable", "primary_key", "references", "type"],
+        },
+      },
+      readOnly: true,
+    },
   },
-  required: ["id", "name"],
+  required: ["id", "name", "schema"],
 } as const;
 
 export const $LanguageEnum = {

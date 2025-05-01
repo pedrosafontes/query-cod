@@ -8,6 +8,35 @@ export type Activation = {
 export type Database = {
   readonly id: number;
   name: string;
+  readonly schema: {
+    [key: string]: {
+      [key: string]: {
+        type:
+          | "smallint"
+          | "integer"
+          | "decimal"
+          | "numeric"
+          | "real"
+          | "float"
+          | "double-precision"
+          | "char"
+          | "varchar"
+          | "bit"
+          | "bit-varying"
+          | "date"
+          | "time"
+          | "timestamp"
+          | "null"
+          | "boolean";
+        nullable: boolean;
+        primary_key: boolean;
+        references: {
+          table: string;
+          column: string;
+        } | null;
+      };
+    };
+  };
 };
 
 /**
