@@ -8,8 +8,8 @@ import { QueriesService, Query } from "api";
 import { useAutosave } from "hooks/useAutosave";
 import { QueryError } from "types/query";
 
-import AutosaveStatus from "./AutosaveStatus";
-import ErrorAlert from "./ErrorAlert";
+import AutosaveStatus from "../AutosaveStatus";
+import ErrorAlert from "../ErrorAlert";
 
 type SQLEditorProps = {
   onErrorsChange: (errors: QueryError[]) => void;

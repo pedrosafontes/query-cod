@@ -2,8 +2,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
 
 import { ProjectsService } from "api";
-import { QueryExplorerProps } from "components/QueryExplorer";
 import { useErrorToast } from "hooks/useErrorToast";
+import { QueryExplorerProps } from "js/components/query/QueryExplorer";
 
 import ProjectsPage from "../ProjectPage";
 
@@ -18,7 +18,7 @@ jest.mock("hooks/useErrorToast", () => ({
 }));
 
 jest.mock(
-  "components/QueryExplorer",
+  "components/query/QueryExplorer",
   () =>
     ({ queryId }: QueryExplorerProps) => (
       <div data-testid="query-explorer">{queryId}</div>

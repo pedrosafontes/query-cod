@@ -5,7 +5,7 @@ import { userEvent } from "@testing-library/user-event";
 import { LanguageEnum, QueriesService, Query } from "api";
 import * as useErrorToastModule from "hooks/useErrorToast";
 
-import QueryLanguageTabs from "../QueryLanguageTabs";
+import QueryLanguageTabs from "./QueryLanguageTabs";
 
 jest.mock("api", () => ({
   QueriesService: {

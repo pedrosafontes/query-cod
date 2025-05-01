@@ -4,7 +4,7 @@ import "@testing-library/jest-dom";
 import { QueriesService, Query } from "api";
 import { useAutosave } from "hooks/useAutosave";
 
-import RelationalAlgebraEditor from "../RelationalAlgebraEditor";
+import RelationalAlgebraEditor from ".";
 
 jest.mock("react-markdown");
 jest.mock("rehype-raw");

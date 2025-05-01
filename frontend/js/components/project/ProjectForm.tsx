@@ -21,7 +21,12 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
-import { Database, DatabasesService, Project, ProjectsService } from "../api";
+import {
+  Database,
+  DatabasesService,
+  Project,
+  ProjectsService,
+} from "../../api";
 
 type ProjectFormValues = {
   name: string;

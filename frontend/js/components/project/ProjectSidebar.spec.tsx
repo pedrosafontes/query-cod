@@ -5,7 +5,7 @@ import { BrowserRouter } from "react-router";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { Project, ProjectsService, QueriesService } from "api";
 
-import ProjectSidebar from "../ProjectSidebar";
+import ProjectSidebar from "./ProjectSidebar";
 
 jest.mock("api");
 const mockToast = jest.fn();

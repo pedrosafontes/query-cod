@@ -4,8 +4,8 @@ import { useNavigate } from "react-router";
 import { Project, ProjectsService } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
-import ProjectActions from "../ProjectActions";
-import { ProjectFormProps } from "../ProjectForm";
+import ProjectActions from "./ProjectActions";
+import { ProjectFormProps } from "./ProjectForm";
 
 jest.mock("api", () => ({
   ProjectsService: {
@@ -22,7 +22,7 @@ jest.mock("react-router", () => ({
 }));
 
 jest.mock(
-  "components/ProjectForm",
+  "components/project/ProjectForm",
   () =>
     ({ project, onSuccess }: ProjectFormProps) => (
       <div>

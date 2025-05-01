@@ -4,17 +4,17 @@ import { useNavigate } from "react-router";
 
 import { useErrorToast } from "hooks/useErrorToast";
 
-import { Project, ProjectsService } from "../api";
-
-import ProjectForm from "./ProjectForm";
-import { Button } from "./ui/button";
+import { Project, ProjectsService } from "../../api";
+import { Button } from "../ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./ui/dialog";
+} from "../ui/dialog";
+
+import ProjectForm from "./ProjectForm";
 
 type ProjectActionsProps = {
   project: Project;

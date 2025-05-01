@@ -15,8 +15,10 @@ jest.mock("hooks/useErrorToast", () => ({
   useErrorToast: jest.fn(),
 }));
 
-jest.mock("components/ProjectForm", () => () => <div>Mock ProjectForm</div>);
-jest.mock("components/ProjectActions", () => () => (
+jest.mock("components/project/ProjectForm", () => () => (
+  <div>Mock ProjectForm</div>
+));
+jest.mock("components/project/ProjectActions", () => () => (
   <div>Mock ProjectActions</div>
 ));
 

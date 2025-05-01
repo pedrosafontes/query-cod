@@ -21,8 +21,13 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-import { ProjectsService, QueriesService, Query, type Project } from "../api";
-import { useErrorToast } from "../hooks/useErrorToast";
+import {
+  ProjectsService,
+  QueriesService,
+  Query,
+  type Project,
+} from "../../api";
+import { useErrorToast } from "../../hooks/useErrorToast";
 
 import QueryMenuItem from "./QueryMenuItem";
 
@@ -123,7 +128,9 @@ const ProjectSidebar = ({
               <h1 className="text-sm text-ellipsis">{project.name}</h1>
             </SidebarMenuItem>
           )}
-          <SidebarMenuItem className={`text-sm ${open ? "text-muted-foreground" : "text-primary"} inline`}>
+          <SidebarMenuItem
+            className={`text-sm ${open ? "text-muted-foreground" : "text-primary"} inline`}
+          >
             <SidebarMenuButton onClick={toggleSidebar}>
               {open ? <PanelLeftClose /> : <PanelLeftOpen />}
             </SidebarMenuButton>
@@ -155,10 +162,10 @@ const ProjectSidebar = ({
                     isActive={currentQueryId === id}
                     isCreating={creatingQueryId === id}
                     name={name}
-                    onSelect={() => setCurrentQueryId(id)}
                     onCreationEnd={() => setCreatingQueryId(null)}
                     onDelete={() => deleteQuery(id)}
                     onRename={(name: string) => renameQuery(id, name)}
+                    onSelect={() => setCurrentQueryId(id)}
                   />
                 ))}
                 {queries.length === 0 && (

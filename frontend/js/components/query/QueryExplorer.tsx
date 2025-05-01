@@ -4,12 +4,13 @@ import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query, QueryResultData } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
-import ErrorAlert from "./ErrorAlert";
+import { Skeleton } from "../ui/skeleton";
+
 import ExecuteQueryButton from "./ExecuteQueryButton";
 import QueryEditor from "./QueryEditor";
+import ErrorAlert from "./QueryEditor/ErrorAlert";
 import QueryLanguageTabs from "./QueryLanguageTabs";
 import QueryResult from "./QueryResult";
-import { Skeleton } from "./ui/skeleton";
 
 export type QueryExplorerProps = {
   queryId: number;

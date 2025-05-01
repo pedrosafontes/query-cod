@@ -4,7 +4,7 @@ import { MemoryRouter, Routes, Route, useLocation } from "react-router";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { useAuth } from "contexts/AuthContext";
 
-import AppSidebar from "../AppSidebar";
+import AppSidebar from "./AppSidebar";
 
 const mockNavigate = jest.fn();
 

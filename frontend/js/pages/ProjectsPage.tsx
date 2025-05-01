@@ -12,10 +12,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ProjectsService, type Project } from "api";
-import { DataTable } from "components/DataTable";
-import ProjectActions from "components/ProjectActions";
-import ProjectForm from "components/ProjectForm";
 import { useErrorToast } from "hooks/useErrorToast";
+import { DataTable } from "js/components/common/DataTable";
+import ProjectActions from "js/components/project/ProjectActions";
+import ProjectForm from "js/components/project/ProjectForm";
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState<Project[]>([]);

@@ -5,9 +5,9 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import { Toaster } from "@/components/ui/toaster";
 
 import { OpenAPI } from "./api";
-import AuthenticatedLayout from "./components/AuthenticatedLayout";
-import AuthRoute from "./components/AuthRoute";
-import PrivateRoute from "./components/PrivateRoute";
+import AuthenticatedLayout from "./components/layout/AuthenticatedLayout";
+import AuthRoute from "./components/route/AuthRoute";
+import PrivateRoute from "./components/route/PrivateRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import LoginPage from "./pages/LoginPage";
 import ProjectPage from "./pages/ProjectPage";

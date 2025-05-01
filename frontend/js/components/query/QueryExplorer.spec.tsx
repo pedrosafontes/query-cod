@@ -10,9 +10,9 @@ import "@testing-library/jest-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueriesService, Query } from "api";
 
-import QueryEditor from "../QueryEditor";
-import QueryExplorer from "../QueryExplorer";
-import QueryResult from "../QueryResult";
+import QueryEditor from "./QueryEditor";
+import QueryExplorer from "./QueryExplorer";
+import QueryResult from "./QueryResult";
 
 jest.mock("api");
 const mockToast = jest.fn();
@@ -20,13 +20,13 @@ jest.mock("hooks/useErrorToast", () => ({
   useErrorToast: () => mockToast,
 }));
 
-jest.mock("../QueryEditor", () => {
+jest.mock("./QueryEditor", () => {
   return jest.fn(() => (
     <div data-testid="query-editor">Query Editor Component</div>
   ));
 });
 
-jest.mock("../QueryResult", () => {
+jest.mock("./QueryResult", () => {
   return jest.fn(() => (
     <div data-testid="query-result">Query Result Component</div>
   ));

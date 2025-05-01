@@ -1,7 +1,8 @@
 import { Outlet } from "react-router";
 
+import { SidebarInset, SidebarProvider } from "../ui/sidebar";
+
 import AppSidebar from "./AppSidebar";
-import { SidebarInset, SidebarProvider } from "./ui/sidebar";
 
 const AuthenticatedLayout = () => {
   return (

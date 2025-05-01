@@ -6,7 +6,7 @@ import { editor } from "monaco-editor";
 import { QueriesService, Query } from "api";
 import { useAutosave } from "hooks/useAutosave";
 
-import SQLEditor from "../SQLEditor";
+import SQLEditor from ".";
 
 jest.mock("react-markdown");
 jest.mock("rehype-raw");

@@ -2,16 +2,16 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { userEvent } from "@testing-library/user-event";
 
-import RAKeyboardButton from "../RAKeyboardButton";
-import { RAKeyboardItem } from "../RAKeyboardItems";
+import RAKeyboardButton from "./RAKeyboardButton";
+import { RAKeyboardItem } from "./RAKeyboardItems";
 
-jest.mock("../LatexFormula", () => {
+jest.mock("./LatexFormula", () => {
   return jest.fn(({ expression }: { expression: string }) => (
     <span data-testid="latex">{expression}</span>
   ));
 });
 
-describe("RAOperatorButton", () => {
+describe("RAKeyboardButton", () => {
   const operator: RAKeyboardItem = {
     label: "\\pi",
     expr: "\\pi_{\\text{attr}}R",

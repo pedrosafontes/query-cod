@@ -3,15 +3,16 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Query } from "api";
 
-import QueryEditor from "../QueryEditor";
-import RelationalAlgebraEditor from "../RelationalAlgebraEditor";
-import SQLEditor from "../SQLEditor";
+import RelationalAlgebraEditor from "./RelationalAlgebraEditor";
+import SQLEditor from "./SQLEditor";
 
-jest.mock("../SQLEditor", () => {
+import QueryEditor from ".";
+
+jest.mock("./SQLEditor", () => {
   return jest.fn(() => <div data-testid="sql-editor">SQL Editor</div>);
 });
 
-jest.mock("../RelationalAlgebraEditor", () => {
+jest.mock("./RelationalAlgebraEditor", () => {
   return jest.fn(() => <div data-testid="ra-editor">RA Editor</div>);
 });
 
