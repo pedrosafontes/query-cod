@@ -4,7 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 
 import { Database, DatabasesService } from "api";
 import "@xyflow/react/dist/style.css";
-import { useErrorToast } from "js/hooks/useErrorToast";
+import { useErrorToast } from "hooks/useErrorToast";
 
 import TableNode from "./TableNode";
 
