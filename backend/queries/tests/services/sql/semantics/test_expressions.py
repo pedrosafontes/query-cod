@@ -1,5 +1,4 @@
 import pytest
-from databases.types import Schema
 from queries.services.sql.semantics.errors import (
     ColumnCountMismatchError,
     ColumnNotFoundError,
@@ -7,6 +6,7 @@ from queries.services.sql.semantics.errors import (
     NonScalarExpressionError,
     TypeMismatchError,
 )
+from queries.services.types import RelationalSchema
 
 from .conftest import assert_invalid, assert_valid
 
@@ -58,7 +58,7 @@ class TestQuantifiedSubqueries:
             """,
         ],
     )
-    def test_valid_quantified_predicates(self, query: str, schema: Schema) -> None:
+    def test_valid_quantified_predicates(self, query: str, schema: RelationalSchema) -> None:
         assert_valid(query, schema)
 
     @pytest.mark.parametrize(
@@ -99,7 +99,7 @@ class TestQuantifiedSubqueries:
         ],
     )
     def test_invalid_quantified_predicates(
-        self, query: str, expected_exception: type[Exception], schema: Schema
+        self, query: str, expected_exception: type[Exception], schema: RelationalSchema
     ) -> None:
         assert_invalid(query, schema, expected_exception)
 
@@ -118,7 +118,7 @@ class TestStringFunctions:
             "SELECT product_name || ' (SALE)' FROM products",
         ],
     )
-    def test_valid_string_functions(self, query: str, schema: Schema) -> None:
+    def test_valid_string_functions(self, query: str, schema: RelationalSchema) -> None:
         assert_valid(query, schema)
 
     @pytest.mark.parametrize(
@@ -131,7 +131,7 @@ class TestStringFunctions:
         ],
     )
     def test_invalid_string_functions(
-        self, query: str, expected_exception: type[Exception], schema: Schema
+        self, query: str, expected_exception: type[Exception], schema: RelationalSchema
     ) -> None:
         assert_invalid(query, schema, expected_exception)
 
@@ -146,7 +146,7 @@ class TestPredicateValidation:
             'SELECT * FROM products WHERE category_id IS NOT NULL',
         ],
     )
-    def test_valid_predicates(self, query: str, schema: Schema) -> None:
+    def test_valid_predicates(self, query: str, schema: RelationalSchema) -> None:
         assert_valid(query, schema)
 
     @pytest.mark.parametrize(
@@ -157,7 +157,7 @@ class TestPredicateValidation:
         ],
     )
     def test_invalid_predicates(
-        self, query: str, expected_exception: type[Exception], schema: Schema
+        self, query: str, expected_exception: type[Exception], schema: RelationalSchema
     ) -> None:
         assert_invalid(query, schema, expected_exception)
 
@@ -171,7 +171,7 @@ class TestCastFunction:
             'SELECT CAST(product_id AS VARCHAR) FROM products',
         ],
     )
-    def test_valid_casts(self, query: str, schema: Schema) -> None:
+    def test_valid_casts(self, query: str, schema: RelationalSchema) -> None:
         assert_valid(query, schema)
 
     @pytest.mark.parametrize(
@@ -181,6 +181,6 @@ class TestCastFunction:
         ],
     )
     def test_invalid_casts(
-        self, query: str, expected_exception: type[Exception], schema: Schema
+        self, query: str, expected_exception: type[Exception], schema: RelationalSchema
     ) -> None:
         assert_invalid(query, schema, expected_exception)

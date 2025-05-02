@@ -1,11 +1,11 @@
-from databases.types import Schema
+from queries.services.types import RelationalSchema
 from sqlglot import Expression
 
 from .validators.query import QueryValidator
 
 
 class SQLSemanticAnalyzer:
-    def __init__(self, schema: Schema) -> None:
+    def __init__(self, schema: RelationalSchema) -> None:
         self.query_validator = QueryValidator(schema)
 
     def validate(self, query: Expression) -> None:

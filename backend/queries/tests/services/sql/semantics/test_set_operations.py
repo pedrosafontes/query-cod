@@ -1,6 +1,6 @@
 import pytest
-from databases.types import Schema
 from queries.services.sql.semantics.errors import ColumnCountMismatchError, ColumnTypeMismatchError
+from queries.services.types import RelationalSchema
 
 from .conftest import assert_invalid, assert_valid
 
@@ -19,7 +19,7 @@ from .conftest import assert_invalid, assert_valid
         'SELECT customer_id FROM customers EXCEPT SELECT customer_id FROM orders',
     ],
 )
-def test_valid_set_operations(query: str, schema: Schema) -> None:
+def test_valid_set_operations(query: str, schema: RelationalSchema) -> None:
     assert_valid(query, schema)
 
 
@@ -47,6 +47,6 @@ def test_valid_set_operations(query: str, schema: Schema) -> None:
     ],
 )
 def test_invalid_set_operations(
-    query: str, expected_exception: type[Exception], schema: Schema
+    query: str, expected_exception: type[Exception], schema: RelationalSchema
 ) -> None:
     assert_invalid(query, schema, expected_exception)

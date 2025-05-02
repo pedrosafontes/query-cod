@@ -1,4 +1,4 @@
-from databases.types import Schema
+from queries.services.types import RelationalSchema
 from sqlglot import Expression
 from sqlglot.expressions import (
     Select,
@@ -12,7 +12,7 @@ from .set_operation import SetOperationValidator
 
 
 class QueryValidator:
-    def __init__(self, schema: Schema) -> None:
+    def __init__(self, schema: RelationalSchema) -> None:
         self.schema = schema
 
     def validate(self, query: Expression, outer_scope: Scope | None) -> ProjectionsScope:

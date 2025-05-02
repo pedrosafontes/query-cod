@@ -1,6 +1,5 @@
 from typing import cast
 
-from databases.types import Schema
 from queries.services.types import RelationalSchema
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import (
@@ -21,7 +20,7 @@ from .table import TableValidator
 
 
 class SelectValidator:
-    def __init__(self, schema: Schema, scope: Scope) -> None:
+    def __init__(self, schema: RelationalSchema, scope: Scope) -> None:
         self.schema = schema
         self.scope = scope
         self.expr_validator = ExpressionValidator(schema, scope)

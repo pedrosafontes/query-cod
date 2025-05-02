@@ -1,4 +1,4 @@
-from databases.types import Schema
+from queries.services.types import RelationalSchema
 
 from ..errors import (
     ColumnCountMismatchError,
@@ -12,7 +12,7 @@ from ..types import SetOperation
 
 
 class SetOperationValidator:
-    def __init__(self, schema: Schema, scope: Scope) -> None:
+    def __init__(self, schema: RelationalSchema, scope: Scope) -> None:
         from .query import QueryValidator
 
         self.scope = scope

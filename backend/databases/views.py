@@ -1,10 +1,16 @@
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, serializers, viewsets
 
 from .models import Database
-from .serializers import DatabaseSerializer
+from .serializers import DatabaseSerializer, DatabaseSummarySerializer
 
 
-class DatabaseViewSet(mixins.ListModelMixin, viewsets.GenericViewSet[Database]):
+class DatabaseViewSet(
+    mixins.RetrieveModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet[Database]
+):
     queryset = Database.objects.all().order_by('name')
-    serializer_class = DatabaseSerializer
     pagination_class = None
+
+    def get_serializer_class(self) -> type[serializers.ModelSerializer[Database]]:
+        if self.action == 'list':
+            return DatabaseSummarySerializer
+        return DatabaseSerializer

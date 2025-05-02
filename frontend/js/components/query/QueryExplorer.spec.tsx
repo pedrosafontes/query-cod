@@ -10,6 +10,8 @@ import "@testing-library/jest-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueriesService, Query } from "api";
 
+import { SchemaDiagramProps } from "../database/SchemaDiagram";
+
 import QueryEditor from "./QueryEditor";
 import QueryExplorer from "./QueryExplorer";
 import QueryResult from "./QueryResult";
@@ -29,6 +31,12 @@ jest.mock("./QueryEditor", () => {
 jest.mock("./QueryResult", () => {
   return jest.fn(() => (
     <div data-testid="query-result">Query Result Component</div>
+  ));
+});
+
+jest.mock("components/database/SchemaDiagram", () => {
+  return jest.fn(({ children }: SchemaDiagramProps) => (
+    <div data-testid="schema-diagram">{children}</div>
   ));
 });
 
@@ -56,7 +64,7 @@ describe("QueryExplorer Component", () => {
   const renderComponent = () =>
     render(
       <TooltipProvider>
-        <QueryExplorer queryId={mockQuery.id} />
+        <QueryExplorer databaseId={0} queryId={mockQuery.id} />
       </TooltipProvider>,
     );
 

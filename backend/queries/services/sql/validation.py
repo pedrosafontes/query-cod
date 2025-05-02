@@ -7,6 +7,7 @@ from queries.utils.tokens import to_error_position
 from sqlalchemy.exc import SQLAlchemyError
 from sqlglot import ParseError
 
+from ..types import to_relational_schema
 from .semantics import SQLSemanticAnalyzer
 from .semantics.errors import SQLSemanticError
 
@@ -32,7 +33,8 @@ def validate_sql(query_text: str, db: DatabaseConnectionInfo) -> QueryValidation
 
     # Check for semantic errors
     try:
-        SQLSemanticAnalyzer(get_schema(db)).validate(tree)
+        schema = to_relational_schema(get_schema(db))
+        SQLSemanticAnalyzer(schema).validate(tree)
     except SQLSemanticError as e:
         semantic_error: QueryError = {'title': e.title}
         if e.description:

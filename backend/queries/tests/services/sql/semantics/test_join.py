@@ -1,5 +1,4 @@
 import pytest
-from databases.types import Schema
 from queries.services.sql.semantics.errors import (
     AmbiguousColumnReferenceError,
     ColumnNotFoundError,
@@ -7,6 +6,7 @@ from queries.services.sql.semantics.errors import (
     MissingJoinConditionError,
     TypeMismatchError,
 )
+from queries.services.types import RelationalSchema
 
 from .conftest import assert_invalid, assert_valid
 
@@ -31,7 +31,7 @@ from .conftest import assert_invalid, assert_valid
         'SELECT p1.product_name, p2.product_name FROM products p1 JOIN products p2 ON p1.category_id = p2.category_id AND p1.product_id <> p2.product_id',
     ],
 )
-def test_valid_joins(query: str, schema: Schema) -> None:
+def test_valid_joins(query: str, schema: RelationalSchema) -> None:
     assert_valid(query, schema)
 
 
@@ -69,5 +69,7 @@ def test_valid_joins(query: str, schema: Schema) -> None:
         ),
     ],
 )
-def test_invalid_joins(query: str, expected_exception: type[Exception], schema: Schema) -> None:
+def test_invalid_joins(
+    query: str, expected_exception: type[Exception], schema: RelationalSchema
+) -> None:
     assert_invalid(query, schema, expected_exception)

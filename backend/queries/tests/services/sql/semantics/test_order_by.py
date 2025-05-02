@@ -1,10 +1,10 @@
 import pytest
-from databases.types import Schema
 from queries.services.sql.semantics.errors import (
     ColumnNotFoundError,
     OrderByExpressionError,
     OrderByPositionError,
 )
+from queries.services.types import RelationalSchema
 
 from .conftest import assert_invalid, assert_valid
 
@@ -30,7 +30,7 @@ from .conftest import assert_invalid, assert_valid
         'SELECT category_id FROM products GROUP BY category_id ORDER BY COUNT(*) DESC',
     ],
 )
-def test_valid_order_by(query: str, schema: Schema) -> None:
+def test_valid_order_by(query: str, schema: RelationalSchema) -> None:
     assert_valid(query, schema)
 
 
@@ -48,5 +48,7 @@ def test_valid_order_by(query: str, schema: Schema) -> None:
         ),
     ],
 )
-def test_invalid_order_by(query: str, expected_exception: type[Exception], schema: Schema) -> None:
+def test_invalid_order_by(
+    query: str, expected_exception: type[Exception], schema: RelationalSchema
+) -> None:
     assert_invalid(query, schema, expected_exception)

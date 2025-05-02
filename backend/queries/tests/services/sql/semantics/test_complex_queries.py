@@ -1,5 +1,5 @@
 import pytest
-from databases.types import Schema
+from queries.services.types import RelationalSchema
 
 from .conftest import assert_valid
 
@@ -47,5 +47,5 @@ from .conftest import assert_valid
         """,
     ],
 )
-def test_valid_complex_queries(query: str, schema: Schema) -> None:
+def test_valid_complex_queries(query: str, schema: RelationalSchema) -> None:
     assert_valid(query, schema)

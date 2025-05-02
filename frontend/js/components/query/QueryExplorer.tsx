@@ -1,9 +1,11 @@
+import { ReactFlowProvider } from "@xyflow/react";
 import { useEffect, useState } from "react";
 
 import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query, QueryResultData } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
+import SchemaDiagram from "../database/SchemaDiagram";
 import { Skeleton } from "../ui/skeleton";
 
 import ExecuteQueryButton from "./ExecuteQueryButton";
@@ -14,9 +16,10 @@ import QueryResult from "./QueryResult";
 
 export type QueryExplorerProps = {
   queryId: number;
+  databaseId: number;
 };
 
-const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
+const QueryExplorer = ({ queryId, databaseId }: QueryExplorerProps) => {
   const [query, setQuery] = useState<Query>();
   const [queryResult, setQueryResult] = useState<QueryResultData>();
   const [isExecuting, setIsExecuting] = useState(false);
@@ -103,10 +106,14 @@ const QueryExplorer = ({ queryId }: QueryExplorerProps) => {
           />
         )}
       </div>
-      <div className="flex-1 px-3 py-5 flex flex-col justify-end h-full bg-gray-50">
-        {queryResult && (
-          <QueryResult isLoading={isExecuting} result={queryResult} />
-        )}
+      <div className="flex-1 h-full w-full bg-gray-50">
+        <ReactFlowProvider>
+          <SchemaDiagram databaseId={databaseId}>
+            {queryResult && (
+              <QueryResult isLoading={isExecuting} result={queryResult} />
+            )}
+          </SchemaDiagram>
+        </ReactFlowProvider>
       </div>
     </div>
   );

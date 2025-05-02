@@ -1,20 +1,20 @@
 from enum import Enum
 
 
-class DataType(Enum):
+class DataType(str, Enum):
     SMALLINT = 'smallint'
     INTEGER = 'integer'
     DECIMAL = 'decimal'
     NUMERIC = 'numeric'
     REAL = 'real'
     FLOAT = 'float'
-    DOUBLE_PRECISION = 'double_precision'
+    DOUBLE_PRECISION = 'double-precision'
 
     CHAR = 'char'
     VARCHAR = 'varchar'
 
     BIT = 'bit'
-    BIT_VARYING = 'bit_varying'
+    BIT_VARYING = 'bit-varying'
 
     DATE = 'date'
     TIME = 'time'
@@ -23,9 +23,6 @@ class DataType(Enum):
     NULL = 'null'
 
     BOOLEAN = 'boolean'  # SQL:1999+
-
-    def __str__(self) -> str:
-        return self.value
 
     def is_numeric(self) -> bool:
         return self in {

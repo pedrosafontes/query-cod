@@ -24,6 +24,74 @@ export const $Database = {
       type: "string",
       maxLength: 255,
     },
+    schema: {
+      type: "object",
+      additionalProperties: {
+        type: "object",
+        additionalProperties: {
+          type: "object",
+          properties: {
+            type: {
+              enum: [
+                "smallint",
+                "integer",
+                "decimal",
+                "numeric",
+                "real",
+                "float",
+                "double-precision",
+                "char",
+                "varchar",
+                "bit",
+                "bit-varying",
+                "date",
+                "time",
+                "timestamp",
+                "null",
+                "boolean",
+              ],
+              type: "string",
+            },
+            nullable: {
+              type: "boolean",
+            },
+            primary_key: {
+              type: "boolean",
+            },
+            references: {
+              type: "object",
+              properties: {
+                table: {
+                  type: "string",
+                },
+                column: {
+                  type: "string",
+                },
+              },
+              required: ["column", "table"],
+              nullable: true,
+            },
+          },
+          required: ["nullable", "primary_key", "references", "type"],
+        },
+      },
+      readOnly: true,
+    },
+  },
+  required: ["id", "name", "schema"],
+} as const;
+
+export const $DatabaseSummary = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    name: {
+      type: "string",
+      maxLength: 255,
+    },
   },
   required: ["id", "name"],
 } as const;
@@ -107,7 +175,7 @@ export const $PatchedProject = {
     database: {
       allOf: [
         {
-          $ref: "#/components/schemas/Database",
+          $ref: "#/components/schemas/DatabaseSummary",
         },
       ],
       readOnly: true,
@@ -247,7 +315,7 @@ export const $Project = {
     database: {
       allOf: [
         {
-          $ref: "#/components/schemas/Database",
+          $ref: "#/components/schemas/DatabaseSummary",
         },
       ],
       readOnly: true,

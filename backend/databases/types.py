@@ -10,5 +10,20 @@ class QueryExecutionResult(TypedDict):
 
 TableName = str
 ColumnName = str
-ColumnSchema = dict[ColumnName, DataType]
-Schema = dict[TableName, ColumnSchema]
+
+
+class ForeignKey(TypedDict):
+    table: TableName
+    column: ColumnName
+
+
+class Column(TypedDict):
+    type: DataType
+    nullable: bool
+    primary_key: bool
+    references: ForeignKey | None
+
+
+Columns = dict[ColumnName, Column]
+
+Schema = dict[TableName, Columns]

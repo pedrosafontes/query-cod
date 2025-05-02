@@ -1,5 +1,5 @@
 import pytest
-from databases.types import Schema
+from queries.services.types import RelationalSchema
 
 from .conftest import assert_valid
 
@@ -18,5 +18,5 @@ from .conftest import assert_valid
         'SELECT CURRENT_TIMESTAMP',
     ],
 )
-def test_valid_literals(query: str, schema: Schema) -> None:
+def test_valid_literals(query: str, schema: RelationalSchema) -> None:
     assert_valid(query, schema)
