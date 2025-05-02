@@ -128,11 +128,14 @@ class Selection(RAExpression):
 
 
 class AggregationFunction(Enum):
-    COUNT = 'COUNT'
-    SUM = 'SUM'
-    AVG = 'AVG'
-    MIN = 'MIN'
-    MAX = 'MAX'
+    COUNT = 'count'
+    SUM = 'sum'
+    AVG = 'avg'
+    MIN = 'min'
+    MAX = 'max'
+
+    def __str__(self) -> str:
+        return self.value
 
 
 @dataclass
