@@ -43,7 +43,6 @@ __all__ = [
     'OrderByExpressionError',
     'TypeMismatchError',
     'NonScalarExpressionError',
-    'NonScalarExpressionError',
     'ColumnCountMismatchError',
     'ColumnTypeMismatchError',
     'ArithmeticTypeMismatchError',
