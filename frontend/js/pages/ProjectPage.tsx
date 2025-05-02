@@ -47,7 +47,12 @@ const ProjectPage = () => {
         />
       )}
       <SidebarInset className="h-screen overflow-auto">
-        {currentQueryId && <QueryExplorer queryId={currentQueryId} />}
+        {project && currentQueryId && (
+          <QueryExplorer
+            queryId={currentQueryId}
+            schema={project.database.schema}
+          />
+        )}
       </SidebarInset>
     </SidebarProvider>
   );
