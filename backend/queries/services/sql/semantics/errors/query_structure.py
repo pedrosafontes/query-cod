@@ -70,25 +70,33 @@ class AliasError(QueryStructureError, ABC):
 @dataclass
 class MissingDerivedTableAliasError(AliasError):
     @property
+    def title(self) -> str:
+        return 'Missing derived table alias'
+
+    @property
     def description(self) -> str:
-        return f'Derived column "{self.source}" must have an explicit alias.'
+        return f'Derived table `{self.source}` must have an explicit alias.'
 
     @property
     def hint(self) -> str:
         return (
-            'Use `SELECT ... FROM (subquery) **AS alias**` to give a name to the subquery result.'
+            'Use `SELECT ... FROM (subquery)` **`AS alias`** to give a name to the subquery result.'
         )
 
 
 @dataclass
 class MissingDerivedColumnAliasError(AliasError):
     @property
+    def title(self) -> str:
+        return 'Missing derived column alias'
+
+    @property
     def description(self) -> str:
-        return f'Derived column "{self.source}" must have an alias.'
+        return f'Derived column `{self.source}` must have an alias.'
 
     @property
     def hint(self) -> str:
-        return 'Use `SELECT expression **AS alias**` to name derived columns.'
+        return 'Use `SELECT expression` **`AS alias`** to name derived columns.'
 
 
 @dataclass
@@ -99,7 +107,7 @@ class DuplicateAliasError(AliasError):
 
     @property
     def description(self) -> str:
-        return f"Duplicate alias detected: '{self.source.alias_or_name}'. Aliases must be unique within a query."
+        return f'Duplicate alias detected: `{self.source.alias_or_name}`. Aliases must be unique within a query.'
 
     @property
     def hint(self) -> str:
@@ -120,7 +128,7 @@ class AggregateInWhereError(AggregateError):
     @property
     def description(self) -> str:
         where: Select = cast(Select, self.source.find_ancestor(Select)).args['where']
-        return where.sql()
+        return f'In: `{where.sql()}`'
 
     @property
     def hint(self) -> str:
@@ -136,7 +144,7 @@ class NestedAggregateError(AggregateError):
     @property
     def description(self) -> str | None:
         outer: Expression | None = self.source.find_ancestor(*get_args(AggregateFunction))
-        return outer.sql() if outer else None
+        return f'In: `{outer.sql()}`' if outer else None
 
 
 @dataclass
@@ -150,7 +158,7 @@ class ColumnCountMismatchError(QueryStructureError):
 
     @property
     def description(self) -> str:
-        return f'Expected {self.expected}, got {self.received}'
+        return f'Expected {self.expected}, got {self.received}. In: `{self.source.sql()}`'
 
 
 @dataclass
@@ -167,7 +175,7 @@ class UngroupedColumnError(QueryStructureError):
     @property
     def description(self) -> str:
         if self._single_column():
-            start = f'Column "{self.columns[0]}"'
+            start = f'Column `{self.columns[0]}`'
         else:
             start = f'Columns {', '.join(self.columns)}'
         return f'{start} must appear in the GROUP BY clause or be used in an aggregate function'

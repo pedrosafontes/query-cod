@@ -21,12 +21,12 @@ class InvalidFunctionArgumentError(RATypeError):
 
     @property
     def title(self) -> str:
-        return f'Invalid argument type for function {self.function.name}'
+        return f'Invalid argument type for function *{self.function}*'
 
     @property
     def description(self) -> str:
         expected_types = ', '.join(str(t) for t in self.expected)
-        return f'Expected one of ({expected_types}), got {self.actual.name}.'
+        return f'Expected one of (**{expected_types}**), got **{self.actual}**.'
 
 
 @dataclass
@@ -62,7 +62,7 @@ class TypeMismatchError(RATypeError):
 
     @property
     def description(self) -> str:
-        return f'Expected {self.expected}, got {self.received}'
+        return f'Expected **{self.expected}**, got **{self.received}**'
 
 
 @dataclass
