@@ -1,3 +1,4 @@
+import { ReactFlowProvider } from "@xyflow/react";
 import { useEffect, useState } from "react";
 
 import { Spinner } from "@/components/ui/spinner";
@@ -106,11 +107,13 @@ const QueryExplorer = ({ queryId, databaseId }: QueryExplorerProps) => {
         )}
       </div>
       <div className="flex-1 h-full w-full bg-gray-50">
-        <SchemaDiagram databaseId={databaseId}>
-          {queryResult && (
-            <QueryResult isLoading={isExecuting} result={queryResult} />
-          )}
-        </SchemaDiagram>
+        <ReactFlowProvider>
+          <SchemaDiagram databaseId={databaseId}>
+            {queryResult && (
+              <QueryResult isLoading={isExecuting} result={queryResult} />
+            )}
+          </SchemaDiagram>
+        </ReactFlowProvider>
       </div>
     </div>
   );
