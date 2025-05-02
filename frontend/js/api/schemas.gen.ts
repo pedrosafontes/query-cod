@@ -81,6 +81,21 @@ export const $Database = {
   required: ["id", "name", "schema"],
 } as const;
 
+export const $DatabaseSummary = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    name: {
+      type: "string",
+      maxLength: 255,
+    },
+  },
+  required: ["id", "name"],
+} as const;
+
 export const $LanguageEnum = {
   enum: ["sql", "ra"],
   type: "string",
@@ -160,7 +175,7 @@ export const $PatchedProject = {
     database: {
       allOf: [
         {
-          $ref: "#/components/schemas/Database",
+          $ref: "#/components/schemas/DatabaseSummary",
         },
       ],
       readOnly: true,
@@ -300,7 +315,7 @@ export const $Project = {
     database: {
       allOf: [
         {
-          $ref: "#/components/schemas/Database",
+          $ref: "#/components/schemas/DatabaseSummary",
         },
       ],
       readOnly: true,

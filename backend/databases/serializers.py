@@ -20,3 +20,12 @@ class DatabaseSerializer(serializers.ModelSerializer[Database]):
     def get_schema(self, obj: Database) -> Schema:
         db_info = from_model(obj)
         return get_schema(db_info)
+
+
+class DatabaseSummarySerializer(serializers.ModelSerializer[Database]):
+    class Meta:
+        model = Database
+        fields = [  # noqa: RUF012
+            'id',
+            'name',
+        ]

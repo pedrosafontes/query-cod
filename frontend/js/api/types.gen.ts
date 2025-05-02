@@ -39,6 +39,11 @@ export type Database = {
   };
 };
 
+export type DatabaseSummary = {
+  readonly id: number;
+  name: string;
+};
+
 /**
  * * `sql` - SQL
  * * `ra` - Relational Algebra
@@ -66,7 +71,7 @@ export type PasswordResetConfirm = {
 export type PatchedProject = {
   readonly id?: number;
   database_id?: number;
-  readonly database?: Database;
+  readonly database?: DatabaseSummary;
   readonly queries?: Array<QuerySummary>;
   readonly last_modified?: string;
   readonly created?: string;
@@ -104,7 +109,7 @@ export type PatchedUser = {
 export type Project = {
   readonly id: number;
   database_id: number;
-  readonly database: Database;
+  readonly database: DatabaseSummary;
   readonly queries: Array<QuerySummary>;
   readonly last_modified: string;
   readonly created: string;
@@ -319,7 +324,16 @@ export type AuthUsersSetPasswordCreateData = {
 
 export type AuthUsersSetPasswordCreateResponse = SetPassword;
 
-export type DatabasesListResponse = Array<Database>;
+export type DatabasesListResponse = Array<DatabaseSummary>;
+
+export type DatabasesRetrieveData = {
+  /**
+   * A unique integer value identifying this database.
+   */
+  id: number;
+};
+
+export type DatabasesRetrieveResponse = Database;
 
 export type ProjectsListResponse = Array<Project>;
 
@@ -580,7 +594,15 @@ export type $OpenApiTs = {
   "/api/databases/": {
     get: {
       res: {
-        200: Array<Database>;
+        200: Array<DatabaseSummary>;
+      };
+    };
+  };
+  "/api/databases/{id}/": {
+    get: {
+      req: DatabasesRetrieveData;
+      res: {
+        200: Database;
       };
     };
   };

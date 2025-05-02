@@ -42,6 +42,8 @@ import type {
   AuthUsersSetPasswordCreateData,
   AuthUsersSetPasswordCreateResponse,
   DatabasesListResponse,
+  DatabasesRetrieveData,
+  DatabasesRetrieveResponse,
   ProjectsListResponse,
   ProjectsCreateData,
   ProjectsCreateResponse,
@@ -406,13 +408,31 @@ export class AuthService {
 
 export class DatabasesService {
   /**
-   * @returns Database
+   * @returns DatabaseSummary
    * @throws ApiError
    */
   public static databasesList(): CancelablePromise<DatabasesListResponse> {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/databases/",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this database.
+   * @returns Database
+   * @throws ApiError
+   */
+  public static databasesRetrieve(
+    data: DatabasesRetrieveData,
+  ): CancelablePromise<DatabasesRetrieveResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/databases/{id}/",
+      path: {
+        id: data.id,
+      },
     });
   }
 }
