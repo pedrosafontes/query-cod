@@ -81,6 +81,7 @@ const SchemaDiagram = ({ databaseId, children }: SchemaDiagramProps) => {
             sourceHandle: `${table}.${col}`,
             target: ref.table,
             targetHandle: `${ref.table}.${ref.column}`,
+            type: "smoothstep",
           });
         }
       });
