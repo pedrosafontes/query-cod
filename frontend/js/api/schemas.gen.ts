@@ -50,6 +50,7 @@ export const $Database = {
                 "null",
                 "boolean",
               ],
+              type: "string",
             },
             nullable: {
               type: "boolean",

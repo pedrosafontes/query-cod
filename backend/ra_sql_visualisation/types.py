@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class DataType(Enum):
+class DataType(str, Enum):
     SMALLINT = 'smallint'
     INTEGER = 'integer'
     DECIMAL = 'decimal'
@@ -23,9 +23,6 @@ class DataType(Enum):
     NULL = 'null'
 
     BOOLEAN = 'boolean'  # SQL:1999+
-
-    def __str__(self) -> str:
-        return self.value
 
     def is_numeric(self) -> bool:
         return self in {

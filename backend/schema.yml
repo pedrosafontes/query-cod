@@ -838,6 +838,7 @@ components:
                   - timestamp
                   - 'null'
                   - boolean
+                  type: string
                 nullable:
                   type: boolean
                 primary_key:
