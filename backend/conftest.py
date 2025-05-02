@@ -1,4 +1,5 @@
-from unittest.mock import patch
+from collections.abc import Generator
+from unittest.mock import MagicMock, patch
 
 import pytest
 from model_bakery import baker
@@ -27,7 +28,7 @@ def unauth_client() -> APIClient:
 
 
 @pytest.fixture(autouse=True)
-def mock_get_schema():
+def mock_get_schema() -> Generator[MagicMock, None, None]:
     with patch('databases.services.schema.get_schema') as mock:
         mock.return_value = {
             'users': {
