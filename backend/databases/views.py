@@ -1,4 +1,4 @@
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, serializers, viewsets
 
 from .models import Database
 from .serializers import DatabaseSerializer, DatabaseSummarySerializer
@@ -10,7 +10,7 @@ class DatabaseViewSet(
     queryset = Database.objects.all().order_by('name')
     pagination_class = None
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> type[serializers.ModelSerializer[Database]]:
         if self.action == 'list':
             return DatabaseSummarySerializer
         return DatabaseSerializer
