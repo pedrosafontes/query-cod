@@ -16,10 +16,10 @@ import useLayoutNodes from "hooks/useLayoutNodes";
 
 import SchemaTable, { TableNode } from "./SchemaTable";
 
-interface SchemaDiagramProps {
+export type SchemaDiagramProps = {
   databaseId: number;
   children?: React.ReactNode;
-}
+};
 
 const nodeTypes = {
   table: SchemaTable,
