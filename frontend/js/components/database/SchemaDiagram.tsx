@@ -1,14 +1,15 @@
 import { ReactFlow, Background, Controls, Panel } from "@xyflow/react";
 import type { Edge, Node } from "@xyflow/react";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
-import { Database } from "js/api";
+import { Database, DatabasesService } from "api";
 import "@xyflow/react/dist/style.css";
+import { useErrorToast } from "js/hooks/useErrorToast";
 
 import TableNode from "./TableNode";
 
 interface SchemaDiagramProps {
-  schema: Database["schema"];
+  databaseId: number;
   children?: React.ReactNode;
 }
 
@@ -16,10 +17,36 @@ const nodeTypes = {
   table: TableNode,
 };
 
-const SchemaDiagram = ({ schema, children }: SchemaDiagramProps) => {
+const SchemaDiagram = ({ databaseId, children }: SchemaDiagramProps) => {
+  const toast = useErrorToast();
+  const [database, setDatabase] = useState<Database>();
+  const schema = database?.schema;
+
+  useEffect(() => {
+    const fetchDatabase = async () => {
+      try {
+        const result = await DatabasesService.databasesRetrieve({
+          id: databaseId,
+        });
+        setDatabase(result);
+      } catch (err) {
+        setDatabase(undefined);
+        toast({
+          title: "Error loading database schema",
+        });
+      }
+    };
+
+    fetchDatabase();
+  }, [databaseId]);
+
   const { nodes, edges } = useMemo(() => {
     const nodes: Node[] = [];
     const edges: Edge[] = [];
+
+    if (!schema) {
+      return { nodes, edges };
+    }
 
     const xSpacing = 300;
     const ySpacing = 200;
@@ -58,7 +85,7 @@ const SchemaDiagram = ({ schema, children }: SchemaDiagramProps) => {
     <ReactFlow edges={edges} fitView nodeTypes={nodeTypes} nodes={nodes}>
       <Background />
       <Controls />
-      <Panel className="w-11/12" position="bottom-center">
+      <Panel className="w-11/12 pb-2" position="bottom-center">
         {children}
       </Panel>
     </ReactFlow>

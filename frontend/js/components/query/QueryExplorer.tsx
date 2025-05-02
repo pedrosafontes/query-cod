@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { Spinner } from "@/components/ui/spinner";
-import { Database, QueriesService, Query, QueryResultData } from "api";
+import { QueriesService, Query, QueryResultData } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
 import SchemaDiagram from "../database/SchemaDiagram";
@@ -15,10 +15,10 @@ import QueryResult from "./QueryResult";
 
 export type QueryExplorerProps = {
   queryId: number;
-  schema: Database["schema"];
+  databaseId: number;
 };
 
-const QueryExplorer = ({ queryId, schema }: QueryExplorerProps) => {
+const QueryExplorer = ({ queryId, databaseId }: QueryExplorerProps) => {
   const [query, setQuery] = useState<Query>();
   const [queryResult, setQueryResult] = useState<QueryResultData>();
   const [isExecuting, setIsExecuting] = useState(false);
@@ -106,7 +106,7 @@ const QueryExplorer = ({ queryId, schema }: QueryExplorerProps) => {
         )}
       </div>
       <div className="flex-1 h-full w-full bg-gray-50">
-        <SchemaDiagram schema={schema}>
+        <SchemaDiagram databaseId={databaseId}>
           {queryResult && (
             <QueryResult isLoading={isExecuting} result={queryResult} />
           )}

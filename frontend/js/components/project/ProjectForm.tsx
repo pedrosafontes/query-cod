@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/select";
 
 import {
-  Database,
+  DatabaseSummary as Database,
   DatabasesService,
   Project,
   ProjectsService,
