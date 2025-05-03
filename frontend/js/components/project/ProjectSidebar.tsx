@@ -147,7 +147,7 @@ const ProjectSidebar = ({
                 aria-label="Create Query"
                 className="justify-end"
                 size="icon"
-                variant="ghost"
+                variant="link"
                 onClick={createQuery}
               >
                 <FilePlus />
