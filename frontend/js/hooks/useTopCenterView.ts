@@ -1,6 +1,5 @@
 import {
   useReactFlow,
-  getNodesBounds,
   getViewportForBounds,
   type Node,
   useStore,
@@ -8,7 +7,7 @@ import {
 import { useEffect } from "react";
 
 export function useTopCenterFitView(nodes: Node[]) {
-  const { setViewport } = useReactFlow();
+  const { setViewport, getNodesBounds } = useReactFlow();
   const width = useStore((state) => state.width);
   const height = useStore((state) => state.height);
 
