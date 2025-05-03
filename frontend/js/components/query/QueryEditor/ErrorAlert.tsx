@@ -24,7 +24,9 @@ const ErrorAlert = ({
       {title && (
         <>
           {!hint && <AlertCircle className="h-4 w-4" />}
-          <AlertTitle className="text-sm"><Markdown>{title}</Markdown></AlertTitle>
+          <AlertTitle className="text-sm">
+            <Markdown>{title}</Markdown>
+          </AlertTitle>
         </>
       )}
       {description && (
