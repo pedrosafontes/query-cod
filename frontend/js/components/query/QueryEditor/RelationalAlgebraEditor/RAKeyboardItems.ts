@@ -101,7 +101,7 @@ export const literals: RAKeyboardItem[] = [
 export const basicOperators: RAKeyboardItem[] = [
   {
     label: "\\pi",
-    expr: "\\pi_{\\placeholder{attr}}#0",
+    expr: "\\pi_{\\placeholder{attr}}(#0)",
     details: {
       displayExpr: "\\pi_{\\text{attrs}}(R)",
       name: "Projection",
@@ -115,7 +115,7 @@ export const basicOperators: RAKeyboardItem[] = [
   },
   {
     label: "\\sigma",
-    expr: "\\sigma_{\\placeholder{condition}}#0",
+    expr: "\\sigma_{\\placeholder{condition}}(#0)",
     details: {
       displayExpr: "\\sigma_{\\theta}(R)",
       name: "Selection",
@@ -129,7 +129,7 @@ export const basicOperators: RAKeyboardItem[] = [
   },
   {
     label: "\\div",
-    expr: "#@\\div\\placeholder{rrel}",
+    expr: "(#@)\\div(\\placeholder{rrel})",
     details: {
       displayExpr: "R \\div S",
       name: "Division",
@@ -146,7 +146,7 @@ export const basicOperators: RAKeyboardItem[] = [
 export const setOperators: RAKeyboardItem[] = [
   {
     label: "\\cup",
-    expr: "#@\\cup\\placeholder{rrel}",
+    expr: "(#@)\\cup(\\placeholder{rrel})",
     details: {
       displayExpr: "R \\cup S",
       name: "Union",
@@ -159,7 +159,7 @@ export const setOperators: RAKeyboardItem[] = [
   },
   {
     label: "-",
-    expr: "#@-\\placeholder{rrel}",
+    expr: "(#@)-(\\placeholder{rrel})",
     details: {
       displayExpr: "R - S",
       name: "Difference",
@@ -173,7 +173,7 @@ export const setOperators: RAKeyboardItem[] = [
   },
   {
     label: "\\cap",
-    expr: "#@\\cap\\placeholder{rrel}",
+    expr: "(#@)\\cap(\\placeholder{rrel})",
     details: {
       displayExpr: "R \\cap S",
       name: "Intersection",
@@ -189,7 +189,7 @@ export const setOperators: RAKeyboardItem[] = [
 export const joinOperators: RAKeyboardItem[] = [
   {
     label: "\\times",
-    expr: "#@\\times\\placeholder{rrel}",
+    expr: "(#@)\\times(\\placeholder{rrel})",
     details: {
       displayExpr: "R \\times S",
       name: "Cartesian Product",
@@ -202,7 +202,7 @@ export const joinOperators: RAKeyboardItem[] = [
   },
   {
     label: "\\Join",
-    expr: "#@\\Join\\placeholder{rrel}",
+    expr: "(#@)\\Join(\\placeholder{rrel})",
     details: {
       displayExpr: "R \\Join S",
       name: "Natural Join",
@@ -215,7 +215,7 @@ export const joinOperators: RAKeyboardItem[] = [
   },
   {
     label: "\\ltimes",
-    expr: "#@\\ltimes\\placeholder{rrel}",
+    expr: "(#@)\\ltimes(\\placeholder{rrel})",
     details: {
       displayExpr: "R \\ltimes S",
       name: "Left Semi Join",
@@ -229,7 +229,7 @@ export const joinOperators: RAKeyboardItem[] = [
   },
   {
     label: "\\overset\\theta\\bowtie",
-    expr: "#@\\overset{\\placeholder{cond}}{\\bowtie}\\placeholder{rrel}",
+    expr: "(#@)\\overset{\\placeholder{cond}}{\\bowtie}(\\placeholder{rrel})",
     details: {
       displayExpr: "R \\overset{\\theta}{\\bowtie} S",
       name: "Theta Join",
@@ -247,7 +247,7 @@ export const joinOperators: RAKeyboardItem[] = [
 export const extendedOperators: RAKeyboardItem[] = [
   {
     label: "\\Gamma",
-    expr: "\\Gamma_{(\\placeholder{grp_attrs}), ((\\placeholder{in}, \\placeholder{fn}, \\placeholder{out}))}#0",
+    expr: "\\Gamma_{(\\placeholder{grp_attrs}), ((\\placeholder{in}, \\placeholder{fn}, \\placeholder{out}))}(#0)",
     details: {
       displayExpr: "\\Gamma_{(group), ((in, fn, out))}(R)",
       name: "Aggregation",
@@ -265,7 +265,7 @@ export const extendedOperators: RAKeyboardItem[] = [
   },
   {
     label: "\\operatorname{T}",
-    expr: "\\operatorname{T}_{(\\placeholder{n}, \\placeholder{attr})}#0",
+    expr: "\\operatorname{T}_{(\\placeholder{n}, \\placeholder{attr})}(#0)",
     details: {
       displayExpr: "\\operatorname{T}_{(n, attr)}(R)",
       name: "Top-N",
