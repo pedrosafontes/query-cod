@@ -34,7 +34,7 @@ from queries.services.ra.parser.errors import (
             ),
         ),
         (
-            '\\sigma_{name = \\text{"John"}} Employee',
+            "\\sigma_{name = \\text{'John'}} Employee",
             Selection(
                 Comparison(ComparisonOperator.EQUAL, Attribute('name'), 'John'),
                 Relation('Employee'),
@@ -81,7 +81,7 @@ from queries.services.ra.parser.errors import (
             ),
         ),
         (
-            '\\sigma_{(a = 5 \\land b > 10) \\lor c = \\text{"test"}} R',
+            "\\sigma_{(a = 5 \\land b > 10) \\lor c = \\text{'test'}} R",
             Selection(
                 BinaryBooleanExpression(
                     BinaryBooleanOperator.OR,

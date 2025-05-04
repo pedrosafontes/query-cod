@@ -40,7 +40,7 @@ from queries.services.ra.parser.errors import (
             Projection([Attribute('a'), Attribute('b'), Attribute('c')], Relation('R')),
         ),
         (
-            '\\pi_{sname} (\\sigma_{color = \\text{"red"}} Boat)',
+            "\\pi_{sname} (\\sigma_{color = \\text{'red'}} Boat)",
             Projection(
                 attributes=[Attribute('sname')],
                 expression=Selection(

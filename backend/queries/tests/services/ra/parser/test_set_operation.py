@@ -1,6 +1,8 @@
 import pytest
 from queries.services.ra.parser import parse_ra
 from queries.services.ra.parser.ast import (
+    Attribute,
+    Projection,
     RAExpression,
     Relation,
     SetOperation,
@@ -28,6 +30,14 @@ from queries.services.ra.parser.errors import (
                     left=Relation('S'),
                     right=Relation('T'),
                 ),
+            ),
+        ),
+        (
+            '\\pi_{A} R - \\pi_{A} S',
+            SetOperation(
+                SetOperator.DIFFERENCE,
+                Projection([Attribute('A')], Relation('R')),
+                Projection([Attribute('A')], Relation('S')),
             ),
         ),
     ],
