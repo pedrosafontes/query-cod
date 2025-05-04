@@ -20,7 +20,7 @@ class TypeMismatchError(SQLTypeError):
 
     @property
     def description(self) -> str:
-        return f'Type mismatch: expected {self.expected.name}, but got {self.received.name}.'
+        return f'Type mismatch in `{self.source.sql()}`: expected **{self.expected}**, but got **{self.received}**.'
 
 
 @dataclass
@@ -35,7 +35,7 @@ class ColumnTypeMismatchError(SQLTypeError):
 
     @property
     def description(self) -> str:
-        return f'Column type mismatch at position {self.index + 1}: left type {self.left_type.name}, right type {self.right_type.name}.'
+        return f'Column type mismatch at position {self.index + 1}: left type **{self.left_type}**, right type **{self.right_type}**.'
 
 
 @dataclass
@@ -45,14 +45,14 @@ class ArithmeticTypeMismatchError(SQLTypeError):
 
     @property
     def description(self) -> str:
-        return f'Invalid operand types for {self.source}: {self.left_t} and {self.right_t}'
+        return f'Invalid operand types for `{self.source.sql()}`: **{self.left_t}** and **{self.right_t}**'
 
 
 @dataclass
 class NonScalarExpressionError(SQLTypeError):
     @property
     def description(self) -> str:
-        return f'Expected a scalar expression, but got {self.source}'
+        return f'Expected a scalar expression from `{self.source.sql()}`'
 
 
 @dataclass
@@ -62,7 +62,7 @@ class InvalidCastError(SQLTypeError):
 
     @property
     def description(self) -> str:
-        return f"Cannot cast '{self.source}' of type {self.source_t} to type {self.target_t}"
+        return f'Cannot cast `{self.source.this}` of type **{self.source_t}** to type **{self.target_t}**'
 
     @property
     def hint(self) -> str:

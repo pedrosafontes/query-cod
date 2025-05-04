@@ -24,7 +24,9 @@ const ErrorAlert = ({
       {title && (
         <>
           {!hint && <AlertCircle className="h-4 w-4" />}
-          <AlertTitle className="text-sm">{title}</AlertTitle>
+          <AlertTitle className="text-sm">
+            <Markdown>{title}</Markdown>
+          </AlertTitle>
         </>
       )}
       {description && (
@@ -38,9 +40,7 @@ const ErrorAlert = ({
             <Info className="h-3 w-3 inline-block mr-1" />
             Hint
           </h3>
-          <div className="italic">
-            <Markdown rehypePlugins={[rehypeRaw]}>{hint}</Markdown>
-          </div>
+          <Markdown rehypePlugins={[rehypeRaw]}>{hint}</Markdown>
         </div>
       )}
     </Alert>

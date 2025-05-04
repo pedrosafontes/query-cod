@@ -13,6 +13,7 @@ import { Database, DatabasesService } from "api";
 import "@xyflow/react/dist/style.css";
 import { useErrorToast } from "hooks/useErrorToast";
 import useLayoutNodes from "hooks/useLayoutNodes";
+import { useTopCenterFitView } from "hooks/useTopCenterView";
 
 import SchemaTable, { TableNode } from "./SchemaTable";
 
@@ -81,6 +82,7 @@ const SchemaDiagram = ({ databaseId, children }: SchemaDiagramProps) => {
             sourceHandle: `${table}.${col}`,
             target: ref.table,
             targetHandle: `${ref.table}.${ref.column}`,
+            type: "smoothstep",
           });
         }
       });
@@ -91,19 +93,19 @@ const SchemaDiagram = ({ databaseId, children }: SchemaDiagramProps) => {
   }, [schema, setNodes, setEdges]);
 
   useLayoutNodes();
+  useTopCenterFitView(nodes);
 
   return (
     <ReactFlow
       edges={edges}
-      fitView
       nodeTypes={nodeTypes}
       nodes={nodes}
       onEdgesChange={onEdgesChange}
       onNodesChange={onNodesChange}
     >
       <Background />
-      <Controls />
-      <Panel className="w-11/12 pb-2" position="bottom-center">
+      <Controls position="top-left" />
+      <Panel className="w-full pb-2 pr-8" position="bottom-left">
         {children}
       </Panel>
     </ReactFlow>

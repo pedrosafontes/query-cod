@@ -5,7 +5,7 @@ from queries.services.sql.parser import parse_sql
 from queries.types import QueryError, QueryValidationResult
 from queries.utils.tokens import to_error_position
 from sqlalchemy.exc import SQLAlchemyError
-from sqlglot import ParseError
+from sqlglot.errors import ParseError, SqlglotError
 
 from ..types import to_relational_schema
 from .semantics import SQLSemanticAnalyzer
@@ -18,17 +18,26 @@ def validate_sql(query_text: str, db: DatabaseConnectionInfo) -> QueryValidation
 
     # Check for syntax errors
     try:
+        syntax_errors: list[QueryError] = []
         tree = parse_sql(query_text)
     except ParseError as e:
-        syntax_errors: list[QueryError] = [
+        for err in e.errors:
+            syntax_errors.append(
+                {
+                    'title': 'Syntax Error',
+                    'description': err['description'],
+                    'position': to_error_position(err['line'], err['col'], len(err['highlight'])),
+                }
+            )
+    except SqlglotError as e:
+        syntax_errors.append(
             {
                 'title': 'Syntax Error',
-                'description': err['description'],
-                'position': to_error_position(err['line'], err['col'], len(err['highlight'])),
+                'description': str(e),
             }
-            for err in e.errors
-        ]
+        )
 
+    if syntax_errors:
         return {'valid': False, 'errors': syntax_errors}
 
     # Check for semantic errors

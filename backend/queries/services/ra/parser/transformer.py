@@ -39,15 +39,20 @@ class RATransformer(Transformer[Relation, RAExpression]):
             }
         return cast(RAExpression, node)
 
-    def relation(self, args: list[Token]) -> Relation:
-        return Relation(name=args[0])
+    def relation(self, args: list[str]) -> Relation:
+        return Relation(name=self._identifier(args[0]))
 
-    def attribute(self, args: tuple[Token] | tuple[Relation | Token]) -> Attribute:  # type: ignore[return]
+    def attribute(self, args: tuple[str] | tuple[Relation, str]) -> Attribute:  # type: ignore[return]
         match args:
-            case (relation, identifier):
-                return Attribute(name=cast(str, identifier), relation=cast(Relation, relation).name)
-            case (identifier,):
-                return Attribute(name=cast(str, identifier))
+            case (Relation() as relation, str() as identifier):
+                name = self._identifier(identifier)
+                return Attribute(name=name, relation=relation.name)
+            case (str() as identifier,):
+                name = self._identifier(identifier)
+                return Attribute(name=name)
+
+    def _identifier(self, ident: str) -> str:
+        return ident.replace('\\', '')
 
     def projection(self, args: tuple[list[Attribute], RAExpression]) -> Projection:
         attrs, expr = args
@@ -155,7 +160,7 @@ class RATransformer(Transformer[Relation, RAExpression]):
         return float(args[0])
 
     def string(self, args: list[Token]) -> str:
-        return str(args[0])[1:-1]  # strip quotes
+        return args[0]
 
     def item_list(self, args: list[Any]) -> list[Any]:
         return args
@@ -168,3 +173,9 @@ class RATransformer(Transformer[Relation, RAExpression]):
 
     def IDENT(self, token: Token) -> str:  # noqa: N802
         return str(token.value)
+
+    def CNAME(self, token: Token) -> str:  # noqa: N802
+        return str(token.value)
+
+    def ESCAPED_STRING(self, token: Token) -> str:  # noqa: N802
+        return str(token.value)[1:-1]  # strip quotes

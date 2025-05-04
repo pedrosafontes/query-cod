@@ -23,7 +23,7 @@ class SetOperationValidator:
         right = self.query_validator.validate(query.right, self.scope)
 
         if (l_len := len(left.types)) != (r_len := len(right.types)):
-            raise ColumnCountMismatchError(query, l_len, r_len)
+            raise ColumnCountMismatchError(query.right, l_len, r_len)
 
         for i, (lt, rt) in enumerate(zip(left.types, right.types, strict=True)):
             try:

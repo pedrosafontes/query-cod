@@ -13,9 +13,14 @@ import {
 interface RAKeyboardProps {
   onInsert: (expr: string) => void;
   className?: string;
+  disabled?: boolean;
 }
 
-export default function RAKeyboard({ onInsert, className }: RAKeyboardProps) {
+export default function RAKeyboard({
+  onInsert,
+  className,
+  disabled,
+}: RAKeyboardProps) {
   const groups = [
     { title: "Basic Operators", operators: [basicOperators] },
     { title: "Set Operators", operators: [setOperators] },
@@ -38,6 +43,7 @@ export default function RAKeyboard({ onInsert, className }: RAKeyboardProps) {
             <RAKeyboardGroup
               key={j}
               className="mb-2"
+              disabled={disabled}
               operators={operatorGroup}
               onInsert={onInsert}
             />

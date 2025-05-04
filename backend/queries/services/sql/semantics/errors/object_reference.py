@@ -17,7 +17,7 @@ class RelationNotFoundError(SQLSemanticError):
 
     @property
     def title(self) -> str:
-        return f"Relation '{self.name or self.source.name}' does not exist"
+        return f'Relation `{self.name or self.source.name}` does not exist'
 
     @property
     def hint(self) -> str:
@@ -39,7 +39,7 @@ class ColumnNotFoundError(SQLSemanticError):
 
     @property
     def title(self) -> str:
-        return f"Column '{self.name}' is not defined in {self.table if self.table else 'the current context'}"
+        return f"Column `{self.name}` is not defined in {self.table if self.table else 'the current context'}"
 
     @property
     def hint(self) -> str:
@@ -57,7 +57,7 @@ class AmbiguousColumnReferenceError(SQLSemanticError):
 
     @property
     def title(self) -> str:
-        return f"Ambiguous reference to column '{self.column.name}'"
+        return f'Ambiguous reference to column `{self.column.name}`'
 
     @property
     def description(self) -> str:

@@ -24,6 +24,9 @@ class DataType(str, Enum):
 
     BOOLEAN = 'boolean'  # SQL:1999+
 
+    def __str__(self) -> str:
+        return self.value
+
     def is_numeric(self) -> bool:
         return self in {
             DataType.SMALLINT,
