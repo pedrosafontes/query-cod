@@ -21,9 +21,9 @@
 ?sub_expr: relation
          | _LPAREN expr _RPAREN
 
-projection: _PI _subscript{nonempty_list{attribute}} expr
+projection: _PI _subscript{nonempty_list{attribute}} unary_expr
 
-selection: _SIGMA _subscript{bool_expr} expr
+selection: _SIGMA _subscript{bool_expr} unary_expr
 
 ?bool_expr: and_expr
           | bool_expr "\\lor" and_expr -> or_
@@ -49,7 +49,7 @@ comparator: "=" -> eq
       | _text{ESCAPED_STRING} -> string
       | attribute
 
-grouped_aggregation: _GAMMA _subscript{_grouped_aggregation_params} expr
+grouped_aggregation: _GAMMA _subscript{_grouped_aggregation_params} unary_expr
 _grouped_aggregation_params: _LPAREN _grouping_attrs "," _aggregations _RPAREN
 _grouping_attrs: _LPAREN list{attribute} _RPAREN
 _aggregations: _LPAREN nonempty_list{aggregation} _RPAREN
@@ -60,7 +60,7 @@ aggregation_function: "count" -> count
                     | "min" -> min
                     | "max" -> max
 
-topn: _TOPN _subscript{_topn_params} expr
+topn: _TOPN _subscript{_topn_params} unary_expr
 _topn_params: _LPAREN INT "," attribute _RPAREN
 
 _theta_join_op: _overset{bool_expr, "\\bowtie"}
