@@ -160,7 +160,7 @@ class RATransformer(Transformer[Relation, RAExpression]):
         return float(args[0])
 
     def string(self, args: list[Token]) -> str:
-        return str(args[0])[1:-1]  # strip quotes
+        return args[0]
 
     def item_list(self, args: list[Any]) -> list[Any]:
         return args
@@ -176,3 +176,6 @@ class RATransformer(Transformer[Relation, RAExpression]):
 
     def CNAME(self, token: Token) -> str:  # noqa: N802
         return str(token.value)
+
+    def ESCAPED_STRING(self, token: Token) -> str:  # noqa: N802
+        return str(token.value)[1:-1]  # strip quotes
