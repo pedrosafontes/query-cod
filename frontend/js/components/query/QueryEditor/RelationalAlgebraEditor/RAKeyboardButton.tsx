@@ -11,12 +11,23 @@ import { RAKeyboardItem } from "./RAKeyboardItems";
 type RAKeyboardButtonProps = {
   operator: RAKeyboardItem;
   onInsert: () => void;
+  disabled?: boolean;
 };
 
-const RAKeyboardButton = ({ operator, onInsert }: RAKeyboardButtonProps) => {
+const RAKeyboardButton = ({
+  operator,
+  onInsert,
+  disabled,
+}: RAKeyboardButtonProps) => {
   const renderButton = () => {
     return (
-      <Button className="px-2" size="sm" variant="outline" onClick={onInsert}>
+      <Button
+        className="px-2"
+        disabled={disabled}
+        size="sm"
+        variant="outline"
+        onClick={onInsert}
+      >
         <LatexFormula expression={operator.label} />
       </Button>
     );
