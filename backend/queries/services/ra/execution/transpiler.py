@@ -55,7 +55,7 @@ class RAtoSQLTranspiler:
     def _transpile_Projection(self, proj: Projection) -> Select:  # noqa: N802
         query = self._transpile_select(proj.expression)
         query.set('expressions', [])
-        return query.select(*[attr.name for attr in proj.attributes])
+        return query.select(*[column(attr.name, table=attr.relation) for attr in proj.attributes])
 
     def _transpile_Selection(self, selection: Selection) -> Select:  # noqa: N802
         query = self._transpile_select(selection.expression)
