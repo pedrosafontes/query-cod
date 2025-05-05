@@ -19,12 +19,14 @@ from sqlglot.expressions import (
 )
 
 from ..parser.ast import (
+    Aggregation,
     Attribute,
     BinaryBooleanExpression,
     BinaryBooleanOperator,
     BooleanExpression,
     Comparison,
     ComparisonValue,
+    GroupedAggregation,
     Join,
     JoinOperator,
     NotExpression,
@@ -184,9 +186,28 @@ class RAtoSQLTranspiler:
         condition = self._transpile_condition(renamed_condition)
         return join_query.where(condition)
 
-    def _transpile_TopN(self, expr: TopN) -> Select:  # noqa: N802
-        query = self._transpile_select(expr.expression)
-        return query.limit(expr.limit).order_by(self._transpile_attribute(expr.attribute).desc())
+    def _transpile_GroupedAggregation(self, agg: GroupedAggregation) -> Select:  # noqa: N802
+        query = self._transpile_select(agg.expression)
+
+        if query.args.get('group_by'):
+            query = subquery(query, 'sub').select('*')
+        else:
+            query.set('expressions', [])
+
+        attrs = [self._transpile_attribute(attr) for attr in agg.group_by]
+
+        return (
+            query.select(*attrs)
+            .select(*[self._transpile_aggregation(a) for a in agg.aggregations])
+            .group_by(*attrs)
+        )
+
+    def _transpile_aggregation(self, agg: Aggregation) -> ExpOrStr:
+        return f'{agg.aggregation_function}({agg.input}) AS {agg.output}'
+
+    def _transpile_TopN(self, top_n: TopN) -> Select:  # noqa: N802
+        query = self._transpile_select(top_n.expression)
+        return query.limit(top_n.limit).order_by(self._transpile_attribute(top_n.attribute).desc())
 
     def _maybe_subquery(self, expr: RAExpression, alias: str) -> tuple[Select, str]:
         if isinstance(expr, Relation):
