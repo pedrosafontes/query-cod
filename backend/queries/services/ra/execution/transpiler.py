@@ -59,15 +59,11 @@ class RAtoSQLTranspiler:
 
     def _transpile_Selection(self, selection: Selection) -> Select:  # noqa: N802
         query = self._transpile_select(selection.expression)
-        can_inline = not query.args.get('group_by')
-        if can_inline:
-            return query.where(self._transpile_condition(selection.condition))
+        condition = self._transpile_condition(selection.condition)
+        if query.args.get('group_by'):
+            return query.having(condition)
         else:
-            return (
-                subquery(self.transpile(selection.expression), 'sub')
-                .select('*')
-                .where(self._transpile_condition(selection.condition))
-            )
+            return query.where(condition)
 
     def _transpile_condition(self, cond: BooleanExpression) -> ExpOrStr:
         match cond:
@@ -108,8 +104,10 @@ class RAtoSQLTranspiler:
             case SetOperator.CARTESIAN:
                 left = self._transpile_select(op.left)
                 if isinstance(op.right, Relation):
+                    # op.right is a base table
                     return left.join(op.right.name, join_type='CROSS')
                 else:
+                    # right is a derived relation
                     return left.join(right, join_type='CROSS', join_alias='r')
         return expr
 
@@ -119,11 +117,12 @@ class RAtoSQLTranspiler:
         match join.operator:
             case JoinOperator.NATURAL:
                 if isinstance(join.right, Relation):
+                    # join.right is a base table
                     return left.join(join.right.name, join_type='NATURAL')
                 else:
+                    # right is a derived relation
                     right = self.transpile(join.right)
-                    right_alias = 'r'
-                    return left.join(right, join_type='NATURAL', join_alias=right_alias)
+                    return left.join(right, join_type='NATURAL', join_alias='r')
             case JoinOperator.SEMI:
                 right, right_alias = self._maybe_subquery(join.right, 'r')
 
@@ -148,6 +147,7 @@ class RAtoSQLTranspiler:
     def _transpile_ThetaJoin(self, join: ThetaJoin) -> Select:  # noqa: N802
         left, left_alias = self._maybe_subquery(join.left, 'l')
 
+        # rename the attributes in the left relation to use the alias
         left_schema = self._schema_inferrer.infer(join.left).schema
         renamings = {}
         for table in left_schema.keys():
@@ -162,8 +162,8 @@ class RAtoSQLTranspiler:
             right = self.transpile(join.right)
             right_alias = 'r'
 
+            # rename the attributes in the right relation to use the alias
             right_schema = self._schema_inferrer.infer(join.right).schema
-
             for table in right_schema.keys():
                 if table:
                     renamings[table] = right_alias
