@@ -35,6 +35,7 @@ from ..parser.ast import (
     SetOperation,
     SetOperator,
     ThetaJoin,
+    TopN,
 )
 from ..shared.inference import SchemaInferrer
 from .renamer import RAExpressionRenamer
@@ -182,6 +183,10 @@ class RAtoSQLTranspiler:
         renamed_condition = RAExpressionRenamer(renamings).rename_condition(join.condition)
         condition = self._transpile_condition(renamed_condition)
         return join_query.where(condition)
+
+    def _transpile_TopN(self, expr: TopN) -> Select:  # noqa: N802
+        query = self._transpile_select(expr.expression)
+        return query.limit(expr.limit).order_by(self._transpile_attribute(expr.attribute).desc())
 
     def _maybe_subquery(self, expr: RAExpression, alias: str) -> tuple[Select, str]:
         if isinstance(expr, Relation):
