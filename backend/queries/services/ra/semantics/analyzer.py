@@ -72,7 +72,9 @@ class RASemanticAnalyzer:
         left = self._schema_inferrer.infer(op.left)
         right = self._schema_inferrer.infer(op.right)
         if op.operator != SetOperator.CARTESIAN:
-            if not all(a == b for a, b in zip(left.attrs, right.attrs, strict=False)):
+            if not all(
+                a.data_type == b.data_type for a, b in zip(left.attrs, right.attrs, strict=True)
+            ):
                 raise UnionCompatibilityError(op, op.operator, left.attrs, right.attrs)
 
     def _validate_Join(self, join: Join) -> None:  # noqa: N802
