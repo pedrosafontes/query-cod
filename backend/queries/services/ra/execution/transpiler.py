@@ -6,6 +6,7 @@ from sqlglot.expressions import (
     Except,
     Exists,
     ExpOrStr,
+    Expression,
     Intersect,
     Select,
     Union,
@@ -55,7 +56,7 @@ class RAtoSQLTranspiler:
     def _transpile_Projection(self, proj: Projection) -> Select:  # noqa: N802
         query = self._transpile_select(proj.expression)
         query.set('expressions', [])
-        return query.select(*[column(attr.name, table=attr.relation) for attr in proj.attributes])
+        return query.select(*[self._transpile_attribute(attr) for attr in proj.attributes])
 
     def _transpile_Selection(self, selection: Selection) -> Select:  # noqa: N802
         query = self._transpile_select(selection.expression)
@@ -82,25 +83,30 @@ class RAtoSQLTranspiler:
                 right = self._transpile_comparison_value(cond.right)
                 return f'{left} {cond.operator} {right}'
             case Attribute() as attr:
-                return EQ(this=column(attr.name, table=attr.relation), expression='TRUE')
+                return EQ(this=self._transpile_attribute(attr), expression='TRUE')
 
-    def _transpile_comparison_value(self, comparison: ComparisonValue) -> str:
-        if isinstance(comparison, str):
-            return f"'{comparison}'"
+    def _transpile_attribute(self, attr: Attribute) -> Expression:
+        return column(attr.name, table=attr.relation)
+
+    def _transpile_comparison_value(self, comparison: ComparisonValue) -> ExpOrStr:
+        if isinstance(comparison, Attribute):
+            return self._transpile_attribute(comparison)
+        elif isinstance(comparison, str):
+            return f"'{comparison}'"  # String literal
         else:
-            return str(comparison)
+            return str(comparison)  # Numbers and other literals
 
     def _transpile_SetOperation(self, op: SetOperation) -> Select | Union | Intersect | Except:  # noqa: N802
         left = self.transpile(op.left)
         right = self.transpile(op.right)
-        expr: Select | Union | Intersect | Except
+
         match op.operator:
             case SetOperator.UNION:
-                expr = left.union(right)
+                return left.union(right)
             case SetOperator.INTERSECT:
-                expr = left.intersect(right)
+                return left.intersect(right)
             case SetOperator.DIFFERENCE:
-                expr = left.except_(right)
+                return left.except_(right)
             case SetOperator.CARTESIAN:
                 left = self._transpile_select(op.left)
                 if isinstance(op.right, Relation):
@@ -109,7 +115,6 @@ class RAtoSQLTranspiler:
                 else:
                     # right is a derived relation
                     return left.join(right, join_type='CROSS', join_alias='r')
-        return expr
 
     def _transpile_Join(self, join: Join) -> Select:  # noqa: N802
         left, left_alias = self._maybe_subquery(join.left, alias='l')
@@ -123,6 +128,7 @@ class RAtoSQLTranspiler:
                     # right is a derived relation
                     right = self.transpile(join.right)
                     return left.join(right, join_type='NATURAL', join_alias='r')
+
             case JoinOperator.SEMI:
                 right, right_alias = self._maybe_subquery(join.right, 'r')
 
@@ -137,7 +143,10 @@ class RAtoSQLTranspiler:
                     Exists(
                         this=right.where(
                             *[
-                                f'{left_alias}.{name} = {right_alias}.{name}'
+                                EQ(
+                                    this=column(name, table=left_alias),
+                                    expression=column(name, table=right_alias),
+                                )
                                 for name in shared_names
                             ]
                         )
@@ -149,7 +158,7 @@ class RAtoSQLTranspiler:
 
         # rename the attributes in the left relation to use the alias
         left_schema = self._schema_inferrer.infer(join.left).schema
-        renamings = {}
+        renamings: dict[str, str] = {}
         for table in left_schema.keys():
             if table:
                 renamings[table] = left_alias
@@ -171,7 +180,8 @@ class RAtoSQLTranspiler:
             join_query = left.join(right, join_type='CROSS', join_alias=right_alias)
 
         renamed_condition = RAExpressionRenamer(renamings).rename_condition(join.condition)
-        return join_query.where(self._transpile_condition(renamed_condition))
+        condition = self._transpile_condition(renamed_condition)
+        return join_query.where(condition)
 
     def _maybe_subquery(self, expr: RAExpression, alias: str) -> tuple[Select, str]:
         if isinstance(expr, Relation):
