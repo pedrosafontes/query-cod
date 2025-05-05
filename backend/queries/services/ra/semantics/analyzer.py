@@ -1,13 +1,6 @@
-from collections import defaultdict
 from collections.abc import Callable
 
-from queries.services.ra.semantics.utils.schema import merge_schemas
-from queries.services.types import (
-    Attributes,
-    RelationalSchema,
-    flatten,
-    merge_common_column,
-)
+from queries.services.types import RelationalSchema, flatten
 from ra_sql_visualisation.types import DataType
 
 from ..parser.ast import (
@@ -29,6 +22,9 @@ from ..parser.ast import (
     ThetaJoin,
     TopN,
 )
+from ..shared.inference import SchemaInferrer
+from ..shared.types import Match, RelationOutput
+from ..shared.utils.type import type_of_function
 from .errors import (
     AmbiguousAttributeReferenceError,
     AttributeNotFoundError,
@@ -40,94 +36,73 @@ from .errors import (
     TypeMismatchError,
     UnionCompatibilityError,
 )
-from .types import Match, RelationOutput, TypedAttribute
-from .utils.type import type_of_function, type_of_value
+from .utils.type import type_of_value
 
 
 class RASemanticAnalyzer:
     def __init__(self, schema: RelationalSchema):
         self.schema = schema
+        self._schema_inferrer = SchemaInferrer(schema)
 
     def validate(self, expr: RAExpression) -> None:
         self._validate(expr)
 
-    def _validate(self, expr: RAExpression) -> RelationOutput:  # noqa: N802
-        method: Callable[[RAExpression], RelationOutput] = getattr(
-            self, f'_validate_{type(expr).__name__}'
-        )
+    def _validate(self, expr: RAExpression) -> None:
+        method: Callable[[RAExpression], None] = getattr(self, f'_validate_{type(expr).__name__}')
         return method(expr)
 
-    def _validate_Relation(self, rel: Relation) -> RelationOutput:  # noqa: N802
+    def _validate_Relation(self, rel: Relation) -> None:  # noqa: N802
         if rel.name not in self.schema:
             raise RelationNotFoundError(rel, rel.name)
-        attributes = self.schema[rel.name]
-        return RelationOutput(
-            {rel.name: attributes}, [TypedAttribute(attr, t) for attr, t in attributes.items()]
-        )
 
-    def _validate_Projection(self, proj: Projection) -> RelationOutput:  # noqa: N802
-        input_ = self._validate(proj.expression)
-        output_schema: RelationalSchema = defaultdict(Attributes)
-        output_attrs = []
+    def _validate_Projection(self, proj: Projection) -> None:  # noqa: N802
+        self._validate(proj.expression)
+        input_ = self._schema_inferrer.infer(proj.expression)
         for attr in proj.attributes:
-            t = self._validate_attribute(attr, [input_])
-            output_schema[attr.relation][attr.name] = t
-            output_attrs.append(TypedAttribute(attr.name, t))
-        return RelationOutput(output_schema, output_attrs)
+            self._validate_attribute(attr, [input_])
 
-    def _validate_Selection(self, sel: Selection) -> RelationOutput:  # noqa: N802
-        input_ = self._validate(sel.expression)
+    def _validate_Selection(self, sel: Selection) -> None:  # noqa: N802
+        self._validate(sel.expression)
+        input_ = self._schema_inferrer.infer(sel.expression)
         self._validate_condition(sel.condition, [input_])
-        return input_
 
-    def _validate_SetOperation(self, op: SetOperation) -> RelationOutput:  # noqa: N802
-        left = self._validate(op.left)
-        right = self._validate(op.right)
-        match op.operator:
-            case SetOperator.CARTESIAN:
-                return RelationOutput(
-                    merge_schemas(op, left.schema, right.schema), left.attrs + right.attrs
-                )
-            case _:
-                # Check if the schemas are union compatible
-                if not all(a == b for a, b in zip(left.attrs, right.attrs, strict=False)):
-                    raise UnionCompatibilityError(op, op.operator, left.attrs, right.attrs)
-                flat_schema: RelationalSchema = {None: flatten(left.schema)}
-                return RelationOutput(flat_schema, left.attrs)
+    def _validate_SetOperation(self, op: SetOperation) -> None:  # noqa: N802
+        self._validate(op.left)
+        self._validate(op.right)
+        left = self._schema_inferrer.infer(op.left)
+        right = self._schema_inferrer.infer(op.right)
+        if op.operator != SetOperator.CARTESIAN:
+            if not all(a == b for a, b in zip(left.attrs, right.attrs, strict=False)):
+                raise UnionCompatibilityError(op, op.operator, left.attrs, right.attrs)
 
-    def _validate_Join(self, join: Join) -> RelationOutput:  # noqa: N802
-        left = self._validate(join.left)
-        right = self._validate(join.right)
-        merged_schema = merge_schemas(join, left.schema, right.schema)
+    def _validate_Join(self, join: Join) -> None:  # noqa: N802
+        self._validate(join.left)
+        self._validate(join.right)
+        left = self._schema_inferrer.infer(join.left)
+        right = self._schema_inferrer.infer(join.right)
 
         left_names = {attr.name for attr in left.attrs}
         right_names = {attr.name for attr in right.attrs}
         shared_names = left_names & right_names
-        shared_attrs = []
 
         for name in shared_names:
             left_type = self._validate_attribute(Attribute(name), [left], source=join)
             right_type = self._validate_attribute(Attribute(name), [right], source=join)
             if left_type != right_type:
                 raise JoinAttributeTypeMismatchError(join, name, left_type, right_type)
-            merge_common_column(merged_schema, name)
-            shared_attrs.append(TypedAttribute(name, DataType.dominant([left_type, right_type])))
 
-        left_output_attrs = [attr for attr in left.attrs if attr.name not in shared_names]
-        right_output_attrs = [attr for attr in right.attrs if attr.name not in shared_names]
-        return RelationOutput(merged_schema, left_output_attrs + shared_attrs + right_output_attrs)
-
-    def _validate_ThetaJoin(self, join: ThetaJoin) -> RelationOutput:  # noqa: N802
-        left = self._validate(join.left)
-        right = self._validate(join.right)
+    def _validate_ThetaJoin(self, join: ThetaJoin) -> None:  # noqa: N802
+        self._validate(join.left)
+        self._validate(join.right)
+        left = self._schema_inferrer.infer(join.left)
+        right = self._schema_inferrer.infer(join.right)
         self._validate_condition(join.condition, [left, right])
-        return RelationOutput(
-            merge_schemas(join, left.schema, right.schema), left.attrs + right.attrs
-        )
 
-    def _validate_Division(self, div: Division) -> RelationOutput:  # noqa: N802
-        dividend = self._validate(div.dividend)
-        divisor = self._validate(div.divisor)
+    def _validate_Division(self, div: Division) -> None:  # noqa: N802
+        self._validate(div.dividend)
+        self._validate(div.divisor)
+        dividend = self._schema_inferrer.infer(div.dividend)
+        divisor = self._schema_inferrer.infer(div.divisor)
 
         dividend_attrs = flatten(dividend.schema)
         divisor_attrs = flatten(divisor.schema)
@@ -138,25 +113,16 @@ class RASemanticAnalyzer:
             if dividend_attrs[name] != t:
                 raise DivisionAttributeTypeMismatchError(div, name, dividend_attrs[name], t)
 
-        output_attrs = [attr for attr in dividend.attrs if attr not in divisor.attrs]
-        output_schema: RelationalSchema = {
-            None: {attr.name: attr.data_type for attr in output_attrs}
-        }
-        return RelationOutput(output_schema, output_attrs)
-
-    def _validate_GroupedAggregation(self, agg: GroupedAggregation) -> RelationOutput:  # noqa: N802
-        input_ = self._validate(agg.expression)
-        output_schema: RelationalSchema = defaultdict(Attributes)
-        output_attrs = []
+    def _validate_GroupedAggregation(self, agg: GroupedAggregation) -> None:  # noqa: N802
+        self._validate(agg.expression)
+        input_ = self._schema_inferrer.infer(agg.expression)
 
         for attr in agg.group_by:
-            t = self._validate_attribute(attr, [input_])
-            output_schema[attr.relation][attr.name] = t
-            output_attrs.append(TypedAttribute(attr.name, t))
+            self._validate_attribute(attr, [input_])
 
         for a in agg.aggregations:
             t = self._validate_attribute(a.input, [input_])
-            input_types, output_type = type_of_function(a.aggregation_function, t)
+            input_types, _ = type_of_function(a.aggregation_function, t)
             if t not in input_types:
                 raise InvalidFunctionArgumentError(
                     source=agg,
@@ -164,15 +130,11 @@ class RASemanticAnalyzer:
                     expected=input_types,
                     actual=t,
                 )
-            output_schema[None][a.output] = output_type
-            output_attrs.append(TypedAttribute(a.output, t))
 
-        return RelationOutput(output_schema, output_attrs)
-
-    def _validate_TopN(self, top: TopN) -> RelationOutput:  # noqa: N802
-        input_ = self._validate(top.expression)
+    def _validate_TopN(self, top: TopN) -> None:  # noqa: N802
+        self._validate(top.expression)
+        input_ = self._schema_inferrer.infer(top.expression)
         self._validate_attribute(top.attribute, [input_])
-        return input_
 
     def _validate_condition(self, cond: BooleanExpression, inputs: list[RelationOutput]) -> None:
         match cond:
@@ -195,7 +157,6 @@ class RASemanticAnalyzer:
                 types.append(self._validate_attribute(side, inputs))
             else:
                 types.append(type_of_value(side))
-
         left_type, right_type = types
         if not left_type.is_comparable_with(right_type):
             raise TypeMismatchError(cond, left_type, right_type)
