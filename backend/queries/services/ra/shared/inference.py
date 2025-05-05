@@ -89,9 +89,7 @@ class SchemaInferrer:
     def _infer_ThetaJoin(self, join: ThetaJoin) -> RelationOutput:  # noqa: N802
         left = self.infer(join.left)
         right = self.infer(join.right)
-        return RelationOutput(
-            merge_schemas(left.schema, right.schema), left.attrs + right.attrs
-        )
+        return RelationOutput(merge_schemas(left.schema, right.schema), left.attrs + right.attrs)
 
     def _infer_Division(self, div: Division) -> RelationOutput:  # noqa: N802
         dividend = self.infer(div.dividend)
