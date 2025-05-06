@@ -14,7 +14,7 @@ from sqlglot.executor.table import Table
 def schema() -> RelationalSchema:
     return {
         'department': {
-            'id': DataType.INTEGER,
+            'dept_id': DataType.INTEGER,
             'dept_name': DataType.VARCHAR,
         },
         'employee': {
@@ -31,8 +31,8 @@ def schema() -> RelationalSchema:
 def data() -> dict[str, list[dict[str, Any]]]:
     return {
         'department': [
-            {'id': 1, 'dept_name': 'HR'},
-            {'id': 2, 'dept_name': 'Engineering'},
+            {'dept_id': 1, 'dept_name': 'HR'},
+            {'dept_id': 2, 'dept_name': 'Engineering'},
         ],
         'employee': [
             {'id': 1, 'name': 'Alice', 'age': 30, 'dept_id': 1, 'senior': False},

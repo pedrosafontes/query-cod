@@ -27,12 +27,12 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAExpression, 
         (
             Projection(
                 attributes=[
-                    Attribute(name='id'),
+                    Attribute(name='dept_id'),
                     Attribute(name='dept_name'),
                 ],
                 expression=Relation(name='department'),
             ),
-            'SELECT id, dept_name FROM department',
+            'SELECT dept_id, dept_name FROM department',
         ),
         # Duplicate attributes
         (
