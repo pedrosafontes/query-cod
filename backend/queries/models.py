@@ -7,6 +7,7 @@ from databases.utils.conversion import from_model
 from projects.models import Project
 from queries.types import QueryError, QueryValidationResult
 
+from .services.ra.execution import execute_ra
 from .services.ra.validation import validate_ra
 from .services.sql.validation import validate_sql
 
@@ -27,7 +28,13 @@ class Query(IndexedTimeStampedModel):
     )
 
     def execute(self) -> QueryExecutionResult:
-        return execute_sql(self.sql_text, from_model(self.project.database))
+        match self.language:
+            case Query.QueryLanguage.SQL:
+                return execute_sql(self.sql_text, from_model(self.project.database))
+            case Query.QueryLanguage.RA:
+                return execute_ra(self.ra_text, from_model(self.project.database))
+            case _:
+                raise ValueError(f'Unsupported query language: {self.language}')
 
     def validate(self) -> QueryValidationResult:
         db = from_model(self.project.database)

@@ -101,7 +101,7 @@ jobs:
         working-directory: backend
       - run: |
           poetry run coverage run -m pytest --junitxml=junit/test-results.xml
-          poetry run coverage xml
+          poetry run coverage xml -i
         working-directory: backend
       - name: Publish Pytest Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
