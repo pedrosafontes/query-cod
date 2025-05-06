@@ -7,6 +7,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAExpression, 
 @pytest.mark.parametrize(
     'ra_ast,expected_sql',
     [
+        # Qualified
         (
             Projection(
                 attributes=[Attribute(name='dept_name', relation='department')],
@@ -14,6 +15,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAExpression, 
             ),
             'SELECT dept_name FROM department',
         ),
+        # Unqualified
         (
             Projection(
                 attributes=[Attribute(name='dept_name')],
@@ -21,6 +23,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAExpression, 
             ),
             'SELECT dept_name FROM department',
         ),
+        # Multiple attributes
         (
             Projection(
                 attributes=[
@@ -31,6 +34,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAExpression, 
             ),
             'SELECT id, dept_name FROM department',
         ),
+        # Duplicate attributes
         (
             Projection(
                 attributes=[
