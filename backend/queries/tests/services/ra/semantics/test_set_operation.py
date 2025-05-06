@@ -24,15 +24,15 @@ def test_valid_set_operation(
     'query, expected_exception',
     [
         (
-            SetOperation(SetOperator.UNION, Relation('R'), Relation('S')),
+            SetOperation(SetOperator.UNION, Relation('R'), Relation('T')),
             UnionCompatibilityError,
         ),
         (
-            SetOperation(SetOperator.INTERSECT, Relation('R'), Relation('S')),
+            SetOperation(SetOperator.INTERSECT, Relation('R'), Relation('T')),
             UnionCompatibilityError,
         ),
         (
-            SetOperation(SetOperator.DIFFERENCE, Relation('R'), Relation('S')),
+            SetOperation(SetOperator.DIFFERENCE, Relation('R'), Relation('T')),
             UnionCompatibilityError,
         ),
     ],
