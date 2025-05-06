@@ -68,7 +68,7 @@ class RAtoSQLTranspiler:
     def _transpile_Selection(self, selection: Selection) -> Select:  # noqa: N802
         query = self._transpile_select(selection.expression)
         condition = self._transpile_condition(selection.condition)
-        if query.args.get('group_by'):
+        if query.args.get('group'):
             return query.having(condition)
         else:
             return query.where(condition)
