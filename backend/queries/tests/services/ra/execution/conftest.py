@@ -24,6 +24,10 @@ def schema() -> RelationalSchema:
             'dept_id': DataType.INTEGER,
             'senior': DataType.BOOLEAN,
         },
+        'rotation': {
+            'employee_id': DataType.INTEGER,
+            'dept_id': DataType.INTEGER,
+        },
     }
 
 
@@ -38,6 +42,13 @@ def data() -> dict[str, list[dict[str, Any]]]:
             {'id': 1, 'name': 'Alice', 'age': 30, 'dept_id': 1, 'senior': False},
             {'id': 2, 'name': 'Bob', 'age': 25, 'dept_id': 2, 'senior': False},
             {'id': 3, 'name': 'Carol', 'age': 40, 'dept_id': 1, 'senior': True},
+        ],
+        'rotation': [
+            {'employee_id': 1, 'dept_id': 1},
+            {'employee_id': 1, 'dept_id': 2},
+            {'employee_id': 2, 'dept_id': 1},
+            {'employee_id': 3, 'dept_id': 1},
+            {'employee_id': 3, 'dept_id': 2},
         ],
     }
 

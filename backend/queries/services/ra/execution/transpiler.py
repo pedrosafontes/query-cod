@@ -27,6 +27,7 @@ from ..parser.ast import (
     BooleanExpression,
     Comparison,
     ComparisonValue,
+    Division,
     GroupedAggregation,
     Join,
     JoinOperator,
@@ -92,6 +93,37 @@ class RAtoSQLTranspiler:
             case Attribute() as attr:
                 return EQ(this=self._transpile_attribute(attr), expression=Boolean(this=True))
 
+    def _transpile_Division(self, div: Division) -> Expression:  # noqa: N802
+        # Get tables with aliases
+        dividend, dividend_alias = self._transpile_table(div.dividend, 'dividend')
+        dividend_sub, dividend_sub_alias = self._transpile_table(div.dividend, 'dividend_sub')
+
+        # Clear expressions
+        dividend.set('expressions', [])
+        dividend_sub.set('expressions', [])
+
+        output_attrs = [a.name for a in self._schema_inferrer.infer(div).attrs]
+        divisor_attrs = [a.name for a in self._schema_inferrer.infer(div.divisor).attrs]
+
+        # Create join conditions between the two dividend instances
+        match_conditions = [
+            EQ(
+                this=column(attr, table=dividend_sub_alias),
+                expression=column(attr, table=dividend_alias),
+            )
+            for attr in output_attrs
+        ]
+
+        # For each dividend tuple:
+        # 1. Find all divisor tuples associated with it
+        found_divisors = dividend_sub.select(*divisor_attrs).where(*match_conditions)
+        # 2. Check if there are any divisor tuples that are not associated with it
+        divisor = self.transpile(div.divisor)
+        missing_divisors = divisor.except_(found_divisors)
+
+        candidates = dividend.select(*output_attrs).distinct()
+        return candidates.where(not_(Exists(this=missing_divisors)))
+
     def _transpile_attribute(self, attr: Attribute) -> Expression:
         return column(attr.name, table=attr.relation)
 
@@ -138,13 +170,7 @@ class RAtoSQLTranspiler:
 
             case JoinOperator.SEMI:
                 right, right_alias = self._transpile_table(join.right, 'r')
-
-                left_output = self._schema_inferrer.infer(join.left)
-                right_output = self._schema_inferrer.infer(join.right)
-
-                left_names = {attr.name for attr in left_output.attrs}
-                right_names = {attr.name for attr in right_output.attrs}
-                shared_names = left_names & right_names
+                common = self._common_attrs(join.left, join.right)
 
                 return left.where(
                     Exists(
@@ -154,7 +180,7 @@ class RAtoSQLTranspiler:
                                     this=column(name, table=left_alias),
                                     expression=column(name, table=right_alias),
                                 )
-                                for name in shared_names
+                                for name in common
                             ]
                         )
                     )
@@ -228,3 +254,11 @@ class RAtoSQLTranspiler:
             return query
         else:
             return subquery(query, 'set_op').select('*')
+
+    def _common_attrs(self, left: RAExpression, right: RAExpression) -> list[str]:
+        l_output = self._schema_inferrer.infer(left)
+        r_output = self._schema_inferrer.infer(right)
+
+        l_names = {attr.name for attr in l_output.attrs}
+        r_names = {attr.name for attr in r_output.attrs}
+        return list(l_names & r_names)
