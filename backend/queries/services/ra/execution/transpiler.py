@@ -3,6 +3,7 @@ from collections.abc import Callable
 from queries.services.types import RelationalSchema
 from sqlglot.expressions import (
     EQ,
+    Boolean,
     Except,
     Exists,
     ExpOrStr,
@@ -89,7 +90,7 @@ class RAtoSQLTranspiler:
                 right = self._transpile_comparison_value(cond.right)
                 return f'{left} {cond.operator} {right}'
             case Attribute() as attr:
-                return EQ(this=self._transpile_attribute(attr), expression='TRUE')
+                return EQ(this=self._transpile_attribute(attr), expression=Boolean(this=True))
 
     def _transpile_attribute(self, attr: Attribute) -> Expression:
         return column(attr.name, table=attr.relation)

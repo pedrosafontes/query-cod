@@ -67,6 +67,9 @@ def _data_type_to_sqlglot_type(data_type: DataType) -> SQLGlotDataType:
         case DataType.TIMESTAMP:
             return SQLGlotDataType.build('TIMESTAMP')
 
+        case DataType.BOOLEAN:
+            return SQLGlotDataType.build('BOOLEAN')
+
         case _:
             raise ValueError(f'Unsupported data type: {data_type}')
 

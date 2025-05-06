@@ -22,6 +22,7 @@ def schema() -> RelationalSchema:
             'name': DataType.VARCHAR,
             'age': DataType.INTEGER,
             'dept_id': DataType.INTEGER,
+            'senior': DataType.BOOLEAN,
         },
     }
 
@@ -34,9 +35,9 @@ def data() -> dict[str, list[dict[str, Any]]]:
             {'id': 2, 'dept_name': 'Engineering'},
         ],
         'employee': [
-            {'id': 1, 'name': 'Alice', 'age': 30, 'dept_id': 1},
-            {'id': 2, 'name': 'Bob', 'age': 25, 'dept_id': 2},
-            {'id': 3, 'name': 'Carol', 'age': 40, 'dept_id': 1},
+            {'id': 1, 'name': 'Alice', 'age': 30, 'dept_id': 1, 'senior': False},
+            {'id': 2, 'name': 'Bob', 'age': 25, 'dept_id': 2, 'senior': False},
+            {'id': 3, 'name': 'Carol', 'age': 40, 'dept_id': 1, 'senior': True},
         ],
     }
 
