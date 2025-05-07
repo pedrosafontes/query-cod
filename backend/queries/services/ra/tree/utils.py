@@ -1,4 +1,18 @@
 def text(text: str) -> str:
+    replacements = {
+        '\\': r'\\textbackslash{}',
+        '{': r'\{',
+        '}': r'\}',
+        '_': r'\_',
+        '^': r'\^{}',
+        '#': r'\#',
+        '$': r'\$',
+        '%': r'\%',
+        '&': r'\&',
+        '~': r'\\textasciitilde{}',
+    }
+    for char, replacement in replacements.items():
+        text = text.replace(char, replacement)
     return f'\\text{{{text}}}'
 
 
