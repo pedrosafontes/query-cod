@@ -2,15 +2,15 @@ import { Handle, Position } from "@xyflow/react";
 import type { Node, NodeProps } from "@xyflow/react";
 import { KeyRound } from "lucide-react";
 
-import { Database } from "js/api";
+import { Database } from "api";
 
-type TableNodeData = {
+type SchemaNodeData = {
   table: string;
   fields: Database["schema"][string];
 };
-export type TableNode = Node<TableNodeData, "table">;
+export type SchemaNode = Node<SchemaNodeData, "table">;
 
-const SchemaTable = ({ data }: NodeProps<TableNode>) => {
+const SchemaDiagramNode = ({ data }: NodeProps<SchemaNode>) => {
   const { table, fields } = data;
 
   return (
@@ -52,4 +52,4 @@ const SchemaTable = ({ data }: NodeProps<TableNode>) => {
   );
 };
 
-export default SchemaTable;
+export default SchemaDiagramNode;

@@ -1,8 +1,7 @@
-import { type Edge, useNodesInitialized, useReactFlow } from "@xyflow/react";
+import { type Edge } from "@xyflow/react";
 import ELK from "elkjs/lib/elk.bundled";
-import { useEffect } from "react";
 
-import { type TableNode } from "js/components/database/SchemaTable";
+import { type SchemaNode } from "./SchemaNode";
 
 // elk layouting options can be found here:
 // https://www.eclipse.org/elk/reference/algorithms/org-eclipse-elk-layered.html
@@ -16,8 +15,13 @@ const layoutOptions = {
 
 const elk = new ELK();
 
+type getLayoutedNodesProps = {
+  nodes: SchemaNode[];
+  edges: Edge[];
+};
+
 // uses elkjs to give each node a layouted position
-export const getLayoutedNodes = async (nodes: TableNode[], edges: Edge[]) => {
+const getLayoutedNodes = async ({ nodes, edges }: getLayoutedNodesProps) => {
   const graph = {
     id: "root",
     layoutOptions,
@@ -42,8 +46,8 @@ export const getLayoutedNodes = async (nodes: TableNode[], edges: Edge[]) => {
 
       return {
         id: n.id,
-        width: n.width ?? 200,
-        height: n.height ?? (cols.length + 1) * 32,
+        width: n.measured?.width ?? 192,
+        height: n.measured?.height ?? (cols.length + 1) * 32,
         // ⚠️ we need to tell elk that the ports are fixed, in order to reduce edge crossings
         properties: {
           "org.eclipse.elk.portConstraints": "FIXED_ORDER",
@@ -78,25 +82,4 @@ export const getLayoutedNodes = async (nodes: TableNode[], edges: Edge[]) => {
   return layoutedNodes;
 };
 
-export default function useLayoutNodes() {
-  const nodesInitialized = useNodesInitialized();
-  const { getNodes, getEdges, setNodes, fitView } = useReactFlow<TableNode>();
-
-  useEffect(() => {
-    if (nodesInitialized) {
-      const layoutNodes = async () => {
-        const layoutedNodes = await getLayoutedNodes(
-          getNodes() as TableNode[],
-          getEdges(),
-        );
-
-        setNodes(layoutedNodes);
-        fitView();
-      };
-
-      layoutNodes();
-    }
-  }, [nodesInitialized, getNodes, getEdges, setNodes, fitView]);
-
-  return null;
-}
+export default getLayoutedNodes;
