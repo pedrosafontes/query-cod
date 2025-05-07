@@ -196,9 +196,11 @@ class RAtoSQLTranspiler:
             if table:
                 renamings[table] = left_alias
 
+        right: ExpOrStr
         if isinstance(join.right, Relation):
             # right is a base table
-            join_query = left.join(join.right.name, join_type='CROSS')
+            right = join.right.name
+            right_alias = None
         else:
             # right is a derived relation
             right = self.transpile(join.right)
@@ -210,11 +212,9 @@ class RAtoSQLTranspiler:
                 if table:
                     renamings[table] = right_alias
 
-            join_query = left.join(right, join_type='CROSS', join_alias=right_alias)
-
         renamed_condition = RAExpressionRenamer(renamings).rename_condition(join.condition)
         condition = self._transpile_condition(renamed_condition)
-        return join_query.where(condition)
+        return left.join(right, join_alias=right_alias, on=condition)
 
     def _transpile_GroupedAggregation(self, agg: GroupedAggregation) -> Select:  # noqa: N802
         query = self._transpile_select(agg.expression)
