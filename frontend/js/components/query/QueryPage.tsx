@@ -14,12 +14,12 @@ import ErrorAlert from "./QueryEditor/ErrorAlert";
 import QueryLanguageTabs from "./QueryLanguageTabs";
 import QueryResult from "./QueryResult";
 
-export type QueryExplorerProps = {
+export type QueryPageProps = {
   queryId: number;
   databaseId: number;
 };
 
-const QueryExplorer = ({ queryId, databaseId }: QueryExplorerProps) => {
+const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
   const [query, setQuery] = useState<Query>();
   const [queryResult, setQueryResult] = useState<QueryResultData>();
   const [isExecuting, setIsExecuting] = useState(false);
@@ -119,4 +119,4 @@ const QueryExplorer = ({ queryId, databaseId }: QueryExplorerProps) => {
   );
 };
 
-export default QueryExplorer;
+export default QueryPage;

@@ -13,7 +13,7 @@ import { QueriesService, Query } from "api";
 import { SchemaDiagramProps } from "../database/SchemaDiagram";
 
 import QueryEditor from "./QueryEditor";
-import QueryExplorer from "./QueryExplorer";
+import QueryPage from "./QueryPage";
 import QueryResult from "./QueryResult";
 
 jest.mock("api");
@@ -64,7 +64,7 @@ describe("QueryExplorer Component", () => {
   const renderComponent = () =>
     render(
       <TooltipProvider>
-        <QueryExplorer databaseId={0} queryId={mockQuery.id} />
+        <QueryPage databaseId={0} queryId={mockQuery.id} />
       </TooltipProvider>,
     );
 

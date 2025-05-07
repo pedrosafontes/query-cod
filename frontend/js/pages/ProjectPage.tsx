@@ -6,7 +6,7 @@ import { ProjectsService } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
 import ProjectSidebar from "../components/project/ProjectSidebar";
-import QueryExplorer from "../components/query/QueryExplorer";
+import QueryPage from "../components/query/QueryPage";
 
 const ProjectPage = () => {
   const [project, setProject] =
@@ -48,7 +48,7 @@ const ProjectPage = () => {
       )}
       <SidebarInset className="h-screen overflow-auto">
         {project && currentQueryId && (
-          <QueryExplorer
+          <QueryPage
             databaseId={project.database.id}
             queryId={currentQueryId}
           />

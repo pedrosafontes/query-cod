@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from "react-router";
 import { ProjectsService } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
-import { QueryExplorerProps } from "../components/query/QueryExplorer";
+import { QueryPageProps } from "../components/query/QueryPage";
 
 import ProjectsPage from "./ProjectPage";
 
@@ -21,7 +21,7 @@ jest.mock("hooks/useErrorToast", () => ({
 jest.mock(
   "components/query/QueryExplorer",
   () =>
-    ({ queryId }: QueryExplorerProps) => (
+    ({ queryId }: QueryPageProps) => (
       <div data-testid="query-explorer">{queryId}</div>
     ),
 );
