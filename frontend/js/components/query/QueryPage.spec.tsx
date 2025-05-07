@@ -10,12 +10,10 @@ import "@testing-library/jest-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueriesService, Query } from "api";
 
-import { SchemaDiagramProps } from "../database/useSchemaDiagram";
-
+import { QueryDiagramsProps } from "./QueryDiagrams";
 import QueryEditor from "./QueryEditor";
 import QueryPage from "./QueryPage";
 import QueryResult from "./QueryResult";
-import { QueryDiagramsProps } from "./QueryDiagrams";
 
 jest.mock("api");
 const mockToast = jest.fn();

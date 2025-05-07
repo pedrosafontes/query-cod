@@ -18,13 +18,9 @@ jest.mock("hooks/useErrorToast", () => ({
   useErrorToast: jest.fn(),
 }));
 
-jest.mock(
-  "components/query/QueryPage",
-  () =>
-    ({ queryId }: QueryPageProps) => (
-      <div data-testid="query-page">{queryId}</div>
-    ),
-);
+jest.mock("components/query/QueryPage", () => ({ queryId }: QueryPageProps) => (
+  <div data-testid="query-page">{queryId}</div>
+));
 
 describe("ProjectPage", () => {
   const sampleProject = {
