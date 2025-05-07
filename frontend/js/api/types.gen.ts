@@ -167,6 +167,7 @@ export type QuerySummary = {
 };
 
 export type RATree = {
+  id: number;
   label: string;
   readonly sub_trees: Array<RATree>;
 };

@@ -9,6 +9,7 @@ from .services.ra.tree.types import RATree
 
 
 class RATreeSerializer(serializers.Serializer[RATree]):
+    id = serializers.IntegerField()
     label = serializers.CharField()
     sub_trees = serializers.SerializerMethodField()
 

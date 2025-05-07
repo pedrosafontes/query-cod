@@ -1201,6 +1201,8 @@ components:
     RATree:
       type: object
       properties:
+        id:
+          type: integer
         label:
           type: string
         sub_trees:
@@ -1209,6 +1211,7 @@ components:
             $ref: '#/components/schemas/RATree'
           readOnly: true
       required:
+      - id
       - label
       - sub_trees
     SendEmailReset:

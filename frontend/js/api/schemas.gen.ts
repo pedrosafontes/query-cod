@@ -496,6 +496,9 @@ export const $QuerySummary = {
 export const $RATree = {
   type: "object",
   properties: {
+    id: {
+      type: "integer",
+    },
     label: {
       type: "string",
     },
@@ -507,7 +510,7 @@ export const $RATree = {
       readOnly: true,
     },
   },
-  required: ["label", "sub_trees"],
+  required: ["id", "label", "sub_trees"],
 } as const;
 
 export const $SendEmailReset = {
