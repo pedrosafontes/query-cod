@@ -1034,6 +1034,8 @@ components:
             required:
             - title
           readOnly: true
+        tree:
+          $ref: '#/components/schemas/RATree'
     PatchedUser:
       type: object
       properties:
@@ -1144,6 +1146,8 @@ components:
             required:
             - title
           readOnly: true
+        tree:
+          $ref: '#/components/schemas/RATree'
       required:
       - created
       - id
@@ -1194,6 +1198,19 @@ components:
       required:
       - id
       - name
+    RATree:
+      type: object
+      properties:
+        label:
+          type: string
+        sub_trees:
+          type: array
+          items:
+            $ref: '#/components/schemas/RATree'
+          readOnly: true
+      required:
+      - label
+      - sub_trees
     SendEmailReset:
       type: object
       properties:

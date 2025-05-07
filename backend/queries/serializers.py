@@ -1,11 +1,27 @@
 from databases.types import QueryExecutionResult
+from drf_spectacular.helpers import lazy_serializer
+from drf_spectacular.utils import extend_schema_field
 from queries.types import QueryExecutionResponse
 from rest_framework import serializers
 
 from .models import Query
+from .services.ra.tree.types import RATree
+
+
+class RATreeSerializer(serializers.Serializer[RATree]):
+    label = serializers.CharField()
+    sub_trees = serializers.SerializerMethodField()
+
+    @extend_schema_field(
+        lazy_serializer('queries.serializers.RATreeSerializer')(many=True, required=False)
+    )
+    def get_sub_trees(self, obj):
+        return obj.get('sub_trees')
 
 
 class QuerySerializer(serializers.ModelSerializer[Query]):
+    tree = RATreeSerializer(required=False)
+
     class Meta:
         model = Query
         fields = [  # noqa: RUF012
@@ -17,6 +33,7 @@ class QuerySerializer(serializers.ModelSerializer[Query]):
             'created',
             'modified',
             'validation_errors',
+            'tree',
         ]
 
 

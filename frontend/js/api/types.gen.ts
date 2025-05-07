@@ -97,6 +97,7 @@ export type PatchedQuery = {
       end_col: number;
     };
   }>;
+  tree?: RATree;
 };
 
 export type PatchedUser = {
@@ -135,6 +136,7 @@ export type Query = {
       end_col: number;
     };
   }>;
+  tree?: RATree;
 };
 
 export type QueryExecution = {
@@ -162,6 +164,11 @@ export type QueryResultData = {
 export type QuerySummary = {
   readonly id: number;
   name: string;
+};
+
+export type RATree = {
+  label: string;
+  readonly sub_trees: Array<RATree>;
 };
 
 export type SendEmailReset = {
