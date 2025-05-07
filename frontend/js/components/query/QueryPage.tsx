@@ -5,10 +5,10 @@ import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query, QueryResultData } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
-import SchemaDiagram from "../database/SchemaDiagram";
 import { Skeleton } from "../ui/skeleton";
 
 import ExecuteQueryButton from "./ExecuteQueryButton";
+import QueryDiagrams from "./QueryDiagrams";
 import QueryEditor from "./QueryEditor";
 import ErrorAlert from "./QueryEditor/ErrorAlert";
 import QueryLanguageTabs from "./QueryLanguageTabs";
@@ -108,11 +108,11 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
       </div>
       <div className="flex-1 h-full w-full bg-gray-50">
         <ReactFlowProvider>
-          <SchemaDiagram databaseId={databaseId}>
+          <QueryDiagrams databaseId={databaseId} tree={query?.tree}>
             {queryResult && (
               <QueryResult isLoading={isExecuting} result={queryResult} />
             )}
-          </SchemaDiagram>
+          </QueryDiagrams>
         </ReactFlowProvider>
       </div>
     </div>
