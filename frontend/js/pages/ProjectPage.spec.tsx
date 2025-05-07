@@ -19,10 +19,10 @@ jest.mock("hooks/useErrorToast", () => ({
 }));
 
 jest.mock(
-  "components/query/QueryExplorer",
+  "components/query/QueryPage",
   () =>
     ({ queryId }: QueryPageProps) => (
-      <div data-testid="query-explorer">{queryId}</div>
+      <div data-testid="query-page">{queryId}</div>
     ),
 );
 
@@ -75,7 +75,7 @@ describe("ProjectPage", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByTestId("query-explorer")).toHaveTextContent(
+      expect(screen.getByTestId("query-page")).toHaveTextContent(
         sampleProject.queries[0].id.toString(),
       );
     });
