@@ -1,4 +1,4 @@
-import { type Edge } from "@xyflow/react";
+import { type Edge, type Node } from "@xyflow/react";
 import ELK from "elkjs/lib/elk.bundled";
 
 import { type SchemaNode } from "./SchemaNode";
@@ -16,16 +16,19 @@ const layoutOptions = {
 const elk = new ELK();
 
 type getLayoutedNodesProps = {
-  nodes: SchemaNode[];
+  nodes: Node[];
   edges: Edge[];
 };
 
 // uses elkjs to give each node a layouted position
-const getLayoutedNodes = async ({ nodes, edges }: getLayoutedNodesProps) => {
+const getLayoutedNodes = async ({
+  nodes,
+  edges,
+}: getLayoutedNodesProps): Promise<Node[]> => {
   const graph = {
     id: "root",
     layoutOptions,
-    children: nodes.map((n) => {
+    children: (nodes as SchemaNode[]).map((n) => {
       const cols = Object.keys(n.data.fields);
       const targetPorts = cols.map((col) => ({
         id: `${n.data.table}.${col}`,

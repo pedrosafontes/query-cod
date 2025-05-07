@@ -74,16 +74,14 @@ const useSchemaDiagram = ({ databaseId }: SchemaDiagramProps) => {
         });
       });
 
-      const layoutedNodes = await getLayoutedNodes({ nodes, edges });
-
-      setNodes(layoutedNodes);
+      setNodes(nodes);
       setEdges(edges);
     };
 
     createDiagram();
   }, [schema, setNodes, setEdges]);
 
-  return { nodes, edges };
+  return { nodes, edges, layout: getLayoutedNodes };
 };
 
 export default useSchemaDiagram;

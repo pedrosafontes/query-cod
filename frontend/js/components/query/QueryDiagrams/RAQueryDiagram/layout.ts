@@ -8,7 +8,10 @@ type getLayoutedNodesProps = {
   edges: Edge[];
 };
 
-const getLayoutedNodes = ({ nodes, edges }: getLayoutedNodesProps) => {
+const getLayoutedNodes = ({
+  nodes,
+  edges,
+}: getLayoutedNodesProps): Promise<Node[]> => {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
   g.setGraph({ rankdir: "TB" });
 
@@ -28,7 +31,7 @@ const getLayoutedNodes = ({ nodes, edges }: getLayoutedNodesProps) => {
 
   Dagre.layout(g);
 
-  return nodes.map((node) => {
+  const layoutedNodes = nodes.map((node) => {
     const position = g.node(node.id);
     // We are shifting the dagre node position (anchor=center center) to the top left
     // so it matches the React Flow node anchor point (top left).
@@ -37,6 +40,8 @@ const getLayoutedNodes = ({ nodes, edges }: getLayoutedNodesProps) => {
 
     return { ...node, position: { x, y } };
   });
+
+  return Promise.resolve(layoutedNodes);
 };
 
 export default getLayoutedNodes;

@@ -14,6 +14,7 @@ import { RATree } from "api";
 import "@xyflow/react/dist/style.css";
 import SchemaDiagramNode from "components/database/SchemaNode";
 import useSchemaDiagram from "components/database/useSchemaDiagram";
+import useLayout from "hooks/useLayout";
 import { useTopCenterFitView } from "hooks/useTopCenterView";
 
 import RADiagramNode from "./RAQueryDiagram/RANode";
@@ -37,10 +38,20 @@ const QueryDiagrams = ({ databaseId, tree, children }: QueryDiagramsProps) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-  const { nodes: schemaNodes, edges: schemaEdges } = useSchemaDiagram({
+  const {
+    nodes: schemaNodes,
+    edges: schemaEdges,
+    layout: schemaLayout,
+  } = useSchemaDiagram({
     databaseId,
   });
-  const { nodes: queryNodes, edges: queryEdges } = useRAQueryDiagram({ tree });
+  const {
+    nodes: queryNodes,
+    edges: queryEdges,
+    layout: queryLayout,
+  } = useRAQueryDiagram({ tree });
+
+  const layout = diagram === "schema" ? schemaLayout : queryLayout;
 
   useEffect(() => {
     if (diagram === "schema") {
@@ -60,6 +71,7 @@ const QueryDiagrams = ({ databaseId, tree, children }: QueryDiagramsProps) => {
     setEdges,
   ]);
 
+  useLayout({ layout });
   useTopCenterFitView(nodes);
 
   return (

@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import { RATree } from "api";
 
-import getTreeNodes from "./layout";
+import getLayoutedNodes from "./layout";
 import { RANode } from "./RANode";
 
 export type RAQueryDiagramProps = {
@@ -44,16 +44,11 @@ const useRAQueryDiagram = ({ tree }: RAQueryDiagramProps) => {
       processTree(tree);
     }
 
-    const layoutedNodes = getTreeNodes({
-      nodes,
-      edges,
-    });
-
-    setNodes(layoutedNodes as RANode[]);
+    setNodes(nodes);
     setEdges(edges);
   }, [tree, setNodes, setEdges]);
 
-  return { nodes, edges };
+  return { nodes, edges, layout: getLayoutedNodes };
 };
 
 export default useRAQueryDiagram;
