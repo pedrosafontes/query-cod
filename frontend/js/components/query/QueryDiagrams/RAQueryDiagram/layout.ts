@@ -8,7 +8,7 @@ type getLayoutedNodesProps = {
   edges: Edge[];
 };
 
-const getLayoutedNodes = ({
+const getLayoutedNodes = async ({
   nodes,
   edges,
 }: getLayoutedNodesProps): Promise<Node[]> => {
@@ -31,7 +31,7 @@ const getLayoutedNodes = ({
 
   Dagre.layout(g);
 
-  const layoutedNodes = nodes.map((node) => {
+  return nodes.map((node) => {
     const position = g.node(node.id);
     // We are shifting the dagre node position (anchor=center center) to the top left
     // so it matches the React Flow node anchor point (top left).
@@ -40,8 +40,6 @@ const getLayoutedNodes = ({
 
     return { ...node, position: { x, y } };
   });
-
-  return Promise.resolve(layoutedNodes);
 };
 
 export default getLayoutedNodes;
