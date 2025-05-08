@@ -27,6 +27,7 @@ const useRAQueryDiagram = ({ tree }: RAQueryDiagramProps) => {
         data: {
           label,
         },
+        deletable: false,
       });
       if (subTrees) {
         subTrees.forEach((subTree) => {
@@ -34,8 +35,10 @@ const useRAQueryDiagram = ({ tree }: RAQueryDiagramProps) => {
           edges.push({
             id: `${id}-${subTree.id}`,
             type: "smoothstep",
-            source: id.toString(),
-            target: subTree.id.toString(),
+            target: id.toString(),
+            source: subTree.id.toString(),
+            deletable: false,
+            animated: true,
           });
         });
       }

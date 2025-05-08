@@ -56,6 +56,7 @@ const useSchemaDiagram = ({ databaseId }: SchemaDiagramProps) => {
             table,
             fields,
           },
+          deletable: false,
         });
       });
 
@@ -70,6 +71,8 @@ const useSchemaDiagram = ({ databaseId }: SchemaDiagramProps) => {
               target: ref.table,
               targetHandle: `${ref.table}.${ref.column}`,
               type: "smoothstep",
+              deletable: false,
+              animated: true,
             });
           }
         });
