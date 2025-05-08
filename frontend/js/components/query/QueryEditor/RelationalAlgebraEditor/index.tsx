@@ -24,11 +24,11 @@ const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
   query,
   setQuery,
 }) => {
-  const [value, setValue] = useState<string | undefined>(query.ra_text);
+  const [value, setValue] = useState<string>(query.ra_text ?? "");
   const mf = useRef<MathfieldElement>(null);
   const [isPlainText, setPlainText] = useState<boolean>(false);
 
-  useEffect(() => {
+  const configureMathfield = () => {
     const el = mf.current;
     if (!el) return;
 
@@ -40,16 +40,19 @@ const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
       intersect: "#@\\cap\\placeholder{rrel}",
     };
 
+    el.smartMode = true;
     MathfieldElement.soundsDirectory = null;
-  }, []);
+  };
 
+  // When switching between modes or updating the value
   useEffect(() => {
     const el = mf.current;
     if (!el) return;
 
     // When switching from plain text to mathfield, update mathfield value
-    if (!isPlainText && value !== undefined) {
+    if (!isPlainText) {
       el.setValue(value);
+      configureMathfield();
     }
   }, [isPlainText, value]);
 
@@ -77,7 +80,7 @@ const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
       <math-field
         ref={mf}
         onInput={() => {
-          setValue(mf.current?.getValue?.());
+          setValue(mf.current?.getValue?.() ?? "");
         }}
       >
         {value}
