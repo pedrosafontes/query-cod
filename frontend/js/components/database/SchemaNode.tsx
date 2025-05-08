@@ -24,7 +24,7 @@ const SchemaDiagramNode = ({ data }: NodeProps<SchemaNode>) => {
               className="relative flex justify-between items-center px-2 py-1 border-t"
             >
               <Handle
-                className="invisible"
+                className="invisible size-0 border-0 left-1"
                 id={`${table}.${col}`}
                 position={Position.Left}
                 type="target"
@@ -39,7 +39,7 @@ const SchemaDiagramNode = ({ data }: NodeProps<SchemaNode>) => {
                 {dataType}
               </span>
               <Handle
-                className="invisible"
+                className="invisible size-0 border-0 right-1"
                 id={`${table}.${col}`}
                 position={Position.Right}
                 type="source"

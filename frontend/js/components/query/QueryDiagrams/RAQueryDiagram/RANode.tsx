@@ -12,9 +12,17 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
 
   return (
     <div className="bg-white border rounded-lg p-2">
-      <Handle className="invisible" position={Position.Top} type="target" />
+      <Handle
+        className="invisible size-0 border-0 top-1"
+        position={Position.Top}
+        type="target"
+      />
       <LatexFormula expression={label} />
-      <Handle className="invisible" position={Position.Bottom} type="source" />
+      <Handle
+        className="invisible size-0 border-0 bottom-1"
+        position={Position.Bottom}
+        type="source"
+      />
     </div>
   );
 };
