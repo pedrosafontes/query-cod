@@ -1,13 +1,13 @@
-import MonacoEditor, { Monaco } from "@monaco-editor/react";
+import { Monaco } from "@monaco-editor/react";
 import partition from "lodash/partition";
 import { editor } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
-import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query } from "api";
 import { useAutosave } from "hooks/useAutosave";
 
 import AutosaveStatus from "../AutosaveStatus";
+import CodeEditor from "../CodeEditor";
 import ErrorAlert from "../ErrorAlert";
 
 type SQLEditorProps = {
@@ -63,22 +63,12 @@ const SQLEditor = ({ query, setQuery }: SQLEditorProps) => {
 
   return (
     <>
-      <MonacoEditor
-        defaultLanguage="sql"
-        height="500px"
-        loading={<Spinner className="text-gray-400" size="small" />}
+      <CodeEditor
+        className="max-h-[400px]"
+        language="sql"
         options={{
-          fontSize: 14,
-          minimap: { enabled: false },
-          scrollBeyondLastLine: false,
-          wordWrap: "on",
-          tabSize: 2,
-          lineNumbers: "on",
-          formatOnType: true,
-          formatOnPaste: true,
-          lineNumbersMinChars: 2,
+          lineNumbers: "off",
         }}
-        theme="vs-light"
         value={value}
         onChange={setValue}
         onMount={(editor, monaco) => {
