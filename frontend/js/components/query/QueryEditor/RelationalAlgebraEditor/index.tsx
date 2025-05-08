@@ -4,13 +4,13 @@ import { MathfieldElement } from "mathlive";
 /* eslint-enable import/no-duplicates */
 import React, { useEffect, useRef, useState } from "react";
 
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { QueriesService, Query } from "api";
 import { useAutosave } from "hooks/useAutosave";
 
 import AutosaveStatus from "../AutosaveStatus";
+import CodeEditor from "../CodeEditor";
 import ErrorAlert from "../ErrorAlert";
 
 import RAKeyboard from "./RAKeyboard";
@@ -20,15 +20,17 @@ type RelationalAlgebraEditorProps = {
   setQuery: (query: Query) => void;
 };
 
+type InputMode = "keyboard" | "code";
+
 const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
   query,
   setQuery,
 }) => {
-  const [value, setValue] = useState<string>(query.ra_text ?? "");
+  const [value, setValue] = useState<string | undefined>(query.ra_text);
+  const [mode, setMode] = useState<InputMode>("keyboard");
   const mf = useRef<MathfieldElement>(null);
-  const [isPlainText, setPlainText] = useState<boolean>(false);
 
-  const configureMathfield = () => {
+  useEffect(() => {
     const el = mf.current;
     if (!el) return;
 
@@ -41,20 +43,9 @@ const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
     };
 
     el.smartMode = true;
+
     MathfieldElement.soundsDirectory = null;
-  };
-
-  // When switching between modes or updating the value
-  useEffect(() => {
-    const el = mf.current;
-    if (!el) return;
-
-    // When switching from plain text to mathfield, update mathfield value
-    if (!isPlainText) {
-      el.setValue(value);
-      configureMathfield();
-    }
-  }, [isPlainText, value]);
+  }, []);
 
   const updateRaText = async (value: string) => {
     const result = await QueriesService.queriesPartialUpdate({
@@ -66,48 +57,50 @@ const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
 
   const status = useAutosave({ data: value, onSave: updateRaText });
 
-  const renderInput = () => {
-    if (isPlainText) {
-      return (
-        <Input
-          className="py-6"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-        />
-      );
-    }
-    return (
+  return (
+    <>
       <math-field
         ref={mf}
         onInput={() => {
-          setValue(mf.current?.getValue?.() ?? "");
+          setValue(mf.current?.getValue?.());
         }}
       >
         {value}
       </math-field>
-    );
-  };
 
-  return (
-    <>
-      {renderInput()}
-      <div className="flex justify-between text-xs mt-2">
+      <div className="flex justify-between text-xs mt-2 mb-4">
         <div className="flex items-center space-x-2">
           <Switch
-            checked={isPlainText}
-            id="plain-text"
+            checked={mode === "code"}
+            id="mode-switch"
             size="sm"
-            onCheckedChange={setPlainText}
+            onCheckedChange={(checked) =>
+              setMode(checked ? "code" : "keyboard")
+            }
           />
-          <Label htmlFor="plain-text">Plain text</Label>
+          <Label htmlFor="mode-switch">LaTeX code</Label>
         </div>
         <AutosaveStatus status={status} />
       </div>
-      <RAKeyboard
-        className="mt-4"
-        disabled={isPlainText}
-        onInsert={(expr) => mf.current?.executeCommand(["insert", expr])}
-      />
+
+      {mode === "keyboard" && (
+        <RAKeyboard
+          className="mt-4"
+          onInsert={(expr) => mf.current?.executeCommand(["insert", expr])}
+        />
+      )}
+
+      {mode === "code" && (
+        <CodeEditor
+          className="max-h-[300px]"
+          language="latex"
+          options={{
+            lineNumbers: "off",
+          }}
+          value={value}
+          onChange={setValue}
+        />
+      )}
 
       {query.validation_errors.map((error) => (
         <ErrorAlert
