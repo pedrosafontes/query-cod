@@ -98,7 +98,7 @@ export const literals: RAKeyboardItem[] = [
   },
 ];
 
-export const basicOperators: RAKeyboardItem[] = [
+export const unaryOperators: RAKeyboardItem[] = [
   {
     label: "\\pi",
     expr: "\\pi_{\\placeholder{attr}}(#0)",
@@ -127,23 +127,9 @@ export const basicOperators: RAKeyboardItem[] = [
       example: "\\sigma_{age > 30}(Employee)",
     },
   },
-  {
-    label: "\\div",
-    expr: "(#@)\\div(\\placeholder{rrel})",
-    details: {
-      displayExpr: "R \\div S",
-      name: "Division",
-      description:
-        "Finds tuples in the left relation associated with all tuples in the right.",
-      args: [
-        { name: "R", description: "dividend relation" },
-        { name: "S", description: "divisor relation" },
-      ],
-    },
-  },
 ];
 
-export const setOperators: RAKeyboardItem[] = [
+export const binaryOperators: RAKeyboardItem[] = [
   {
     label: "\\cup",
     expr: "(#@)\\cup(\\placeholder{rrel})",
@@ -181,6 +167,20 @@ export const setOperators: RAKeyboardItem[] = [
       args: [
         { name: "R", description: "left relation" },
         { name: "S", description: "right relation" },
+      ],
+    },
+  },
+  {
+    label: "\\div",
+    expr: "(#@)\\div(\\placeholder{rrel})",
+    details: {
+      displayExpr: "R \\div S",
+      name: "Division",
+      description:
+        "Finds tuples in the left relation associated with all tuples in the right.",
+      args: [
+        { name: "R", description: "dividend relation" },
+        { name: "S", description: "divisor relation" },
       ],
     },
   },
