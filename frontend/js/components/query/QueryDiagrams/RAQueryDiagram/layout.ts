@@ -13,7 +13,7 @@ const getLayoutedNodes = async ({
   edges,
 }: getLayoutedNodesProps): Promise<Node[]> => {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-  g.setGraph({ rankdir: "TB" });
+  g.setGraph({ rankdir: "BT" });
 
   const width = 256;
   const height = 48;

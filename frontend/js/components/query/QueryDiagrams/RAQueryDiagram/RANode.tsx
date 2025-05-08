@@ -15,13 +15,13 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
       <Handle
         className="invisible size-0 border-0 top-1"
         position={Position.Top}
-        type="target"
+        type="source"
       />
       <LatexFormula expression={label} />
       <Handle
         className="invisible size-0 border-0 bottom-1"
         position={Position.Bottom}
-        type="source"
+        type="target"
       />
     </div>
   );
