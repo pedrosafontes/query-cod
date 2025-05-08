@@ -2,6 +2,7 @@ import MonacoEditor, { Monaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor";
 
 import { Spinner } from "@/components/ui/spinner";
+import { registerLatexLanguage } from "lib/monaco-latex";
 
 type CodeEditorProps = {
   value?: string;
@@ -21,6 +22,9 @@ const CodeEditor = ({
   onMount,
 }: CodeEditorProps) => (
   <MonacoEditor
+    beforeMount={(monaco) => {
+      registerLatexLanguage(monaco);
+    }}
     defaultLanguage={language}
     loading={<Spinner className="text-gray-400" size="small" />}
     options={{
