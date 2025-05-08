@@ -18,8 +18,6 @@ const getLayoutedNodes = async ({
   const width = 256;
   const height = 48;
 
-  nodes.forEach((node) => console.log(node.measured));
-
   edges.forEach((edge) => g.setEdge(edge.source, edge.target));
   nodes.forEach((node) =>
     g.setNode(node.id, {
