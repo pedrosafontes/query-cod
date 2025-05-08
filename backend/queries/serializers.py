@@ -16,7 +16,7 @@ class RATreeSerializer(serializers.Serializer[RATree]):
     @extend_schema_field(
         lazy_serializer('queries.serializers.RATreeSerializer')(many=True, required=False)
     )
-    def get_sub_trees(self, obj):
+    def get_sub_trees(self, obj: RATree) -> list[RATree] | None:
         return obj.get('sub_trees')
 
 
