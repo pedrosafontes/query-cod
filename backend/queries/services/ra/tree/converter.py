@@ -39,6 +39,7 @@ from .utils import (
     NEQ,
     PI,
     SIGMA,
+    TIMES,
     overset,
     subscript,
     text,
@@ -52,7 +53,9 @@ class RATreeConverter:
     def convert(self, expr: RAExpression) -> RATree:
         next_id = self._counter
         self._counter += 1
-        method: Callable[[RAExpression, int], RATree] = getattr(self, f'_convert_{type(expr).__name__}')
+        method: Callable[[RAExpression, int], RATree] = getattr(
+            self, f'_convert_{type(expr).__name__}'
+        )
         return method(expr, next_id)
 
     def _convert_Relation(self, rel: Relation, node_id: int) -> RATree:
@@ -83,7 +86,7 @@ class RATreeConverter:
             'sub_trees': [self.convert(div.dividend), self.convert(div.divisor)],
         }
 
-    def _convert_SetOperator(self, set_op: SetOperation, node_id: int) -> RATree:
+    def _convert_SetOperation(self, set_op: SetOperation, node_id: int) -> RATree:
         match set_op.operator:
             case SetOperator.UNION:
                 operator_label = CUP
@@ -91,6 +94,8 @@ class RATreeConverter:
                 operator_label = '-'
             case SetOperator.INTERSECT:
                 operator_label = CAP
+            case SetOperator.CARTESIAN:
+                operator_label = TIMES
 
         return {
             'id': node_id,
@@ -122,7 +127,7 @@ class RATreeConverter:
         group_by = ', '.join([self._convert_attribute(attr) for attr in agg.group_by])
         aggregations = ', '.join(
             [
-                f'({text(self._convert_attribute(a.input))}, {a.aggregation_function.value.lower()}, {text(a.output)})'
+                f'({self._convert_attribute(a.input)}, {a.aggregation_function.value.lower()}, {text(a.output)})'
                 for a in agg.aggregations
             ]
         )
