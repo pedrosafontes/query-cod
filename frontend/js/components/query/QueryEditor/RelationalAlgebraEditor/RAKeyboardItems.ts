@@ -93,7 +93,7 @@ export const comparisons: RAKeyboardItem[] = [
 
 export const literals: RAKeyboardItem[] = [
   {
-    label: '\\text{\\footnotesize "string"}',
+    label: '\\text{\\footnotesize \'string\'}',
     expr: "\\text{''}",
   },
 ];
