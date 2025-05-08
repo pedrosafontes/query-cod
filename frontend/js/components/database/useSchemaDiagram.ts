@@ -1,9 +1,10 @@
-import type { Edge } from "@xyflow/react";
+import { type Edge } from "@xyflow/react";
 import { useEffect, useState } from "react";
 
 import { Database, DatabasesService } from "api";
 import "@xyflow/react/dist/style.css";
 import { useErrorToast } from "hooks/useErrorToast";
+import useLayout from "hooks/useLayout";
 
 import getLayoutedNodes from "./layout";
 import { SchemaNode } from "./SchemaNode";
@@ -81,7 +82,9 @@ const useSchemaDiagram = ({ databaseId }: SchemaDiagramProps) => {
     createDiagram();
   }, [schema, setNodes, setEdges]);
 
-  return { nodes, edges, layout: getLayoutedNodes };
+  useLayout({ layout: getLayoutedNodes });
+
+  return { nodes, edges };
 };
 
 export default useSchemaDiagram;

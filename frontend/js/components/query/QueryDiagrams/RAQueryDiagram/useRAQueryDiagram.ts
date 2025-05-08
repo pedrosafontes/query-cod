@@ -1,7 +1,8 @@
-import type { Edge } from "@xyflow/react";
+import { type Edge } from "@xyflow/react";
 import { useEffect, useState } from "react";
 
 import { RATree } from "api";
+import useLayout from "hooks/useLayout";
 
 import getLayoutedNodes from "./layout";
 import { RANode } from "./RANode";
@@ -18,23 +19,23 @@ const useRAQueryDiagram = ({ tree }: RAQueryDiagramProps) => {
     const nodes: RANode[] = [];
     const edges: Edge[] = [];
 
-    const processTree = (node: RATree) => {
+    const processTree = ({ id, label, sub_trees: subTrees }: RATree) => {
       nodes.push({
-        id: node.id.toString(),
+        id: id.toString(),
         type: "ra",
         position: { x: 0, y: 0 },
         data: {
-          label: node.label,
+          label,
         },
       });
-      if (node.sub_trees) {
-        node.sub_trees.forEach((sub_tree) => {
-          processTree(sub_tree);
+      if (subTrees) {
+        subTrees.forEach((subTree) => {
+          processTree(subTree);
           edges.push({
-            id: `${node.id}-${sub_tree.id}`,
+            id: `${id}-${subTree.id}`,
             type: "smoothstep",
-            source: node.id.toString(),
-            target: sub_tree.id.toString(),
+            source: id.toString(),
+            target: subTree.id.toString(),
           });
         });
       }
@@ -46,9 +47,11 @@ const useRAQueryDiagram = ({ tree }: RAQueryDiagramProps) => {
 
     setNodes(nodes);
     setEdges(edges);
-  }, [tree, setNodes, setEdges]);
+  }, [tree]);
 
-  return { nodes, edges, layout: getLayoutedNodes };
+  useLayout({ layout: getLayoutedNodes });
+
+  return { nodes, edges };
 };
 
 export default useRAQueryDiagram;
