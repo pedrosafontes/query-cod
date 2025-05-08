@@ -17,7 +17,7 @@ jest.mock("./RelationalAlgebraEditor", () => {
 });
 
 describe("QueryEditor", () => {
-  const mockOnErrorsChange = jest.fn();
+  const mockSetQuery = jest.fn();
 
   const mockSQLQuery: Query = {
     id: 1,
@@ -40,32 +40,28 @@ describe("QueryEditor", () => {
   });
 
   test("renders SQLEditor when query language is sql", () => {
-    render(
-      <QueryEditor query={mockSQLQuery} onErrorsChange={mockOnErrorsChange} />,
-    );
+    render(<QueryEditor query={mockSQLQuery} setQuery={mockSetQuery} />);
 
     expect(screen.getByTestId("sql-editor")).toBeInTheDocument();
     expect(screen.queryByTestId("ra-editor")).not.toBeInTheDocument();
     expect(SQLEditor).toHaveBeenCalledWith(
       expect.objectContaining({
         query: mockSQLQuery,
-        onErrorsChange: expect.any(Function),
+        setQuery: mockSetQuery,
       }),
       expect.anything(),
     );
   });
 
   test("renders RelationalAlgebraEditor when query language is ra", () => {
-    render(
-      <QueryEditor query={mockRAQuery} onErrorsChange={mockOnErrorsChange} />,
-    );
+    render(<QueryEditor query={mockRAQuery} setQuery={mockSetQuery} />);
 
     expect(screen.getByTestId("ra-editor")).toBeInTheDocument();
     expect(screen.queryByTestId("sql-editor")).not.toBeInTheDocument();
     expect(RelationalAlgebraEditor).toHaveBeenCalledWith(
       expect.objectContaining({
         query: mockRAQuery,
-        onErrorsChange: expect.any(Function),
+        setQuery: mockSetQuery,
       }),
       expect.anything(),
     );

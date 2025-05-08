@@ -25,8 +25,8 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
   const [isExecuting, setIsExecuting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingError, setLoadingError] = useState<Error | null>(null);
-  const [hasErrors, setHasErrors] = useState(false);
   const toast = useErrorToast();
+  const hasErrors = !!query && query.validation_errors.length > 0;
 
   const handleExecuteQuery = async (): Promise<void> => {
     setIsExecuting(true);
@@ -99,11 +99,7 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
           />
         )}
         {query && (
-          <QueryEditor
-            key={query.id}
-            query={query}
-            onErrorsChange={(errors) => setHasErrors(errors.length > 0)}
-          />
+          <QueryEditor key={query.id} query={query} setQuery={setQuery} />
         )}
       </div>
       <div className="flex-1 h-full w-full bg-gray-50">

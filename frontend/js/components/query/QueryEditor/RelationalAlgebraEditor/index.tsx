@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { QueriesService, Query } from "api";
 import { useAutosave } from "hooks/useAutosave";
-import { QueryError } from "types/query";
 
 import AutosaveStatus from "../AutosaveStatus";
 import ErrorAlert from "../ErrorAlert";
@@ -17,17 +16,16 @@ import ErrorAlert from "../ErrorAlert";
 import RAKeyboard from "./RAKeyboard";
 
 type RelationalAlgebraEditorProps = {
-  onErrorsChange: (errors: QueryError[]) => void;
   query: Query;
+  setQuery: (query: Query) => void;
 };
 
 const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
   query,
-  onErrorsChange,
+  setQuery,
 }) => {
   const [value, setValue] = useState<string | undefined>(query.ra_text);
   const mf = useRef<MathfieldElement>(null);
-  const [errors, setErrors] = useState<QueryError[]>(query.validation_errors);
   const [isPlainText, setPlainText] = useState<boolean>(false);
 
   useEffect(() => {
@@ -46,10 +44,6 @@ const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
   }, []);
 
   useEffect(() => {
-    onErrorsChange(errors);
-  }, [errors]);
-
-  useEffect(() => {
     const el = mf.current;
     if (!el) return;
 
@@ -64,8 +58,7 @@ const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
       id: query.id,
       requestBody: { ra_text: value },
     });
-
-    setErrors(result.validation_errors);
+    setQuery(result);
   };
 
   const status = useAutosave({ data: value, onSave: updateRaText });
@@ -113,16 +106,15 @@ const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
         onInsert={(expr) => mf.current?.executeCommand(["insert", expr])}
       />
 
-      {errors.length > 0 &&
-        errors.map((error) => (
-          <ErrorAlert
-            key={error.title + error.description}
-            className="mt-4"
-            description={error.description}
-            hint={error.hint}
-            title={error.title}
-          />
-        ))}
+      {query.validation_errors.map((error) => (
+        <ErrorAlert
+          key={error.title + error.description}
+          className="mt-4"
+          description={error.description}
+          hint={error.hint}
+          title={error.title}
+        />
+      ))}
     </>
   );
 };

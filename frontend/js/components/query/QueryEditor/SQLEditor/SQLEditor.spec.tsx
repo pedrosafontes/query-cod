@@ -1,5 +1,5 @@
 import { EditorProps } from "@monaco-editor/react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { editor } from "monaco-editor";
 
@@ -51,7 +51,7 @@ describe("SQLEditor", () => {
     validation_errors: [],
   };
 
-  const mockOnErrorsChange = jest.fn();
+  const mockSetQuery = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -62,7 +62,7 @@ describe("SQLEditor", () => {
   });
 
   test("renders the editor with initial SQL text", () => {
-    render(<SQLEditor query={mockQuery} onErrorsChange={mockOnErrorsChange} />);
+    render(<SQLEditor query={mockQuery} setQuery={mockSetQuery} />);
 
     const editor = screen.getByTestId("monaco-editor");
     expect(editor).toBeInTheDocument();
@@ -70,7 +70,7 @@ describe("SQLEditor", () => {
   });
 
   test("calls useAutosave with correct parameters", () => {
-    render(<SQLEditor query={mockQuery} onErrorsChange={mockOnErrorsChange} />);
+    render(<SQLEditor query={mockQuery} setQuery={mockSetQuery} />);
 
     expect(useAutosave).toHaveBeenCalledWith({
       data: mockQuery.sql_text,
@@ -81,35 +81,9 @@ describe("SQLEditor", () => {
   test("displays autosave status", () => {
     (useAutosave as jest.Mock).mockReturnValue("saving");
 
-    render(<SQLEditor query={mockQuery} onErrorsChange={mockOnErrorsChange} />);
+    render(<SQLEditor query={mockQuery} setQuery={mockSetQuery} />);
 
     expect(screen.getByText(/saving/i)).toBeInTheDocument();
-  });
-
-  test("sets up error markers when editor mounts", async () => {
-    const queryWithErrors = {
-      ...mockQuery,
-      validation_errors: [
-        {
-          title: "Syntax error",
-          position: {
-            line: 1,
-            start_col: 1,
-            end_col: 5,
-          },
-        },
-      ],
-    };
-
-    render(
-      <SQLEditor query={queryWithErrors} onErrorsChange={mockOnErrorsChange} />,
-    );
-
-    await waitFor(() => {
-      expect(mockOnErrorsChange).toHaveBeenCalledWith(
-        queryWithErrors.validation_errors,
-      );
-    });
   });
 
   test("handles queries with no SQL text", () => {
@@ -118,9 +92,7 @@ describe("SQLEditor", () => {
       sql_text: undefined,
     };
 
-    render(
-      <SQLEditor query={emptyQuery} onErrorsChange={mockOnErrorsChange} />,
-    );
+    render(<SQLEditor query={emptyQuery} setQuery={mockSetQuery} />);
 
     const editor = screen.getByTestId("monaco-editor");
     expect(editor).toHaveValue("");
@@ -135,9 +107,7 @@ describe("SQLEditor", () => {
       ],
     };
 
-    render(
-      <SQLEditor query={mockErrorQuery} onErrorsChange={mockOnErrorsChange} />,
-    );
+    render(<SQLEditor query={mockErrorQuery} setQuery={mockSetQuery} />);
 
     expect(screen.getByText("General error 1")).toBeInTheDocument();
     expect(screen.getByText("General error 2")).toBeInTheDocument();
@@ -154,9 +124,7 @@ describe("SQLEditor", () => {
       ],
     };
 
-    render(
-      <SQLEditor query={mockErrorQuery} onErrorsChange={mockOnErrorsChange} />,
-    );
+    render(<SQLEditor query={mockErrorQuery} setQuery={mockSetQuery} />);
 
     expect(screen.queryByText("Error with position")).not.toBeInTheDocument();
   });

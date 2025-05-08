@@ -32,7 +32,7 @@ describe("RelationalAlgebraEditor", () => {
     validation_errors: [],
   };
 
-  const mockOnErrorsChange = jest.fn();
+  const mockSetQuery = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -44,10 +44,7 @@ describe("RelationalAlgebraEditor", () => {
 
   test("renders with initial RA text", () => {
     const { container } = render(
-      <RelationalAlgebraEditor
-        query={mockQuery}
-        onErrorsChange={mockOnErrorsChange}
-      />,
+      <RelationalAlgebraEditor query={mockQuery} setQuery={mockSetQuery} />,
     );
 
     const mathField = container.querySelector("math-field");
@@ -57,10 +54,7 @@ describe("RelationalAlgebraEditor", () => {
 
   test("calls useAutosave with correct initial data", () => {
     render(
-      <RelationalAlgebraEditor
-        query={mockQuery}
-        onErrorsChange={mockOnErrorsChange}
-      />,
+      <RelationalAlgebraEditor query={mockQuery} setQuery={mockSetQuery} />,
     );
 
     expect(useAutosave).toHaveBeenCalledWith({
@@ -73,10 +67,7 @@ describe("RelationalAlgebraEditor", () => {
     (useAutosave as jest.Mock).mockReturnValue("saving");
 
     render(
-      <RelationalAlgebraEditor
-        query={mockQuery}
-        onErrorsChange={mockOnErrorsChange}
-      />,
+      <RelationalAlgebraEditor query={mockQuery} setQuery={mockSetQuery} />,
     );
 
     expect(screen.getByText(/saving/i)).toBeInTheDocument();
@@ -91,7 +82,7 @@ describe("RelationalAlgebraEditor", () => {
     render(
       <RelationalAlgebraEditor
         query={mockErrorQuery}
-        onErrorsChange={mockOnErrorsChange}
+        setQuery={mockSetQuery}
       />,
     );
 
