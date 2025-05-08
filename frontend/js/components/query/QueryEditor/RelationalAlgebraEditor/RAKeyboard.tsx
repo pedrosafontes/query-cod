@@ -4,7 +4,6 @@ import {
   binaryOperators,
   joinOperators,
   extendedOperators,
-  references,
   logicalOperators,
   comparisons,
   literals,
@@ -28,7 +27,7 @@ export default function RAKeyboard({
     { title: "Second-order Operators", operators: [extendedOperators] },
     {
       title: "Expressions",
-      operators: [references, logicalOperators, comparisons, literals],
+      operators: [logicalOperators, comparisons, literals],
     },
   ];
 

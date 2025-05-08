@@ -10,21 +10,6 @@ export type RAKeyboardItem = {
   };
 };
 
-export const references: RAKeyboardItem[] = [
-  {
-    label: "\\text{\\footnotesize Relation}",
-    expr: "\\text{\\placeholder{relation}}",
-  },
-  {
-    label: "\\text{\\footnotesize Relation.attribute}",
-    expr: "\\text{\\placeholder{relation}}.\\text{\\placeholder{attribute}}",
-  },
-  {
-    label: "\\text{\\footnotesize attribute}",
-    expr: "\\text{\\placeholder{attribute}}",
-  },
-];
-
 export const logicalOperators: RAKeyboardItem[] = [
   {
     label: "\\land",
@@ -93,7 +78,7 @@ export const comparisons: RAKeyboardItem[] = [
 
 export const literals: RAKeyboardItem[] = [
   {
-    label: '\\text{\\footnotesize \'string\'}',
+    label: "\\text{\\footnotesize 'string'}",
     expr: "\\text{''}",
   },
 ];
