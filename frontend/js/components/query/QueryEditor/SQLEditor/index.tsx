@@ -64,7 +64,7 @@ const SQLEditor = ({ query, setQuery }: SQLEditorProps) => {
   return (
     <>
       <CodeEditor
-        className="max-h-[400px]"
+        className="max-h-[400px] -mx-3 border-b"
         language="sql"
         options={{
           lineNumbers: "on",

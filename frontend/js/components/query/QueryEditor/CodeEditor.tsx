@@ -39,7 +39,7 @@ const CodeEditor = ({
     }}
     theme="vs-light"
     value={value}
-    wrapperProps={{ className: `${className} border rounded overflow-hidden` }}
+    wrapperProps={{ className: `${className} !w-auto` }}
     onChange={onChange}
     onMount={onMount}
   />
