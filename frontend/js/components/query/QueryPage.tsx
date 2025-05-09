@@ -1,32 +1,37 @@
 import { ReactFlowProvider } from "@xyflow/react";
 import { useEffect, useState } from "react";
 
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query, QueryResultData } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
-import SchemaDiagram from "../database/SchemaDiagram";
 import { Skeleton } from "../ui/skeleton";
 
 import ExecuteQueryButton from "./ExecuteQueryButton";
+import QueryDiagrams from "./QueryDiagrams";
 import QueryEditor from "./QueryEditor";
 import ErrorAlert from "./QueryEditor/ErrorAlert";
 import QueryLanguageTabs from "./QueryLanguageTabs";
 import QueryResult from "./QueryResult";
 
-export type QueryExplorerProps = {
+export type QueryPageProps = {
   queryId: number;
   databaseId: number;
 };
 
-const QueryExplorer = ({ queryId, databaseId }: QueryExplorerProps) => {
+const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
   const [query, setQuery] = useState<Query>();
   const [queryResult, setQueryResult] = useState<QueryResultData>();
   const [isExecuting, setIsExecuting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingError, setLoadingError] = useState<Error | null>(null);
-  const [hasErrors, setHasErrors] = useState(false);
   const toast = useErrorToast();
+  const hasErrors = !!query && query.validation_errors.length > 0;
 
   const handleExecuteQuery = async (): Promise<void> => {
     setIsExecuting(true);
@@ -69,8 +74,8 @@ const QueryExplorer = ({ queryId, databaseId }: QueryExplorerProps) => {
   }, [queryId]);
 
   return (
-    <div className="flex h-full">
-      <div className="w-[400px] px-3 py-5 h-full border-r overflow-auto">
+    <ResizablePanelGroup direction="horizontal">
+      <ResizablePanel className="min-w-[400px] px-3 py-5" defaultSize={0}>
         <div className="flex justify-between mb-5 w-full">
           {query && (
             <QueryLanguageTabs
@@ -99,24 +104,21 @@ const QueryExplorer = ({ queryId, databaseId }: QueryExplorerProps) => {
           />
         )}
         {query && (
-          <QueryEditor
-            key={query.id}
-            query={query}
-            onErrorsChange={(errors) => setHasErrors(errors.length > 0)}
-          />
+          <QueryEditor key={query.id} query={query} setQuery={setQuery} />
         )}
-      </div>
-      <div className="flex-1 h-full w-full bg-gray-50">
+      </ResizablePanel>
+      <ResizableHandle withHandle />
+      <ResizablePanel className="bg-gray-50">
         <ReactFlowProvider>
-          <SchemaDiagram databaseId={databaseId}>
+          <QueryDiagrams databaseId={databaseId} tree={query?.tree}>
             {queryResult && (
               <QueryResult isLoading={isExecuting} result={queryResult} />
             )}
-          </SchemaDiagram>
+          </QueryDiagrams>
         </ReactFlowProvider>
-      </div>
-    </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 };
 
-export default QueryExplorer;
+export default QueryPage;

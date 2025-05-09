@@ -103,5 +103,5 @@ ESCAPED_STRING: "'" _STRING_ESC_INNER "'"
 %import common.SIGNED_INT
 %import common.SIGNED_FLOAT
 %import common._STRING_ESC_INNER
-%import common.WS_INLINE
-%ignore WS_INLINE
+%import common.WS
+%ignore WS

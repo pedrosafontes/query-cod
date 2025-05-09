@@ -273,6 +273,9 @@ export const $PatchedQuery = {
       },
       readOnly: true,
     },
+    tree: {
+      $ref: "#/components/schemas/RATree",
+    },
   },
 } as const;
 
@@ -423,6 +426,9 @@ export const $Query = {
       },
       readOnly: true,
     },
+    tree: {
+      $ref: "#/components/schemas/RATree",
+    },
   },
   required: ["created", "id", "modified", "name", "validation_errors"],
 } as const;
@@ -485,6 +491,26 @@ export const $QuerySummary = {
     },
   },
   required: ["id", "name"],
+} as const;
+
+export const $RATree = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    label: {
+      type: "string",
+    },
+    sub_trees: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/RATree",
+      },
+      readOnly: true,
+    },
+  },
+  required: ["id", "label", "sub_trees"],
 } as const;
 
 export const $SendEmailReset = {

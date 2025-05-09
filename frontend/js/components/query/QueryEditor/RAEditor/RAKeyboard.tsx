@@ -1,10 +1,9 @@
 import RAKeyboardGroup from "./RAKeyboardGroup";
 import {
-  basicOperators,
-  setOperators,
+  unaryOperators,
+  binaryOperators,
   joinOperators,
   extendedOperators,
-  references,
   logicalOperators,
   comparisons,
   literals,
@@ -22,13 +21,13 @@ export default function RAKeyboard({
   disabled,
 }: RAKeyboardProps) {
   const groups = [
-    { title: "Basic Operators", operators: [basicOperators] },
-    { title: "Set Operators", operators: [setOperators] },
+    { title: "Unary Operators", operators: [unaryOperators] },
+    { title: "Binary Operators", operators: [binaryOperators] },
     { title: "Join Operators", operators: [joinOperators] },
-    { title: "Extended Operators", operators: [extendedOperators] },
+    { title: "Second-order Operators", operators: [extendedOperators] },
     {
       title: "Expressions",
-      operators: [references, logicalOperators, comparisons, literals],
+      operators: [logicalOperators, comparisons, literals],
     },
   ];
 

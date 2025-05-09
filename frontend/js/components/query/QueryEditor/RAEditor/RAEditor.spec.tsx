@@ -1,10 +1,11 @@
 import { render, screen } from "@testing-library/react";
-
 import "@testing-library/jest-dom";
+import { userEvent } from "@testing-library/user-event";
+
 import { QueriesService, Query } from "api";
 import { useAutosave } from "hooks/useAutosave";
 
-import RelationalAlgebraEditor from ".";
+import RAEditor from ".";
 
 jest.mock("react-markdown");
 jest.mock("rehype-raw");
@@ -21,7 +22,15 @@ jest.mock("api", () => ({
   },
 }));
 
-describe("RelationalAlgebraEditor", () => {
+jest.mock("./RAKeyboard", () => {
+  return jest.fn(() => <div data-testid="ra-keyboard" />);
+});
+
+jest.mock("../CodeEditor", () => {
+  return jest.fn(() => <div data-testid="code-editor" />);
+});
+
+describe("RAEditor", () => {
   const mockQuery: Query = {
     id: 1,
     name: "Test Query",
@@ -32,7 +41,7 @@ describe("RelationalAlgebraEditor", () => {
     validation_errors: [],
   };
 
-  const mockOnErrorsChange = jest.fn();
+  const mockSetQuery = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -44,10 +53,7 @@ describe("RelationalAlgebraEditor", () => {
 
   test("renders with initial RA text", () => {
     const { container } = render(
-      <RelationalAlgebraEditor
-        query={mockQuery}
-        onErrorsChange={mockOnErrorsChange}
-      />,
+      <RAEditor query={mockQuery} setQuery={mockSetQuery} />,
     );
 
     const mathField = container.querySelector("math-field");
@@ -56,12 +62,7 @@ describe("RelationalAlgebraEditor", () => {
   });
 
   test("calls useAutosave with correct initial data", () => {
-    render(
-      <RelationalAlgebraEditor
-        query={mockQuery}
-        onErrorsChange={mockOnErrorsChange}
-      />,
-    );
+    render(<RAEditor query={mockQuery} setQuery={mockSetQuery} />);
 
     expect(useAutosave).toHaveBeenCalledWith({
       data: mockQuery.ra_text,
@@ -72,12 +73,7 @@ describe("RelationalAlgebraEditor", () => {
   test("displays autosave status", () => {
     (useAutosave as jest.Mock).mockReturnValue("saving");
 
-    render(
-      <RelationalAlgebraEditor
-        query={mockQuery}
-        onErrorsChange={mockOnErrorsChange}
-      />,
-    );
+    render(<RAEditor query={mockQuery} setQuery={mockSetQuery} />);
 
     expect(screen.getByText(/saving/i)).toBeInTheDocument();
   });
@@ -88,14 +84,25 @@ describe("RelationalAlgebraEditor", () => {
       validation_errors: [{ title: "Error 1" }, { title: "Error 2" }],
     };
 
-    render(
-      <RelationalAlgebraEditor
-        query={mockErrorQuery}
-        onErrorsChange={mockOnErrorsChange}
-      />,
-    );
+    render(<RAEditor query={mockErrorQuery} setQuery={mockSetQuery} />);
 
     expect(screen.getByText("Error 1")).toBeInTheDocument();
     expect(screen.getByText("Error 2")).toBeInTheDocument();
+  });
+
+  test("toggles between keyboard and code input modes", async () => {
+    const user = userEvent.setup();
+
+    render(<RAEditor query={mockQuery} setQuery={mockSetQuery} />);
+
+    expect(screen.queryByTestId("code-editor")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("ra-keyboard")).toBeInTheDocument();
+
+    // Toggle the switch
+    const switchEl = screen.getByRole("switch");
+    await user.click(switchEl);
+
+    expect(screen.getByTestId("code-editor")).toBeInTheDocument();
+    expect(screen.queryByTestId("ra-keyboard")).not.toBeInTheDocument();
   });
 });

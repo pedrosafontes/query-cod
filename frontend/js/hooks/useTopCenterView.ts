@@ -21,7 +21,7 @@ export function useTopCenterFitView(nodes: Node[]) {
       width,
       height,
       0.5,
-      2,
+      1,
       "64px",
     );
 

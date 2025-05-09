@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes } from "react-router";
 import { ProjectsService } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
-import { QueryExplorerProps } from "../components/query/QueryExplorer";
+import { QueryPageProps } from "../components/query/QueryPage";
 
 import ProjectsPage from "./ProjectPage";
 
@@ -18,13 +18,9 @@ jest.mock("hooks/useErrorToast", () => ({
   useErrorToast: jest.fn(),
 }));
 
-jest.mock(
-  "components/query/QueryExplorer",
-  () =>
-    ({ queryId }: QueryExplorerProps) => (
-      <div data-testid="query-explorer">{queryId}</div>
-    ),
-);
+jest.mock("components/query/QueryPage", () => ({ queryId }: QueryPageProps) => (
+  <div data-testid="query-page">{queryId}</div>
+));
 
 describe("ProjectPage", () => {
   const sampleProject = {
@@ -75,7 +71,7 @@ describe("ProjectPage", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByTestId("query-explorer")).toHaveTextContent(
+      expect(screen.getByTestId("query-page")).toHaveTextContent(
         sampleProject.queries[0].id.toString(),
       );
     });

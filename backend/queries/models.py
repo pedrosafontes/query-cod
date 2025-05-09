@@ -5,6 +5,10 @@ from databases.services.execution import execute_sql
 from databases.types import QueryExecutionResult
 from databases.utils.conversion import from_model
 from projects.models import Project
+from queries.services.ra.parser import parse_ra
+from queries.services.ra.parser.errors.base import RASyntaxError
+from queries.services.ra.tree.converter import RATreeConverter
+from queries.services.ra.tree.types import RATree
 from queries.types import QueryError, QueryValidationResult
 
 from .services.ra.execution import execute_ra
@@ -49,6 +53,20 @@ class Query(IndexedTimeStampedModel):
     @property
     def validation_errors(self) -> list[QueryError]:
         return self.validate().get('errors', [])
+
+    @property
+    def tree(self) -> RATree | None:
+        match self.language:
+            case Query.QueryLanguage.SQL:
+                return None
+            case Query.QueryLanguage.RA:
+                try:
+                    ast = parse_ra(self.ra_text)
+                    return RATreeConverter().convert(ast)
+                except RASyntaxError:
+                    return None
+            case _:
+                raise ValueError(f'Unsupported query language: {self.language}')
 
     class Meta:
         ordering = [  # noqa: RUF012

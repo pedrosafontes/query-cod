@@ -1,26 +1,20 @@
 import { Query } from "api";
-import { QueryError } from "types/query";
 
-import RelationalAlgebraEditor from "./RelationalAlgebraEditor";
+import RAEditor from "./RAEditor";
 import SQLEditor from "./SQLEditor";
 
 type QueryEditorProps = {
   query: Query;
-  onErrorsChange: (errors: QueryError[]) => void;
+  setQuery: (query: Query) => void;
 };
 
-const QueryEditor = ({ query, onErrorsChange }: QueryEditorProps) => {
+const QueryEditor = ({ query, setQuery }: QueryEditorProps) => {
   const renderEditor = () => {
     switch (query.language) {
       case "sql":
-        return <SQLEditor query={query} onErrorsChange={onErrorsChange} />;
+        return <SQLEditor query={query} setQuery={setQuery} />;
       case "ra":
-        return (
-          <RelationalAlgebraEditor
-            query={query}
-            onErrorsChange={onErrorsChange}
-          />
-        );
+        return <RAEditor query={query} setQuery={setQuery} />;
       default:
         return null;
     }

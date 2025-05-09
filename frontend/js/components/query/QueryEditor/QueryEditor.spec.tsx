@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Query } from "api";
 
-import RelationalAlgebraEditor from "./RelationalAlgebraEditor";
+import RAEditor from "./RAEditor";
 import SQLEditor from "./SQLEditor";
 
 import QueryEditor from ".";
@@ -12,12 +12,12 @@ jest.mock("./SQLEditor", () => {
   return jest.fn(() => <div data-testid="sql-editor">SQL Editor</div>);
 });
 
-jest.mock("./RelationalAlgebraEditor", () => {
+jest.mock("./RAEditor", () => {
   return jest.fn(() => <div data-testid="ra-editor">RA Editor</div>);
 });
 
 describe("QueryEditor", () => {
-  const mockOnErrorsChange = jest.fn();
+  const mockSetQuery = jest.fn();
 
   const mockSQLQuery: Query = {
     id: 1,
@@ -40,32 +40,28 @@ describe("QueryEditor", () => {
   });
 
   test("renders SQLEditor when query language is sql", () => {
-    render(
-      <QueryEditor query={mockSQLQuery} onErrorsChange={mockOnErrorsChange} />,
-    );
+    render(<QueryEditor query={mockSQLQuery} setQuery={mockSetQuery} />);
 
     expect(screen.getByTestId("sql-editor")).toBeInTheDocument();
     expect(screen.queryByTestId("ra-editor")).not.toBeInTheDocument();
     expect(SQLEditor).toHaveBeenCalledWith(
       expect.objectContaining({
         query: mockSQLQuery,
-        onErrorsChange: expect.any(Function),
+        setQuery: mockSetQuery,
       }),
       expect.anything(),
     );
   });
 
-  test("renders RelationalAlgebraEditor when query language is ra", () => {
-    render(
-      <QueryEditor query={mockRAQuery} onErrorsChange={mockOnErrorsChange} />,
-    );
+  test("renders RAEditor when query language is ra", () => {
+    render(<QueryEditor query={mockRAQuery} setQuery={mockSetQuery} />);
 
     expect(screen.getByTestId("ra-editor")).toBeInTheDocument();
     expect(screen.queryByTestId("sql-editor")).not.toBeInTheDocument();
-    expect(RelationalAlgebraEditor).toHaveBeenCalledWith(
+    expect(RAEditor).toHaveBeenCalledWith(
       expect.objectContaining({
         query: mockRAQuery,
-        onErrorsChange: expect.any(Function),
+        setQuery: mockSetQuery,
       }),
       expect.anything(),
     );
