@@ -67,7 +67,7 @@ const SQLEditor = ({ query, setQuery }: SQLEditorProps) => {
         className="max-h-[400px]"
         language="sql"
         options={{
-          lineNumbers: "off",
+          lineNumbers: "on",
         }}
         value={value}
         onChange={setValue}
