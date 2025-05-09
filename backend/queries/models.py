@@ -1,12 +1,12 @@
 from django.db import models
+from django.utils.functional import cached_property
 
 from common.models import IndexedTimeStampedModel
 from projects.models import Project
-from queries.services.ra.parser import parse_ra
-from queries.services.ra.parser.errors.base import RASyntaxError
-from queries.services.ra.tree.converter import RATreeConverter
-from queries.services.ra.tree.types import RATree
-from queries.types import QueryError
+
+from .services.ra.tree.types import RATree
+from .services.types import QueryAST
+from .types import QueryError, QueryValidationResult
 
 
 class Query(IndexedTimeStampedModel):
@@ -24,25 +24,23 @@ class Query(IndexedTimeStampedModel):
         default=QueryLanguage.SQL,
     )
 
-    @property
-    def validation_errors(self) -> list[QueryError]:
+    @cached_property
+    def validation_result(self) -> tuple[QueryValidationResult, QueryAST | None]:
         from .services.validation import validate_query
 
-        return validate_query(self).get('errors', [])
+        return validate_query(self)
+
+    @property
+    def validation_errors(self) -> list[QueryError]:
+        validation, _ = self.validation_result
+        return validation.get('errors', [])
 
     @property
     def tree(self) -> RATree | None:
-        match self.language:
-            case Query.QueryLanguage.SQL:
-                return None
-            case Query.QueryLanguage.RA:
-                try:
-                    ast = parse_ra(self.ra_text)
-                    return RATreeConverter().convert(ast)
-                except RASyntaxError:
-                    return None
-            case _:
-                raise ValueError(f'Unsupported query language: {self.language}')
+        from .services.tree import transform_ast
+
+        _, ast = self.validation_result
+        return transform_ast(ast) if ast else None
 
     class Meta:
         ordering = [  # noqa: RUF012

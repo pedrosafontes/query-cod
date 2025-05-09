@@ -6,13 +6,11 @@ from _pytest.monkeypatch import MonkeyPatch
 from model_bakery import baker
 from projects.models import Project
 from queries.models import Query
-from queries.services import validation
+from queries.types import QueryError
 from queries.views import QueryViewSet
 from rest_framework import status
 from rest_framework.test import APIClient
 from users.models import User
-
-from backend.queries.types import QueryError
 
 
 class TestProjectQueries:
@@ -40,7 +38,8 @@ class TestQueryCRUD:
         query = baker.make(Query, project__user=user)
         errors = [QueryError(title='Error')]
         monkeypatch.setattr(
-            validation, 'validate_query', lambda query: {'executable': True, 'errors': errors}
+            'queries.models.Query.validation_result',
+            ({'executable': False, 'errors': errors}, None),
         )
 
         url = reverse('queries-detail', kwargs={'pk': query.id})
@@ -63,7 +62,8 @@ class TestQueryCRUD:
         query = baker.make(Query, project__user=user)
         errors = [QueryError(title='Error')]
         monkeypatch.setattr(
-            validation, 'validate_query', lambda query: {'executable': True, 'errors': errors}
+            'queries.models.Query.validation_result',
+            ({'executable': False, 'errors': errors}, None),
         )
 
         url = reverse('queries-detail', kwargs={'pk': query.id})
@@ -111,7 +111,7 @@ class TestQueryExecution:
         self, auth_client: APIClient, user: User, monkeypatch: MonkeyPatch
     ) -> None:
         query = baker.make(Query, project__user=user)
-        monkeypatch.setattr(validation, 'validate_query', lambda query: {'executable': False})
+        monkeypatch.setattr('queries.models.Query.validation_result', ({'executable': False}, None))
 
         monkeypatch.setattr('queries.views.QueryViewSet.get_object', lambda self: query)
 
