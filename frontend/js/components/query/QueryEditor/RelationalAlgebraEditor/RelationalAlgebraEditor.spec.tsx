@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react";
-
 import "@testing-library/jest-dom";
+import { userEvent } from "@testing-library/user-event";
+
 import { QueriesService, Query } from "api";
 import { useAutosave } from "hooks/useAutosave";
 
@@ -20,6 +21,14 @@ jest.mock("api", () => ({
     queriesPartialUpdate: jest.fn(),
   },
 }));
+
+jest.mock("./RAKeyboard", () => {
+  return jest.fn(() => <div data-testid="ra-keyboard" />);
+});
+
+jest.mock("../CodeEditor", () => {
+  return jest.fn(() => <div data-testid="code-editor" />);
+});
 
 describe("RelationalAlgebraEditor", () => {
   const mockQuery: Query = {
@@ -88,5 +97,23 @@ describe("RelationalAlgebraEditor", () => {
 
     expect(screen.getByText("Error 1")).toBeInTheDocument();
     expect(screen.getByText("Error 2")).toBeInTheDocument();
+  });
+
+  test("toggles between keyboard and code input modes", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <RelationalAlgebraEditor query={mockQuery} setQuery={mockSetQuery} />,
+    );
+
+    expect(screen.queryByTestId("code-editor")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("ra-keyboard")).toBeInTheDocument();
+
+    // Toggle the switch
+    const switchEl = screen.getByRole("switch");
+    await user.click(switchEl);
+
+    expect(screen.getByTestId("code-editor")).toBeInTheDocument();
+    expect(screen.queryByTestId("ra-keyboard")).not.toBeInTheDocument();
   });
 });

@@ -2,7 +2,7 @@
 import "mathlive";
 import { MathfieldElement } from "mathlive";
 /* eslint-enable import/no-duplicates */
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -22,10 +22,10 @@ type RelationalAlgebraEditorProps = {
 
 type InputMode = "keyboard" | "code";
 
-const RelationalAlgebraEditor: React.FC<RelationalAlgebraEditorProps> = ({
+const RelationalAlgebraEditor = ({
   query,
   setQuery,
-}) => {
+}: RelationalAlgebraEditorProps) => {
   const [value, setValue] = useState<string | undefined>(query.ra_text);
   const [mode, setMode] = useState<InputMode>("keyboard");
   const mf = useRef<MathfieldElement>(null);
