@@ -10,8 +10,10 @@ jest.mock("api", () => ({
   },
 }));
 
+const mockToast = jest.fn();
+
 jest.mock("hooks/useErrorToast", () => ({
-  useErrorToast: () => jest.fn(),
+  useErrorToast: () => mockToast,
 }));
 
 jest.mock("hooks/useLayout", () => ({
@@ -94,6 +96,8 @@ describe("useSchemaDiagram", () => {
         id: 1,
       });
     });
+
+    expect(mockToast).toHaveBeenCalled();
 
     // Should not create nodes and edges
     expect(result.current.nodes).toEqual([]);
