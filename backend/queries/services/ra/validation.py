@@ -4,12 +4,18 @@ from queries.types import QueryError, QueryValidationResult
 
 from ..types import to_relational_schema
 from .parser import parse_ra
+from .parser.ast import RAExpression
 from .parser.errors import RASyntaxError
 from .semantics import RASemanticAnalyzer
 from .semantics.errors import RASemanticError
 
 
-def validate_ra(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationResult:
+def validate_ra(
+    query_text: str, db: DatabaseConnectionInfo
+) -> tuple[QueryValidationResult, RAExpression | None]:
+    if not query_text.strip():
+        return {'executable': False}, None
+
     try:
         expr = parse_ra(query_text)
     except RASyntaxError as e:
@@ -17,9 +23,9 @@ def validate_ra(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationR
         if e.description:
             syntax_error['description'] = e.description
         return {
-            'valid': False,
+            'executable': False,
             'errors': [syntax_error],
-        }
+        }, None
 
     try:
         schema = to_relational_schema(get_schema(db))
@@ -33,8 +39,8 @@ def validate_ra(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationR
         if e.hint:
             semantic_error['hint'] = e.hint
         return {
-            'valid': False,
+            'executable': False,
             'errors': [semantic_error],
-        }
+        }, expr
 
-    return {'valid': True}
+    return {'executable': True}, expr

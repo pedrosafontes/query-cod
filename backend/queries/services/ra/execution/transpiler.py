@@ -1,16 +1,13 @@
 from collections.abc import Callable
 
-from queries.services.types import RelationalSchema
+from queries.services.types import RelationalSchema, SQLStatement
 from sqlglot.expressions import (
     EQ,
     Boolean,
-    Except,
     Exists,
     ExpOrStr,
     Expression,
-    Intersect,
     Select,
-    Union,
     and_,
     column,
     not_,
@@ -43,9 +40,6 @@ from ..parser.ast import (
 )
 from ..shared.inference import SchemaInferrer
 from .renamer import RAExpressionRenamer
-
-
-SQLStatement = Select | Union | Intersect | Except
 
 
 class RAtoSQLTranspiler:

@@ -1,19 +1,12 @@
 from django.db import models
 
 from common.models import IndexedTimeStampedModel
-from databases.services.execution import execute_sql
-from databases.types import QueryExecutionResult
-from databases.utils.conversion import from_model
 from projects.models import Project
 from queries.services.ra.parser import parse_ra
 from queries.services.ra.parser.errors.base import RASyntaxError
 from queries.services.ra.tree.converter import RATreeConverter
 from queries.services.ra.tree.types import RATree
-from queries.types import QueryError, QueryValidationResult
-
-from .services.ra.execution import execute_ra
-from .services.ra.validation import validate_ra
-from .services.sql.validation import validate_sql
+from queries.types import QueryError
 
 
 class Query(IndexedTimeStampedModel):
@@ -31,28 +24,11 @@ class Query(IndexedTimeStampedModel):
         default=QueryLanguage.SQL,
     )
 
-    def execute(self) -> QueryExecutionResult:
-        match self.language:
-            case Query.QueryLanguage.SQL:
-                return execute_sql(self.sql_text, from_model(self.project.database))
-            case Query.QueryLanguage.RA:
-                return execute_ra(self.ra_text, from_model(self.project.database))
-            case _:
-                raise ValueError(f'Unsupported query language: {self.language}')
-
-    def validate(self) -> QueryValidationResult:
-        db = from_model(self.project.database)
-        match self.language:
-            case Query.QueryLanguage.SQL:
-                return validate_sql(self.sql_text, db)
-            case Query.QueryLanguage.RA:
-                return validate_ra(self.ra_text, db)
-            case _:
-                raise ValueError(f'Unsupported query language: {self.language}')
-
     @property
     def validation_errors(self) -> list[QueryError]:
-        return self.validate().get('errors', [])
+        from .services.validation import validate_query
+
+        return validate_query(self).get('errors', [])
 
     @property
     def tree(self) -> RATree | None:

@@ -11,6 +11,7 @@ from rest_framework.serializers import BaseSerializer
 
 from .models import Query
 from .serializers import QueryExecutionSerializer, QuerySerializer
+from .services.execution import execute_query
 
 
 @extend_schema(
@@ -48,12 +49,6 @@ class QueryViewSet(
         responses=QueryExecutionSerializer,
     )
     @action(detail=True, methods=['post'], url_path='executions')
-    def run(self, request: Request, pk: str) -> Response:
+    def execute(self, request: Request, pk: str) -> Response:
         query = self.get_object()
-        if not query.validate()['valid']:
-            return Response(
-                {
-                    'success': False,
-                }
-            )
-        return Response({'success': True, 'results': query.execute()})
+        return Response(execute_query(query))
