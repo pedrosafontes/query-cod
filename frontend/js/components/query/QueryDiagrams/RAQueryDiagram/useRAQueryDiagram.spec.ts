@@ -41,42 +41,41 @@ describe("useRAQueryDiagram", () => {
     // Should have 2 edges (Select -> Project, Users -> Select)
     expect(result.current.edges).toHaveLength(2);
 
-
     // Verify node structure
     expect(result.current.nodes).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: '1',
-          type: 'ra',
-          data: { label: 'Project' },
+          id: "1",
+          type: "ra",
+          data: { label: "Project" },
         }),
         expect.objectContaining({
-          id: '2',
-          type: 'ra',
-          data: { label: 'Select' },
+          id: "2",
+          type: "ra",
+          data: { label: "Select" },
         }),
         expect.objectContaining({
-          id: '3',
-          type: 'ra',
-          data: { label: 'Users' },
+          id: "3",
+          type: "ra",
+          data: { label: "Users" },
         }),
-      ])
+      ]),
     );
 
     // Verify edge structure
     expect(result.current.edges).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          id: '1-2',
-          source: '2',
-          target: '1',
+          id: "1-2",
+          source: "2",
+          target: "1",
         }),
         expect.objectContaining({
-          id: '2-3',
-          source: '3',
-          target: '2',
+          id: "2-3",
+          source: "3",
+          target: "2",
         }),
-      ])
+      ]),
     );
   });
 

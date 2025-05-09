@@ -79,6 +79,39 @@ describe("useSchemaDiagram", () => {
     await waitFor(() => {
       expect(result.current.nodes).toHaveLength(2); // users and posts tables
       expect(result.current.edges).toHaveLength(1); // One foreign key relationship
+
+      // Verify node structure
+      expect(result.current.nodes).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: "users",
+            type: "table",
+            data: expect.objectContaining({
+              table: "users",
+              fields: mockSchema.users,
+            }),
+          }),
+          expect.objectContaining({
+            id: "posts",
+            type: "table",
+            data: expect.objectContaining({
+              table: "posts",
+              fields: mockSchema.posts,
+            }),
+          }),
+        ]),
+      );
+
+      // Verify edge structure
+      expect(result.current.edges).toEqual([
+        expect.objectContaining({
+          id: "posts.user_id-users.id",
+          source: "posts",
+          sourceHandle: "posts.user_id",
+          target: "users",
+          targetHandle: "users.id",
+        }),
+      ]);
     });
   });
 
