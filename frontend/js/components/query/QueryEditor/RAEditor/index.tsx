@@ -15,17 +15,14 @@ import ErrorAlert from "../ErrorAlert";
 
 import RAKeyboard from "./RAKeyboard";
 
-type RelationalAlgebraEditorProps = {
+type RAEditorProps = {
   query: Query;
   setQuery: (query: Query) => void;
 };
 
 type InputMode = "keyboard" | "code";
 
-const RelationalAlgebraEditor = ({
-  query,
-  setQuery,
-}: RelationalAlgebraEditorProps) => {
+const RAEditor = ({ query, setQuery }: RAEditorProps) => {
   const [value, setValue] = useState<string | undefined>(query.ra_text);
   const [mode, setMode] = useState<InputMode>("keyboard");
   const mf = useRef<MathfieldElement>(null);
@@ -115,4 +112,4 @@ const RelationalAlgebraEditor = ({
   );
 };
 
-export default RelationalAlgebraEditor;
+export default RAEditor;

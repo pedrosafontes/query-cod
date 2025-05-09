@@ -1,6 +1,6 @@
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 
-import LatexFormula from "../../QueryEditor/RelationalAlgebraEditor/LatexFormula";
+import LatexFormula from "../../QueryEditor/RAEditor/LatexFormula";
 
 type RANodeData = {
   label: string;

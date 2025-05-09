@@ -1,6 +1,6 @@
 import { Query } from "api";
 
-import RelationalAlgebraEditor from "./RelationalAlgebraEditor";
+import RAEditor from "./RAEditor";
 import SQLEditor from "./SQLEditor";
 
 type QueryEditorProps = {
@@ -14,7 +14,7 @@ const QueryEditor = ({ query, setQuery }: QueryEditorProps) => {
       case "sql":
         return <SQLEditor query={query} setQuery={setQuery} />;
       case "ra":
-        return <RelationalAlgebraEditor query={query} setQuery={setQuery} />;
+        return <RAEditor query={query} setQuery={setQuery} />;
       default:
         return null;
     }
