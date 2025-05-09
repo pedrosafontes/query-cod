@@ -8,7 +8,7 @@ from queries.services.ra.parser.ast import (
     Comparison,
     ComparisonOperator,
     NotExpression,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
 )
@@ -134,8 +134,8 @@ from queries.services.ra.parser.ast import (
     ],
 )
 def test_selection_execution(
-    ra_ast: RAExpression,
+    ra_ast: RAQuery,
     expected_sql: str,
-    assert_equivalent: Callable[[RAExpression, str], None],
+    assert_equivalent: Callable[[RAQuery, str], None],
 ) -> None:
     assert_equivalent(ra_ast, expected_sql)

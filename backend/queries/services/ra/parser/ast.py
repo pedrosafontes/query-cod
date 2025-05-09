@@ -14,12 +14,12 @@ class ASTNode:
     position: NodePosition | None = field(default=None, compare=False)
 
 
-class RAExpression(ASTNode):
+class RAQuery(ASTNode):
     pass
 
 
 @dataclass
-class Relation(RAExpression):
+class Relation(RAQuery):
     name: str
 
     def __str__(self) -> str:
@@ -87,10 +87,10 @@ BooleanExpression = BinaryBooleanExpression | NotExpression | Comparison | Attri
 
 
 @dataclass
-class SetOperation(RAExpression):
+class SetOperation(RAQuery):
     operator: SetOperator
-    left: RAExpression
-    right: RAExpression
+    left: RAQuery
+    right: RAQuery
 
 
 class JoinOperator(Enum):
@@ -99,35 +99,35 @@ class JoinOperator(Enum):
 
 
 @dataclass
-class Join(RAExpression):
+class Join(RAQuery):
     operator: JoinOperator
-    left: RAExpression
-    right: RAExpression
+    left: RAQuery
+    right: RAQuery
 
 
 @dataclass
-class Division(RAExpression):
-    dividend: RAExpression
-    divisor: RAExpression
+class Division(RAQuery):
+    dividend: RAQuery
+    divisor: RAQuery
 
 
 @dataclass
-class ThetaJoin(RAExpression):
-    left: RAExpression
-    right: RAExpression
+class ThetaJoin(RAQuery):
+    left: RAQuery
+    right: RAQuery
     condition: BooleanExpression
 
 
 @dataclass
-class Projection(RAExpression):
+class Projection(RAQuery):
     attributes: list[Attribute]
-    expression: RAExpression
+    expression: RAQuery
 
 
 @dataclass
-class Selection(RAExpression):
+class Selection(RAQuery):
     condition: BooleanExpression
-    expression: RAExpression
+    expression: RAQuery
 
 
 class AggregationFunction(Enum):
@@ -149,14 +149,14 @@ class Aggregation:
 
 
 @dataclass
-class GroupedAggregation(RAExpression):
+class GroupedAggregation(RAQuery):
     group_by: list[Attribute]
     aggregations: list[Aggregation]
-    expression: RAExpression
+    expression: RAQuery
 
 
 @dataclass
-class TopN(RAExpression):
+class TopN(RAQuery):
     limit: int
     attribute: Attribute
-    expression: RAExpression
+    expression: RAQuery

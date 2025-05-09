@@ -14,7 +14,7 @@ from queries.services.ra.parser.ast import (
     JoinOperator,
     NotExpression,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     SetOperation,
@@ -50,12 +50,10 @@ class RATreeConverter:
     def __init__(self) -> None:
         self._counter = 0
 
-    def convert(self, expr: RAExpression) -> RATree:
+    def convert(self, expr: RAQuery) -> RATree:
         next_id = self._counter
         self._counter += 1
-        method: Callable[[RAExpression, int], RATree] = getattr(
-            self, f'_convert_{type(expr).__name__}'
-        )
+        method: Callable[[RAQuery, int], RATree] = getattr(self, f'_convert_{type(expr).__name__}')
         return method(expr, next_id)
 
     def _convert_Relation(self, rel: Relation, node_id: int) -> RATree:  # noqa: N802

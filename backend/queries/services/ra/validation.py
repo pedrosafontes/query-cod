@@ -4,7 +4,7 @@ from queries.types import QueryError, QueryValidationResult
 
 from ..types import to_relational_schema
 from .parser import parse_ra
-from .parser.ast import RAExpression
+from .parser.ast import RAQuery
 from .parser.errors import RASyntaxError
 from .semantics import RASemanticAnalyzer
 from .semantics.errors import RASemanticError
@@ -12,7 +12,7 @@ from .semantics.errors import RASemanticError
 
 def validate_ra(
     query_text: str, db: DatabaseConnectionInfo
-) -> tuple[QueryValidationResult, RAExpression | None]:
+) -> tuple[QueryValidationResult, RAQuery | None]:
     if not query_text.strip():
         return {'executable': False}, None
 

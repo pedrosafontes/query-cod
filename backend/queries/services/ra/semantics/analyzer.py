@@ -14,7 +14,7 @@ from ..parser.ast import (
     Join,
     NotExpression,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     SetOperation,
@@ -44,11 +44,11 @@ class RASemanticAnalyzer:
         self.schema = schema
         self._schema_inferrer = SchemaInferrer(schema)
 
-    def validate(self, expr: RAExpression) -> None:
+    def validate(self, expr: RAQuery) -> None:
         self._validate(expr)
 
-    def _validate(self, expr: RAExpression) -> None:
-        method: Callable[[RAExpression], None] = getattr(self, f'_validate_{type(expr).__name__}')
+    def _validate(self, expr: RAQuery) -> None:
+        method: Callable[[RAQuery], None] = getattr(self, f'_validate_{type(expr).__name__}')
         return method(expr)
 
     def _validate_Relation(self, rel: Relation) -> None:  # noqa: N802

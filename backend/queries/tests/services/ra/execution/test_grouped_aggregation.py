@@ -6,7 +6,7 @@ from queries.services.ra.parser.ast import (
     AggregationFunction,
     Attribute,
     GroupedAggregation,
-    RAExpression,
+    RAQuery,
     Relation,
 )
 
@@ -74,6 +74,6 @@ from queries.services.ra.parser.ast import (
     ],
 )
 def test_grouped_aggregation_execution(
-    ra_ast: RAExpression, expected_sql: str, assert_equivalent: Callable[[RAExpression, str], None]
+    ra_ast: RAQuery, expected_sql: str, assert_equivalent: Callable[[RAQuery, str], None]
 ) -> None:
     assert_equivalent(ra_ast, expected_sql)

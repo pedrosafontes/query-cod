@@ -9,7 +9,7 @@ from ..parser.ast import (
     GroupedAggregation,
     Join,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     SetOperation,
@@ -27,7 +27,7 @@ class SchemaInferrer:
         self.schema = schema
         self._cache: dict[int, RelationOutput] = {}
 
-    def infer(self, expr: RAExpression) -> RelationOutput:
+    def infer(self, expr: RAQuery) -> RelationOutput:
         key = id(expr)
         if key not in self._cache:
             method = getattr(self, f'_infer_{type(expr).__name__}')

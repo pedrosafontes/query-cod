@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 import pytest
-from queries.services.ra.parser.ast import Attribute, RAExpression, Relation, TopN
+from queries.services.ra.parser.ast import Attribute, RAQuery, Relation, TopN
 from queries.services.ra.semantics.errors import AttributeNotFoundError
 
 
@@ -11,7 +11,7 @@ from queries.services.ra.semantics.errors import AttributeNotFoundError
         TopN(10, Attribute('A'), Relation('R')),
     ],
 )
-def test_valid_top_n(query: RAExpression, assert_valid: Callable[[RAExpression], None]) -> None:
+def test_valid_top_n(query: RAQuery, assert_valid: Callable[[RAQuery], None]) -> None:
     assert_valid(query)
 
 
@@ -22,8 +22,8 @@ def test_valid_top_n(query: RAExpression, assert_valid: Callable[[RAExpression],
     ],
 )
 def test_invalid_top_n(
-    query: RAExpression,
+    query: RAQuery,
     expected_exception: type[Exception],
-    assert_invalid: Callable[[RAExpression, type[Exception]], None],
+    assert_invalid: Callable[[RAQuery, type[Exception]], None],
 ) -> None:
     assert_invalid(query, expected_exception)

@@ -3,7 +3,7 @@ from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import DataType as SQLGlotDataType
 from sqlglot.expressions import Except, Intersect, Select, Union
 
-from .ra.parser.ast import RAExpression
+from .ra.parser.ast import RAQuery
 
 
 RelationName = str
@@ -89,4 +89,4 @@ def to_sqlglot_schema(schema: RelationalSchema) -> dict[str, dict[str, SQLGlotDa
 
 
 SQLStatement = Select | Union | Intersect | Except
-QueryAST = RAExpression | SQLStatement
+QueryAST = RAQuery | SQLStatement

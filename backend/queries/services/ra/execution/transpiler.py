@@ -30,7 +30,7 @@ from ..parser.ast import (
     JoinOperator,
     NotExpression,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     SetOperation,
@@ -46,10 +46,8 @@ class RAtoSQLTranspiler:
     def __init__(self, schema: RelationalSchema):
         self._schema_inferrer = SchemaInferrer(schema)
 
-    def transpile(self, expr: RAExpression) -> SQLStatement:
-        method: Callable[[RAExpression], Select] = getattr(
-            self, f'_transpile_{type(expr).__name__}'
-        )
+    def transpile(self, expr: RAQuery) -> SQLStatement:
+        method: Callable[[RAQuery], Select] = getattr(self, f'_transpile_{type(expr).__name__}')
         return method(expr)
 
     def _transpile_Relation(self, rel: Relation) -> Select:  # noqa: N802
@@ -233,7 +231,7 @@ class RAtoSQLTranspiler:
         query = self._transpile_select(top_n.expression)
         return query.limit(top_n.limit).order_by(self._transpile_attribute(top_n.attribute).desc())
 
-    def _transpile_table(self, expr: RAExpression, alias: str) -> tuple[Select, str]:
+    def _transpile_table(self, expr: RAQuery, alias: str) -> tuple[Select, str]:
         select = self._transpile_select(expr)
         if isinstance(expr, Relation):
             # expr is a base table
@@ -242,14 +240,14 @@ class RAtoSQLTranspiler:
             # expr is a derived relation; therefore, it needs to be aliased
             return subquery(select, alias).select('*'), alias
 
-    def _transpile_select(self, expr: RAExpression) -> Select:
+    def _transpile_select(self, expr: RAQuery) -> Select:
         query = self.transpile(expr)
         if isinstance(query, Select):
             return query
         else:
             return subquery(query, 'set_op').select('*')
 
-    def _common_attrs(self, left: RAExpression, right: RAExpression) -> list[str]:
+    def _common_attrs(self, left: RAQuery, right: RAQuery) -> list[str]:
         l_output = self._schema_inferrer.infer(left)
         r_output = self._schema_inferrer.infer(right)
 

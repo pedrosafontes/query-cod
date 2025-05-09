@@ -9,7 +9,7 @@ from queries.services.ra.parser.ast import (
     Join,
     JoinOperator,
     NotExpression,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
 )
@@ -145,7 +145,7 @@ from queries.services.ra.parser.errors import (
         ('\\sigma_{a} R', Selection(Attribute('a'), Relation('R'))),
     ],
 )
-def test_valid_selection(query: str, expected: RAExpression) -> None:
+def test_valid_selection(query: str, expected: RAQuery) -> None:
     assert parse_ra(query) == expected
 
 

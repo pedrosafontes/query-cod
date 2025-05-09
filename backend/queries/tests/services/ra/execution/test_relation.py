@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 import pytest
-from queries.services.ra.parser.ast import RAExpression, Relation
+from queries.services.ra.parser.ast import RAQuery, Relation
 
 
 @pytest.mark.parametrize(
@@ -14,6 +14,6 @@ from queries.services.ra.parser.ast import RAExpression, Relation
     ],
 )
 def test_relation_execution(
-    ra_ast: RAExpression, expected_sql: str, assert_equivalent: Callable[[RAExpression, str], None]
+    ra_ast: RAQuery, expected_sql: str, assert_equivalent: Callable[[RAQuery, str], None]
 ) -> None:
     assert_equivalent(ra_ast, expected_sql)

@@ -6,7 +6,7 @@ from queries.services.ra.parser.ast import (
     Comparison,
     ComparisonOperator,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
 )
@@ -41,6 +41,6 @@ from queries.services.types import RelationalSchema
         ),
     ],
 )
-def test_valid_complex_queries(expr: RAExpression, schema: RelationalSchema) -> None:
+def test_valid_complex_queries(expr: RAQuery, schema: RelationalSchema) -> None:
     analyzer = RASemanticAnalyzer(schema)
     analyzer.validate(expr)

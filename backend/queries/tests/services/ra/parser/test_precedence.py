@@ -8,7 +8,7 @@ from queries.services.ra.parser.ast import (
     Join,
     JoinOperator,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     SetOperation,
     SetOperator,
@@ -197,6 +197,6 @@ from queries.services.ra.parser.ast import (
         ),
     ],
 )
-def test_operator_precedence(query: str, expected: RAExpression) -> None:
+def test_operator_precedence(query: str, expected: RAQuery) -> None:
     """Test that the grammar correctly handles operator precedence."""
     assert parse_ra(query) == expected

@@ -7,7 +7,7 @@ from queries.services.ra.parser.ast import (
     ComparisonOperator,
     Join,
     JoinOperator,
-    RAExpression,
+    RAQuery,
     Relation,
     ThetaJoin,
 )
@@ -34,7 +34,7 @@ from queries.services.ra.semantics.errors import (
         ),
     ],
 )
-def test_valid_join(query: RAExpression, assert_valid: Callable[[RAExpression], None]) -> None:
+def test_valid_join(query: RAQuery, assert_valid: Callable[[RAQuery], None]) -> None:
     assert_valid(query)
 
 
@@ -72,8 +72,8 @@ def test_valid_join(query: RAExpression, assert_valid: Callable[[RAExpression], 
     ],
 )
 def test_invalid_join(
-    query: RAExpression,
+    query: RAQuery,
     expected_exception: type[Exception],
-    assert_invalid: Callable[[RAExpression, type[Exception]], None],
+    assert_invalid: Callable[[RAQuery, type[Exception]], None],
 ) -> None:
     assert_invalid(query, expected_exception)

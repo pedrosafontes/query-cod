@@ -8,7 +8,7 @@ from queries.services.ra.parser.ast import (
     ComparisonOperator,
     GroupedAggregation,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     ThetaJoin,
@@ -81,5 +81,5 @@ from queries.services.ra.parser.ast import (
         ),
     ],
 )
-def test_valid_complex_queries(query: str, expected: RAExpression) -> None:
+def test_valid_complex_queries(query: str, expected: RAQuery) -> None:
     assert parse_ra(query) == expected

@@ -5,7 +5,7 @@ from queries.services.ra.parser.ast import (
     AggregationFunction,
     Attribute,
     GroupedAggregation,
-    RAExpression,
+    RAQuery,
     Relation,
 )
 from queries.services.ra.parser.errors import (
@@ -62,7 +62,7 @@ from queries.services.ra.parser.errors import (
         ),
     ],
 )
-def test_valid_grouped_aggregations(query: str, expected: RAExpression) -> None:
+def test_valid_grouped_aggregations(query: str, expected: RAQuery) -> None:
     assert parse_ra(query) == expected
 
 

@@ -3,7 +3,7 @@ from typing import Any
 
 import pytest
 from queries.services.ra.execution.transpiler import RAtoSQLTranspiler
-from queries.services.ra.parser.ast import RAExpression
+from queries.services.ra.parser.ast import RAQuery
 from queries.services.types import RelationalSchema, to_sqlglot_schema
 from ra_sql_visualisation.types import DataType
 from sqlglot.executor import execute
@@ -56,10 +56,10 @@ def data() -> dict[str, list[dict[str, Any]]]:
 @pytest.fixture
 def assert_equivalent(
     schema: RelationalSchema, data: dict[str, list[dict[str, Any]]]
-) -> Callable[[RAExpression, str], None]:
+) -> Callable[[RAQuery, str], None]:
     sqlglot_schema = to_sqlglot_schema(schema)
 
-    def _assert_equivalent(ra_ast: RAExpression, expected_sql: str) -> None:
+    def _assert_equivalent(ra_ast: RAQuery, expected_sql: str) -> None:
         sql = RAtoSQLTranspiler(schema).transpile(ra_ast)
         print(sql.sql())
         assert _tables_equal(

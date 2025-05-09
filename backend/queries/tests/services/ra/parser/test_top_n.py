@@ -4,7 +4,7 @@ from queries.services.ra.parser.ast import (
     Attribute,
     Comparison,
     ComparisonOperator,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     TopN,
@@ -39,7 +39,7 @@ from queries.services.ra.parser.errors import (
         ),
     ],
 )
-def test_valid_top_n(query: str, expected: RAExpression) -> None:
+def test_valid_top_n(query: str, expected: RAQuery) -> None:
     assert parse_ra(query) == expected
 
 

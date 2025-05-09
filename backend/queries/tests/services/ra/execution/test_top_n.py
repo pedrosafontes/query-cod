@@ -5,7 +5,7 @@ from queries.services.ra.parser.ast import (
     Attribute,
     Comparison,
     ComparisonOperator,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     TopN,
@@ -52,6 +52,6 @@ from queries.services.ra.parser.ast import (
     ],
 )
 def test_top_n_execution(
-    ra_ast: RAExpression, expected_sql: str, assert_equivalent: Callable[[RAExpression, str], None]
+    ra_ast: RAQuery, expected_sql: str, assert_equivalent: Callable[[RAQuery, str], None]
 ) -> None:
     assert_equivalent(ra_ast, expected_sql)

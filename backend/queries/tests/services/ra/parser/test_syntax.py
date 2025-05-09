@@ -1,6 +1,6 @@
 import pytest
 from queries.services.ra.parser import parse_ra
-from queries.services.ra.parser.ast import Division, RAExpression, Relation
+from queries.services.ra.parser.ast import Division, RAQuery, Relation
 from queries.services.ra.parser.errors import (
     InvalidOperatorError,
     MismatchedParenthesisError,
@@ -15,7 +15,7 @@ from queries.services.ra.parser.errors import (
         ('\\left(R \\div S\\right)', Division(Relation('R'), Relation('S'))),
     ],
 )
-def test_valid_syntax(query: str, expected: RAExpression) -> None:
+def test_valid_syntax(query: str, expected: RAQuery) -> None:
     assert parse_ra(query) == expected
 
 

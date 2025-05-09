@@ -7,7 +7,7 @@ from queries.services.ra.parser.ast import (
     ComparisonOperator,
     Join,
     JoinOperator,
-    RAExpression,
+    RAQuery,
     Relation,
     ThetaJoin,
 )
@@ -93,6 +93,6 @@ from queries.services.ra.parser.ast import (
     ],
 )
 def test_join_execution(
-    ra_ast: RAExpression, expected_sql: str, assert_equivalent: Callable[[RAExpression, str], None]
+    ra_ast: RAQuery, expected_sql: str, assert_equivalent: Callable[[RAQuery, str], None]
 ) -> None:
     assert_equivalent(ra_ast, expected_sql)

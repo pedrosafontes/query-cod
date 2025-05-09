@@ -7,7 +7,7 @@ from queries.services.ra.parser.ast import (
     Join,
     JoinOperator,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
 )
@@ -55,7 +55,7 @@ from queries.services.ra.parser.errors import (
         ),
     ],
 )
-def test_valid_projection(query: str, expected: RAExpression) -> None:
+def test_valid_projection(query: str, expected: RAQuery) -> None:
     assert parse_ra(query) == expected
 
 

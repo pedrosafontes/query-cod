@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 import pytest
-from queries.services.ra.parser.ast import Attribute, Projection, RAExpression, Relation
+from queries.services.ra.parser.ast import Attribute, Projection, RAQuery, Relation
 
 
 @pytest.mark.parametrize(
@@ -48,6 +48,6 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAExpression, 
     ],
 )
 def test_projection_execution(
-    ra_ast: RAExpression, expected_sql: str, assert_equivalent: Callable[[RAExpression, str], None]
+    ra_ast: RAQuery, expected_sql: str, assert_equivalent: Callable[[RAQuery, str], None]
 ) -> None:
     assert_equivalent(ra_ast, expected_sql)

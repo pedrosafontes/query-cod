@@ -14,7 +14,7 @@ from queries.services.ra.parser.ast import (
     JoinOperator,
     NotExpression,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     ThetaJoin,
@@ -84,7 +84,7 @@ from queries.services.ra.parser.ast import (
                 ),
             ),
             """
-            SELECT * 
+            SELECT *
             FROM employee NATURAL JOIN department
             ORDER BY age DESC
             LIMIT 2
@@ -150,13 +150,13 @@ from queries.services.ra.parser.ast import (
             ),
             """
             SELECT * FROM employee
-            WHERE (age = 25 OR age = 30) 
+            WHERE (age = 25 OR age = 30)
                   AND NOT name = 'Carol'
             """,
         ),
     ],
 )
 def test_complex_ra_execution(
-    ra_ast: RAExpression, expected_sql: str, assert_equivalent: Callable[[RAExpression, str], None]
+    ra_ast: RAQuery, expected_sql: str, assert_equivalent: Callable[[RAQuery, str], None]
 ) -> None:
     assert_equivalent(ra_ast, expected_sql)
