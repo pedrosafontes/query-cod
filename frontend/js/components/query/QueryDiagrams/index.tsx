@@ -72,6 +72,7 @@ const QueryDiagrams = ({ databaseId, tree, children }: QueryDiagramsProps) => {
     >
       <Panel position="top-right">
         <Tabs
+          className="shadow rounded"
           value={diagram}
           onValueChange={(value) => setDiagram(value as DigramEnum)}
         >
@@ -82,7 +83,12 @@ const QueryDiagrams = ({ databaseId, tree, children }: QueryDiagramsProps) => {
         </Tabs>
       </Panel>
       <Background />
-      <Controls position="top-left" />
+      <Controls
+        className="shadow rounded overflow-hidden"
+        orientation="horizontal"
+        position="top-left"
+        showInteractive={false}
+      />
       <Panel className="w-full pb-2 pr-8" position="bottom-left">
         {children}
       </Panel>
