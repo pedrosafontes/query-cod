@@ -1,6 +1,11 @@
 import { ReactFlowProvider } from "@xyflow/react";
 import { useEffect, useState } from "react";
 
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query, QueryResultData } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
@@ -69,8 +74,8 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
   }, [queryId]);
 
   return (
-    <div className="flex h-full">
-      <div className="w-[400px] px-3 py-5 h-full border-r overflow-auto">
+    <ResizablePanelGroup direction="horizontal">
+      <ResizablePanel className="min-w-[400px] px-3 py-5" defaultSize={0}>
         <div className="flex justify-between mb-5 w-full">
           {query && (
             <QueryLanguageTabs
@@ -101,8 +106,9 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
         {query && (
           <QueryEditor key={query.id} query={query} setQuery={setQuery} />
         )}
-      </div>
-      <div className="flex-1 h-full w-full bg-gray-50">
+      </ResizablePanel>
+      <ResizableHandle withHandle />
+      <ResizablePanel className="bg-gray-50">
         <ReactFlowProvider>
           <QueryDiagrams databaseId={databaseId} tree={query?.tree}>
             {queryResult && (
@@ -110,8 +116,8 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
             )}
           </QueryDiagrams>
         </ReactFlowProvider>
-      </div>
-    </div>
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 };
 
