@@ -7,14 +7,14 @@ from queries.utils.tokens import to_error_position
 from sqlalchemy.exc import SQLAlchemyError
 from sqlglot.errors import ParseError, SqlglotError
 
-from ..types import SQLStatement, to_relational_schema
+from ..types import SQLQuery, to_relational_schema
 from .semantics import SQLSemanticAnalyzer
 from .semantics.errors import SQLSemanticError
 
 
 def validate_sql(
     query_text: str, db: DatabaseConnectionInfo
-) -> tuple[QueryValidationResult, SQLStatement | None]:
+) -> tuple[QueryValidationResult, SQLQuery | None]:
     if not query_text.strip():
         return {'executable': False}, None
 

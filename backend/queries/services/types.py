@@ -88,5 +88,5 @@ def to_sqlglot_schema(schema: RelationalSchema) -> dict[str, dict[str, SQLGlotDa
     }
 
 
-SQLStatement = Select | Union | Intersect | Except
-QueryAST = RAQuery | SQLStatement
+SQLQuery = Select | Union | Intersect | Except
+QueryAST = RAQuery | SQLQuery

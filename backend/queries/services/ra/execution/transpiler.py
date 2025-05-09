@@ -1,6 +1,6 @@
 from collections.abc import Callable
 
-from queries.services.types import RelationalSchema, SQLStatement
+from queries.services.types import RelationalSchema, SQLQuery
 from sqlglot.expressions import (
     EQ,
     Boolean,
@@ -46,7 +46,7 @@ class RAtoSQLTranspiler:
     def __init__(self, schema: RelationalSchema):
         self._schema_inferrer = SchemaInferrer(schema)
 
-    def transpile(self, expr: RAQuery) -> SQLStatement:
+    def transpile(self, expr: RAQuery) -> SQLQuery:
         method: Callable[[RAQuery], Select] = getattr(self, f'_transpile_{type(expr).__name__}')
         return method(expr)
 
@@ -127,7 +127,7 @@ class RAtoSQLTranspiler:
         else:
             return str(comparison)  # Numbers and other literals
 
-    def _transpile_SetOperation(self, op: SetOperation) -> SQLStatement:  # noqa: N802
+    def _transpile_SetOperation(self, op: SetOperation) -> SQLQuery:  # noqa: N802
         left = self.transpile(op.left)
         right = self.transpile(op.right)
 
