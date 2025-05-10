@@ -17,7 +17,7 @@ def validate_ra(
         return {'executable': False}, None
 
     try:
-        expr = parse_ra(query_text)
+        query = parse_ra(query_text)
     except RASyntaxError as e:
         syntax_error: QueryError = {'title': e.title}
         if e.description:
@@ -29,7 +29,7 @@ def validate_ra(
 
     try:
         schema = to_relational_schema(get_schema(db))
-        RASemanticAnalyzer(schema).validate(expr)
+        RASemanticAnalyzer(schema).validate(query)
     except RASemanticError as e:
         semantic_error: QueryError = {'title': e.title}
         if e.description:
@@ -41,6 +41,6 @@ def validate_ra(
         return {
             'executable': False,
             'errors': [semantic_error],
-        }, expr
+        }, query
 
-    return {'executable': True}, expr
+    return {'executable': True}, query

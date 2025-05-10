@@ -55,18 +55,18 @@ class RATransformer(Transformer[Relation, RAQuery]):
         return ident.replace('\\', '')
 
     def projection(self, args: tuple[list[Attribute], RAQuery]) -> Projection:
-        attrs, expr = args
-        return Projection(attributes=attrs, expression=expr)
+        attrs, query = args
+        return Projection(attributes=attrs, expression=query)
 
     def selection(self, args: tuple[BooleanExpression, RAQuery]) -> Selection:
-        condition, expr = args
-        return Selection(condition=condition, expression=expr)
+        condition, query = args
+        return Selection(condition=condition, expression=query)
 
     def grouped_aggregation(
         self, args: tuple[list[Attribute], list[Aggregation], RAQuery]
     ) -> GroupedAggregation:
-        group_by, aggregations, expr = args
-        return GroupedAggregation(group_by=group_by, aggregations=aggregations, expression=expr)
+        group_by, aggregations, query = args
+        return GroupedAggregation(group_by=group_by, aggregations=aggregations, expression=query)
 
     def aggregation(self, args: tuple[Attribute, AggregationFunction, Attribute]) -> Aggregation:
         return Aggregation(
@@ -91,8 +91,8 @@ class RATransformer(Transformer[Relation, RAQuery]):
         return AggregationFunction.MAX
 
     def topn(self, args: tuple[Token, Attribute, RAQuery]) -> TopN:
-        limit, attr, expr = args
-        return TopN(limit=int(limit), attribute=attr, expression=expr)
+        limit, attr, query = args
+        return TopN(limit=int(limit), attribute=attr, expression=query)
 
     def union(self, args: tuple[RAQuery, RAQuery]) -> SetOperation:
         return SetOperation(operator=SetOperator.UNION, left=args[0], right=args[1])
@@ -165,10 +165,10 @@ class RATransformer(Transformer[Relation, RAQuery]):
     def item_list(self, args: list[Any]) -> list[Any]:
         return args
 
-    def expr(self, args: tuple[RAQuery]) -> RAQuery:
+    def query(self, args: tuple[RAQuery]) -> RAQuery:
         return args[0]
 
-    def sub_expr(self, args: tuple[RAQuery]) -> RAQuery:
+    def sub_query(self, args: tuple[RAQuery]) -> RAQuery:
         return args[0]
 
     def IDENT(self, token: Token) -> str:  # noqa: N802

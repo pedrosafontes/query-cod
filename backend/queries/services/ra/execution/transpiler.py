@@ -46,9 +46,9 @@ class RAtoSQLTranspiler:
     def __init__(self, schema: RelationalSchema):
         self._schema_inferrer = SchemaInferrer(schema)
 
-    def transpile(self, expr: RAQuery) -> SQLQuery:
-        method: Callable[[RAQuery], Select] = getattr(self, f'_transpile_{type(expr).__name__}')
-        return method(expr)
+    def transpile(self, query: RAQuery) -> SQLQuery:
+        method: Callable[[RAQuery], Select] = getattr(self, f'_transpile_{type(query).__name__}')
+        return method(query)
 
     def _transpile_Relation(self, rel: Relation) -> Select:  # noqa: N802
         return select('*').from_(rel.name)
@@ -87,8 +87,8 @@ class RAtoSQLTranspiler:
 
     def _transpile_Division(self, div: Division) -> Expression:  # noqa: N802
         # Get tables with aliases
-        dividend, dividend_alias = self._transpile_table(div.dividend, 'dividend')
-        dividend_sub, dividend_sub_alias = self._transpile_table(div.dividend, 'dividend_sub')
+        dividend, dividend_alias = self._transpile_relation(div.dividend, 'dividend')
+        dividend_sub, dividend_sub_alias = self._transpile_relation(div.dividend, 'dividend_sub')
 
         # Clear expressions
         dividend.set('expressions', [])
@@ -148,7 +148,7 @@ class RAtoSQLTranspiler:
                     return left.join(right, join_type='CROSS', join_alias='r')
 
     def _transpile_Join(self, join: Join) -> Select:  # noqa: N802
-        left, left_alias = self._transpile_table(join.left, alias='l')
+        left, left_alias = self._transpile_relation(join.left, alias='l')
 
         match join.operator:
             case JoinOperator.NATURAL:
@@ -161,7 +161,7 @@ class RAtoSQLTranspiler:
                     return left.join(right, join_type='NATURAL', join_alias='r')
 
             case JoinOperator.SEMI:
-                right, right_alias = self._transpile_table(join.right, 'r')
+                right, right_alias = self._transpile_relation(join.right, 'r')
                 common = self._common_attrs(join.left, join.right)
 
                 return left.where(
@@ -179,7 +179,7 @@ class RAtoSQLTranspiler:
                 )
 
     def _transpile_ThetaJoin(self, join: ThetaJoin) -> Select:  # noqa: N802
-        left, left_alias = self._transpile_table(join.left, 'l')
+        left, left_alias = self._transpile_relation(join.left, 'l')
 
         # rename the attributes in the left relation to use the alias
         left_schema = self._schema_inferrer.infer(join.left).schema
@@ -231,21 +231,21 @@ class RAtoSQLTranspiler:
         query = self._transpile_select(top_n.expression)
         return query.limit(top_n.limit).order_by(self._transpile_attribute(top_n.attribute).desc())
 
-    def _transpile_table(self, expr: RAQuery, alias: str) -> tuple[Select, str]:
-        select = self._transpile_select(expr)
-        if isinstance(expr, Relation):
-            # expr is a base table
-            return select, expr.name
+    def _transpile_relation(self, relation: RAQuery, alias: str) -> tuple[Select, str]:
+        select = self._transpile_select(relation)
+        if isinstance(relation, Relation):
+            # relation is a base table
+            return select, relation.name
         else:
-            # expr is a derived relation; therefore, it needs to be aliased
+            # relation is a derived relation; therefore, it needs to be aliased
             return subquery(select, alias).select('*'), alias
 
-    def _transpile_select(self, expr: RAQuery) -> Select:
-        query = self.transpile(expr)
-        if isinstance(query, Select):
-            return query
+    def _transpile_select(self, query: RAQuery) -> Select:
+        sql_query = self.transpile(query)
+        if isinstance(sql_query, Select):
+            return sql_query
         else:
-            return subquery(query, 'set_op').select('*')
+            return subquery(sql_query, 'set_op').select('*')
 
     def _common_attrs(self, left: RAQuery, right: RAQuery) -> list[str]:
         l_output = self._schema_inferrer.infer(left)

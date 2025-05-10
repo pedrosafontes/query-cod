@@ -50,11 +50,11 @@ class RATreeConverter:
     def __init__(self) -> None:
         self._counter = 0
 
-    def convert(self, expr: RAQuery) -> RATree:
+    def convert(self, query: RAQuery) -> RATree:
         next_id = self._counter
         self._counter += 1
-        method: Callable[[RAQuery, int], RATree] = getattr(self, f'_convert_{type(expr).__name__}')
-        return method(expr, next_id)
+        method: Callable[[RAQuery, int], RATree] = getattr(self, f'_convert_{type(query).__name__}')
+        return method(query, next_id)
 
     def _convert_Relation(self, rel: Relation, node_id: int) -> RATree:  # noqa: N802
         return {

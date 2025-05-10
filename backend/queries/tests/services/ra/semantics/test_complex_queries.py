@@ -15,7 +15,7 @@ from queries.services.types import RelationalSchema
 
 
 @pytest.mark.parametrize(
-    'expr',
+    'query',
     [
         Projection(
             attributes=[
@@ -41,6 +41,6 @@ from queries.services.types import RelationalSchema
         ),
     ],
 )
-def test_valid_complex_queries(expr: RAQuery, schema: RelationalSchema) -> None:
+def test_valid_complex_queries(query: RAQuery, schema: RelationalSchema) -> None:
     analyzer = RASemanticAnalyzer(schema)
-    analyzer.validate(expr)
+    analyzer.validate(query)

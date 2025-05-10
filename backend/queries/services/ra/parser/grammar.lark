@@ -1,29 +1,29 @@
-?expr: set_expr
+?query: set_op
 
-?set_expr: join_expr
-         | set_expr _UNION join_expr     -> union
-         | set_expr _DIFF join_expr      -> difference
-         | set_expr _INTERSECT join_expr -> intersection
-         | set_expr _CARTESIAN join_expr -> cartesian
+?set_op: join
+       | set_op _UNION join     -> union
+       | set_op _DIFF join      -> difference
+       | set_op _INTERSECT join -> intersection
+       | set_op _CARTESIAN join -> cartesian
 
-?join_expr: unary_expr
-          | join_expr _NATURAL_JOIN unary_expr    -> natural_join
-          | join_expr _theta_join_op unary_expr   -> theta_join
-          | join_expr _SEMIJOIN unary_expr        -> semi_join
-          | join_expr _DIV unary_expr             -> division
+?join: unary_op
+     | join _NATURAL_JOIN unary_op  -> natural_join
+     | join _theta_join_op unary_op -> theta_join
+     | join _SEMIJOIN unary_op      -> semi_join
+     | join _DIV unary_op           -> division
 
-?unary_expr: projection
-           | selection
-           | grouped_aggregation
-           | topn
-           | sub_expr
+?unary_op: projection
+         | selection
+         | grouped_aggregation
+         | topn
+         | sub_query
 
-?sub_expr: relation
-         | _LPAREN expr _RPAREN
+?sub_query: relation
+          | _LPAREN query _RPAREN
 
-projection: _PI _subscript{nonempty_list{attribute}} unary_expr
+projection: _PI _subscript{nonempty_list{attribute}} unary_op
 
-selection: _SIGMA _subscript{bool_expr} unary_expr
+selection: _SIGMA _subscript{bool_expr} unary_op
 
 ?bool_expr: and_expr
           | bool_expr "\\lor" and_expr -> or_
@@ -49,7 +49,7 @@ comparator: "=" -> eq
       | _text{ESCAPED_STRING} -> string
       | attribute
 
-grouped_aggregation: _GAMMA _subscript{_grouped_aggregation_params} unary_expr
+grouped_aggregation: _GAMMA _subscript{_grouped_aggregation_params} unary_op
 _grouped_aggregation_params: _LPAREN _grouping_attrs "," _aggregations _RPAREN
 _grouping_attrs: _LPAREN list{attribute} _RPAREN
 _aggregations: _LPAREN nonempty_list{aggregation} _RPAREN
@@ -60,7 +60,7 @@ aggregation_function: "count" -> count
                     | "min" -> min
                     | "max" -> max
 
-topn: _TOPN _subscript{_topn_params} unary_expr
+topn: _TOPN _subscript{_topn_params} unary_op
 _topn_params: _LPAREN INT "," attribute _RPAREN
 
 _theta_join_op: _overset{bool_expr, "\\bowtie"}

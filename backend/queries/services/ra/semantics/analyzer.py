@@ -44,12 +44,12 @@ class RASemanticAnalyzer:
         self.schema = schema
         self._schema_inferrer = SchemaInferrer(schema)
 
-    def validate(self, expr: RAQuery) -> None:
-        self._validate(expr)
+    def validate(self, query: RAQuery) -> None:
+        self._validate(query)
 
-    def _validate(self, expr: RAQuery) -> None:
-        method: Callable[[RAQuery], None] = getattr(self, f'_validate_{type(expr).__name__}')
-        return method(expr)
+    def _validate(self, query: RAQuery) -> None:
+        method: Callable[[RAQuery], None] = getattr(self, f'_validate_{type(query).__name__}')
+        return method(query)
 
     def _validate_Relation(self, rel: Relation) -> None:  # noqa: N802
         if rel.name not in self.schema:

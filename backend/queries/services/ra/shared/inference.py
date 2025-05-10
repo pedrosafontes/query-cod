@@ -27,11 +27,11 @@ class SchemaInferrer:
         self.schema = schema
         self._cache: dict[int, RelationOutput] = {}
 
-    def infer(self, expr: RAQuery) -> RelationOutput:
-        key = id(expr)
+    def infer(self, query: RAQuery) -> RelationOutput:
+        key = id(query)
         if key not in self._cache:
-            method = getattr(self, f'_infer_{type(expr).__name__}')
-            self._cache[key] = method(expr)
+            method = getattr(self, f'_infer_{type(query).__name__}')
+            self._cache[key] = method(query)
         return self._cache[key]
 
     def _infer_Relation(self, rel: Relation) -> RelationOutput:  # noqa: N802

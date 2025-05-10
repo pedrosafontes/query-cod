@@ -32,7 +32,7 @@ with grammar_path.open() as f:
 
 parser = Lark(
     grammar,
-    start='expr',
+    start='query',
     parser='lalr',
     propagate_positions=True,
     cache=True,
