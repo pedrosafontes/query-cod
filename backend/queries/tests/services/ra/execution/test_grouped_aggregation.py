@@ -6,7 +6,7 @@ from queries.services.ra.parser.ast import (
     AggregationFunction,
     Attribute,
     GroupedAggregation,
-    RAExpression,
+    RAQuery,
     Relation,
 )
 
@@ -25,7 +25,7 @@ from queries.services.ra.parser.ast import (
                         output='num_employees',
                     ),
                 ],
-                expression=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             'SELECT COUNT(id) AS num_employees FROM employee',
         ),
@@ -40,7 +40,7 @@ from queries.services.ra.parser.ast import (
                         output='num_employees',
                     ),
                 ],
-                expression=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             'SELECT dept_id, COUNT(id) AS num_employees FROM employee GROUP BY dept_id',
         ),
@@ -53,7 +53,7 @@ from queries.services.ra.parser.ast import (
                     Aggregation(Attribute('age'), AggregationFunction.MIN, 'min_age'),
                     Aggregation(Attribute('age'), AggregationFunction.MAX, 'max_age'),
                 ],
-                expression=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             (
                 'SELECT dept_id, AVG(age) AS avg_age, MIN(age) AS min_age, MAX(age) AS max_age '
@@ -67,13 +67,13 @@ from queries.services.ra.parser.ast import (
                 aggregations=[
                     Aggregation(Attribute('age'), AggregationFunction.AVG, 'avg_age'),
                 ],
-                expression=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             'SELECT AVG(age) AS avg_age FROM employee',
         ),
     ],
 )
 def test_grouped_aggregation_execution(
-    ra_ast: RAExpression, expected_sql: str, assert_equivalent: Callable[[RAExpression, str], None]
+    ra_ast: RAQuery, expected_sql: str, assert_equivalent: Callable[[RAQuery, str], None]
 ) -> None:
     assert_equivalent(ra_ast, expected_sql)

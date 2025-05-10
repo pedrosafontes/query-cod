@@ -5,7 +5,7 @@ from queries.services.ra.parser.ast import (
     Attribute,
     Comparison,
     ComparisonOperator,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     TopN,
@@ -20,7 +20,7 @@ from queries.services.ra.parser.ast import (
             TopN(
                 limit=2,
                 attribute=Attribute(name='age'),
-                expression=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             'SELECT * FROM employee ORDER BY age DESC LIMIT 2',
         ),
@@ -29,7 +29,7 @@ from queries.services.ra.parser.ast import (
             TopN(
                 limit=10,
                 attribute=Attribute(name='dept_name'),
-                expression=Relation(name='department'),
+                subquery=Relation(name='department'),
             ),
             'SELECT * FROM department ORDER BY dept_name DESC LIMIT 10',
         ),
@@ -38,13 +38,13 @@ from queries.services.ra.parser.ast import (
             TopN(
                 limit=2,
                 attribute=Attribute(name='age'),
-                expression=Selection(
+                subquery=Selection(
                     condition=Comparison(
                         operator=ComparisonOperator.EQUAL,
                         left=Attribute(name='dept_id'),
                         right=1,
                     ),
-                    expression=Relation(name='employee'),
+                    subquery=Relation(name='employee'),
                 ),
             ),
             'SELECT * FROM (SELECT * FROM employee WHERE dept_id = 1) ORDER BY age DESC LIMIT 2',
@@ -52,6 +52,6 @@ from queries.services.ra.parser.ast import (
     ],
 )
 def test_top_n_execution(
-    ra_ast: RAExpression, expected_sql: str, assert_equivalent: Callable[[RAExpression, str], None]
+    ra_ast: RAQuery, expected_sql: str, assert_equivalent: Callable[[RAQuery, str], None]
 ) -> None:
     assert_equivalent(ra_ast, expected_sql)

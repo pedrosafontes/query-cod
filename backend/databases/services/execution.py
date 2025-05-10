@@ -1,9 +1,9 @@
 from databases.models import DatabaseConnectionInfo
-from databases.types import QueryExecutionResult
+from databases.types import QueryResult
 from sqlalchemy import text as sql_text
 
 
-def execute_sql(sql: str, db: DatabaseConnectionInfo) -> QueryExecutionResult:
+def execute_sql(sql: str, db: DatabaseConnectionInfo) -> QueryResult:
     engine = db.to_sqlalchemy_engine()
 
     with engine.connect() as conn:

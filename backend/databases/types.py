@@ -3,7 +3,7 @@ from typing import Any, TypedDict
 from ra_sql_visualisation.types import DataType
 
 
-class QueryExecutionResult(TypedDict):
+class QueryResult(TypedDict):
     columns: list[str]
     rows: list[list[Any]]
 

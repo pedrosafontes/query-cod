@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 import pytest
-from queries.services.ra.parser.ast import RAExpression, Relation, SetOperation, SetOperator
+from queries.services.ra.parser.ast import RAQuery, Relation, SetOperation, SetOperator
 from queries.services.ra.semantics.errors import UnionCompatibilityError
 
 
@@ -14,9 +14,7 @@ from queries.services.ra.semantics.errors import UnionCompatibilityError
         SetOperation(SetOperator.DIFFERENCE, Relation('R'), Relation('U')),
     ],
 )
-def test_valid_set_operation(
-    query: RAExpression, assert_valid: Callable[[RAExpression], None]
-) -> None:
+def test_valid_set_operation(query: RAQuery, assert_valid: Callable[[RAQuery], None]) -> None:
     assert_valid(query)
 
 
@@ -38,8 +36,8 @@ def test_valid_set_operation(
     ],
 )
 def test_invalid_set_operation(
-    query: RAExpression,
+    query: RAQuery,
     expected_exception: type[Exception],
-    assert_invalid: Callable[[RAExpression, type[Exception]], None],
+    assert_invalid: Callable[[RAQuery, type[Exception]], None],
 ) -> None:
     assert_invalid(query, expected_exception)

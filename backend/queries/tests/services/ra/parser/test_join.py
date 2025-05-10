@@ -8,7 +8,7 @@ from queries.services.ra.parser.ast import (
     ComparisonOperator,
     Join,
     JoinOperator,
-    RAExpression,
+    RAQuery,
     Relation,
     ThetaJoin,
 )
@@ -70,7 +70,7 @@ from queries.services.ra.parser.errors import (
         ),
     ],
 )
-def test_valid_join(query: str, expected: RAExpression) -> None:
+def test_valid_join(query: str, expected: RAQuery) -> None:
     assert parse_ra(query) == expected
 
 

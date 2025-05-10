@@ -4,7 +4,7 @@ from queries.services.ra.parser.ast import (
     Attribute,
     Comparison,
     ComparisonOperator,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     TopN,
@@ -20,26 +20,26 @@ from queries.services.ra.parser.errors import (
     [
         (
             '\\operatorname{T}_{(5,score)} R',
-            TopN(limit=5, attribute=Attribute('score'), expression=Relation('R')),
+            TopN(limit=5, attribute=Attribute('score'), subquery=Relation('R')),
         ),
         (
             "\\operatorname{T}_{(10,price)} (\\sigma_{category = \\text{'electronics'}} Products)",
             TopN(
                 limit=10,
                 attribute=Attribute('price'),
-                expression=Selection(
+                subquery=Selection(
                     condition=Comparison(
                         operator=ComparisonOperator.EQUAL,
                         left=Attribute('category'),
                         right='electronics',
                     ),
-                    expression=Relation('Products'),
+                    subquery=Relation('Products'),
                 ),
             ),
         ),
     ],
 )
-def test_valid_top_n(query: str, expected: RAExpression) -> None:
+def test_valid_top_n(query: str, expected: RAQuery) -> None:
     assert parse_ra(query) == expected
 
 

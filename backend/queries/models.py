@@ -1,19 +1,13 @@
 from django.db import models
+from django.utils.functional import cached_property
 
 from common.models import IndexedTimeStampedModel
-from databases.services.execution import execute_sql
-from databases.types import QueryExecutionResult
-from databases.utils.conversion import from_model
 from projects.models import Project
-from queries.services.ra.parser import parse_ra
-from queries.services.ra.parser.errors.base import RASyntaxError
-from queries.services.ra.tree.converter import RATreeConverter
-from queries.services.ra.tree.types import RATree
-from queries.types import QueryError, QueryValidationResult
 
-from .services.ra.execution import execute_ra
-from .services.ra.validation import validate_ra
-from .services.sql.validation import validate_sql
+from .services.ra.tree.types import RATree
+from .services.subquery import Subqueries, get_subqueries
+from .services.types import QueryAST
+from .types import QueryError
 
 
 class Query(IndexedTimeStampedModel):
@@ -31,42 +25,36 @@ class Query(IndexedTimeStampedModel):
         default=QueryLanguage.SQL,
     )
 
-    def execute(self) -> QueryExecutionResult:
-        match self.language:
-            case Query.QueryLanguage.SQL:
-                return execute_sql(self.sql_text, from_model(self.project.database))
-            case Query.QueryLanguage.RA:
-                return execute_ra(self.ra_text, from_model(self.project.database))
-            case _:
-                raise ValueError(f'Unsupported query language: {self.language}')
+    @cached_property
+    def validation_result(self) -> tuple[QueryAST | None, list[QueryError]]:
+        from .services.validation import validate_query
 
-    def validate(self) -> QueryValidationResult:
-        db = from_model(self.project.database)
-        match self.language:
-            case Query.QueryLanguage.SQL:
-                return validate_sql(self.sql_text, db)
-            case Query.QueryLanguage.RA:
-                return validate_ra(self.ra_text, db)
-            case _:
-                raise ValueError(f'Unsupported query language: {self.language}')
+        return validate_query(self)
+
+    @property
+    def is_executable(self) -> bool:
+        ast, errors = self.validation_result
+        return ast is not None and not errors
+
+    @property
+    def ast(self) -> QueryAST | None:
+        ast, _ = self.validation_result
+        return ast
 
     @property
     def validation_errors(self) -> list[QueryError]:
-        return self.validate().get('errors', [])
+        _, errors = self.validation_result
+        return errors
 
     @property
     def tree(self) -> RATree | None:
-        match self.language:
-            case Query.QueryLanguage.SQL:
-                return None
-            case Query.QueryLanguage.RA:
-                try:
-                    ast = parse_ra(self.ra_text)
-                    return RATreeConverter().convert(ast)
-                except RASyntaxError:
-                    return None
-            case _:
-                raise ValueError(f'Unsupported query language: {self.language}')
+        from .services.tree import transform_ast
+
+        return transform_ast(self.ast) if self.ast else None
+
+    @property
+    def subqueries(self) -> Subqueries:
+        return get_subqueries(self.ast) if self.ast else {}
 
     class Meta:
         ordering = [  # noqa: RUF012

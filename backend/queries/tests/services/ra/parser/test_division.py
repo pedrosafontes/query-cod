@@ -4,7 +4,7 @@ from queries.services.ra.parser.ast import (
     Attribute,
     Division,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
 )
 from queries.services.ra.parser.errors import (
@@ -31,7 +31,7 @@ from queries.services.ra.parser.errors import (
         ),
     ],
 )
-def test_valid_division(query: str, expected: RAExpression) -> None:
+def test_valid_division(query: str, expected: RAQuery) -> None:
     assert parse_ra(query) == expected
 
 

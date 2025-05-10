@@ -4,7 +4,7 @@ import pytest
 from queries.services.ra.parser.ast import (
     Attribute,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     SetOperation,
     SetOperator,
@@ -69,11 +69,11 @@ from queries.services.ra.parser.ast import (
                 operator=SetOperator.UNION,
                 left=Projection(
                     attributes=[Attribute(name='dept_name')],
-                    expression=Relation(name='department'),
+                    subquery=Relation(name='department'),
                 ),
                 right=Projection(
                     attributes=[Attribute(name='name')],
-                    expression=Relation(name='employee'),
+                    subquery=Relation(name='employee'),
                 ),
             ),
             'SELECT dept_name FROM department UNION SELECT name FROM employee',
@@ -84,11 +84,11 @@ from queries.services.ra.parser.ast import (
                 operator=SetOperator.DIFFERENCE,
                 left=Projection(
                     attributes=[Attribute(name='dept_name')],
-                    expression=Relation(name='department'),
+                    subquery=Relation(name='department'),
                 ),
                 right=Projection(
                     attributes=[Attribute(name='name')],
-                    expression=Relation(name='employee'),
+                    subquery=Relation(name='employee'),
                 ),
             ),
             'SELECT dept_name FROM department EXCEPT SELECT name FROM employee',
@@ -105,6 +105,6 @@ from queries.services.ra.parser.ast import (
     ],
 )
 def test_set_operation_execution(
-    ra_ast: RAExpression, expected_sql: str, assert_equivalent: Callable[[RAExpression, str], None]
+    ra_ast: RAQuery, expected_sql: str, assert_equivalent: Callable[[RAQuery, str], None]
 ) -> None:
     assert_equivalent(ra_ast, expected_sql)

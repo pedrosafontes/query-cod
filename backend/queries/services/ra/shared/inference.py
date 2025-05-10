@@ -9,7 +9,7 @@ from ..parser.ast import (
     GroupedAggregation,
     Join,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     SetOperation,
@@ -27,11 +27,11 @@ class SchemaInferrer:
         self.schema = schema
         self._cache: dict[int, RelationOutput] = {}
 
-    def infer(self, expr: RAExpression) -> RelationOutput:
-        key = id(expr)
+    def infer(self, query: RAQuery) -> RelationOutput:
+        key = id(query)
         if key not in self._cache:
-            method = getattr(self, f'_infer_{type(expr).__name__}')
-            self._cache[key] = method(expr)
+            method = getattr(self, f'_infer_{type(query).__name__}')
+            self._cache[key] = method(query)
         return self._cache[key]
 
     def _infer_Relation(self, rel: Relation) -> RelationOutput:  # noqa: N802
@@ -41,7 +41,7 @@ class SchemaInferrer:
         )
 
     def _infer_Projection(self, proj: Projection) -> RelationOutput:  # noqa: N802
-        input_ = self.infer(proj.expression)
+        input_ = self.infer(proj.subquery)
         output_schema: RelationalSchema = defaultdict(Attributes)
         output_attrs = []
         for attr in proj.attributes:
@@ -51,7 +51,7 @@ class SchemaInferrer:
         return RelationOutput(output_schema, output_attrs)
 
     def _infer_Selection(self, sel: Selection) -> RelationOutput:  # noqa: N802
-        return self.infer(sel.expression)
+        return self.infer(sel.subquery)
 
     def _infer_SetOperation(self, op: SetOperation) -> RelationOutput:  # noqa: N802
         left = self.infer(op.left)
@@ -104,7 +104,7 @@ class SchemaInferrer:
         return RelationOutput(output_schema, output_attrs)
 
     def _infer_GroupedAggregation(self, agg: GroupedAggregation) -> RelationOutput:  # noqa: N802
-        input_ = self.infer(agg.expression)
+        input_ = self.infer(agg.subquery)
         output_schema: RelationalSchema = defaultdict(Attributes)
         output_attrs = []
 
@@ -122,4 +122,4 @@ class SchemaInferrer:
         return RelationOutput(output_schema, output_attrs)
 
     def _infer_TopN(self, top: TopN) -> RelationOutput:  # noqa: N802
-        return self.infer(top.expression)
+        return self.infer(top.subquery)

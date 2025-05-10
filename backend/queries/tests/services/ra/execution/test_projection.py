@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 import pytest
-from queries.services.ra.parser.ast import Attribute, Projection, RAExpression, Relation
+from queries.services.ra.parser.ast import Attribute, Projection, RAQuery, Relation
 
 
 @pytest.mark.parametrize(
@@ -11,7 +11,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAExpression, 
         (
             Projection(
                 attributes=[Attribute(name='dept_name', relation='department')],
-                expression=Relation(name='department'),
+                subquery=Relation(name='department'),
             ),
             'SELECT dept_name FROM department',
         ),
@@ -19,7 +19,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAExpression, 
         (
             Projection(
                 attributes=[Attribute(name='dept_name')],
-                expression=Relation(name='department'),
+                subquery=Relation(name='department'),
             ),
             'SELECT dept_name FROM department',
         ),
@@ -30,7 +30,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAExpression, 
                     Attribute(name='dept_id'),
                     Attribute(name='dept_name'),
                 ],
-                expression=Relation(name='department'),
+                subquery=Relation(name='department'),
             ),
             'SELECT dept_id, dept_name FROM department',
         ),
@@ -41,13 +41,13 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAExpression, 
                     Attribute(name='name'),
                     Attribute(name='name'),
                 ],
-                expression=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             'SELECT name, name FROM employee',
         ),
     ],
 )
 def test_projection_execution(
-    ra_ast: RAExpression, expected_sql: str, assert_equivalent: Callable[[RAExpression, str], None]
+    ra_ast: RAQuery, expected_sql: str, assert_equivalent: Callable[[RAQuery, str], None]
 ) -> None:
     assert_equivalent(ra_ast, expected_sql)

@@ -5,7 +5,7 @@ from queries.services.ra.parser.ast import (
     Attribute,
     Comparison,
     ComparisonOperator,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
 )
@@ -17,5 +17,5 @@ from queries.services.ra.parser.ast import (
         Selection(Comparison(ComparisonOperator.GREATER_THAN, Attribute('A'), 10), Relation('R')),
     ],
 )
-def test_valid_selection(query: RAExpression, assert_valid: Callable[[RAExpression], None]) -> None:
+def test_valid_selection(query: RAQuery, assert_valid: Callable[[RAQuery], None]) -> None:
     assert_valid(query)

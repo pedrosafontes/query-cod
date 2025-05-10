@@ -5,7 +5,7 @@ from queries.services.ra.parser.ast import (
     AggregationFunction,
     Attribute,
     GroupedAggregation,
-    RAExpression,
+    RAQuery,
     Relation,
 )
 from queries.services.ra.parser.errors import (
@@ -31,7 +31,7 @@ from queries.services.ra.parser.errors import (
                         output='x',
                     )
                 ],
-                expression=Relation('R'),
+                subquery=Relation('R'),
             ),
         ),
         (
@@ -43,7 +43,7 @@ from queries.services.ra.parser.errors import (
                     Aggregation(Attribute('salary'), AggregationFunction.MAX, 'max_sal'),
                     Aggregation(Attribute('salary'), AggregationFunction.MIN, 'min_sal'),
                 ],
-                expression=Relation('Employee'),
+                subquery=Relation('Employee'),
             ),
         ),
         (
@@ -57,12 +57,12 @@ from queries.services.ra.parser.errors import (
                         output='avg_sal',
                     )
                 ],
-                expression=Relation('Employee'),
+                subquery=Relation('Employee'),
             ),
         ),
     ],
 )
-def test_valid_grouped_aggregations(query: str, expected: RAExpression) -> None:
+def test_valid_grouped_aggregations(query: str, expected: RAQuery) -> None:
     assert parse_ra(query) == expected
 
 
@@ -90,7 +90,7 @@ def test_aggregation_functions(
                 output='out',
             )
         ],
-        expression=Relation('Employee'),
+        subquery=Relation('Employee'),
     )
 
 

@@ -14,7 +14,7 @@ from queries.services.ra.parser.ast import (
     JoinOperator,
     NotExpression,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     SetOperation,
@@ -50,13 +50,11 @@ class RATreeConverter:
     def __init__(self) -> None:
         self._counter = 0
 
-    def convert(self, expr: RAExpression) -> RATree:
+    def convert(self, query: RAQuery) -> RATree:
         next_id = self._counter
         self._counter += 1
-        method: Callable[[RAExpression, int], RATree] = getattr(
-            self, f'_convert_{type(expr).__name__}'
-        )
-        return method(expr, next_id)
+        method: Callable[[RAQuery, int], RATree] = getattr(self, f'_convert_{type(query).__name__}')
+        return method(query, next_id)
 
     def _convert_Relation(self, rel: Relation, node_id: int) -> RATree:  # noqa: N802
         return {
@@ -69,14 +67,14 @@ class RATreeConverter:
         return {
             'id': node_id,
             'label': subscript(PI, attributes),
-            'sub_trees': [self.convert(proj.expression)],
+            'sub_trees': [self.convert(proj.subquery)],
         }
 
     def _convert_Selection(self, sel: Selection, node_id: int) -> RATree:  # noqa: N802
         return {
             'id': node_id,
             'label': subscript(SIGMA, self._convert_condition(sel.condition)),
-            'sub_trees': [self.convert(sel.expression)],
+            'sub_trees': [self.convert(sel.subquery)],
         }
 
     def _convert_Division(self, div: Division, node_id: int) -> RATree:  # noqa: N802
@@ -134,7 +132,7 @@ class RATreeConverter:
         return {
             'id': node_id,
             'label': subscript(GAMMA, f'(({group_by}), ({aggregations}))'),
-            'sub_trees': [self.convert(agg.expression)],
+            'sub_trees': [self.convert(agg.subquery)],
         }
 
     def _convert_TopN(self, top_n: TopN, node_id: int) -> RATree:  # noqa: N802
@@ -142,7 +140,7 @@ class RATreeConverter:
         return {
             'id': node_id,
             'label': subscript('T', f'({top_n.limit}, {attr})'),
-            'sub_trees': [self.convert(top_n.expression)],
+            'sub_trees': [self.convert(top_n.subquery)],
         }
 
     def _convert_attribute(self, attr: Attribute) -> str:

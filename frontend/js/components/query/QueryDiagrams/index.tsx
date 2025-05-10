@@ -10,7 +10,7 @@ import type { Edge, Node } from "@xyflow/react";
 import React, { useEffect, useState } from "react";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RATree } from "api";
+import { Query, QueryResultData } from "api";
 import "@xyflow/react/dist/style.css";
 import SchemaDiagramNode from "components/database/SchemaNode";
 import useSchemaDiagram from "components/database/useSchemaDiagram";
@@ -21,7 +21,8 @@ import useRAQueryDiagram from "./RAQueryDiagram/useRAQueryDiagram";
 
 export type QueryDiagramsProps = {
   databaseId: number;
-  tree?: RATree;
+  query?: Query;
+  setQueryResult: (result?: QueryResultData) => void;
   children?: React.ReactNode;
 };
 
@@ -32,7 +33,12 @@ const nodeTypes = {
 
 type DigramEnum = "schema" | "query";
 
-const QueryDiagrams = ({ databaseId, tree, children }: QueryDiagramsProps) => {
+const QueryDiagrams = ({
+  databaseId,
+  query,
+  setQueryResult,
+  children,
+}: QueryDiagramsProps) => {
   const [diagram, setDiagram] = useState<DigramEnum>("schema");
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -40,7 +46,10 @@ const QueryDiagrams = ({ databaseId, tree, children }: QueryDiagramsProps) => {
   const { nodes: schemaNodes, edges: schemaEdges } = useSchemaDiagram({
     databaseId,
   });
-  const { nodes: queryNodes, edges: queryEdges } = useRAQueryDiagram({ tree });
+  const { nodes: queryNodes, edges: queryEdges } = useRAQueryDiagram({
+    query,
+    setQueryResult,
+  });
 
   useEffect(() => {
     if (diagram === "schema") {

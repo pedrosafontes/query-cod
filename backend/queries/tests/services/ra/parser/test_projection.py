@@ -7,7 +7,7 @@ from queries.services.ra.parser.ast import (
     Join,
     JoinOperator,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
 )
@@ -43,19 +43,19 @@ from queries.services.ra.parser.errors import (
             "\\pi_{sname} (\\sigma_{color = \\text{'red'}} Boat)",
             Projection(
                 attributes=[Attribute('sname')],
-                expression=Selection(
+                subquery=Selection(
                     condition=Comparison(
                         operator=ComparisonOperator.EQUAL,
                         left=Attribute('color'),
                         right='red',
                     ),
-                    expression=Relation('Boat'),
+                    subquery=Relation('Boat'),
                 ),
             ),
         ),
     ],
 )
-def test_valid_projection(query: str, expected: RAExpression) -> None:
+def test_valid_projection(query: str, expected: RAQuery) -> None:
     assert parse_ra(query) == expected
 
 

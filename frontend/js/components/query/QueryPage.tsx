@@ -53,6 +53,7 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
   useEffect(() => {
     const fetchQuery = async () => {
       setIsLoading(true);
+      setQuery(undefined);
       setQueryResult(undefined);
       try {
         const result = await QueriesService.queriesRetrieve({
@@ -61,7 +62,6 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
         setQuery(result);
         setLoadingError(null);
       } catch (err) {
-        setQuery(undefined);
         if (err instanceof Error) {
           setLoadingError(err);
         }
@@ -110,10 +110,12 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
       <ResizableHandle withHandle />
       <ResizablePanel className="bg-gray-50">
         <ReactFlowProvider>
-          <QueryDiagrams databaseId={databaseId} tree={query?.tree}>
-            {queryResult && (
-              <QueryResult isLoading={isExecuting} result={queryResult} />
-            )}
+          <QueryDiagrams
+            databaseId={databaseId}
+            query={query}
+            setQueryResult={setQueryResult}
+          >
+            {queryResult && <QueryResult result={queryResult} />}
           </QueryDiagrams>
         </ReactFlowProvider>
       </ResizablePanel>

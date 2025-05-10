@@ -6,7 +6,7 @@ from _pytest.monkeypatch import MonkeyPatch
 from model_bakery import baker
 from projects.models import Project
 from queries.models import Query
-from queries.types import QueryValidationResult
+from queries.types import QueryError
 from queries.views import QueryViewSet
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -36,11 +36,11 @@ class TestQueryCRUD:
         self, auth_client: APIClient, user: User, monkeypatch: MonkeyPatch
     ) -> None:
         query = baker.make(Query, project__user=user)
-
-        def mock_validate() -> QueryValidationResult:
-            return {'valid': True, 'errors': []}
-
-        monkeypatch.setattr(query, 'validate', mock_validate)
+        errors = [QueryError(title='Error')]
+        monkeypatch.setattr(
+            'queries.models.Query.validation_result',
+            (None, errors),
+        )
 
         url = reverse('queries-detail', kwargs={'pk': query.id})
         response = auth_client.get(url)
@@ -53,18 +53,18 @@ class TestQueryCRUD:
         assert data['ra_text'] == query.ra_text
         assert parse_datetime(data['created']) == query.created
         assert parse_datetime(data['modified']) == query.modified
-        assert data['validation_errors'] == []
+        assert data['validation_errors'] == errors
 
     @pytest.mark.django_db
     def test_partial_update_query_returns_query_with_errors(
         self, auth_client: APIClient, user: User, monkeypatch: MonkeyPatch
     ) -> None:
         query = baker.make(Query, project__user=user)
-
-        def mock_validate() -> QueryValidationResult:
-            return {'valid': True, 'errors': []}
-
-        monkeypatch.setattr(query, 'validate', mock_validate)
+        errors = [QueryError(title='Error')]
+        monkeypatch.setattr(
+            'queries.models.Query.validation_result',
+            (None, errors),
+        )
 
         url = reverse('queries-detail', kwargs={'pk': query.id})
         response = auth_client.patch(url, {'name': 'Updated!'}, content_type='application/json')
@@ -72,23 +72,24 @@ class TestQueryCRUD:
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
         assert data['name'] == 'Updated!'
-        assert data['validation_errors'] == []
+        assert data['validation_errors'] == errors
 
 
 class TestQueryExecution:
     @pytest.mark.django_db
-    def test_run_query_success(
+    def test_execute_query_success(
         self, auth_client: APIClient, user: User, monkeypatch: MonkeyPatch
     ) -> None:
         query = baker.make(Query, project__user=user)
 
-        monkeypatch.setattr(query, 'validate', lambda: {'valid': True})
         monkeypatch.setattr(
-            query,
-            'execute',
-            lambda: {
-                'columns': ['id'],
-                'rows': [['1']],
+            'queries.views.execute_query',
+            lambda query: {
+                'success': True,
+                'results': {
+                    'columns': ['id'],
+                    'rows': [['1']],
+                },
             },
         )
 
@@ -97,7 +98,7 @@ class TestQueryExecution:
 
         monkeypatch.setattr('queries.views.QueryViewSet.get_object', get_object)
 
-        url = reverse('queries-run', kwargs={'pk': query.id})
+        url = reverse('queries-execute', kwargs={'pk': query.id})
         response = auth_client.post(url)
 
         assert response.status_code == 200
@@ -106,15 +107,15 @@ class TestQueryExecution:
         assert 'results' in data
 
     @pytest.mark.django_db
-    def test_run_query_invalid(
+    def test_execute_query_invalid(
         self, auth_client: APIClient, user: User, monkeypatch: MonkeyPatch
     ) -> None:
         query = baker.make(Query, project__user=user)
-        monkeypatch.setattr(query, 'validate', lambda: {'valid': False})
+        monkeypatch.setattr('queries.models.Query.validation_result', (None, []))
 
         monkeypatch.setattr('queries.views.QueryViewSet.get_object', lambda self: query)
 
-        url = reverse('queries-run', kwargs={'pk': query.id})
+        url = reverse('queries-execute', kwargs={'pk': query.id})
         response = auth_client.post(url)
 
         assert response.status_code == 200

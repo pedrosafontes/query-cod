@@ -1,6 +1,6 @@
 from typing import NotRequired, TypedDict
 
-from databases.types import QueryExecutionResult
+from databases.types import QueryResult
 
 
 class ErrorPosition(TypedDict):
@@ -16,11 +16,6 @@ class QueryError(TypedDict):
     position: NotRequired[ErrorPosition]
 
 
-class QueryValidationResult(TypedDict):
-    valid: bool
-    errors: NotRequired[list[QueryError]]
-
-
 class QueryExecutionResponse(TypedDict):
-    results: NotRequired[QueryExecutionResult]
+    results: NotRequired[QueryResult]
     success: bool

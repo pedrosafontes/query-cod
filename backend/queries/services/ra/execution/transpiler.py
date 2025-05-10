@@ -1,16 +1,13 @@
 from collections.abc import Callable
 
-from queries.services.types import RelationalSchema
+from queries.services.types import RelationalSchema, SQLQuery
 from sqlglot.expressions import (
     EQ,
     Boolean,
-    Except,
     Exists,
     ExpOrStr,
     Expression,
-    Intersect,
     Select,
-    Union,
     and_,
     column,
     not_,
@@ -33,7 +30,7 @@ from ..parser.ast import (
     JoinOperator,
     NotExpression,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     SetOperation,
@@ -45,29 +42,24 @@ from ..shared.inference import SchemaInferrer
 from .renamer import RAExpressionRenamer
 
 
-SQLStatement = Select | Union | Intersect | Except
-
-
 class RAtoSQLTranspiler:
     def __init__(self, schema: RelationalSchema):
         self._schema_inferrer = SchemaInferrer(schema)
 
-    def transpile(self, expr: RAExpression) -> SQLStatement:
-        method: Callable[[RAExpression], Select] = getattr(
-            self, f'_transpile_{type(expr).__name__}'
-        )
-        return method(expr)
+    def transpile(self, query: RAQuery) -> SQLQuery:
+        method: Callable[[RAQuery], Select] = getattr(self, f'_transpile_{type(query).__name__}')
+        return method(query)
 
     def _transpile_Relation(self, rel: Relation) -> Select:  # noqa: N802
         return select('*').from_(rel.name)
 
     def _transpile_Projection(self, proj: Projection) -> Select:  # noqa: N802
-        query = self._transpile_select(proj.expression)
+        query = self._transpile_select(proj.subquery)
         query.set('expressions', [])
         return query.select(*[self._transpile_attribute(attr) for attr in proj.attributes])
 
     def _transpile_Selection(self, selection: Selection) -> Select:  # noqa: N802
-        query = self._transpile_select(selection.expression)
+        query = self._transpile_select(selection.subquery)
         condition = self._transpile_condition(selection.condition)
         if query.args.get('group'):
             return query.having(condition)
@@ -95,8 +87,8 @@ class RAtoSQLTranspiler:
 
     def _transpile_Division(self, div: Division) -> Expression:  # noqa: N802
         # Get tables with aliases
-        dividend, dividend_alias = self._transpile_table(div.dividend, 'dividend')
-        dividend_sub, dividend_sub_alias = self._transpile_table(div.dividend, 'dividend_sub')
+        dividend, dividend_alias = self._transpile_relation(div.dividend, 'dividend')
+        dividend_sub, dividend_sub_alias = self._transpile_relation(div.dividend, 'dividend_sub')
 
         # Clear expressions
         dividend.set('expressions', [])
@@ -135,7 +127,7 @@ class RAtoSQLTranspiler:
         else:
             return str(comparison)  # Numbers and other literals
 
-    def _transpile_SetOperation(self, op: SetOperation) -> SQLStatement:  # noqa: N802
+    def _transpile_SetOperation(self, op: SetOperation) -> SQLQuery:  # noqa: N802
         left = self.transpile(op.left)
         right = self.transpile(op.right)
 
@@ -156,7 +148,7 @@ class RAtoSQLTranspiler:
                     return left.join(right, join_type='CROSS', join_alias='r')
 
     def _transpile_Join(self, join: Join) -> Select:  # noqa: N802
-        left, left_alias = self._transpile_table(join.left, alias='l')
+        left, left_alias = self._transpile_relation(join.left, alias='l')
 
         match join.operator:
             case JoinOperator.NATURAL:
@@ -169,7 +161,7 @@ class RAtoSQLTranspiler:
                     return left.join(right, join_type='NATURAL', join_alias='r')
 
             case JoinOperator.SEMI:
-                right, right_alias = self._transpile_table(join.right, 'r')
+                right, right_alias = self._transpile_relation(join.right, 'r')
                 common = self._common_attrs(join.left, join.right)
 
                 return left.where(
@@ -187,7 +179,7 @@ class RAtoSQLTranspiler:
                 )
 
     def _transpile_ThetaJoin(self, join: ThetaJoin) -> Select:  # noqa: N802
-        left, left_alias = self._transpile_table(join.left, 'l')
+        left, left_alias = self._transpile_relation(join.left, 'l')
 
         # rename the attributes in the left relation to use the alias
         left_schema = self._schema_inferrer.infer(join.left).schema
@@ -217,7 +209,7 @@ class RAtoSQLTranspiler:
         return left.join(right, join_alias=right_alias, on=condition)
 
     def _transpile_GroupedAggregation(self, agg: GroupedAggregation) -> Select:  # noqa: N802
-        query = self._transpile_select(agg.expression)
+        query = self._transpile_select(agg.subquery)
 
         if query.args.get('group_by'):
             query = subquery(query, 'sub').select('*')
@@ -236,26 +228,26 @@ class RAtoSQLTranspiler:
         return f'{agg.aggregation_function}({agg.input}) AS {agg.output}'
 
     def _transpile_TopN(self, top_n: TopN) -> Select:  # noqa: N802
-        query = self._transpile_select(top_n.expression)
+        query = self._transpile_select(top_n.subquery)
         return query.limit(top_n.limit).order_by(self._transpile_attribute(top_n.attribute).desc())
 
-    def _transpile_table(self, expr: RAExpression, alias: str) -> tuple[Select, str]:
-        select = self._transpile_select(expr)
-        if isinstance(expr, Relation):
-            # expr is a base table
-            return select, expr.name
+    def _transpile_relation(self, relation: RAQuery, alias: str) -> tuple[Select, str]:
+        select = self._transpile_select(relation)
+        if isinstance(relation, Relation):
+            # relation is a base table
+            return select, relation.name
         else:
-            # expr is a derived relation; therefore, it needs to be aliased
+            # relation is a derived relation; therefore, it needs to be aliased
             return subquery(select, alias).select('*'), alias
 
-    def _transpile_select(self, expr: RAExpression) -> Select:
-        query = self.transpile(expr)
-        if isinstance(query, Select):
-            return query
+    def _transpile_select(self, query: RAQuery) -> Select:
+        sql_query = self.transpile(query)
+        if isinstance(sql_query, Select):
+            return sql_query
         else:
-            return subquery(query, 'set_op').select('*')
+            return subquery(sql_query, 'set_op').select('*')
 
-    def _common_attrs(self, left: RAExpression, right: RAExpression) -> list[str]:
+    def _common_attrs(self, left: RAQuery, right: RAQuery) -> list[str]:
         l_output = self._schema_inferrer.infer(left)
         r_output = self._schema_inferrer.infer(right)
 

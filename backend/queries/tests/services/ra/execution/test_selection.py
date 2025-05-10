@@ -8,7 +8,7 @@ from queries.services.ra.parser.ast import (
     Comparison,
     ComparisonOperator,
     NotExpression,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
 )
@@ -25,7 +25,7 @@ from queries.services.ra.parser.ast import (
                     left=Attribute(name='age'),
                     right=30,
                 ),
-                expression=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             'SELECT * FROM employee WHERE age > 30',
         ),
@@ -37,7 +37,7 @@ from queries.services.ra.parser.ast import (
                     left=Attribute(name='dept_name'),
                     right='Engineering',
                 ),
-                expression=Relation(name='department'),
+                subquery=Relation(name='department'),
             ),
             "SELECT * FROM department WHERE dept_name = 'Engineering'",
         ),
@@ -57,7 +57,7 @@ from queries.services.ra.parser.ast import (
                         right=40,
                     ),
                 ),
-                expression=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             'SELECT * FROM employee WHERE age >= 30 AND age <= 40',
         ),
@@ -77,7 +77,7 @@ from queries.services.ra.parser.ast import (
                         right='Carol',
                     ),
                 ),
-                expression=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             "SELECT * FROM employee WHERE name = 'Alice' OR name = 'Carol'",
         ),
@@ -91,7 +91,7 @@ from queries.services.ra.parser.ast import (
                         right='Bob',
                     )
                 ),
-                expression=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             "SELECT * FROM employee WHERE NOT (name = 'Bob')",
         ),
@@ -119,7 +119,7 @@ from queries.services.ra.parser.ast import (
                         right='Bob',
                     ),
                 ),
-                expression=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             "SELECT * FROM employee WHERE (dept_id = 1 AND age > 30) OR name = 'Bob'",
         ),
@@ -127,15 +127,15 @@ from queries.services.ra.parser.ast import (
         (
             Selection(
                 condition=Attribute(name='senior'),
-                expression=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             'SELECT * FROM employee WHERE senior = TRUE',
         ),
     ],
 )
 def test_selection_execution(
-    ra_ast: RAExpression,
+    ra_ast: RAQuery,
     expected_sql: str,
-    assert_equivalent: Callable[[RAExpression, str], None],
+    assert_equivalent: Callable[[RAQuery, str], None],
 ) -> None:
     assert_equivalent(ra_ast, expected_sql)

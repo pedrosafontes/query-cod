@@ -3,7 +3,7 @@ from typing import cast
 
 from lark import Lark, Tree, UnexpectedInput
 
-from .ast import RAExpression, Relation
+from .ast import RAQuery, Relation
 from .errors import (
     InvalidAggregationFunctionError,
     InvalidAggregationInputError,
@@ -32,7 +32,7 @@ with grammar_path.open() as f:
 
 parser = Lark(
     grammar,
-    start='expr',
+    start='query',
     parser='lalr',
     propagate_positions=True,
     cache=True,
@@ -40,7 +40,7 @@ parser = Lark(
 )
 
 
-def parse_ra(ra_text: str) -> RAExpression:
+def parse_ra(ra_text: str) -> RAQuery:
     try:
         parse_tree = cast(Tree[Relation], parser.parse(ra_text))
         return RATransformer().transform(parse_tree)

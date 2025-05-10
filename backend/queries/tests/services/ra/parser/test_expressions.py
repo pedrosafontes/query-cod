@@ -26,5 +26,5 @@ def test_comparison_operators(op_str: str, expected_op: ComparisonOperator) -> N
     # Use selection as a wrapper to test comparison expressions
     assert parse_ra(f'\\sigma_{{a {op_str} 5}} R') == Selection(
         condition=Comparison(expected_op, Attribute('a'), 5),
-        expression=Relation('R'),
+        subquery=Relation('R'),
     )

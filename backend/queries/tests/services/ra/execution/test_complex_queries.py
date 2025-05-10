@@ -14,7 +14,7 @@ from queries.services.ra.parser.ast import (
     JoinOperator,
     NotExpression,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     ThetaJoin,
@@ -29,13 +29,13 @@ from queries.services.ra.parser.ast import (
         (
             Projection(
                 attributes=[Attribute(name='name')],
-                expression=Selection(
+                subquery=Selection(
                     condition=Comparison(
                         ComparisonOperator.EQUAL,
                         Attribute(name='dept_name'),
                         'Engineering',
                     ),
-                    expression=Join(
+                    subquery=Join(
                         operator=JoinOperator.NATURAL,
                         left=Relation('employee'),
                         right=Relation('department'),
@@ -57,12 +57,12 @@ from queries.services.ra.parser.ast import (
                     Attribute(name='avg_age'),
                     30,
                 ),
-                expression=GroupedAggregation(
+                subquery=GroupedAggregation(
                     group_by=[Attribute('dept_id')],
                     aggregations=[
                         Aggregation(Attribute('age'), AggregationFunction.AVG, 'avg_age'),
                     ],
-                    expression=Relation('employee'),
+                    subquery=Relation('employee'),
                 ),
             ),
             """
@@ -77,14 +77,14 @@ from queries.services.ra.parser.ast import (
             TopN(
                 limit=2,
                 attribute=Attribute('age'),
-                expression=Join(
+                subquery=Join(
                     operator=JoinOperator.NATURAL,
                     left=Relation('employee'),
                     right=Relation('department'),
                 ),
             ),
             """
-            SELECT * 
+            SELECT *
             FROM employee NATURAL JOIN department
             ORDER BY age DESC
             LIMIT 2
@@ -95,13 +95,13 @@ from queries.services.ra.parser.ast import (
             TopN(
                 limit=1,
                 attribute=Attribute(name='age'),
-                expression=Selection(
+                subquery=Selection(
                     condition=Comparison(
                         ComparisonOperator.EQUAL,
                         Attribute(name='dept_name', relation='department'),
                         'HR',
                     ),
-                    expression=ThetaJoin(
+                    subquery=ThetaJoin(
                         left=Relation('employee'),
                         right=Relation('department'),
                         condition=Comparison(
@@ -146,17 +146,17 @@ from queries.services.ra.parser.ast import (
                         )
                     ),
                 ),
-                expression=Relation('employee'),
+                subquery=Relation('employee'),
             ),
             """
             SELECT * FROM employee
-            WHERE (age = 25 OR age = 30) 
+            WHERE (age = 25 OR age = 30)
                   AND NOT name = 'Carol'
             """,
         ),
     ],
 )
 def test_complex_ra_execution(
-    ra_ast: RAExpression, expected_sql: str, assert_equivalent: Callable[[RAExpression, str], None]
+    ra_ast: RAQuery, expected_sql: str, assert_equivalent: Callable[[RAQuery, str], None]
 ) -> None:
     assert_equivalent(ra_ast, expected_sql)

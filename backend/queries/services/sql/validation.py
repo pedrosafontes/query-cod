@@ -2,19 +2,21 @@ from databases.models import DatabaseConnectionInfo
 from databases.services.execution import execute_sql
 from databases.services.schema import get_schema
 from queries.services.sql.parser import parse_sql
-from queries.types import QueryError, QueryValidationResult
+from queries.types import QueryError
 from queries.utils.tokens import to_error_position
 from sqlalchemy.exc import SQLAlchemyError
 from sqlglot.errors import ParseError, SqlglotError
 
-from ..types import to_relational_schema
+from ..types import SQLQuery, to_relational_schema
 from .semantics import SQLSemanticAnalyzer
 from .semantics.errors import SQLSemanticError
 
 
-def validate_sql(query_text: str, db: DatabaseConnectionInfo) -> QueryValidationResult:
+def validate_sql(
+    query_text: str, db: DatabaseConnectionInfo
+) -> tuple[SQLQuery | None, list[QueryError]]:
     if not query_text.strip():
-        return {'valid': False}
+        return None, []
 
     # Check for syntax errors
     try:
@@ -38,7 +40,7 @@ def validate_sql(query_text: str, db: DatabaseConnectionInfo) -> QueryValidation
         )
 
     if syntax_errors:
-        return {'valid': False, 'errors': syntax_errors}
+        return None, syntax_errors
 
     # Check for semantic errors
     try:
@@ -50,7 +52,7 @@ def validate_sql(query_text: str, db: DatabaseConnectionInfo) -> QueryValidation
             semantic_error['description'] = e.description
         if e.hint:
             semantic_error['hint'] = e.hint
-        return {'valid': False, 'errors': [semantic_error]}
+        return tree, [semantic_error]
 
     try:
         execute_sql(f'EXPLAIN {query_text}', db)
@@ -59,6 +61,6 @@ def validate_sql(query_text: str, db: DatabaseConnectionInfo) -> QueryValidation
             'title': 'Error during EXPLAIN',
             'description': str(e),
         }
-        return {'valid': False, 'errors': [explain_error]}
+        return tree, [explain_error]
 
-    return {'valid': True}
+    return tree, []

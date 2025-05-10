@@ -8,7 +8,7 @@ from queries.services.ra.parser.ast import (
     ComparisonOperator,
     GroupedAggregation,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     ThetaJoin,
@@ -22,7 +22,7 @@ from queries.services.ra.parser.ast import (
             '\\pi_{name, title} (Employee \\overset{Employee.deptno = Department.deptno}{\\bowtie} Department)',
             Projection(
                 attributes=[Attribute('name'), Attribute('title')],
-                expression=ThetaJoin(
+                subquery=ThetaJoin(
                     left=Relation('Employee'),
                     right=Relation('Department'),
                     condition=Comparison(
@@ -44,15 +44,15 @@ from queries.services.ra.parser.ast import (
                         output='avg_sal',
                     )
                 ],
-                expression=Projection(
+                subquery=Projection(
                     attributes=[Attribute('deptno'), Attribute('salary')],
-                    expression=Selection(
+                    subquery=Selection(
                         condition=Comparison(
                             operator=ComparisonOperator.EQUAL,
                             left=Attribute('location'),
                             right='HQ',
                         ),
-                        expression=Relation('Employee'),
+                        subquery=Relation('Employee'),
                     ),
                 ),
             ),
@@ -61,7 +61,7 @@ from queries.services.ra.parser.ast import (
             '\\pi_{name, \\text{dept_name}} (Employee \\overset{Employee.deptno = Department.deptno}{\\bowtie} (\\sigma_{budget > 100000} Department))',
             Projection(
                 attributes=[Attribute('name'), Attribute('dept_name')],
-                expression=ThetaJoin(
+                subquery=ThetaJoin(
                     left=Relation('Employee'),
                     right=Selection(
                         condition=Comparison(
@@ -69,7 +69,7 @@ from queries.services.ra.parser.ast import (
                             left=Attribute('budget'),
                             right=100000,
                         ),
-                        expression=Relation('Department'),
+                        subquery=Relation('Department'),
                     ),
                     condition=Comparison(
                         operator=ComparisonOperator.EQUAL,
@@ -81,5 +81,5 @@ from queries.services.ra.parser.ast import (
         ),
     ],
 )
-def test_valid_complex_queries(query: str, expected: RAExpression) -> None:
+def test_valid_complex_queries(query: str, expected: RAQuery) -> None:
     assert parse_ra(query) == expected

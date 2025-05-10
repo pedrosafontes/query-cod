@@ -446,6 +446,16 @@ export type QueriesExecutionsCreateData = {
 
 export type QueriesExecutionsCreateResponse = QueryExecution;
 
+export type QueriesSubqueriesExecutionsCreateData = {
+  /**
+   * A unique integer value identifying this query.
+   */
+  id: number;
+  subqueryId: number;
+};
+
+export type QueriesSubqueriesExecutionsCreateResponse = QueryExecution;
+
 export type $OpenApiTs = {
   "/api/auth/login/": {
     post: {
@@ -696,6 +706,14 @@ export type $OpenApiTs = {
   "/api/queries/{id}/executions/": {
     post: {
       req: QueriesExecutionsCreateData;
+      res: {
+        200: QueryExecution;
+      };
+    };
+  };
+  "/api/queries/{id}/subqueries/{subquery_id}/executions/": {
+    post: {
+      req: QueriesSubqueriesExecutionsCreateData;
       res: {
         200: QueryExecution;
       };

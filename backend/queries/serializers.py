@@ -1,4 +1,4 @@
-from databases.types import QueryExecutionResult
+from databases.types import QueryResult
 from drf_spectacular.helpers import lazy_serializer
 from drf_spectacular.utils import extend_schema_field
 from queries.types import QueryExecutionResponse
@@ -38,7 +38,7 @@ class QuerySerializer(serializers.ModelSerializer[Query]):
         ]
 
 
-class QueryResultDataSerializer(serializers.Serializer[QueryExecutionResult]):
+class QueryResultDataSerializer(serializers.Serializer[QueryResult]):
     columns = serializers.ListField(
         child=serializers.CharField(), help_text='List of column names from the query'
     )

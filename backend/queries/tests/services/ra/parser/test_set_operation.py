@@ -3,7 +3,7 @@ from queries.services.ra.parser import parse_ra
 from queries.services.ra.parser.ast import (
     Attribute,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     SetOperation,
     SetOperator,
@@ -42,7 +42,7 @@ from queries.services.ra.parser.errors import (
         ),
     ],
 )
-def test_valid_set_operation(query: str, expected: RAExpression) -> None:
+def test_valid_set_operation(query: str, expected: RAQuery) -> None:
     assert parse_ra(query) == expected
 
 

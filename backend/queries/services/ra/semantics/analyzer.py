@@ -14,7 +14,7 @@ from ..parser.ast import (
     Join,
     NotExpression,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
     SetOperation,
@@ -44,26 +44,26 @@ class RASemanticAnalyzer:
         self.schema = schema
         self._schema_inferrer = SchemaInferrer(schema)
 
-    def validate(self, expr: RAExpression) -> None:
-        self._validate(expr)
+    def validate(self, query: RAQuery) -> None:
+        self._validate(query)
 
-    def _validate(self, expr: RAExpression) -> None:
-        method: Callable[[RAExpression], None] = getattr(self, f'_validate_{type(expr).__name__}')
-        return method(expr)
+    def _validate(self, query: RAQuery) -> None:
+        method: Callable[[RAQuery], None] = getattr(self, f'_validate_{type(query).__name__}')
+        return method(query)
 
     def _validate_Relation(self, rel: Relation) -> None:  # noqa: N802
         if rel.name not in self.schema:
             raise RelationNotFoundError(rel, rel.name)
 
     def _validate_Projection(self, proj: Projection) -> None:  # noqa: N802
-        self._validate(proj.expression)
-        input_ = self._schema_inferrer.infer(proj.expression)
+        self._validate(proj.subquery)
+        input_ = self._schema_inferrer.infer(proj.subquery)
         for attr in proj.attributes:
             self._validate_attribute(attr, [input_])
 
     def _validate_Selection(self, sel: Selection) -> None:  # noqa: N802
-        self._validate(sel.expression)
-        input_ = self._schema_inferrer.infer(sel.expression)
+        self._validate(sel.subquery)
+        input_ = self._schema_inferrer.infer(sel.subquery)
         self._validate_condition(sel.condition, [input_])
 
     def _validate_SetOperation(self, op: SetOperation) -> None:  # noqa: N802
@@ -116,8 +116,8 @@ class RASemanticAnalyzer:
                 raise DivisionAttributeTypeMismatchError(div, name, dividend_attrs[name], t)
 
     def _validate_GroupedAggregation(self, agg: GroupedAggregation) -> None:  # noqa: N802
-        self._validate(agg.expression)
-        input_ = self._schema_inferrer.infer(agg.expression)
+        self._validate(agg.subquery)
+        input_ = self._schema_inferrer.infer(agg.subquery)
 
         for attr in agg.group_by:
             self._validate_attribute(attr, [input_])
@@ -134,8 +134,8 @@ class RASemanticAnalyzer:
                 )
 
     def _validate_TopN(self, top: TopN) -> None:  # noqa: N802
-        self._validate(top.expression)
-        input_ = self._schema_inferrer.infer(top.expression)
+        self._validate(top.subquery)
+        input_ = self._schema_inferrer.infer(top.subquery)
         self._validate_attribute(top.attribute, [input_])
 
     def _validate_condition(self, cond: BooleanExpression, inputs: list[RelationOutput]) -> None:

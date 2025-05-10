@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 import pytest
-from queries.services.ra.parser.ast import RAExpression, Relation
+from queries.services.ra.parser.ast import RAQuery, Relation
 from queries.services.ra.semantics.errors.reference import RelationNotFoundError
 
 
@@ -11,7 +11,7 @@ from queries.services.ra.semantics.errors.reference import RelationNotFoundError
         Relation('R'),
     ],
 )
-def test_valid_relation(query: RAExpression, assert_valid: Callable[[RAExpression], None]) -> None:
+def test_valid_relation(query: RAQuery, assert_valid: Callable[[RAQuery], None]) -> None:
     assert_valid(query)
 
 
@@ -22,8 +22,8 @@ def test_valid_relation(query: RAExpression, assert_valid: Callable[[RAExpressio
     ],
 )
 def test_invalid_relation(
-    query: RAExpression,
+    query: RAQuery,
     expected_exception: type[Exception],
-    assert_invalid: Callable[[RAExpression, type[Exception]], None],
+    assert_invalid: Callable[[RAQuery, type[Exception]], None],
 ) -> None:
     assert_invalid(query, expected_exception)

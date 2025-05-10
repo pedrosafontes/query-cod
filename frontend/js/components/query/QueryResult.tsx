@@ -1,24 +1,15 @@
 import type { ColumnDef } from "@tanstack/react-table";
 
-import { Skeleton } from "@/components/ui/skeleton";
-
 import { QueryResultData } from "../../api";
 import { DataTable } from "../common/DataTable";
 
 type QueryResultProps = {
-  isLoading?: boolean;
   result: QueryResultData;
 };
 
-const QueryResult = ({ result, isLoading }: QueryResultProps) => {
+const QueryResult = ({ result }: QueryResultProps) => {
   if (result.columns.length === 0) {
     return null;
-  }
-
-  if (isLoading) {
-    return (
-      <Skeleton className="h-52 w-full rounded-md bg-primary-foreground mb-10" />
-    );
   }
 
   const columns: ColumnDef<Record<string, string | null>>[] =

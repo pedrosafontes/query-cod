@@ -6,7 +6,7 @@ from queries.services.ra.parser.ast import (
     Comparison,
     ComparisonOperator,
     Projection,
-    RAExpression,
+    RAQuery,
     Relation,
     Selection,
 )
@@ -15,14 +15,14 @@ from queries.services.types import RelationalSchema
 
 
 @pytest.mark.parametrize(
-    'expr',
+    'query',
     [
         Projection(
             attributes=[
                 Attribute('name'),
                 Attribute('salary'),
             ],
-            expression=Selection(
+            subquery=Selection(
                 condition=BinaryBooleanExpression(
                     operator=BinaryBooleanOperator.AND,
                     left=Comparison(
@@ -36,11 +36,11 @@ from queries.services.types import RelationalSchema
                         right=50000,
                     ),
                 ),
-                expression=Relation('Employee'),
+                subquery=Relation('Employee'),
             ),
         ),
     ],
 )
-def test_valid_complex_queries(expr: RAExpression, schema: RelationalSchema) -> None:
+def test_valid_complex_queries(query: RAQuery, schema: RelationalSchema) -> None:
     analyzer = RASemanticAnalyzer(schema)
-    analyzer.validate(expr)
+    analyzer.validate(query)

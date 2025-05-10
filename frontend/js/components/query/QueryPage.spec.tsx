@@ -39,7 +39,7 @@ jest.mock("./QueryDiagrams", () => {
   ));
 });
 
-describe("QueryExplorer Component", () => {
+describe("QueryPage", () => {
   const mockQuery: Query = {
     id: 1,
     name: "Test Query",
@@ -113,7 +113,6 @@ describe("QueryExplorer Component", () => {
       expect(QueryResult).toHaveBeenCalledWith(
         expect.objectContaining({
           result: mockExecutionResult.results,
-          isLoading: false,
         }),
         expect.anything(),
       );

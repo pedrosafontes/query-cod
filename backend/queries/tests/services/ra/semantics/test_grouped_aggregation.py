@@ -6,7 +6,7 @@ from queries.services.ra.parser.ast import (
     AggregationFunction,
     Attribute,
     GroupedAggregation,
-    RAExpression,
+    RAQuery,
     Relation,
 )
 from queries.services.ra.semantics.errors import (
@@ -21,13 +21,11 @@ from queries.services.ra.semantics.errors import (
         GroupedAggregation(
             group_by=[Attribute('A')],
             aggregations=[Aggregation(Attribute('B'), AggregationFunction.COUNT, 'X')],
-            expression=Relation('R'),
+            subquery=Relation('R'),
         ),
     ],
 )
-def test_valid_grouped_aggregation(
-    query: RAExpression, assert_valid: Callable[[RAExpression], None]
-) -> None:
+def test_valid_grouped_aggregation(query: RAQuery, assert_valid: Callable[[RAQuery], None]) -> None:
     assert_valid(query)
 
 
@@ -60,16 +58,16 @@ def test_valid_grouped_aggregation(
                         output='X',
                     )
                 ],
-                expression=Relation('R'),
+                subquery=Relation('R'),
             ),
             InvalidFunctionArgumentError,
         ),
     ],
 )
 def test_invalid_grouped_aggregation(
-    query: RAExpression,
+    query: RAQuery,
     expected_exception: type[Exception],
-    assert_invalid: Callable[[RAExpression, type[Exception]], None],
+    assert_invalid: Callable[[RAQuery, type[Exception]], None],
 ) -> None:
     assert_invalid(query, expected_exception)
 
@@ -83,12 +81,12 @@ def test_invalid_grouped_aggregation(
 )
 def test_aggregation_function_invalid_on_VARCHAR(
     function: AggregationFunction,
-    assert_invalid: Callable[[RAExpression, type[Exception]], None],
+    assert_invalid: Callable[[RAQuery, type[Exception]], None],
 ) -> None:
     query = GroupedAggregation(
         group_by=[Attribute('A')],
         aggregations=[Aggregation(Attribute('B'), function, 'X')],  # B is VARCHAR
-        expression=Relation('R'),
+        subquery=Relation('R'),
     )
     assert_invalid(query, InvalidFunctionArgumentError)
 
@@ -110,12 +108,12 @@ def test_aggregation_function_invalid_on_VARCHAR(
     ],
 )
 def test_aggregation_function_valid_on_compatible_types(
-    function: AggregationFunction, attribute_name: str, assert_valid: Callable[[RAExpression], None]
+    function: AggregationFunction, attribute_name: str, assert_valid: Callable[[RAQuery], None]
 ) -> None:
     query = GroupedAggregation(
         group_by=[Attribute('B')],
         aggregations=[Aggregation(Attribute(attribute_name), function, 'X')],
-        expression=Relation('R'),
+        subquery=Relation('R'),
     )
 
     assert_valid(query)

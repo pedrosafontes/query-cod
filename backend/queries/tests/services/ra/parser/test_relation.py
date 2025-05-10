@@ -1,7 +1,7 @@
 import pytest
 from queries.services.ra.parser import parse_ra
 from queries.services.ra.parser.ast import (
-    RAExpression,
+    RAQuery,
     Relation,
 )
 
@@ -13,5 +13,5 @@ from queries.services.ra.parser.ast import (
         ('\\text{Student_2023}', Relation('Student_2023')),
     ],
 )
-def test_valid_relation(query: str, expected: RAExpression) -> None:
+def test_valid_relation(query: str, expected: RAQuery) -> None:
     assert parse_ra(query) == expected
