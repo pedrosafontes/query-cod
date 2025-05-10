@@ -16,6 +16,9 @@ def execute_query(query: Query) -> QueryResult | None:
     return _execute(query.ast, query.project.database)
 
 
+def execute_subquery(query: Query, subquery_id: int) -> QueryResult | None:
+    subquery = query.subqueries.get(subquery_id)
+    return _execute(subquery, query.project.database) if subquery else None
 
 
 def _execute(ast: QueryAST, database: Database) -> QueryResult:
