@@ -67,6 +67,8 @@ import type {
   QueriesDestroyResponse,
   QueriesExecutionsCreateData,
   QueriesExecutionsCreateResponse,
+  QueriesSubqueriesExecutionsCreateData,
+  QueriesSubqueriesExecutionsCreateResponse,
 } from "./types.gen";
 
 export class AuthService {
@@ -659,6 +661,26 @@ export class QueriesService {
       url: "/api/queries/{id}/executions/",
       path: {
         id: data.id,
+      },
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this query.
+   * @param data.subqueryId
+   * @returns QueryExecution
+   * @throws ApiError
+   */
+  public static queriesSubqueriesExecutionsCreate(
+    data: QueriesSubqueriesExecutionsCreateData,
+  ): CancelablePromise<QueriesSubqueriesExecutionsCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/queries/{id}/subqueries/{subquery_id}/executions/",
+      path: {
+        id: data.id,
+        subquery_id: data.subqueryId,
       },
     });
   }
