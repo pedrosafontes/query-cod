@@ -5,6 +5,7 @@ from common.models import IndexedTimeStampedModel
 from projects.models import Project
 
 from .services.ra.tree.types import RATree
+from .services.subquery import Subqueries, get_subqueries
 from .services.types import QueryAST
 from .types import QueryError
 
@@ -50,6 +51,10 @@ class Query(IndexedTimeStampedModel):
         from .services.tree import transform_ast
 
         return transform_ast(self.ast) if self.ast else None
+
+    @property
+    def subqueries(self) -> Subqueries:
+        return get_subqueries(self.ast) if self.ast else {}
 
     class Meta:
         ordering = [  # noqa: RUF012
