@@ -115,9 +115,7 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
             query={query}
             setQueryResult={setQueryResult}
           >
-            {queryResult && (
-              <QueryResult result={queryResult} />
-            )}
+            {queryResult && <QueryResult result={queryResult} />}
           </QueryDiagrams>
         </ReactFlowProvider>
       </ResizablePanel>

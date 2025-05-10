@@ -1,7 +1,5 @@
 import type { ColumnDef } from "@tanstack/react-table";
 
-import { Skeleton } from "@/components/ui/skeleton";
-
 import { QueryResultData } from "../../api";
 import { DataTable } from "../common/DataTable";
 
