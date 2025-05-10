@@ -1,17 +1,18 @@
 import { type Edge } from "@xyflow/react";
 import { useEffect, useState } from "react";
 
-import { RATree } from "api";
+import { Query, QueryResultData, RATree } from "api";
 import useLayout from "hooks/useLayout";
 
 import getLayoutedNodes from "./layout";
 import { RANode } from "./RANode";
 
 export type RAQueryDiagramProps = {
-  tree?: RATree;
+  query?: Query;
+  setQueryResult: (result?: QueryResultData) => void;
 };
 
-const useRAQueryDiagram = ({ tree }: RAQueryDiagramProps) => {
+const useRAQueryDiagram = ({ query, setQueryResult }: RAQueryDiagramProps) => {
   const [nodes, setNodes] = useState<RANode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 
@@ -19,38 +20,41 @@ const useRAQueryDiagram = ({ tree }: RAQueryDiagramProps) => {
     const nodes: RANode[] = [];
     const edges: Edge[] = [];
 
-    const processTree = ({ id, label, sub_trees: subTrees }: RATree) => {
-      nodes.push({
-        id: id.toString(),
-        type: "ra",
-        position: { x: 0, y: 0 },
-        data: {
-          label,
-        },
-        deletable: false,
-      });
-      if (subTrees) {
-        subTrees.forEach((subTree) => {
-          processTree(subTree);
-          edges.push({
-            id: `${id}-${subTree.id}`,
-            type: "smoothstep",
-            target: id.toString(),
-            source: subTree.id.toString(),
-            deletable: false,
-            animated: true,
-          });
+    if (query?.tree) {
+      const processTree = ({ id, label, sub_trees: subTrees }: RATree) => {
+        nodes.push({
+          id: id.toString(),
+          type: "ra",
+          position: { x: 0, y: 0 },
+          data: {
+            queryId: query.id,
+            id,
+            label,
+            setQueryResult,
+          },
+          deletable: false,
         });
-      }
-    };
+        if (subTrees) {
+          subTrees.forEach((subTree) => {
+            processTree(subTree);
+            edges.push({
+              id: `${id}-${subTree.id}`,
+              type: "smoothstep",
+              target: id.toString(),
+              source: subTree.id.toString(),
+              deletable: false,
+              animated: true,
+            });
+          });
+        }
+      };
 
-    if (tree) {
-      processTree(tree);
+      processTree(query.tree);
     }
 
     setNodes(nodes);
     setEdges(edges);
-  }, [tree]);
+  }, [query?.tree]);
 
   useLayout({ layout: getLayoutedNodes });
 
