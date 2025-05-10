@@ -20,20 +20,20 @@ from queries.services.ra.parser.errors import (
     [
         (
             '\\operatorname{T}_{(5,score)} R',
-            TopN(limit=5, attribute=Attribute('score'), expression=Relation('R')),
+            TopN(limit=5, attribute=Attribute('score'), sub_query=Relation('R')),
         ),
         (
             "\\operatorname{T}_{(10,price)} (\\sigma_{category = \\text{'electronics'}} Products)",
             TopN(
                 limit=10,
                 attribute=Attribute('price'),
-                expression=Selection(
+                sub_query=Selection(
                     condition=Comparison(
                         operator=ComparisonOperator.EQUAL,
                         left=Attribute('category'),
                         right='electronics',
                     ),
-                    expression=Relation('Products'),
+                    sub_query=Relation('Products'),
                 ),
             ),
         ),

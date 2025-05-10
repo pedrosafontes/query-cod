@@ -56,14 +56,14 @@ class RASemanticAnalyzer:
             raise RelationNotFoundError(rel, rel.name)
 
     def _validate_Projection(self, proj: Projection) -> None:  # noqa: N802
-        self._validate(proj.expression)
-        input_ = self._schema_inferrer.infer(proj.expression)
+        self._validate(proj.sub_query)
+        input_ = self._schema_inferrer.infer(proj.sub_query)
         for attr in proj.attributes:
             self._validate_attribute(attr, [input_])
 
     def _validate_Selection(self, sel: Selection) -> None:  # noqa: N802
-        self._validate(sel.expression)
-        input_ = self._schema_inferrer.infer(sel.expression)
+        self._validate(sel.sub_query)
+        input_ = self._schema_inferrer.infer(sel.sub_query)
         self._validate_condition(sel.condition, [input_])
 
     def _validate_SetOperation(self, op: SetOperation) -> None:  # noqa: N802
@@ -116,8 +116,8 @@ class RASemanticAnalyzer:
                 raise DivisionAttributeTypeMismatchError(div, name, dividend_attrs[name], t)
 
     def _validate_GroupedAggregation(self, agg: GroupedAggregation) -> None:  # noqa: N802
-        self._validate(agg.expression)
-        input_ = self._schema_inferrer.infer(agg.expression)
+        self._validate(agg.sub_query)
+        input_ = self._schema_inferrer.infer(agg.sub_query)
 
         for attr in agg.group_by:
             self._validate_attribute(attr, [input_])
@@ -134,8 +134,8 @@ class RASemanticAnalyzer:
                 )
 
     def _validate_TopN(self, top: TopN) -> None:  # noqa: N802
-        self._validate(top.expression)
-        input_ = self._schema_inferrer.infer(top.expression)
+        self._validate(top.sub_query)
+        input_ = self._schema_inferrer.infer(top.sub_query)
         self._validate_attribute(top.attribute, [input_])
 
     def _validate_condition(self, cond: BooleanExpression, inputs: list[RelationOutput]) -> None:

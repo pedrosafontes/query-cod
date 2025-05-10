@@ -26,11 +26,11 @@ from queries.services.ra.parser.ast import (
                 operator=SetOperator.DIFFERENCE,
                 left=Projection(
                     attributes=[Attribute('A')],
-                    expression=Relation('R'),
+                    sub_query=Relation('R'),
                 ),
                 right=Projection(
                     attributes=[Attribute('A')],
-                    expression=Relation('S'),
+                    sub_query=Relation('S'),
                 ),
             ),
         ),
@@ -39,7 +39,7 @@ from queries.services.ra.parser.ast import (
             '\\pi_{A} (R - S)',
             Projection(
                 attributes=[Attribute('A')],
-                expression=SetOperation(
+                sub_query=SetOperation(
                     operator=SetOperator.DIFFERENCE,
                     left=Relation('R'),
                     right=Relation('S'),
@@ -96,11 +96,11 @@ from queries.services.ra.parser.ast import (
                 operator=SetOperator.UNION,
                 left=Projection(
                     attributes=[Attribute('A'), Attribute('B')],
-                    expression=Relation('R'),
+                    sub_query=Relation('R'),
                 ),
                 right=Projection(
                     attributes=[Attribute('C'), Attribute('D')],
-                    expression=Relation('S'),
+                    sub_query=Relation('S'),
                 ),
             ),
         ),
@@ -123,7 +123,7 @@ from queries.services.ra.parser.ast import (
                 operator=JoinOperator.SEMI,
                 left=Projection(
                     attributes=[Attribute('A')],
-                    expression=Relation('R'),
+                    sub_query=Relation('R'),
                 ),
                 right=Relation('S'),
             ),
@@ -133,9 +133,9 @@ from queries.services.ra.parser.ast import (
             '\\pi_{A} \\pi_{B} R',
             Projection(
                 attributes=[Attribute('A')],
-                expression=Projection(
+                sub_query=Projection(
                     attributes=[Attribute('B')],
-                    expression=Relation('R'),
+                    sub_query=Relation('R'),
                 ),
             ),
         ),
@@ -146,7 +146,7 @@ from queries.services.ra.parser.ast import (
                 operator=SetOperator.DIFFERENCE,
                 left=Projection(
                     attributes=[Attribute('A')],
-                    expression=SetOperation(
+                    sub_query=SetOperation(
                         operator=SetOperator.UNION,
                         left=Relation('R'),
                         right=Relation('S'),
@@ -154,7 +154,7 @@ from queries.services.ra.parser.ast import (
                 ),
                 right=Projection(
                     attributes=[Attribute('B')],
-                    expression=SetOperation(
+                    sub_query=SetOperation(
                         operator=SetOperator.INTERSECT,
                         left=Relation('T'),
                         right=Relation('U'),
@@ -184,7 +184,7 @@ from queries.services.ra.parser.ast import (
             '\\pi_{A,B} (R \\overset{C = D}{\\bowtie} S)',
             Projection(
                 attributes=[Attribute('A'), Attribute('B')],
-                expression=ThetaJoin(
+                sub_query=ThetaJoin(
                     left=Relation('R'),
                     right=Relation('S'),
                     condition=Comparison(

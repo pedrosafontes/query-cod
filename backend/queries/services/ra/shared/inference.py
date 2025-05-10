@@ -41,7 +41,7 @@ class SchemaInferrer:
         )
 
     def _infer_Projection(self, proj: Projection) -> RelationOutput:  # noqa: N802
-        input_ = self.infer(proj.expression)
+        input_ = self.infer(proj.sub_query)
         output_schema: RelationalSchema = defaultdict(Attributes)
         output_attrs = []
         for attr in proj.attributes:
@@ -51,7 +51,7 @@ class SchemaInferrer:
         return RelationOutput(output_schema, output_attrs)
 
     def _infer_Selection(self, sel: Selection) -> RelationOutput:  # noqa: N802
-        return self.infer(sel.expression)
+        return self.infer(sel.sub_query)
 
     def _infer_SetOperation(self, op: SetOperation) -> RelationOutput:  # noqa: N802
         left = self.infer(op.left)
@@ -104,7 +104,7 @@ class SchemaInferrer:
         return RelationOutput(output_schema, output_attrs)
 
     def _infer_GroupedAggregation(self, agg: GroupedAggregation) -> RelationOutput:  # noqa: N802
-        input_ = self.infer(agg.expression)
+        input_ = self.infer(agg.sub_query)
         output_schema: RelationalSchema = defaultdict(Attributes)
         output_attrs = []
 
@@ -122,4 +122,4 @@ class SchemaInferrer:
         return RelationOutput(output_schema, output_attrs)
 
     def _infer_TopN(self, top: TopN) -> RelationOutput:  # noqa: N802
-        return self.infer(top.expression)
+        return self.infer(top.sub_query)

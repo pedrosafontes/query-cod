@@ -11,7 +11,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAQuery, Relat
         (
             Projection(
                 attributes=[Attribute(name='dept_name', relation='department')],
-                expression=Relation(name='department'),
+                sub_query=Relation(name='department'),
             ),
             'SELECT dept_name FROM department',
         ),
@@ -19,7 +19,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAQuery, Relat
         (
             Projection(
                 attributes=[Attribute(name='dept_name')],
-                expression=Relation(name='department'),
+                sub_query=Relation(name='department'),
             ),
             'SELECT dept_name FROM department',
         ),
@@ -30,7 +30,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAQuery, Relat
                     Attribute(name='dept_id'),
                     Attribute(name='dept_name'),
                 ],
-                expression=Relation(name='department'),
+                sub_query=Relation(name='department'),
             ),
             'SELECT dept_id, dept_name FROM department',
         ),
@@ -41,7 +41,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAQuery, Relat
                     Attribute(name='name'),
                     Attribute(name='name'),
                 ],
-                expression=Relation(name='employee'),
+                sub_query=Relation(name='employee'),
             ),
             'SELECT name, name FROM employee',
         ),

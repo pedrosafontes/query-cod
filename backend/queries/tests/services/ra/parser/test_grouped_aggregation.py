@@ -31,7 +31,7 @@ from queries.services.ra.parser.errors import (
                         output='x',
                     )
                 ],
-                expression=Relation('R'),
+                sub_query=Relation('R'),
             ),
         ),
         (
@@ -43,7 +43,7 @@ from queries.services.ra.parser.errors import (
                     Aggregation(Attribute('salary'), AggregationFunction.MAX, 'max_sal'),
                     Aggregation(Attribute('salary'), AggregationFunction.MIN, 'min_sal'),
                 ],
-                expression=Relation('Employee'),
+                sub_query=Relation('Employee'),
             ),
         ),
         (
@@ -57,7 +57,7 @@ from queries.services.ra.parser.errors import (
                         output='avg_sal',
                     )
                 ],
-                expression=Relation('Employee'),
+                sub_query=Relation('Employee'),
             ),
         ),
     ],
@@ -90,7 +90,7 @@ def test_aggregation_functions(
                 output='out',
             )
         ],
-        expression=Relation('Employee'),
+        sub_query=Relation('Employee'),
     )
 
 

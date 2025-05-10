@@ -135,7 +135,7 @@ from queries.services.ra.parser.errors import (
                     left=Attribute('rating', relation='Sailor'),
                     right=7,
                 ),
-                expression=Join(
+                sub_query=Join(
                     operator=JoinOperator.NATURAL,
                     left=Relation('Sailor'),
                     right=Relation('Boat'),
