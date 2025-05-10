@@ -16,11 +16,6 @@ class QueryError(TypedDict):
     position: NotRequired[ErrorPosition]
 
 
-class QueryValidationResult(TypedDict):
-    executable: bool
-    errors: NotRequired[list[QueryError]]
-
-
 class QueryExecutionResponse(TypedDict):
     results: NotRequired[QueryResult]
     success: bool

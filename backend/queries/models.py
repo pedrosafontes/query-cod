@@ -6,7 +6,7 @@ from projects.models import Project
 
 from .services.ra.tree.types import RATree
 from .services.types import QueryAST
-from .types import QueryError, QueryValidationResult
+from .types import QueryError
 
 
 class Query(IndexedTimeStampedModel):
@@ -25,22 +25,31 @@ class Query(IndexedTimeStampedModel):
     )
 
     @cached_property
-    def validation_result(self) -> tuple[QueryValidationResult, QueryAST | None]:
+    def validation_result(self) -> tuple[QueryAST | None, list[QueryError]]:
         from .services.validation import validate_query
 
         return validate_query(self)
 
     @property
+    def is_executable(self) -> bool:
+        ast, errors = self.validation_result
+        return ast is not None and not errors
+
+    @property
+    def ast(self) -> QueryAST | None:
+        ast, _ = self.validation_result
+        return ast
+
+    @property
     def validation_errors(self) -> list[QueryError]:
-        validation, _ = self.validation_result
-        return validation.get('errors', [])
+        _, errors = self.validation_result
+        return errors
 
     @property
     def tree(self) -> RATree | None:
         from .services.tree import transform_ast
 
-        _, ast = self.validation_result
-        return transform_ast(ast) if ast else None
+        return transform_ast(self.ast) if self.ast else None
 
     class Meta:
         ordering = [  # noqa: RUF012

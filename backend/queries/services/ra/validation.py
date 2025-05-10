@@ -1,6 +1,6 @@
 from databases.models.database_connection_info import DatabaseConnectionInfo
 from databases.services.schema import get_schema
-from queries.types import QueryError, QueryValidationResult
+from queries.types import QueryError
 
 from ..types import to_relational_schema
 from .parser import parse_ra
@@ -12,9 +12,9 @@ from .semantics.errors import RASemanticError
 
 def validate_ra(
     query_text: str, db: DatabaseConnectionInfo
-) -> tuple[QueryValidationResult, RAQuery | None]:
+) -> tuple[RAQuery | None, list[QueryError]]:
     if not query_text.strip():
-        return {'executable': False}, None
+        return None, []
 
     try:
         query = parse_ra(query_text)
@@ -22,10 +22,7 @@ def validate_ra(
         syntax_error: QueryError = {'title': e.title}
         if e.description:
             syntax_error['description'] = e.description
-        return {
-            'executable': False,
-            'errors': [syntax_error],
-        }, None
+        return None, [syntax_error]
 
     try:
         schema = to_relational_schema(get_schema(db))
@@ -38,9 +35,6 @@ def validate_ra(
             semantic_error['position'] = e.position
         if e.hint:
             semantic_error['hint'] = e.hint
-        return {
-            'executable': False,
-            'errors': [semantic_error],
-        }, query
+        return query, [semantic_error]
 
-    return {'executable': True}, query
+    return query, []

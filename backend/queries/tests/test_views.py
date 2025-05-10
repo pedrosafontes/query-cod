@@ -39,7 +39,7 @@ class TestQueryCRUD:
         errors = [QueryError(title='Error')]
         monkeypatch.setattr(
             'queries.models.Query.validation_result',
-            ({'executable': False, 'errors': errors}, None),
+            (None, errors),
         )
 
         url = reverse('queries-detail', kwargs={'pk': query.id})
@@ -63,7 +63,7 @@ class TestQueryCRUD:
         errors = [QueryError(title='Error')]
         monkeypatch.setattr(
             'queries.models.Query.validation_result',
-            ({'executable': False, 'errors': errors}, None),
+            (None, errors),
         )
 
         url = reverse('queries-detail', kwargs={'pk': query.id})
@@ -111,7 +111,7 @@ class TestQueryExecution:
         self, auth_client: APIClient, user: User, monkeypatch: MonkeyPatch
     ) -> None:
         query = baker.make(Query, project__user=user)
-        monkeypatch.setattr('queries.models.Query.validation_result', ({'executable': False}, None))
+        monkeypatch.setattr('queries.models.Query.validation_result', (None, []))
 
         monkeypatch.setattr('queries.views.QueryViewSet.get_object', lambda self: query)
 

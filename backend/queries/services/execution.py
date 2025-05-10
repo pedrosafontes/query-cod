@@ -5,9 +5,9 @@ from databases.utils.conversion import from_model
 from queries.models import Query
 
 from .ra.execution import execute_ra
-from .ra.validation import validate_ra
+from .ra.parser.ast import RAQuery
 from .sql.execution import execute_sql
-from .sql.validation import validate_sql
+from .types import SQLQuery
 
 
 class QueryExecutionResult(TypedDict):
@@ -17,18 +17,13 @@ class QueryExecutionResult(TypedDict):
 
 def execute_query(query: Query) -> QueryExecutionResult:
     db = from_model(query.project.database)
-    match query.language:
-        case Query.QueryLanguage.SQL:
-            result, sql_ast = validate_sql(query.sql_text, db)
-            if result['executable'] and sql_ast:
-                return {'success': True, 'results': execute_sql(sql_ast, db)}
-            else:
-                return {'success': False}
-        case Query.QueryLanguage.RA:
-            result, ra_ast = validate_ra(query.ra_text, db)
-            if result['executable'] and ra_ast:
-                return {'success': True, 'results': execute_ra(ra_ast, db)}
-            else:
-                return {'success': False}
+    if not query.is_executable:
+        return {'success': False}
+
+    match query.ast:
+        case sql_query if isinstance(sql_query, SQLQuery):
+            return {'success': True, 'results': execute_sql(sql_query, db)}
+        case RAQuery():
+            return {'success': True, 'results': execute_ra(query.ast, db)}
         case _:
-            raise ValueError(f'Unsupported query language: {query.language}')
+            raise ValueError(f'Unsupported query AST type: {type(query.ast)}')
