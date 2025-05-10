@@ -7,7 +7,7 @@ import { useErrorToast } from "hooks/useErrorToast";
 
 import LatexFormula from "../../QueryEditor/RAEditor/LatexFormula";
 
-type RANodeData = {
+export type RANodeData = {
   queryId: number;
   id: number;
   label: string;
