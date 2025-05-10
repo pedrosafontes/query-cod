@@ -1,5 +1,4 @@
-from typing import NotRequired, TypedDict
-
+from databases.models.database import Database
 from databases.types import QueryResult
 from databases.utils.conversion import from_model
 from queries.models import Query
@@ -7,23 +6,22 @@ from queries.models import Query
 from .ra.execution import execute_ra
 from .ra.parser.ast import RAQuery
 from .sql.execution import execute_sql
-from .types import SQLQuery
+from .types import QueryAST, SQLQuery
 
 
-class QueryExecutionResult(TypedDict):
-    success: bool
-    results: NotRequired[QueryResult]
+def execute_query(query: Query) -> QueryResult | None:
+    if not (query.is_executable and query.ast):
+        return None
+
+    return _execute(query.ast, query.project.database)
 
 
-def execute_query(query: Query) -> QueryExecutionResult:
-    db = from_model(query.project.database)
-    if not query.is_executable:
-        return {'success': False}
 
-    match query.ast:
+
+def _execute(ast: QueryAST, database: Database) -> QueryResult:
+    db = from_model(database)
+    match ast:
         case sql_query if isinstance(sql_query, SQLQuery):
-            return {'success': True, 'results': execute_sql(sql_query, db)}
+            return execute_sql(sql_query, db)
         case RAQuery():
-            return {'success': True, 'results': execute_ra(query.ast, db)}
-        case _:
-            raise ValueError(f'Unsupported query AST type: {type(query.ast)}')
+            return execute_ra(ast, db)

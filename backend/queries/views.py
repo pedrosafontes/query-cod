@@ -51,4 +51,9 @@ class QueryViewSet(
     @action(detail=True, methods=['post'], url_path='executions')
     def execute(self, request: Request, pk: str) -> Response:
         query = self.get_object()
-        return Response(execute_query(query))
+        results = execute_query(query)
+        if results:
+            return Response({'success': True, 'results': results})
+        else:
+            return Response({'success': False})
+
