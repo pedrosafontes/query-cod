@@ -116,7 +116,7 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
             setQueryResult={setQueryResult}
           >
             {queryResult && (
-              <QueryResult isLoading={isExecuting} result={queryResult} />
+              <QueryResult result={queryResult} />
             )}
           </QueryDiagrams>
         </ReactFlowProvider>
