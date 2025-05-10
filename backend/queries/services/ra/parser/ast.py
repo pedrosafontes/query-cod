@@ -121,13 +121,13 @@ class ThetaJoin(RAQuery):
 @dataclass
 class Projection(RAQuery):
     attributes: list[Attribute]
-    sub_query: RAQuery
+    subquery: RAQuery
 
 
 @dataclass
 class Selection(RAQuery):
     condition: BooleanExpression
-    sub_query: RAQuery
+    subquery: RAQuery
 
 
 class AggregationFunction(Enum):
@@ -152,11 +152,11 @@ class Aggregation:
 class GroupedAggregation(RAQuery):
     group_by: list[Attribute]
     aggregations: list[Aggregation]
-    sub_query: RAQuery
+    subquery: RAQuery
 
 
 @dataclass
 class TopN(RAQuery):
     limit: int
     attribute: Attribute
-    sub_query: RAQuery
+    subquery: RAQuery

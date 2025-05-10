@@ -16,9 +16,9 @@
          | selection
          | grouped_aggregation
          | topn
-         | sub_query
+         | subquery
 
-?sub_query: relation
+?subquery: relation
           | _LPAREN query _RPAREN
 
 projection: _PI _subscript{nonempty_list{attribute}} unary_op
@@ -94,7 +94,7 @@ _text{content}: "\\text" "{" content "}"
 
 IDENT: /[a-zA-Z_][a-zA-Z0-9_\\]*/
 _LPAREN: ("\\left")? "("
-_RPAREN: ("\\right")? ")" 
+_RPAREN: ("\\right")? ")"
 
 ESCAPED_STRING: "'" _STRING_ESC_INNER "'"
 

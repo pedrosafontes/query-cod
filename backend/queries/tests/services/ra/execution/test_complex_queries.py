@@ -29,13 +29,13 @@ from queries.services.ra.parser.ast import (
         (
             Projection(
                 attributes=[Attribute(name='name')],
-                sub_query=Selection(
+                subquery=Selection(
                     condition=Comparison(
                         ComparisonOperator.EQUAL,
                         Attribute(name='dept_name'),
                         'Engineering',
                     ),
-                    sub_query=Join(
+                    subquery=Join(
                         operator=JoinOperator.NATURAL,
                         left=Relation('employee'),
                         right=Relation('department'),
@@ -57,12 +57,12 @@ from queries.services.ra.parser.ast import (
                     Attribute(name='avg_age'),
                     30,
                 ),
-                sub_query=GroupedAggregation(
+                subquery=GroupedAggregation(
                     group_by=[Attribute('dept_id')],
                     aggregations=[
                         Aggregation(Attribute('age'), AggregationFunction.AVG, 'avg_age'),
                     ],
-                    sub_query=Relation('employee'),
+                    subquery=Relation('employee'),
                 ),
             ),
             """
@@ -77,7 +77,7 @@ from queries.services.ra.parser.ast import (
             TopN(
                 limit=2,
                 attribute=Attribute('age'),
-                sub_query=Join(
+                subquery=Join(
                     operator=JoinOperator.NATURAL,
                     left=Relation('employee'),
                     right=Relation('department'),
@@ -95,13 +95,13 @@ from queries.services.ra.parser.ast import (
             TopN(
                 limit=1,
                 attribute=Attribute(name='age'),
-                sub_query=Selection(
+                subquery=Selection(
                     condition=Comparison(
                         ComparisonOperator.EQUAL,
                         Attribute(name='dept_name', relation='department'),
                         'HR',
                     ),
-                    sub_query=ThetaJoin(
+                    subquery=ThetaJoin(
                         left=Relation('employee'),
                         right=Relation('department'),
                         condition=Comparison(
@@ -146,7 +146,7 @@ from queries.services.ra.parser.ast import (
                         )
                     ),
                 ),
-                sub_query=Relation('employee'),
+                subquery=Relation('employee'),
             ),
             """
             SELECT * FROM employee

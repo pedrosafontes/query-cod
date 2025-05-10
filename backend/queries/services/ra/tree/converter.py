@@ -67,14 +67,14 @@ class RATreeConverter:
         return {
             'id': node_id,
             'label': subscript(PI, attributes),
-            'sub_trees': [self.convert(proj.sub_query)],
+            'sub_trees': [self.convert(proj.subquery)],
         }
 
     def _convert_Selection(self, sel: Selection, node_id: int) -> RATree:  # noqa: N802
         return {
             'id': node_id,
             'label': subscript(SIGMA, self._convert_condition(sel.condition)),
-            'sub_trees': [self.convert(sel.sub_query)],
+            'sub_trees': [self.convert(sel.subquery)],
         }
 
     def _convert_Division(self, div: Division, node_id: int) -> RATree:  # noqa: N802
@@ -132,7 +132,7 @@ class RATreeConverter:
         return {
             'id': node_id,
             'label': subscript(GAMMA, f'(({group_by}), ({aggregations}))'),
-            'sub_trees': [self.convert(agg.sub_query)],
+            'sub_trees': [self.convert(agg.subquery)],
         }
 
     def _convert_TopN(self, top_n: TopN, node_id: int) -> RATree:  # noqa: N802
@@ -140,7 +140,7 @@ class RATreeConverter:
         return {
             'id': node_id,
             'label': subscript('T', f'({top_n.limit}, {attr})'),
-            'sub_trees': [self.convert(top_n.sub_query)],
+            'sub_trees': [self.convert(top_n.subquery)],
         }
 
     def _convert_attribute(self, attr: Attribute) -> str:

@@ -22,7 +22,7 @@ from queries.services.types import RelationalSchema
                 Attribute('name'),
                 Attribute('salary'),
             ],
-            sub_query=Selection(
+            subquery=Selection(
                 condition=BinaryBooleanExpression(
                     operator=BinaryBooleanOperator.AND,
                     left=Comparison(
@@ -36,7 +36,7 @@ from queries.services.types import RelationalSchema
                         right=50000,
                     ),
                 ),
-                sub_query=Relation('Employee'),
+                subquery=Relation('Employee'),
             ),
         ),
     ],

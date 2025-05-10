@@ -69,11 +69,11 @@ from queries.services.ra.parser.ast import (
                 operator=SetOperator.UNION,
                 left=Projection(
                     attributes=[Attribute(name='dept_name')],
-                    sub_query=Relation(name='department'),
+                    subquery=Relation(name='department'),
                 ),
                 right=Projection(
                     attributes=[Attribute(name='name')],
-                    sub_query=Relation(name='employee'),
+                    subquery=Relation(name='employee'),
                 ),
             ),
             'SELECT dept_name FROM department UNION SELECT name FROM employee',
@@ -84,11 +84,11 @@ from queries.services.ra.parser.ast import (
                 operator=SetOperator.DIFFERENCE,
                 left=Projection(
                     attributes=[Attribute(name='dept_name')],
-                    sub_query=Relation(name='department'),
+                    subquery=Relation(name='department'),
                 ),
                 right=Projection(
                     attributes=[Attribute(name='name')],
-                    sub_query=Relation(name='employee'),
+                    subquery=Relation(name='employee'),
                 ),
             ),
             'SELECT dept_name FROM department EXCEPT SELECT name FROM employee',

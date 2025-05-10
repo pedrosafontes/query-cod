@@ -43,13 +43,13 @@ from queries.services.ra.parser.errors import (
             "\\pi_{sname} (\\sigma_{color = \\text{'red'}} Boat)",
             Projection(
                 attributes=[Attribute('sname')],
-                sub_query=Selection(
+                subquery=Selection(
                     condition=Comparison(
                         operator=ComparisonOperator.EQUAL,
                         left=Attribute('color'),
                         right='red',
                     ),
-                    sub_query=Relation('Boat'),
+                    subquery=Relation('Boat'),
                 ),
             ),
         ),

@@ -21,7 +21,7 @@ from queries.services.ra.semantics.errors import (
         GroupedAggregation(
             group_by=[Attribute('A')],
             aggregations=[Aggregation(Attribute('B'), AggregationFunction.COUNT, 'X')],
-            sub_query=Relation('R'),
+            subquery=Relation('R'),
         ),
     ],
 )
@@ -58,7 +58,7 @@ def test_valid_grouped_aggregation(query: RAQuery, assert_valid: Callable[[RAQue
                         output='X',
                     )
                 ],
-                sub_query=Relation('R'),
+                subquery=Relation('R'),
             ),
             InvalidFunctionArgumentError,
         ),
@@ -86,7 +86,7 @@ def test_aggregation_function_invalid_on_VARCHAR(
     query = GroupedAggregation(
         group_by=[Attribute('A')],
         aggregations=[Aggregation(Attribute('B'), function, 'X')],  # B is VARCHAR
-        sub_query=Relation('R'),
+        subquery=Relation('R'),
     )
     assert_invalid(query, InvalidFunctionArgumentError)
 
@@ -113,7 +113,7 @@ def test_aggregation_function_valid_on_compatible_types(
     query = GroupedAggregation(
         group_by=[Attribute('B')],
         aggregations=[Aggregation(Attribute(attribute_name), function, 'X')],
-        sub_query=Relation('R'),
+        subquery=Relation('R'),
     )
 
     assert_valid(query)

@@ -22,7 +22,7 @@ from queries.services.ra.parser.ast import (
             '\\pi_{name, title} (Employee \\overset{Employee.deptno = Department.deptno}{\\bowtie} Department)',
             Projection(
                 attributes=[Attribute('name'), Attribute('title')],
-                sub_query=ThetaJoin(
+                subquery=ThetaJoin(
                     left=Relation('Employee'),
                     right=Relation('Department'),
                     condition=Comparison(
@@ -44,15 +44,15 @@ from queries.services.ra.parser.ast import (
                         output='avg_sal',
                     )
                 ],
-                sub_query=Projection(
+                subquery=Projection(
                     attributes=[Attribute('deptno'), Attribute('salary')],
-                    sub_query=Selection(
+                    subquery=Selection(
                         condition=Comparison(
                             operator=ComparisonOperator.EQUAL,
                             left=Attribute('location'),
                             right='HQ',
                         ),
-                        sub_query=Relation('Employee'),
+                        subquery=Relation('Employee'),
                     ),
                 ),
             ),
@@ -61,7 +61,7 @@ from queries.services.ra.parser.ast import (
             '\\pi_{name, \\text{dept_name}} (Employee \\overset{Employee.deptno = Department.deptno}{\\bowtie} (\\sigma_{budget > 100000} Department))',
             Projection(
                 attributes=[Attribute('name'), Attribute('dept_name')],
-                sub_query=ThetaJoin(
+                subquery=ThetaJoin(
                     left=Relation('Employee'),
                     right=Selection(
                         condition=Comparison(
@@ -69,7 +69,7 @@ from queries.services.ra.parser.ast import (
                             left=Attribute('budget'),
                             right=100000,
                         ),
-                        sub_query=Relation('Department'),
+                        subquery=Relation('Department'),
                     ),
                     condition=Comparison(
                         operator=ComparisonOperator.EQUAL,

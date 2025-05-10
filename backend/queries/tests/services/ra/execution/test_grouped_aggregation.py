@@ -25,7 +25,7 @@ from queries.services.ra.parser.ast import (
                         output='num_employees',
                     ),
                 ],
-                sub_query=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             'SELECT COUNT(id) AS num_employees FROM employee',
         ),
@@ -40,7 +40,7 @@ from queries.services.ra.parser.ast import (
                         output='num_employees',
                     ),
                 ],
-                sub_query=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             'SELECT dept_id, COUNT(id) AS num_employees FROM employee GROUP BY dept_id',
         ),
@@ -53,7 +53,7 @@ from queries.services.ra.parser.ast import (
                     Aggregation(Attribute('age'), AggregationFunction.MIN, 'min_age'),
                     Aggregation(Attribute('age'), AggregationFunction.MAX, 'max_age'),
                 ],
-                sub_query=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             (
                 'SELECT dept_id, AVG(age) AS avg_age, MIN(age) AS min_age, MAX(age) AS max_age '
@@ -67,7 +67,7 @@ from queries.services.ra.parser.ast import (
                 aggregations=[
                     Aggregation(Attribute('age'), AggregationFunction.AVG, 'avg_age'),
                 ],
-                sub_query=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             'SELECT AVG(age) AS avg_age FROM employee',
         ),

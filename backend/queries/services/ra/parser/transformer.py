@@ -56,17 +56,17 @@ class RATransformer(Transformer[Relation, RAQuery]):
 
     def projection(self, args: tuple[list[Attribute], RAQuery]) -> Projection:
         attrs, query = args
-        return Projection(attributes=attrs, sub_query=query)
+        return Projection(attributes=attrs, subquery=query)
 
     def selection(self, args: tuple[BooleanExpression, RAQuery]) -> Selection:
         condition, query = args
-        return Selection(condition=condition, sub_query=query)
+        return Selection(condition=condition, subquery=query)
 
     def grouped_aggregation(
         self, args: tuple[list[Attribute], list[Aggregation], RAQuery]
     ) -> GroupedAggregation:
         group_by, aggregations, query = args
-        return GroupedAggregation(group_by=group_by, aggregations=aggregations, sub_query=query)
+        return GroupedAggregation(group_by=group_by, aggregations=aggregations, subquery=query)
 
     def aggregation(self, args: tuple[Attribute, AggregationFunction, Attribute]) -> Aggregation:
         return Aggregation(
@@ -92,7 +92,7 @@ class RATransformer(Transformer[Relation, RAQuery]):
 
     def topn(self, args: tuple[Token, Attribute, RAQuery]) -> TopN:
         limit, attr, query = args
-        return TopN(limit=int(limit), attribute=attr, sub_query=query)
+        return TopN(limit=int(limit), attribute=attr, subquery=query)
 
     def union(self, args: tuple[RAQuery, RAQuery]) -> SetOperation:
         return SetOperation(operator=SetOperator.UNION, left=args[0], right=args[1])
@@ -168,7 +168,7 @@ class RATransformer(Transformer[Relation, RAQuery]):
     def query(self, args: tuple[RAQuery]) -> RAQuery:
         return args[0]
 
-    def sub_query(self, args: tuple[RAQuery]) -> RAQuery:
+    def subquery(self, args: tuple[RAQuery]) -> RAQuery:
         return args[0]
 
     def IDENT(self, token: Token) -> str:  # noqa: N802

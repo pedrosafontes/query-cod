@@ -21,11 +21,11 @@ from queries.services.ra.parser.ast import (
                         Attribute(name='employee_id'),
                         Attribute(name='dept_id'),
                     ],
-                    sub_query=Relation('rotation'),
+                    subquery=Relation('rotation'),
                 ),
                 divisor=Projection(
                     attributes=[Attribute(name='dept_id')],
-                    sub_query=Relation('department'),
+                    subquery=Relation('department'),
                 ),
             ),
             """

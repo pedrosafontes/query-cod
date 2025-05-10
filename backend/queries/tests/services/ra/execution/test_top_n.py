@@ -20,7 +20,7 @@ from queries.services.ra.parser.ast import (
             TopN(
                 limit=2,
                 attribute=Attribute(name='age'),
-                sub_query=Relation(name='employee'),
+                subquery=Relation(name='employee'),
             ),
             'SELECT * FROM employee ORDER BY age DESC LIMIT 2',
         ),
@@ -29,7 +29,7 @@ from queries.services.ra.parser.ast import (
             TopN(
                 limit=10,
                 attribute=Attribute(name='dept_name'),
-                sub_query=Relation(name='department'),
+                subquery=Relation(name='department'),
             ),
             'SELECT * FROM department ORDER BY dept_name DESC LIMIT 10',
         ),
@@ -38,13 +38,13 @@ from queries.services.ra.parser.ast import (
             TopN(
                 limit=2,
                 attribute=Attribute(name='age'),
-                sub_query=Selection(
+                subquery=Selection(
                     condition=Comparison(
                         operator=ComparisonOperator.EQUAL,
                         left=Attribute(name='dept_id'),
                         right=1,
                     ),
-                    sub_query=Relation(name='employee'),
+                    subquery=Relation(name='employee'),
                 ),
             ),
             'SELECT * FROM (SELECT * FROM employee WHERE dept_id = 1) ORDER BY age DESC LIMIT 2',

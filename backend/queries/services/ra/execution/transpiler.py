@@ -54,12 +54,12 @@ class RAtoSQLTranspiler:
         return select('*').from_(rel.name)
 
     def _transpile_Projection(self, proj: Projection) -> Select:  # noqa: N802
-        query = self._transpile_select(proj.sub_query)
+        query = self._transpile_select(proj.subquery)
         query.set('expressions', [])
         return query.select(*[self._transpile_attribute(attr) for attr in proj.attributes])
 
     def _transpile_Selection(self, selection: Selection) -> Select:  # noqa: N802
-        query = self._transpile_select(selection.sub_query)
+        query = self._transpile_select(selection.subquery)
         condition = self._transpile_condition(selection.condition)
         if query.args.get('group'):
             return query.having(condition)
@@ -209,7 +209,7 @@ class RAtoSQLTranspiler:
         return left.join(right, join_alias=right_alias, on=condition)
 
     def _transpile_GroupedAggregation(self, agg: GroupedAggregation) -> Select:  # noqa: N802
-        query = self._transpile_select(agg.sub_query)
+        query = self._transpile_select(agg.subquery)
 
         if query.args.get('group_by'):
             query = subquery(query, 'sub').select('*')
@@ -228,7 +228,7 @@ class RAtoSQLTranspiler:
         return f'{agg.aggregation_function}({agg.input}) AS {agg.output}'
 
     def _transpile_TopN(self, top_n: TopN) -> Select:  # noqa: N802
-        query = self._transpile_select(top_n.sub_query)
+        query = self._transpile_select(top_n.subquery)
         return query.limit(top_n.limit).order_by(self._transpile_attribute(top_n.attribute).desc())
 
     def _transpile_relation(self, relation: RAQuery, alias: str) -> tuple[Select, str]:
