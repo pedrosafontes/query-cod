@@ -4,8 +4,7 @@ from django.utils.functional import cached_property
 from common.models import IndexedTimeStampedModel
 from projects.models import Project
 
-from .services.ra.tree.types import RATree
-from .services.subquery import Subqueries, get_subqueries
+from .services.tree import QueryTree, Subqueries
 from .services.types import QueryAST
 from .types import QueryError
 
@@ -46,15 +45,27 @@ class Query(IndexedTimeStampedModel):
         _, errors = self.validation_result
         return errors
 
-    @property
-    def tree(self) -> RATree | None:
-        from .services.tree import transform_ast
+    @cached_property
+    def tree_with_subqueries(self) -> tuple[QueryTree, Subqueries] | None:
+        from .services.tree import build_query_tree
 
-        return transform_ast(self.ast) if self.ast else None
+        return build_query_tree(self.ast) if self.ast else None
+
+    @property
+    def tree(self) -> QueryTree | None:
+        if self.tree_with_subqueries is None:
+            return None
+
+        tree, _ = self.tree_with_subqueries
+        return tree
 
     @property
     def subqueries(self) -> Subqueries:
-        return get_subqueries(self.ast) if self.ast else {}
+        if self.tree_with_subqueries is None:
+            return {}
+
+        _, subqueries = self.tree_with_subqueries
+        return subqueries
 
     class Meta:
         ordering = [  # noqa: RUF012

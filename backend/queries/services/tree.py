@@ -1,12 +1,18 @@
+from collections.abc import Mapping
+
 from .ra.parser.ast import RAQuery
-from .ra.tree.converter import RATreeConverter
+from .ra.tree.builder import RATreeBuilder
 from .ra.tree.types import RATree
 from .types import QueryAST
 
 
-def transform_ast(ast: QueryAST) -> RATree | None:
+QueryTree = RATree | None  # TODO: Replace with SQLTree
+Subqueries = Mapping[int, QueryAST]
+
+
+def build_query_tree(ast: QueryAST) -> tuple[QueryTree, Subqueries]:
     match ast:
         case RAQuery():
-            return RATreeConverter().convert(ast)
+            return RATreeBuilder().build(ast)
         case _:
-            return None
+            return None, {}
