@@ -46,45 +46,55 @@ from .utils import (
 )
 
 
-class RATreeConverter:
-    def __init__(self) -> None:
-        self._counter = 0
+class RATreeBuilder:
+    _counter: int
+    _subqueries: dict[int, RAQuery]
 
-    def convert(self, query: RAQuery) -> RATree:
+    def build(self, query: RAQuery) -> tuple[RATree, dict[int, RAQuery]]:
+        self._counter = 0
+        self._subqueries = {}
+        return self._build(query), self._subqueries
+
+    def _build(self, query: RAQuery) -> RATree:
         next_id = self._counter
         self._counter += 1
         method: Callable[[RAQuery, int], RATree] = getattr(self, f'_convert_{type(query).__name__}')
         return method(query, next_id)
 
     def _convert_Relation(self, rel: Relation, node_id: int) -> RATree:  # noqa: N802
+        self._subqueries[node_id] = rel
         return {
             'id': node_id,
             'label': text(rel.name),
         }
 
     def _convert_Projection(self, proj: Projection, node_id: int) -> RATree:  # noqa: N802
+        self._subqueries[node_id] = proj
         attributes = ', '.join([self._convert_attribute(attr) for attr in proj.attributes])
         return {
             'id': node_id,
             'label': subscript(PI, attributes),
-            'sub_trees': [self.convert(proj.subquery)],
+            'sub_trees': [self._build(proj.subquery)],
         }
 
     def _convert_Selection(self, sel: Selection, node_id: int) -> RATree:  # noqa: N802
+        self._subqueries[node_id] = sel
         return {
             'id': node_id,
             'label': subscript(SIGMA, self._convert_condition(sel.condition)),
-            'sub_trees': [self.convert(sel.subquery)],
+            'sub_trees': [self._build(sel.subquery)],
         }
 
     def _convert_Division(self, div: Division, node_id: int) -> RATree:  # noqa: N802
+        self._subqueries[node_id] = div
         return {
             'id': node_id,
             'label': DIV,
-            'sub_trees': [self.convert(div.dividend), self.convert(div.divisor)],
+            'sub_trees': [self._build(div.dividend), self._build(div.divisor)],
         }
 
     def _convert_SetOperation(self, set_op: SetOperation, node_id: int) -> RATree:  # noqa: N802
+        self._subqueries[node_id] = set_op
         match set_op.operator:
             case SetOperator.UNION:
                 operator_label = CUP
@@ -98,10 +108,11 @@ class RATreeConverter:
         return {
             'id': node_id,
             'label': operator_label,
-            'sub_trees': [self.convert(set_op.left), self.convert(set_op.right)],
+            'sub_trees': [self._build(set_op.left), self._build(set_op.right)],
         }
 
     def _convert_Join(self, join: Join, node_id: int) -> RATree:  # noqa: N802
+        self._subqueries[node_id] = join
         match join.operator:
             case JoinOperator.NATURAL:
                 operator_label = JOIN
@@ -111,17 +122,19 @@ class RATreeConverter:
         return {
             'id': node_id,
             'label': operator_label,
-            'sub_trees': [self.convert(join.left), self.convert(join.right)],
+            'sub_trees': [self._build(join.left), self._build(join.right)],
         }
 
     def _convert_ThetaJoin(self, join: ThetaJoin, node_id: int) -> RATree:  # noqa: N802
+        self._subqueries[node_id] = join
         return {
             'id': node_id,
             'label': overset(self._convert_condition(join.condition), JOIN),
-            'sub_trees': [self.convert(join.left), self.convert(join.right)],
+            'sub_trees': [self._build(join.left), self._build(join.right)],
         }
 
     def _convert_GroupedAggregation(self, agg: GroupedAggregation, node_id: int) -> RATree:  # noqa: N802
+        self._subqueries[node_id] = agg
         group_by = ', '.join([self._convert_attribute(attr) for attr in agg.group_by])
         aggregations = ', '.join(
             [
@@ -132,15 +145,16 @@ class RATreeConverter:
         return {
             'id': node_id,
             'label': subscript(GAMMA, f'(({group_by}), ({aggregations}))'),
-            'sub_trees': [self.convert(agg.subquery)],
+            'sub_trees': [self._build(agg.subquery)],
         }
 
     def _convert_TopN(self, top_n: TopN, node_id: int) -> RATree:  # noqa: N802
+        self._subqueries[node_id] = top_n
         attr = self._convert_attribute(top_n.attribute)
         return {
             'id': node_id,
             'label': subscript('T', f'({top_n.limit}, {attr})'),
-            'sub_trees': [self.convert(top_n.subquery)],
+            'sub_trees': [self._build(top_n.subquery)],
         }
 
     def _convert_attribute(self, attr: Attribute) -> str:
