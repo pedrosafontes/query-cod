@@ -139,7 +139,6 @@ class SQLTreeBuilder:
         where = query.args.get('where')
         if where:
             partial_query = partial_query.where(where.this)
-            self._add_subquery(partial_query)
             return WhereNode(
                 id=self._add_subquery(partial_query),
                 condition=where.this.sql(),
@@ -154,7 +153,6 @@ class SQLTreeBuilder:
         group_by = query.args.get('group')
         if group_by:
             partial_query = partial_query.group_by(group_by.expressions)
-            self._add_subquery(partial_query)
             return GroupByNode(
                 id=self._add_subquery(partial_query),
                 keys=[expr.sql() for expr in group_by.expressions],
@@ -170,7 +168,6 @@ class SQLTreeBuilder:
         if having:
             condition = having.this
             partial_query = partial_query.having(condition)
-            self._add_subquery(partial_query)
             return WhereNode(
                 id=self._add_subquery(partial_query),
                 condition=condition.sql(),
@@ -185,7 +182,6 @@ class SQLTreeBuilder:
         projections = query.expressions
         if projections:
             partial_query = partial_query.select(*projections)
-            self._add_subquery(partial_query)
             return SelectNode(
                 id=self._add_subquery(partial_query),
                 columns=[expr.sql() for expr in projections],
@@ -200,7 +196,6 @@ class SQLTreeBuilder:
         order_by = query.args.get('order')
         if order_by:
             partial_query = partial_query.order_by(order_by.expressions)
-            self._add_subquery(partial_query)
             return OrderByNode(
                 id=self._add_subquery(partial_query),
                 keys=[expr.sql() for expr in order_by.expressions],
