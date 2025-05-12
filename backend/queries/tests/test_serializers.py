@@ -1,6 +1,6 @@
-from queries.serializers import (
+from queries.serializers import QuerySerializer
+from queries.serializers.execution import (
     QueryExecutionSerializer,
-    QuerySerializer,
 )
 
 

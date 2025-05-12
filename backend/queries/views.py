@@ -11,7 +11,8 @@ from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 
 from .models import Query
-from .serializers import QueryExecutionSerializer, QuerySerializer
+from .serializers import QuerySerializer
+from .serializers.execution import QueryExecutionSerializer
 from .services.execution import execute_query, execute_subquery
 
 
