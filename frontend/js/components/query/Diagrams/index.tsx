@@ -16,10 +16,10 @@ import SchemaDiagramNode from "components/database/SchemaNode";
 import useSchemaDiagram from "components/database/useSchemaDiagram";
 import { useTopCenterFitView } from "hooks/useTopCenterView";
 
-import RADiagramNode from "./RAQueryDiagram/RANode";
-import useRAQueryDiagram from "./RAQueryDiagram/useRAQueryDiagram";
+import RADiagramNode from "./QueryDiagram/RAQueryDiagram/RANode";
+import useQueryDiagram from "./QueryDiagram/useQueryDiagram";
 
-export type QueryDiagramsProps = {
+export type DiagramsProps = {
   databaseId: number;
   query?: Query;
   setQueryResult: (result?: QueryResultData) => void;
@@ -33,12 +33,12 @@ const nodeTypes = {
 
 type DigramEnum = "schema" | "query";
 
-const QueryDiagrams = ({
+const Diagrams = ({
   databaseId,
   query,
   setQueryResult,
   children,
-}: QueryDiagramsProps) => {
+}: DiagramsProps) => {
   const [diagram, setDiagram] = useState<DigramEnum>("schema");
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -46,7 +46,7 @@ const QueryDiagrams = ({
   const { nodes: schemaNodes, edges: schemaEdges } = useSchemaDiagram({
     databaseId,
   });
-  const { nodes: queryNodes, edges: queryEdges } = useRAQueryDiagram({
+  const { nodes: queryNodes, edges: queryEdges } = useQueryDiagram({
     query,
     setQueryResult,
   });
@@ -105,4 +105,4 @@ const QueryDiagrams = ({
   );
 };
 
-export default QueryDiagrams;
+export default Diagrams;

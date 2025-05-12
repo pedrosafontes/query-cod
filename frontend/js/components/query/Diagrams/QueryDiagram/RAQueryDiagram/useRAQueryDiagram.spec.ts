@@ -35,7 +35,7 @@ describe("useRAQueryDiagram", () => {
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
     validation_errors: [],
-    tree: mockTree,
+    ra_tree: mockTree,
   };
 
   beforeEach(() => {

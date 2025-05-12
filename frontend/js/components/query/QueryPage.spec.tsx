@@ -10,7 +10,7 @@ import "@testing-library/jest-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueriesService, Query } from "api";
 
-import { QueryDiagramsProps } from "./QueryDiagrams";
+import { DiagramsProps } from "./Diagrams";
 import QueryEditor from "./QueryEditor";
 import QueryPage from "./QueryPage";
 import QueryResult from "./QueryResult";
@@ -33,8 +33,8 @@ jest.mock("./QueryResult", () => {
   ));
 });
 
-jest.mock("./QueryDiagrams", () => {
-  return jest.fn(({ children }: QueryDiagramsProps) => (
+jest.mock("./Diagrams", () => {
+  return jest.fn(({ children }: DiagramsProps) => (
     <div data-testid="query-diagrams">{children}</div>
   ));
 });

@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 
-import QueryDiagrams from ".";
+import Diagrams from ".";
 
 const mockSetNodes = jest.fn();
 const mockSetEdges = jest.fn();
@@ -24,7 +24,7 @@ jest.mock("components/database/useSchemaDiagram", () => () => ({
 
 const mockQueryNodes = [{ id: "query" }];
 
-jest.mock("./RAQueryDiagram/useRAQueryDiagram", () => () => ({
+jest.mock("./QueryDiagram/useQueryDiagram", () => () => ({
   nodes: mockQueryNodes,
   edges: [],
 }));
@@ -33,10 +33,10 @@ jest.mock("hooks/useTopCenterView", () => ({
   useTopCenterFitView: jest.fn(),
 }));
 
-describe("QueryDiagrams", () => {
+describe("Diagrams", () => {
   test("switches to query diagram when 'Query' tab is clicked", async () => {
     const user = userEvent.setup();
-    render(<QueryDiagrams databaseId={1} setQueryResult={jest.fn()} />);
+    render(<Diagrams databaseId={1} setQueryResult={jest.fn()} />);
 
     expect(mockSetNodes).toHaveBeenCalledWith(mockSchemaNodes);
 
@@ -48,9 +48,9 @@ describe("QueryDiagrams", () => {
 
   test("renders children in the bottom panel", () => {
     render(
-      <QueryDiagrams databaseId={1} setQueryResult={jest.fn()}>
+      <Diagrams databaseId={1} setQueryResult={jest.fn()}>
         <div data-testid="custom-child" />
-      </QueryDiagrams>,
+      </Diagrams>,
     );
     expect(screen.getByTestId("custom-child")).toBeInTheDocument();
   });

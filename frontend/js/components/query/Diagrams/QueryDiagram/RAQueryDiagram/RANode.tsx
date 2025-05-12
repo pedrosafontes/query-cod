@@ -3,9 +3,8 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { QueriesService, QueryResultData } from "api";
+import LatexFormula from "components/query/QueryEditor/RAEditor/LatexFormula";
 import { useErrorToast } from "hooks/useErrorToast";
-
-import LatexFormula from "../../QueryEditor/RAEditor/LatexFormula";
 
 export type RANodeData = {
   queryId: number;

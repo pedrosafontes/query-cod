@@ -12,8 +12,8 @@ import { useErrorToast } from "hooks/useErrorToast";
 
 import { Skeleton } from "../ui/skeleton";
 
+import Diagrams from "./Diagrams";
 import ExecuteQueryButton from "./ExecuteQueryButton";
-import QueryDiagrams from "./QueryDiagrams";
 import QueryEditor from "./QueryEditor";
 import ErrorAlert from "./QueryEditor/ErrorAlert";
 import QueryLanguageTabs from "./QueryLanguageTabs";
@@ -110,13 +110,13 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
       <ResizableHandle withHandle />
       <ResizablePanel className="bg-gray-50">
         <ReactFlowProvider>
-          <QueryDiagrams
+          <Diagrams
             databaseId={databaseId}
             query={query}
             setQueryResult={setQueryResult}
           >
             {queryResult && <QueryResult result={queryResult} />}
-          </QueryDiagrams>
+          </Diagrams>
         </ReactFlowProvider>
       </ResizablePanel>
     </ResizablePanelGroup>
