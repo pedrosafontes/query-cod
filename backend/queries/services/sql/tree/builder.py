@@ -5,6 +5,7 @@ from ..semantics.types import SetOperation
 from .types import (
     AliasNode,
     GroupByNode,
+    HavingNode,
     JoinNode,
     OrderByNode,
     SelectNode,
@@ -168,7 +169,7 @@ class SQLTreeBuilder:
         if having:
             condition = having.this
             partial_query = partial_query.having(condition)
-            return WhereNode(
+            return HavingNode(
                 id=self._add_subquery(partial_query),
                 condition=condition.sql(),
                 children=[group_by_node],
