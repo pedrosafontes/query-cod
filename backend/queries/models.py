@@ -1,9 +1,13 @@
+from typing import cast
+
 from django.db import models
 from django.utils.functional import cached_property
 
 from common.models import IndexedTimeStampedModel
 from projects.models import Project
 
+from .services.ra.tree.types import RATree
+from .services.sql.tree.types import SQLTree
 from .services.tree import QueryTree, Subqueries
 from .services.types import QueryAST
 from .types import QueryError
@@ -52,9 +56,21 @@ class Query(IndexedTimeStampedModel):
         return build_query_tree(self.ast) if self.ast else (None, {})
 
     @property
-    def tree(self) -> QueryTree | None:
+    def _tree(self) -> QueryTree | None:
         tree, _ = self.tree_with_subqueries
         return tree
+
+    @property
+    def sql_tree(self) -> SQLTree | None:
+        if self.language == self.QueryLanguage.SQL:
+            return cast(SQLTree, self._tree)
+        return None
+
+    @property
+    def ra_tree(self) -> RATree | None:
+        if self.language == self.QueryLanguage.RA:
+            return cast(RATree, self._tree)
+        return None
 
     @property
     def subqueries(self) -> Subqueries:
