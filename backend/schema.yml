@@ -1060,7 +1060,9 @@ components:
             required:
             - title
           readOnly: true
-        tree:
+        sql_tree:
+          $ref: '#/components/schemas/SQLTree'
+        ra_tree:
           $ref: '#/components/schemas/RATree'
     PatchedUser:
       type: object
@@ -1172,7 +1174,9 @@ components:
             required:
             - title
           readOnly: true
-        tree:
+        sql_tree:
+          $ref: '#/components/schemas/SQLTree'
+        ra_tree:
           $ref: '#/components/schemas/RATree'
       required:
       - created
@@ -1240,6 +1244,68 @@ components:
       - id
       - label
       - sub_trees
+    SQLTree:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/SQLTree'
+          readOnly: true
+        name:
+          type: string
+          nullable: true
+          readOnly: true
+        alias:
+          type: string
+          nullable: true
+          readOnly: true
+        method:
+          type: string
+          nullable: true
+          readOnly: true
+        condition:
+          type: string
+          nullable: true
+          readOnly: true
+        using:
+          type: array
+          items:
+            type: string
+          nullable: true
+          readOnly: true
+        columns:
+          type: array
+          items:
+            type: string
+          nullable: true
+          readOnly: true
+        keys:
+          type: array
+          items:
+            type: string
+          nullable: true
+          readOnly: true
+        operator:
+          type: string
+          nullable: true
+          readOnly: true
+      required:
+      - alias
+      - children
+      - columns
+      - condition
+      - id
+      - keys
+      - method
+      - name
+      - operator
+      - type
+      - using
     SendEmailReset:
       type: object
       properties:
@@ -1271,6 +1337,28 @@ components:
       required:
       - current_password
       - new_email
+    TypeEnum:
+      enum:
+      - table
+      - alias
+      - join
+      - select
+      - where
+      - group_by
+      - having
+      - order_by
+      - set_op
+      type: string
+      description: |-
+        * `table` - table
+        * `alias` - alias
+        * `join` - join
+        * `select` - select
+        * `where` - where
+        * `group_by` - group_by
+        * `having` - having
+        * `order_by` - order_by
+        * `set_op` - set_op
     User:
       type: object
       properties:

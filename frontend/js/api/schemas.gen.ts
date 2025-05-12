@@ -273,7 +273,10 @@ export const $PatchedQuery = {
       },
       readOnly: true,
     },
-    tree: {
+    sql_tree: {
+      $ref: "#/components/schemas/SQLTree",
+    },
+    ra_tree: {
       $ref: "#/components/schemas/RATree",
     },
   },
@@ -426,7 +429,10 @@ export const $Query = {
       },
       readOnly: true,
     },
-    tree: {
+    sql_tree: {
+      $ref: "#/components/schemas/SQLTree",
+    },
+    ra_tree: {
       $ref: "#/components/schemas/RATree",
     },
   },
@@ -513,6 +519,87 @@ export const $RATree = {
   required: ["id", "label", "sub_trees"],
 } as const;
 
+export const $SQLTree = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    type: {
+      $ref: "#/components/schemas/TypeEnum",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/SQLTree",
+      },
+      readOnly: true,
+    },
+    name: {
+      type: "string",
+      nullable: true,
+      readOnly: true,
+    },
+    alias: {
+      type: "string",
+      nullable: true,
+      readOnly: true,
+    },
+    method: {
+      type: "string",
+      nullable: true,
+      readOnly: true,
+    },
+    condition: {
+      type: "string",
+      nullable: true,
+      readOnly: true,
+    },
+    using: {
+      type: "array",
+      items: {
+        type: "string",
+      },
+      nullable: true,
+      readOnly: true,
+    },
+    columns: {
+      type: "array",
+      items: {
+        type: "string",
+      },
+      nullable: true,
+      readOnly: true,
+    },
+    keys: {
+      type: "array",
+      items: {
+        type: "string",
+      },
+      nullable: true,
+      readOnly: true,
+    },
+    operator: {
+      type: "string",
+      nullable: true,
+      readOnly: true,
+    },
+  },
+  required: [
+    "alias",
+    "children",
+    "columns",
+    "condition",
+    "id",
+    "keys",
+    "method",
+    "name",
+    "operator",
+    "type",
+    "using",
+  ],
+} as const;
+
 export const $SendEmailReset = {
   type: "object",
   properties: {
@@ -551,6 +638,30 @@ export const $SetUsername = {
     },
   },
   required: ["current_password", "new_email"],
+} as const;
+
+export const $TypeEnum = {
+  enum: [
+    "table",
+    "alias",
+    "join",
+    "select",
+    "where",
+    "group_by",
+    "having",
+    "order_by",
+    "set_op",
+  ],
+  type: "string",
+  description: `* \`table\` - table
+* \`alias\` - alias
+* \`join\` - join
+* \`select\` - select
+* \`where\` - where
+* \`group_by\` - group_by
+* \`having\` - having
+* \`order_by\` - order_by
+* \`set_op\` - set_op`,
 } as const;
 
 export const $User = {

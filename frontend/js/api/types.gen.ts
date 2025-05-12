@@ -97,7 +97,8 @@ export type PatchedQuery = {
       end_col: number;
     };
   }>;
-  tree?: RATree;
+  sql_tree?: SQLTree;
+  ra_tree?: RATree;
 };
 
 export type PatchedUser = {
@@ -136,7 +137,8 @@ export type Query = {
       end_col: number;
     };
   }>;
-  tree?: RATree;
+  sql_tree?: SQLTree;
+  ra_tree?: RATree;
 };
 
 export type QueryExecution = {
@@ -172,6 +174,20 @@ export type RATree = {
   readonly sub_trees: Array<RATree>;
 };
 
+export type SQLTree = {
+  id: number;
+  type: TypeEnum;
+  readonly children: Array<SQLTree>;
+  readonly name: string | null;
+  readonly alias: string | null;
+  readonly method: string | null;
+  readonly condition: string | null;
+  readonly using: Array<string> | null;
+  readonly columns: Array<string> | null;
+  readonly keys: Array<string> | null;
+  readonly operator: string | null;
+};
+
 export type SendEmailReset = {
   email: string;
 };
@@ -185,6 +201,28 @@ export type SetUsername = {
   current_password: string;
   new_email: string;
 };
+
+/**
+ * * `table` - table
+ * * `alias` - alias
+ * * `join` - join
+ * * `select` - select
+ * * `where` - where
+ * * `group_by` - group_by
+ * * `having` - having
+ * * `order_by` - order_by
+ * * `set_op` - set_op
+ */
+export type TypeEnum =
+  | "table"
+  | "alias"
+  | "join"
+  | "select"
+  | "where"
+  | "group_by"
+  | "having"
+  | "order_by"
+  | "set_op";
 
 export type User = {
   readonly id: number;
