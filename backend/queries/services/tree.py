@@ -3,16 +3,18 @@ from collections.abc import Mapping
 from .ra.parser.ast import RAQuery
 from .ra.tree.builder import RATreeBuilder
 from .ra.tree.types import RATree
-from .types import QueryAST
+from .sql.tree.builder import SQLTreeBuilder
+from .sql.tree.types import SQLTree
+from .types import QueryAST, SQLQuery
 
 
-QueryTree = RATree | None  # TODO: Replace with SQLTree
+QueryTree = RATree | SQLTree
 Subqueries = Mapping[int, QueryAST]
 
 
-def build_query_tree(ast: QueryAST) -> tuple[QueryTree, Subqueries]:
+def build_query_tree(ast: QueryAST) -> tuple[QueryTree | None, Subqueries]:
     match ast:
         case RAQuery():
             return RATreeBuilder().build(ast)
-        case _:
-            return None, {}
+        case SQLQuery():
+            return SQLTreeBuilder().build(ast)

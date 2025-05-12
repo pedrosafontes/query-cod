@@ -46,24 +46,18 @@ class Query(IndexedTimeStampedModel):
         return errors
 
     @cached_property
-    def tree_with_subqueries(self) -> tuple[QueryTree, Subqueries] | None:
+    def tree_with_subqueries(self) -> tuple[QueryTree | None, Subqueries]:
         from .services.tree import build_query_tree
 
-        return build_query_tree(self.ast) if self.ast else None
+        return build_query_tree(self.ast) if self.ast else (None, {})
 
     @property
     def tree(self) -> QueryTree | None:
-        if self.tree_with_subqueries is None:
-            return None
-
         tree, _ = self.tree_with_subqueries
         return tree
 
     @property
     def subqueries(self) -> Subqueries:
-        if self.tree_with_subqueries is None:
-            return {}
-
         _, subqueries = self.tree_with_subqueries
         return subqueries
 
