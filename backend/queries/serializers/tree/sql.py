@@ -3,6 +3,7 @@ from typing import Any
 
 from drf_spectacular.helpers import lazy_serializer
 from drf_spectacular.utils import PolymorphicProxySerializer, extend_schema_field
+from queries.serializers.error import QueryErrorSerializer
 from queries.services.sql.tree.types import (
     AliasNode,
     GroupByNode,
@@ -34,6 +35,7 @@ class SQLTreeNodeSerializer(serializers.Serializer[SQLTree]):
     id = serializers.IntegerField()
     children = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
+    validation_errors = QueryErrorSerializer(many=True)
 
     @extend_schema_field(
         serializers.ChoiceField(
