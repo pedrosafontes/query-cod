@@ -5,7 +5,7 @@ from .error import QueryErrorSerializer
 
 
 class QuerySerializer(serializers.ModelSerializer[Query]):
-    validation_errors = QueryErrorSerializer(many=True)
+    validation_errors = QueryErrorSerializer(many=True, read_only=True)
 
     class Meta:
         model = Query
