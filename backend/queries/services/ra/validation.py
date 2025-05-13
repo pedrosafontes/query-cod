@@ -6,8 +6,7 @@ from ..types import to_relational_schema
 from .parser import parse_ra
 from .parser.ast import RAQuery
 from .parser.errors import RASyntaxError
-from .semantics import RASemanticAnalyzer
-from .semantics.errors import RASemanticError
+from .semantics import validate_ra_semantics
 
 
 def validate_ra(
@@ -24,17 +23,5 @@ def validate_ra(
             syntax_error['description'] = e.description
         return None, [syntax_error]
 
-    try:
-        schema = to_relational_schema(get_schema(db))
-        RASemanticAnalyzer(schema).validate(query)
-    except RASemanticError as e:
-        semantic_error: QueryError = {'title': e.title}
-        if e.description:
-            semantic_error['description'] = e.description
-        if e.position:
-            semantic_error['position'] = e.position
-        if e.hint:
-            semantic_error['hint'] = e.hint
-        return query, [semantic_error]
-
-    return query, []
+    schema = to_relational_schema(get_schema(db))
+    return query, validate_ra_semantics(query, schema)
