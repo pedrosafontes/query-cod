@@ -1,8 +1,12 @@
 from queries.models import Query
 from rest_framework import serializers
 
+from .error import QueryErrorSerializer
+
 
 class QuerySerializer(serializers.ModelSerializer[Query]):
+    validation_errors = QueryErrorSerializer(many=True)
+
     class Meta:
         model = Query
         fields = [  # noqa: RUF012
