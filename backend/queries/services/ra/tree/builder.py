@@ -22,7 +22,10 @@ from queries.services.ra.parser.ast import (
     ThetaJoin,
     TopN,
 )
+from queries.services.types import RelationalSchema
+from queries.types import QueryError
 
+from ..semantics import validate_ra_semantics
 from .types import RATree
 from .utils import (
     CAP,
@@ -50,45 +53,57 @@ class RATreeBuilder:
     _counter: int
     _subqueries: dict[int, RAQuery]
 
+    def __init__(self, schema: RelationalSchema):
+        self._schema = schema
+
     def build(self, query: RAQuery) -> tuple[RATree, dict[int, RAQuery]]:
         self._counter = 0
         self._subqueries = {}
         return self._build(query), self._subqueries
 
-    def _add_subquery(self, subquery: RAQuery) -> int:
-        subquery_id = self._counter
+    def _add_subquery(self, subquery: RAQuery) -> tuple[int, list[QueryError]]:
+        query_id = self._counter
+        errors = validate_ra_semantics(subquery, self._schema)
         self._counter += 1
-        self._subqueries[subquery_id] = subquery
-        return subquery_id
+        self._subqueries[query_id] = subquery
+        return query_id, errors
 
     def _build(self, query: RAQuery) -> RATree:
         method: Callable[[RAQuery], RATree] = getattr(self, f'_convert_{type(query).__name__}')
         return method(query)
 
     def _convert_Relation(self, rel: Relation) -> RATree:  # noqa: N802
+        query_id, errors = self._add_subquery(rel)
         return {
-            'id': self._add_subquery(rel),
+            'id': query_id,
+            'validation_errors': errors,
             'label': text(rel.name),
         }
 
     def _convert_Projection(self, proj: Projection) -> RATree:  # noqa: N802
         attributes = ', '.join([self._convert_attribute(attr) for attr in proj.attributes])
+        query_id, errors = self._add_subquery(proj)
         return {
-            'id': self._add_subquery(proj),
+            'id': query_id,
+            'validation_errors': errors,
             'label': subscript(PI, attributes),
             'sub_trees': [self._build(proj.subquery)],
         }
 
     def _convert_Selection(self, sel: Selection) -> RATree:  # noqa: N802
+        query_id, errors = self._add_subquery(sel)
         return {
-            'id': self._add_subquery(sel),
+            'id': query_id,
+            'validation_errors': errors,
             'label': subscript(SIGMA, self._convert_condition(sel.condition)),
             'sub_trees': [self._build(sel.subquery)],
         }
 
     def _convert_Division(self, div: Division) -> RATree:  # noqa: N802
+        query_id, errors = self._add_subquery(div)
         return {
-            'id': self._add_subquery(div),
+            'id': query_id,
+            'validation_errors': errors,
             'label': DIV,
             'sub_trees': [self._build(div.dividend), self._build(div.divisor)],
         }
@@ -104,8 +119,10 @@ class RATreeBuilder:
             case SetOperator.CARTESIAN:
                 operator_label = TIMES
 
+        query_id, errors = self._add_subquery(set_op)
         return {
-            'id': self._add_subquery(set_op),
+            'id': query_id,
+            'validation_errors': errors,
             'label': operator_label,
             'sub_trees': [self._build(set_op.left), self._build(set_op.right)],
         }
@@ -117,15 +134,19 @@ class RATreeBuilder:
             case JoinOperator.SEMI:
                 operator_label = LTIMES
 
+        query_id, errors = self._add_subquery(join)
         return {
-            'id': self._add_subquery(join),
+            'id': query_id,
+            'validation_errors': errors,
             'label': operator_label,
             'sub_trees': [self._build(join.left), self._build(join.right)],
         }
 
     def _convert_ThetaJoin(self, join: ThetaJoin) -> RATree:  # noqa: N802
+        query_id, errors = self._add_subquery(join)
         return {
-            'id': self._add_subquery(join),
+            'id': query_id,
+            'validation_errors': errors,
             'label': overset(self._convert_condition(join.condition), JOIN),
             'sub_trees': [self._build(join.left), self._build(join.right)],
         }
@@ -138,16 +159,22 @@ class RATreeBuilder:
                 for a in agg.aggregations
             ]
         )
+
+        query_id, errors = self._add_subquery(agg)
         return {
-            'id': self._add_subquery(agg),
+            'id': query_id,
+            'validation_errors': errors,
             'label': subscript(GAMMA, f'(({group_by}), ({aggregations}))'),
             'sub_trees': [self._build(agg.subquery)],
         }
 
     def _convert_TopN(self, top_n: TopN) -> RATree:  # noqa: N802
         attr = self._convert_attribute(top_n.attribute)
+
+        query_id, errors = self._add_subquery(top_n)
         return {
-            'id': self._add_subquery(top_n),
+            'id': query_id,
+            'validation_errors': errors,
             'label': subscript('T', f'({top_n.limit}, {attr})'),
             'sub_trees': [self._build(top_n.subquery)],
         }

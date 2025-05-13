@@ -53,7 +53,14 @@ class Query(IndexedTimeStampedModel):
     def tree_with_subqueries(self) -> tuple[QueryTree | None, Subqueries]:
         from .services.tree import build_query_tree
 
-        return build_query_tree(self.ast) if self.ast else (None, {})
+        return (
+            build_query_tree(
+                self.ast,
+                self.project.database.connection_info,
+            )
+            if self.ast
+            else (None, {})
+        )
 
     @property
     def _tree(self) -> QueryTree | None:

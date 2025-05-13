@@ -3,11 +3,14 @@ from drf_spectacular.utils import extend_schema_field
 from queries.services.ra.tree.types import RATree
 from rest_framework import serializers
 
+from ..error import QueryErrorSerializer
+
 
 class RATreeSerializer(serializers.Serializer[RATree]):
     id = serializers.IntegerField()
     label = serializers.CharField()  # type: ignore[assignment]
     sub_trees = serializers.SerializerMethodField()
+    validation_errors = QueryErrorSerializer(many=True)
 
     @extend_schema_field(
         lazy_serializer('queries.serializers.tree.RATreeSerializer')(many=True, required=False)
