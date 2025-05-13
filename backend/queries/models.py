@@ -62,15 +62,17 @@ class Query(IndexedTimeStampedModel):
 
     @property
     def sql_tree(self) -> SQLTree | None:
-        if self.language == self.QueryLanguage.SQL:
+        if self._tree and self.language == self.QueryLanguage.SQL:
             return cast(SQLTree, self._tree)
-        return None
+        else:
+            return None
 
     @property
     def ra_tree(self) -> RATree | None:
-        if self.language == self.QueryLanguage.RA:
+        if self._tree and self.language == self.QueryLanguage.RA:
             return cast(RATree, self._tree)
-        return None
+        else:
+            return None
 
     @property
     def subqueries(self) -> Subqueries:
