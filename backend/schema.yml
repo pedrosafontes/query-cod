@@ -965,6 +965,19 @@ components:
       required:
       - id
       - name
+    ErrorPosition:
+      type: object
+      properties:
+        line:
+          type: integer
+        start_col:
+          type: integer
+        end_col:
+          type: integer
+      required:
+      - end_col
+      - line
+      - start_col
     GroupByNode:
       type: object
       properties:
@@ -1174,30 +1187,7 @@ components:
         validation_errors:
           type: array
           items:
-            type: object
-            properties:
-              title:
-                type: string
-              description:
-                type: string
-              hint:
-                type: string
-              position:
-                type: object
-                properties:
-                  line:
-                    type: integer
-                  start_col:
-                    type: integer
-                  end_col:
-                    type: integer
-                required:
-                - end_col
-                - line
-                - start_col
-            required:
-            - title
-          readOnly: true
+            $ref: '#/components/schemas/QueryError'
     PatchedUser:
       type: object
       properties:
@@ -1284,36 +1274,26 @@ components:
         validation_errors:
           type: array
           items:
-            type: object
-            properties:
-              title:
-                type: string
-              description:
-                type: string
-              hint:
-                type: string
-              position:
-                type: object
-                properties:
-                  line:
-                    type: integer
-                  start_col:
-                    type: integer
-                  end_col:
-                    type: integer
-                required:
-                - end_col
-                - line
-                - start_col
-            required:
-            - title
-          readOnly: true
+            $ref: '#/components/schemas/QueryError'
       required:
       - created
       - id
       - modified
       - name
       - validation_errors
+    QueryError:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        hint:
+          type: string
+        position:
+          $ref: '#/components/schemas/ErrorPosition'
+      required:
+      - title
     QueryExecution:
       type: object
       properties:
@@ -1381,10 +1361,15 @@ components:
           items:
             $ref: '#/components/schemas/RATree'
           readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
       required:
       - id
       - label
       - sub_trees
+      - validation_errors
     SQLTree:
       oneOf:
       - $ref: '#/components/schemas/TableNode'

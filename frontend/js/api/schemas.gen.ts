@@ -124,6 +124,22 @@ export const $DatabaseSummary = {
   required: ["id", "name"],
 } as const;
 
+export const $ErrorPosition = {
+  type: "object",
+  properties: {
+    line: {
+      type: "integer",
+    },
+    start_col: {
+      type: "integer",
+    },
+    end_col: {
+      type: "integer",
+    },
+  },
+  required: ["end_col", "line", "start_col"],
+} as const;
+
 export const $GroupByNode = {
   type: "object",
   properties: {
@@ -399,36 +415,8 @@ export const $PatchedQuery = {
     validation_errors: {
       type: "array",
       items: {
-        type: "object",
-        properties: {
-          title: {
-            type: "string",
-          },
-          description: {
-            type: "string",
-          },
-          hint: {
-            type: "string",
-          },
-          position: {
-            type: "object",
-            properties: {
-              line: {
-                type: "integer",
-              },
-              start_col: {
-                type: "integer",
-              },
-              end_col: {
-                type: "integer",
-              },
-            },
-            required: ["end_col", "line", "start_col"],
-          },
-        },
-        required: ["title"],
+        $ref: "#/components/schemas/QueryError",
       },
-      readOnly: true,
     },
   },
 } as const;
@@ -549,39 +537,30 @@ export const $Query = {
     validation_errors: {
       type: "array",
       items: {
-        type: "object",
-        properties: {
-          title: {
-            type: "string",
-          },
-          description: {
-            type: "string",
-          },
-          hint: {
-            type: "string",
-          },
-          position: {
-            type: "object",
-            properties: {
-              line: {
-                type: "integer",
-              },
-              start_col: {
-                type: "integer",
-              },
-              end_col: {
-                type: "integer",
-              },
-            },
-            required: ["end_col", "line", "start_col"],
-          },
-        },
-        required: ["title"],
+        $ref: "#/components/schemas/QueryError",
       },
-      readOnly: true,
     },
   },
   required: ["created", "id", "modified", "name", "validation_errors"],
+} as const;
+
+export const $QueryError = {
+  type: "object",
+  properties: {
+    title: {
+      type: "string",
+    },
+    description: {
+      type: "string",
+    },
+    hint: {
+      type: "string",
+    },
+    position: {
+      $ref: "#/components/schemas/ErrorPosition",
+    },
+  },
+  required: ["title"],
 } as const;
 
 export const $QueryExecution = {
@@ -678,8 +657,14 @@ export const $RATree = {
       },
       readOnly: true,
     },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
   },
-  required: ["id", "label", "sub_trees"],
+  required: ["id", "label", "sub_trees", "validation_errors"],
 } as const;
 
 export const $SQLTree = {

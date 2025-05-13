@@ -51,6 +51,12 @@ export type DatabaseSummary = {
   name: string;
 };
 
+export type ErrorPosition = {
+  line: number;
+  start_col: number;
+  end_col: number;
+};
+
 export type GroupByNode = {
   id: number;
   readonly children: Array<SQLTree>;
@@ -124,16 +130,7 @@ export type PatchedQuery = {
   language?: LanguageEnum;
   readonly created?: string;
   readonly modified?: string;
-  readonly validation_errors?: Array<{
-    title: string;
-    description?: string;
-    hint?: string;
-    position?: {
-      line: number;
-      start_col: number;
-      end_col: number;
-    };
-  }>;
+  validation_errors?: Array<QueryError>;
 };
 
 export type PatchedUser = {
@@ -162,16 +159,14 @@ export type Query = {
   language?: LanguageEnum;
   readonly created: string;
   readonly modified: string;
-  readonly validation_errors: Array<{
-    title: string;
-    description?: string;
-    hint?: string;
-    position?: {
-      line: number;
-      start_col: number;
-      end_col: number;
-    };
-  }>;
+  validation_errors: Array<QueryError>;
+};
+
+export type QueryError = {
+  title: string;
+  description?: string;
+  hint?: string;
+  position?: ErrorPosition;
 };
 
 export type QueryExecution = {
@@ -210,6 +205,7 @@ export type RATree = {
   id: number;
   label: string;
   readonly sub_trees: Array<RATree>;
+  validation_errors: Array<QueryError>;
 };
 
 export type SQLTree =
