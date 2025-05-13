@@ -1,43 +1,45 @@
 import { type Edge } from "@xyflow/react";
 import { useEffect, useState } from "react";
 
-import { RATree } from "api";
+import { SQLTree } from "api";
 import useLayout from "hooks/useLayout";
 
 import getLayoutedNodes from "../layout";
 import { QueryDiagramProps } from "../types";
 
-import { RANode } from "./RANode";
+import { SQLNode } from "./SQLNode";
 
 const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
-  const [nodes, setNodes] = useState<RANode[]>([]);
+  const [nodes, setNodes] = useState<SQLNode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 
   useEffect(() => {
-    const nodes: RANode[] = [];
+    const nodes: SQLNode[] = [];
     const edges: Edge[] = [];
 
-    if (query?.ra_tree) {
-      const processTree = ({ id, label, sub_trees: subTrees }: RATree) => {
+    if (query?.sql_tree) {
+      const processTree = (tree: SQLTree) => {
+        const { children, ...data } = tree;
+        const id = tree.id.toString();
+
         nodes.push({
-          id: id.toString(),
-          type: "ra",
+          id,
+          type: "sql",
           position: { x: 0, y: 0 },
           data: {
+            ...data,
             queryId: query.id,
-            id,
-            label,
             setQueryResult,
           },
           deletable: false,
         });
-        if (subTrees) {
-          subTrees.forEach((subTree) => {
+        if (children) {
+          children.forEach((subTree) => {
             processTree(subTree);
             edges.push({
               id: `${id}-${subTree.id}`,
               type: "smoothstep",
-              target: id.toString(),
+              target: id,
               source: subTree.id.toString(),
               deletable: false,
               animated: true,
@@ -46,7 +48,7 @@ const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
         }
       };
 
-      processTree(query.ra_tree);
+      processTree(query.sql_tree);
     }
 
     setNodes(nodes);

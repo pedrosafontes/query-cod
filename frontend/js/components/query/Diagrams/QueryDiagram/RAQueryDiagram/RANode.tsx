@@ -1,10 +1,10 @@
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
-import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { QueriesService, QueryResultData } from "api";
+import { QueryResultData } from "api";
 import LatexFormula from "components/query/QueryEditor/RAEditor/LatexFormula";
-import { useErrorToast } from "hooks/useErrorToast";
+
+import useExecuteSubquery from "../useExecuteSubquery";
 
 export type RANodeData = {
   queryId: number;
@@ -15,27 +15,12 @@ export type RANodeData = {
 export type RANode = Node<RANodeData, "ra">;
 
 const RADiagramNode = ({ data }: NodeProps<RANode>) => {
-  const [isExecuting, setIsExecuting] = useState<boolean>(false);
-  const toast = useErrorToast();
   const { queryId, id, label, setQueryResult } = data;
-
-  const handleExecuteSubquery = async (): Promise<void> => {
-    setIsExecuting(true);
-    try {
-      const execution = await QueriesService.queriesSubqueriesExecutionsCreate({
-        id: queryId,
-        subqueryId: id,
-      });
-
-      setQueryResult(execution.results);
-    } catch (err) {
-      toast({
-        title: "Error executing subquery",
-      });
-    } finally {
-      setIsExecuting(false);
-    }
-  };
+  const { isExecuting, executeSubquery } = useExecuteSubquery({
+    queryId,
+    subqueryId: id,
+    setQueryResult,
+  });
 
   return (
     <Button
@@ -43,7 +28,7 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
         ${isExecuting && "cursor-wait animate-[pulse-scale_1s_ease-in-out_infinite] bg-gray-100"}
         `}
       variant="ghost"
-      onClick={handleExecuteSubquery}
+      onClick={executeSubquery}
     >
       <Handle
         className="invisible size-0 border-0 top-1"

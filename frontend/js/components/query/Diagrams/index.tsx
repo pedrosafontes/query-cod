@@ -17,6 +17,7 @@ import useSchemaDiagram from "components/database/useSchemaDiagram";
 import { useTopCenterFitView } from "hooks/useTopCenterView";
 
 import RADiagramNode from "./QueryDiagram/RAQueryDiagram/RANode";
+import SQLDiagramNode from "./QueryDiagram/SQLQueryDiagram/SQLNode";
 import useQueryDiagram from "./QueryDiagram/useQueryDiagram";
 
 export type DiagramsProps = {
@@ -29,6 +30,7 @@ export type DiagramsProps = {
 const nodeTypes = {
   table: SchemaDiagramNode,
   ra: RADiagramNode,
+  sql: SQLDiagramNode,
 };
 
 type DigramEnum = "schema" | "query";

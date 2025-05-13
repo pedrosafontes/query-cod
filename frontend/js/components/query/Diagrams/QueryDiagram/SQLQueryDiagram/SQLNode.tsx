@@ -1,0 +1,198 @@
+import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
+import {
+  SquarePen,
+  BookType,
+  Filter,
+  Group,
+  Merge,
+  List,
+  type LucideIcon,
+  SortAsc,
+  Table,
+  SquaresUnite,
+  SquaresIntersect,
+  SquaresSubtract,
+  SquaresExclude,
+} from "lucide-react";
+import { ReactNode } from "react";
+
+import { Button } from "@/components/ui/button";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import {
+  QueryResultData,
+  SQLTree,
+  TableNode,
+  AliasNode,
+  JoinNode,
+  SetOpNode,
+  SelectNode,
+  WhereNode,
+  GroupByNode,
+  HavingNode,
+  OrderByNode,
+} from "api";
+
+import useExecuteSubquery from "../useExecuteSubquery";
+
+export type SQLNodeData = {
+  id: number;
+  queryId: number;
+  setQueryResult: (result?: QueryResultData) => void;
+} & Omit<SQLTree, "children">;
+
+export type SQLNode = Node<SQLNodeData, "sql">;
+
+const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
+  const { queryId, id, setQueryResult, type, ...props } = data;
+  const { isExecuting, executeSubquery } = useExecuteSubquery({
+    queryId,
+    subqueryId: id,
+    setQueryResult,
+  });
+
+  const getConfiguration = (): {
+    icon: LucideIcon;
+    title?: string;
+    hoverContent?: ReactNode;
+  } => {
+    switch (type) {
+      case "Table": {
+        const { name } = props as TableNode;
+        return { icon: Table, title: name };
+      }
+      case "Alias": {
+        const { alias } = props as AliasNode;
+        return { icon: SquarePen, title: `AS ${alias}` };
+      }
+      case "Join": {
+        const { method } = props as JoinNode;
+        return { icon: Merge, title: `${method} JOIN` };
+      }
+      case "Select": {
+        const { columns } = props as SelectNode;
+        const hoverContent = (
+          <>
+            <h3>Attributes</h3>
+            <ul className="list-disc pl-3">
+              {columns.map((column) => (
+                <li key={column}>
+                  <span className="text-muted-foreground">{column}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        );
+        return { icon: List, title: "SELECT", hoverContent };
+      }
+      case "Where": {
+        const { condition } = props as WhereNode;
+        const hoverContent = (
+          <>
+            <h3>Condition</h3>
+            <p className="text-muted-foreground">{condition}</p>
+          </>
+        );
+        return { icon: Filter, title: "WHERE", hoverContent };
+      }
+      case "GroupBy": {
+        const { keys } = props as GroupByNode;
+        const hoverContent = (
+          <>
+            <h3>Fields</h3>
+            <ul className="list-disc pl-3">
+              {keys.map((key) => (
+                <li key={key}>
+                  <span className="text-muted-foreground">{key}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        );
+        return { icon: Group, title: "GROUP BY", hoverContent };
+      }
+      case "Having": {
+        const { condition } = props as HavingNode;
+        const hoverContent = (
+          <>
+            <h3>Condition</h3>
+            <p className="text-muted-foreground">{condition}</p>
+          </>
+        );
+        return { icon: Filter, title: "HAVING", hoverContent };
+      }
+      case "OrderBy": {
+        const { keys } = props as OrderByNode;
+        const hoverContent = (
+          <>
+            <h3>Fields</h3>
+            <ul className="list-disc pl-3">
+              {keys.map((key) => (
+                <li key={key}>
+                  <span className="text-muted-foreground">{key}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        );
+        return { icon: SortAsc, title: "ORDER BY", hoverContent };
+      }
+      case "SetOp": {
+        const { operator } = props as SetOpNode;
+        let icon: LucideIcon;
+        switch (operator) {
+          case "union":
+            icon = SquaresUnite;
+            break;
+          case "intersect":
+            icon = SquaresIntersect;
+            break;
+          case "except":
+            icon = SquaresSubtract;
+            break;
+          default:
+            icon = SquaresExclude;
+        }
+        return { icon, title: operator.toUpperCase() };
+      }
+      default:
+        return { icon: BookType };
+    }
+  };
+
+  const { icon: Icon, title, hoverContent } = getConfiguration();
+
+  return (
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <Button
+          className={`bg-white border transition-colors ${isExecuting && "cursor-wait animate-[pulse-scale_1s_ease-in-out_infinite] bg-gray-100"}`}
+          variant="ghost"
+          onClick={executeSubquery}
+        >
+          <Handle
+            className="invisible size-0 border-0 top-1"
+            position={Position.Top}
+            type="source"
+          />
+          <Icon /> {title}
+          <Handle
+            className="invisible size-0 border-0 bottom-1"
+            position={Position.Bottom}
+            type="target"
+          />
+        </Button>
+      </HoverCardTrigger>
+      {hoverContent && (
+        <HoverCardContent className="text-xs p-2" side="right">
+          {hoverContent}
+        </HoverCardContent>
+      )}
+    </HoverCard>
+  );
+};
+
+export default SQLDiagramNode;

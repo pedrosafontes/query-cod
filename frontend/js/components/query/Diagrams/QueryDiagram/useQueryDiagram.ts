@@ -1,17 +1,23 @@
 import useRAQueryDiagram from "./RAQueryDiagram/useRAQueryDiagram";
+import useSQLQueryDiagram from "./SQLQueryDiagram/useSQLQueryDiagram";
 import { QueryDiagramProps } from "./types";
 
 const useQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
-  const { nodes: RANodes, edges: RAEdges } = useRAQueryDiagram({
+  const raDiagram = useRAQueryDiagram({
+    query,
+    setQueryResult,
+  });
+
+  const sqlDiagram = useSQLQueryDiagram({
     query,
     setQueryResult,
   });
 
   switch (query?.language) {
     case "ra":
-      return { nodes: RANodes, edges: RAEdges };
+      return raDiagram;
     case "sql":
-      return { nodes: [], edges: [] };
+      return sqlDiagram;
     default:
       return { nodes: [], edges: [] };
   }
