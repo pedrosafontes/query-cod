@@ -5,6 +5,13 @@ export type Activation = {
   token: string;
 };
 
+export type AliasNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  type: "AliasNode";
+  alias: string;
+};
+
 export type Database = {
   readonly id: number;
   name: string;
@@ -44,6 +51,29 @@ export type DatabaseSummary = {
   name: string;
 };
 
+export type GroupByNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  type: "GroupByNode";
+  keys: Array<string>;
+};
+
+export type HavingNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  type: "HavingNode";
+  condition: string;
+};
+
+export type JoinNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  type: "JoinNode";
+  method: string;
+  condition?: string | null;
+  using?: Array<string> | null;
+};
+
 /**
  * * `sql` - SQL
  * * `ra` - Relational Algebra
@@ -53,6 +83,13 @@ export type LanguageEnum = "sql" | "ra";
 export type Login = {
   username: string;
   password: string;
+};
+
+export type OrderByNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  type: "OrderByNode";
+  keys: Array<string>;
 };
 
 export type PaginatedUserList = {
@@ -97,7 +134,7 @@ export type PatchedQuery = {
       end_col: number;
     };
   }>;
-  sql_tree?: SQLTree;
+  readonly sql_tree?: SQLTree;
   ra_tree?: RATree;
 };
 
@@ -137,7 +174,7 @@ export type Query = {
       end_col: number;
     };
   }>;
-  sql_tree?: SQLTree;
+  readonly sql_tree: SQLTree;
   ra_tree?: RATree;
 };
 
@@ -174,22 +211,33 @@ export type RATree = {
   readonly sub_trees: Array<RATree>;
 };
 
-export type SQLTree = {
+export type SQLTree =
+  | TableNode
+  | AliasNode
+  | JoinNode
+  | SelectNode
+  | WhereNode
+  | GroupByNode
+  | HavingNode
+  | OrderByNode
+  | SetOpNode;
+
+export type SelectNode = {
   id: number;
-  type: TypeEnum;
   readonly children: Array<SQLTree>;
-  readonly name: string | null;
-  readonly alias: string | null;
-  readonly method: string | null;
-  readonly condition: string | null;
-  readonly using: Array<string> | null;
-  readonly columns: Array<string> | null;
-  readonly keys: Array<string> | null;
-  readonly operator: string | null;
+  type: "SelectNode";
+  columns: Array<string>;
 };
 
 export type SendEmailReset = {
   email: string;
+};
+
+export type SetOpNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  type: "null";
+  operator: string;
 };
 
 export type SetPassword = {
@@ -202,27 +250,34 @@ export type SetUsername = {
   new_email: string;
 };
 
+export type TableNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  type: "TableNode";
+  name: string;
+};
+
 /**
- * * `table` - table
- * * `alias` - alias
- * * `join` - join
- * * `select` - select
- * * `where` - where
- * * `group_by` - group_by
- * * `having` - having
- * * `order_by` - order_by
- * * `set_op` - set_op
+ * * `Table` - Table
+ * * `Alias` - Alias
+ * * `Join` - Join
+ * * `Select` - Select
+ * * `Where` - Where
+ * * `GroupBy` - GroupBy
+ * * `Having` - Having
+ * * `OrderBy` - OrderBy
+ * * `SetOp` - SetOp
  */
 export type TypeEnum =
-  | "table"
-  | "alias"
-  | "join"
-  | "select"
-  | "where"
-  | "group_by"
-  | "having"
-  | "order_by"
-  | "set_op";
+  | "Table"
+  | "Alias"
+  | "Join"
+  | "Select"
+  | "Where"
+  | "GroupBy"
+  | "Having"
+  | "OrderBy"
+  | "SetOp";
 
 export type User = {
   readonly id: number;
@@ -239,6 +294,13 @@ export type UserCreate = {
 
 export type UsernameResetConfirm = {
   new_email: string;
+};
+
+export type WhereNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  type: "WhereNode";
+  condition: string;
 };
 
 export type AuthLoginCreateData = {

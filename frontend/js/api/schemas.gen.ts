@@ -13,6 +13,29 @@ export const $Activation = {
   required: ["token", "uid"],
 } as const;
 
+export const $AliasNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/SQLTree",
+      },
+      readOnly: true,
+    },
+    type: {
+      $ref: "#/components/schemas/TypeEnum",
+    },
+    alias: {
+      type: "string",
+    },
+  },
+  required: ["alias", "children", "id", "type"],
+} as const;
+
 export const $Database = {
   type: "object",
   properties: {
@@ -96,6 +119,89 @@ export const $DatabaseSummary = {
   required: ["id", "name"],
 } as const;
 
+export const $GroupByNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/SQLTree",
+      },
+      readOnly: true,
+    },
+    type: {
+      $ref: "#/components/schemas/TypeEnum",
+    },
+    keys: {
+      type: "array",
+      items: {
+        type: "string",
+      },
+    },
+  },
+  required: ["children", "id", "keys", "type"],
+} as const;
+
+export const $HavingNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/SQLTree",
+      },
+      readOnly: true,
+    },
+    type: {
+      $ref: "#/components/schemas/TypeEnum",
+    },
+    condition: {
+      type: "string",
+    },
+  },
+  required: ["children", "condition", "id", "type"],
+} as const;
+
+export const $JoinNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/SQLTree",
+      },
+      readOnly: true,
+    },
+    type: {
+      $ref: "#/components/schemas/TypeEnum",
+    },
+    method: {
+      type: "string",
+    },
+    condition: {
+      type: "string",
+      nullable: true,
+    },
+    using: {
+      type: "array",
+      items: {
+        type: "string",
+      },
+      nullable: true,
+    },
+  },
+  required: ["children", "id", "method", "type"],
+} as const;
+
 export const $LanguageEnum = {
   enum: ["sql", "ra"],
   type: "string",
@@ -114,6 +220,32 @@ export const $Login = {
     },
   },
   required: ["password", "username"],
+} as const;
+
+export const $OrderByNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/SQLTree",
+      },
+      readOnly: true,
+    },
+    type: {
+      $ref: "#/components/schemas/TypeEnum",
+    },
+    keys: {
+      type: "array",
+      items: {
+        type: "string",
+      },
+    },
+  },
+  required: ["children", "id", "keys", "type"],
 } as const;
 
 export const $PaginatedUserList = {
@@ -274,7 +406,12 @@ export const $PatchedQuery = {
       readOnly: true,
     },
     sql_tree: {
-      $ref: "#/components/schemas/SQLTree",
+      allOf: [
+        {
+          $ref: "#/components/schemas/SQLTree",
+        },
+      ],
+      readOnly: true,
     },
     ra_tree: {
       $ref: "#/components/schemas/RATree",
@@ -430,13 +567,25 @@ export const $Query = {
       readOnly: true,
     },
     sql_tree: {
-      $ref: "#/components/schemas/SQLTree",
+      allOf: [
+        {
+          $ref: "#/components/schemas/SQLTree",
+        },
+      ],
+      readOnly: true,
     },
     ra_tree: {
       $ref: "#/components/schemas/RATree",
     },
   },
-  required: ["created", "id", "modified", "name", "validation_errors"],
+  required: [
+    "created",
+    "id",
+    "modified",
+    "name",
+    "sql_tree",
+    "validation_errors",
+  ],
 } as const;
 
 export const $QueryExecution = {
@@ -520,13 +669,48 @@ export const $RATree = {
 } as const;
 
 export const $SQLTree = {
+  oneOf: [
+    {
+      $ref: "#/components/schemas/TableNode",
+    },
+    {
+      $ref: "#/components/schemas/AliasNode",
+    },
+    {
+      $ref: "#/components/schemas/JoinNode",
+    },
+    {
+      $ref: "#/components/schemas/SelectNode",
+    },
+    {
+      $ref: "#/components/schemas/WhereNode",
+    },
+    {
+      $ref: "#/components/schemas/GroupByNode",
+    },
+    {
+      $ref: "#/components/schemas/HavingNode",
+    },
+    {
+      $ref: "#/components/schemas/OrderByNode",
+    },
+    {
+      $ref: "#/components/schemas/SetOpNode",
+    },
+  ],
+  discriminator: {
+    propertyName: "type",
+    mapping: {
+      null: "#/components/schemas/SetOpNode",
+    },
+  },
+} as const;
+
+export const $SelectNode = {
   type: "object",
   properties: {
     id: {
       type: "integer",
-    },
-    type: {
-      $ref: "#/components/schemas/TypeEnum",
     },
     children: {
       type: "array",
@@ -535,69 +719,17 @@ export const $SQLTree = {
       },
       readOnly: true,
     },
-    name: {
-      type: "string",
-      nullable: true,
-      readOnly: true,
-    },
-    alias: {
-      type: "string",
-      nullable: true,
-      readOnly: true,
-    },
-    method: {
-      type: "string",
-      nullable: true,
-      readOnly: true,
-    },
-    condition: {
-      type: "string",
-      nullable: true,
-      readOnly: true,
-    },
-    using: {
-      type: "array",
-      items: {
-        type: "string",
-      },
-      nullable: true,
-      readOnly: true,
+    type: {
+      $ref: "#/components/schemas/TypeEnum",
     },
     columns: {
       type: "array",
       items: {
         type: "string",
       },
-      nullable: true,
-      readOnly: true,
-    },
-    keys: {
-      type: "array",
-      items: {
-        type: "string",
-      },
-      nullable: true,
-      readOnly: true,
-    },
-    operator: {
-      type: "string",
-      nullable: true,
-      readOnly: true,
     },
   },
-  required: [
-    "alias",
-    "children",
-    "columns",
-    "condition",
-    "id",
-    "keys",
-    "method",
-    "name",
-    "operator",
-    "type",
-    "using",
-  ],
+  required: ["children", "columns", "id", "type"],
 } as const;
 
 export const $SendEmailReset = {
@@ -609,6 +741,29 @@ export const $SendEmailReset = {
     },
   },
   required: ["email"],
+} as const;
+
+export const $SetOpNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/SQLTree",
+      },
+      readOnly: true,
+    },
+    type: {
+      $ref: "#/components/schemas/TypeEnum",
+    },
+    operator: {
+      type: "string",
+    },
+  },
+  required: ["children", "id", "operator", "type"],
 } as const;
 
 export const $SetPassword = {
@@ -640,28 +795,51 @@ export const $SetUsername = {
   required: ["current_password", "new_email"],
 } as const;
 
+export const $TableNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/SQLTree",
+      },
+      readOnly: true,
+    },
+    type: {
+      $ref: "#/components/schemas/TypeEnum",
+    },
+    name: {
+      type: "string",
+    },
+  },
+  required: ["children", "id", "name", "type"],
+} as const;
+
 export const $TypeEnum = {
   enum: [
-    "table",
-    "alias",
-    "join",
-    "select",
-    "where",
-    "group_by",
-    "having",
-    "order_by",
-    "set_op",
+    "Table",
+    "Alias",
+    "Join",
+    "Select",
+    "Where",
+    "GroupBy",
+    "Having",
+    "OrderBy",
+    "SetOp",
   ],
   type: "string",
-  description: `* \`table\` - table
-* \`alias\` - alias
-* \`join\` - join
-* \`select\` - select
-* \`where\` - where
-* \`group_by\` - group_by
-* \`having\` - having
-* \`order_by\` - order_by
-* \`set_op\` - set_op`,
+  description: `* \`Table\` - Table
+* \`Alias\` - Alias
+* \`Join\` - Join
+* \`Select\` - Select
+* \`Where\` - Where
+* \`GroupBy\` - GroupBy
+* \`Having\` - Having
+* \`OrderBy\` - OrderBy
+* \`SetOp\` - SetOp`,
 } as const;
 
 export const $User = {
@@ -721,4 +899,27 @@ export const $UsernameResetConfirm = {
     },
   },
   required: ["new_email"],
+} as const;
+
+export const $WhereNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/SQLTree",
+      },
+      readOnly: true,
+    },
+    type: {
+      $ref: "#/components/schemas/TypeEnum",
+    },
+    condition: {
+      type: "string",
+    },
+  },
+  required: ["children", "condition", "id", "type"],
 } as const;
