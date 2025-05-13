@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, cast
+from typing import Any
 
 from drf_spectacular.helpers import lazy_serializer
 from drf_spectacular.utils import PolymorphicProxySerializer, extend_schema_field
