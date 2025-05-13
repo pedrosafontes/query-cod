@@ -1377,10 +1377,6 @@ components:
       - $ref: '#/components/schemas/HavingNode'
       - $ref: '#/components/schemas/OrderByNode'
       - $ref: '#/components/schemas/SetOpNode'
-      discriminator:
-        propertyName: type
-        mapping:
-          NoneType: '#/components/schemas/SetOpNode'
     SelectNode:
       type: object
       properties:

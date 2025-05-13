@@ -8,7 +8,7 @@ export type Activation = {
 export type AliasNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: "AliasNode";
+  readonly type: TypeEnum;
   alias: string;
 };
 
@@ -54,21 +54,21 @@ export type DatabaseSummary = {
 export type GroupByNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: "GroupByNode";
+  readonly type: TypeEnum;
   keys: Array<string>;
 };
 
 export type HavingNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: "HavingNode";
+  readonly type: TypeEnum;
   condition: string;
 };
 
 export type JoinNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: "JoinNode";
+  readonly type: TypeEnum;
   method: string;
   condition?: string | null;
   using?: Array<string> | null;
@@ -88,7 +88,7 @@ export type Login = {
 export type OrderByNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: "OrderByNode";
+  readonly type: TypeEnum;
   keys: Array<string>;
 };
 
@@ -225,7 +225,7 @@ export type SQLTree =
 export type SelectNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: "SelectNode";
+  readonly type: TypeEnum;
   columns: Array<string>;
 };
 
@@ -236,7 +236,7 @@ export type SendEmailReset = {
 export type SetOpNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: "NoneType";
+  readonly type: TypeEnum;
   operator: string;
 };
 
@@ -253,7 +253,7 @@ export type SetUsername = {
 export type TableNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: "TableNode";
+  readonly type: TypeEnum;
   name: string;
 };
 
@@ -299,7 +299,7 @@ export type UsernameResetConfirm = {
 export type WhereNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: "WhereNode";
+  readonly type: TypeEnum;
   condition: string;
 };
 

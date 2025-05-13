@@ -723,12 +723,6 @@ export const $SQLTree = {
       $ref: "#/components/schemas/SetOpNode",
     },
   ],
-  discriminator: {
-    propertyName: "type",
-    mapping: {
-      NoneType: "#/components/schemas/SetOpNode",
-    },
-  },
 } as const;
 
 export const $SelectNode = {

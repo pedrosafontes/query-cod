@@ -40,8 +40,8 @@ class SQLTreeNodeSerializer(serializers.Serializer[SQLTree]):
             choices=[node_type.value for node_type in SQLNodeType], required=True
         )
     )
-    def get_type(self, obj: SQLTree) -> SQLNodeType:
-        return cast(SQLNodeType, obj.__class__.__name__.replace('Node', ''))
+    def get_type(self, obj: SQLTree) -> str:
+        return obj.__class__.__name__.replace('Node', '')
 
     @extend_schema_field(
         PolymorphicProxySerializer(
@@ -57,7 +57,7 @@ class SQLTreeNodeSerializer(serializers.Serializer[SQLTree]):
                 lazy_serializer('OrderByNodeSerializer'),
                 lazy_serializer('SetOpNodeSerializer'),
             ],
-            resource_type_field_name='type',
+            resource_type_field_name=None,
             many=True,
         )
     )
@@ -139,6 +139,6 @@ SQLTreeField = PolymorphicProxySerializer(
         OrderByNodeSerializer,
         SetOpNodeSerializer,
     ],
-    resource_type_field_name='type',
+    resource_type_field_name=None,
     required=False,
 )
