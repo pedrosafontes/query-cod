@@ -27,7 +27,12 @@ export const $AliasNode = {
       readOnly: true,
     },
     type: {
-      $ref: "#/components/schemas/TypeEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/TypeEnum",
+        },
+      ],
+      readOnly: true,
     },
     alias: {
       type: "string",
@@ -133,7 +138,12 @@ export const $GroupByNode = {
       readOnly: true,
     },
     type: {
-      $ref: "#/components/schemas/TypeEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/TypeEnum",
+        },
+      ],
+      readOnly: true,
     },
     keys: {
       type: "array",
@@ -159,7 +169,12 @@ export const $HavingNode = {
       readOnly: true,
     },
     type: {
-      $ref: "#/components/schemas/TypeEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/TypeEnum",
+        },
+      ],
+      readOnly: true,
     },
     condition: {
       type: "string",
@@ -182,7 +197,12 @@ export const $JoinNode = {
       readOnly: true,
     },
     type: {
-      $ref: "#/components/schemas/TypeEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/TypeEnum",
+        },
+      ],
+      readOnly: true,
     },
     method: {
       type: "string",
@@ -236,7 +256,12 @@ export const $OrderByNode = {
       readOnly: true,
     },
     type: {
-      $ref: "#/components/schemas/TypeEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/TypeEnum",
+        },
+      ],
+      readOnly: true,
     },
     keys: {
       type: "array",
@@ -701,7 +726,7 @@ export const $SQLTree = {
   discriminator: {
     propertyName: "type",
     mapping: {
-      null: "#/components/schemas/SetOpNode",
+      NoneType: "#/components/schemas/SetOpNode",
     },
   },
 } as const;
@@ -720,7 +745,12 @@ export const $SelectNode = {
       readOnly: true,
     },
     type: {
-      $ref: "#/components/schemas/TypeEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/TypeEnum",
+        },
+      ],
+      readOnly: true,
     },
     columns: {
       type: "array",
@@ -757,7 +787,12 @@ export const $SetOpNode = {
       readOnly: true,
     },
     type: {
-      $ref: "#/components/schemas/TypeEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/TypeEnum",
+        },
+      ],
+      readOnly: true,
     },
     operator: {
       type: "string",
@@ -809,7 +844,12 @@ export const $TableNode = {
       readOnly: true,
     },
     type: {
-      $ref: "#/components/schemas/TypeEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/TypeEnum",
+        },
+      ],
+      readOnly: true,
     },
     name: {
       type: "string",
@@ -915,7 +955,12 @@ export const $WhereNode = {
       readOnly: true,
     },
     type: {
-      $ref: "#/components/schemas/TypeEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/TypeEnum",
+        },
+      ],
+      readOnly: true,
     },
     condition: {
       type: "string",

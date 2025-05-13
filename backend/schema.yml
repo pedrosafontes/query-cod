@@ -862,7 +862,9 @@ components:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
         type:
-          $ref: '#/components/schemas/TypeEnum'
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          readOnly: true
         alias:
           type: string
       required:
@@ -953,7 +955,9 @@ components:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
         type:
-          $ref: '#/components/schemas/TypeEnum'
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          readOnly: true
         keys:
           type: array
           items:
@@ -974,7 +978,9 @@ components:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
         type:
-          $ref: '#/components/schemas/TypeEnum'
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          readOnly: true
         condition:
           type: string
       required:
@@ -993,7 +999,9 @@ components:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
         type:
-          $ref: '#/components/schemas/TypeEnum'
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          readOnly: true
         method:
           type: string
         condition:
@@ -1038,7 +1046,9 @@ components:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
         type:
-          $ref: '#/components/schemas/TypeEnum'
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          readOnly: true
         keys:
           type: array
           items:
@@ -1370,7 +1380,7 @@ components:
       discriminator:
         propertyName: type
         mapping:
-          null: '#/components/schemas/SetOpNode'
+          NoneType: '#/components/schemas/SetOpNode'
     SelectNode:
       type: object
       properties:
@@ -1382,7 +1392,9 @@ components:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
         type:
-          $ref: '#/components/schemas/TypeEnum'
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          readOnly: true
         columns:
           type: array
           items:
@@ -1411,7 +1423,9 @@ components:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
         type:
-          $ref: '#/components/schemas/TypeEnum'
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          readOnly: true
         operator:
           type: string
       required:
@@ -1453,7 +1467,9 @@ components:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
         type:
-          $ref: '#/components/schemas/TypeEnum'
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          readOnly: true
         name:
           type: string
       required:
@@ -1544,7 +1560,9 @@ components:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
         type:
-          $ref: '#/components/schemas/TypeEnum'
+          allOf:
+          - $ref: '#/components/schemas/TypeEnum'
+          readOnly: true
         condition:
           type: string
       required:

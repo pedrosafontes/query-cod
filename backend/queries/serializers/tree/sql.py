@@ -33,10 +33,13 @@ class SQLNodeType(str, Enum):
 class SQLTreeNodeSerializer(serializers.Serializer[SQLTree]):
     id = serializers.IntegerField()
     children = serializers.SerializerMethodField()
-    type = serializers.ChoiceField(
-        choices=[node_type.value for node_type in SQLNodeType], required=True
-    )
+    type = serializers.SerializerMethodField()
 
+    @extend_schema_field(
+        serializers.ChoiceField(
+            choices=[node_type.value for node_type in SQLNodeType], required=True
+        )
+    )
     def get_type(self, obj: SQLTree) -> SQLNodeType:
         return cast(SQLNodeType, obj.__class__.__name__.replace('Node', ''))
 
