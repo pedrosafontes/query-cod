@@ -886,6 +886,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/TypeEnum'
           readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
         alias:
           type: string
       required:
@@ -893,6 +897,7 @@ components:
       - children
       - id
       - type
+      - validation_errors
     Database:
       type: object
       properties:
@@ -992,6 +997,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/TypeEnum'
           readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
         keys:
           type: array
           items:
@@ -1001,6 +1010,7 @@ components:
       - id
       - keys
       - type
+      - validation_errors
     HavingNode:
       type: object
       properties:
@@ -1015,6 +1025,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/TypeEnum'
           readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
         condition:
           type: string
       required:
@@ -1022,6 +1036,7 @@ components:
       - condition
       - id
       - type
+      - validation_errors
     JoinNode:
       type: object
       properties:
@@ -1036,6 +1051,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/TypeEnum'
           readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
         method:
           type: string
         condition:
@@ -1051,6 +1070,7 @@ components:
       - id
       - method
       - type
+      - validation_errors
     LanguageEnum:
       enum:
       - sql
@@ -1083,6 +1103,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/TypeEnum'
           readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
         keys:
           type: array
           items:
@@ -1092,6 +1116,7 @@ components:
       - id
       - keys
       - type
+      - validation_errors
     PaginatedUserList:
       type: object
       required:
@@ -1395,6 +1420,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/TypeEnum'
           readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
         columns:
           type: array
           items:
@@ -1404,6 +1433,7 @@ components:
       - columns
       - id
       - type
+      - validation_errors
     SendEmailReset:
       type: object
       properties:
@@ -1426,6 +1456,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/TypeEnum'
           readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
         operator:
           type: string
       required:
@@ -1433,6 +1467,7 @@ components:
       - id
       - operator
       - type
+      - validation_errors
     SetPassword:
       type: object
       properties:
@@ -1470,6 +1505,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/TypeEnum'
           readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
         name:
           type: string
       required:
@@ -1477,6 +1516,7 @@ components:
       - id
       - name
       - type
+      - validation_errors
     TypeEnum:
       enum:
       - Table
@@ -1563,6 +1603,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/TypeEnum'
           readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
         condition:
           type: string
       required:
@@ -1570,6 +1614,7 @@ components:
       - condition
       - id
       - type
+      - validation_errors
   securitySchemes:
     cookieAuth:
       type: apiKey

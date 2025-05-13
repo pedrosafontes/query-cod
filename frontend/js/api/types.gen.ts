@@ -9,6 +9,7 @@ export type AliasNode = {
   id: number;
   readonly children: Array<SQLTree>;
   readonly type: TypeEnum;
+  validation_errors: Array<QueryError>;
   alias: string;
 };
 
@@ -61,6 +62,7 @@ export type GroupByNode = {
   id: number;
   readonly children: Array<SQLTree>;
   readonly type: TypeEnum;
+  validation_errors: Array<QueryError>;
   keys: Array<string>;
 };
 
@@ -68,6 +70,7 @@ export type HavingNode = {
   id: number;
   readonly children: Array<SQLTree>;
   readonly type: TypeEnum;
+  validation_errors: Array<QueryError>;
   condition: string;
 };
 
@@ -75,6 +78,7 @@ export type JoinNode = {
   id: number;
   readonly children: Array<SQLTree>;
   readonly type: TypeEnum;
+  validation_errors: Array<QueryError>;
   method: string;
   condition?: string | null;
   using?: Array<string> | null;
@@ -95,6 +99,7 @@ export type OrderByNode = {
   id: number;
   readonly children: Array<SQLTree>;
   readonly type: TypeEnum;
+  validation_errors: Array<QueryError>;
   keys: Array<string>;
 };
 
@@ -223,6 +228,7 @@ export type SelectNode = {
   id: number;
   readonly children: Array<SQLTree>;
   readonly type: TypeEnum;
+  validation_errors: Array<QueryError>;
   columns: Array<string>;
 };
 
@@ -234,6 +240,7 @@ export type SetOpNode = {
   id: number;
   readonly children: Array<SQLTree>;
   readonly type: TypeEnum;
+  validation_errors: Array<QueryError>;
   operator: string;
 };
 
@@ -251,6 +258,7 @@ export type TableNode = {
   id: number;
   readonly children: Array<SQLTree>;
   readonly type: TypeEnum;
+  validation_errors: Array<QueryError>;
   name: string;
 };
 
@@ -297,6 +305,7 @@ export type WhereNode = {
   id: number;
   readonly children: Array<SQLTree>;
   readonly type: TypeEnum;
+  validation_errors: Array<QueryError>;
   condition: string;
 };
 

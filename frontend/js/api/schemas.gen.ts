@@ -34,11 +34,17 @@ export const $AliasNode = {
       ],
       readOnly: true,
     },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
     alias: {
       type: "string",
     },
   },
-  required: ["alias", "children", "id", "type"],
+  required: ["alias", "children", "id", "type", "validation_errors"],
 } as const;
 
 export const $Database = {
@@ -161,6 +167,12 @@ export const $GroupByNode = {
       ],
       readOnly: true,
     },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
     keys: {
       type: "array",
       items: {
@@ -168,7 +180,7 @@ export const $GroupByNode = {
       },
     },
   },
-  required: ["children", "id", "keys", "type"],
+  required: ["children", "id", "keys", "type", "validation_errors"],
 } as const;
 
 export const $HavingNode = {
@@ -192,11 +204,17 @@ export const $HavingNode = {
       ],
       readOnly: true,
     },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
     condition: {
       type: "string",
     },
   },
-  required: ["children", "condition", "id", "type"],
+  required: ["children", "condition", "id", "type", "validation_errors"],
 } as const;
 
 export const $JoinNode = {
@@ -220,6 +238,12 @@ export const $JoinNode = {
       ],
       readOnly: true,
     },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
     method: {
       type: "string",
     },
@@ -235,7 +259,7 @@ export const $JoinNode = {
       nullable: true,
     },
   },
-  required: ["children", "id", "method", "type"],
+  required: ["children", "id", "method", "type", "validation_errors"],
 } as const;
 
 export const $LanguageEnum = {
@@ -279,6 +303,12 @@ export const $OrderByNode = {
       ],
       readOnly: true,
     },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
     keys: {
       type: "array",
       items: {
@@ -286,7 +316,7 @@ export const $OrderByNode = {
       },
     },
   },
-  required: ["children", "id", "keys", "type"],
+  required: ["children", "id", "keys", "type", "validation_errors"],
 } as const;
 
 export const $PaginatedUserList = {
@@ -720,6 +750,12 @@ export const $SelectNode = {
       ],
       readOnly: true,
     },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
     columns: {
       type: "array",
       items: {
@@ -727,7 +763,7 @@ export const $SelectNode = {
       },
     },
   },
-  required: ["children", "columns", "id", "type"],
+  required: ["children", "columns", "id", "type", "validation_errors"],
 } as const;
 
 export const $SendEmailReset = {
@@ -762,11 +798,17 @@ export const $SetOpNode = {
       ],
       readOnly: true,
     },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
     operator: {
       type: "string",
     },
   },
-  required: ["children", "id", "operator", "type"],
+  required: ["children", "id", "operator", "type", "validation_errors"],
 } as const;
 
 export const $SetPassword = {
@@ -819,11 +861,17 @@ export const $TableNode = {
       ],
       readOnly: true,
     },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
     name: {
       type: "string",
     },
   },
-  required: ["children", "id", "name", "type"],
+  required: ["children", "id", "name", "type", "validation_errors"],
 } as const;
 
 export const $TypeEnum = {
@@ -930,9 +978,15 @@ export const $WhereNode = {
       ],
       readOnly: true,
     },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
     condition: {
       type: "string",
     },
   },
-  required: ["children", "condition", "id", "type"],
+  required: ["children", "condition", "id", "type", "validation_errors"],
 } as const;
