@@ -54,22 +54,18 @@ const Diagrams = ({
   });
 
   useEffect(() => {
-    if (diagram === "schema") {
-      setEdges(schemaEdges);
-      setNodes(schemaNodes);
-    } else {
-      setEdges(queryEdges);
-      setNodes(queryNodes);
-    }
-  }, [
-    diagram,
-    schemaNodes,
-    schemaEdges,
-    queryNodes,
-    queryEdges,
-    setNodes,
-    setEdges,
-  ]);
+    if (diagram !== "schema") return;
+    console.log("Setting up schema diagram.");
+    setNodes(schemaNodes);
+    setEdges(schemaEdges);
+  }, [diagram, schemaNodes, schemaEdges, setNodes, setEdges]);
+  
+  useEffect(() => {
+    if (diagram !== "query") return;
+    console.log("Setting up query diagram.");
+    setNodes(queryNodes);
+    setEdges(queryEdges);
+  }, [diagram, queryNodes, queryEdges, setNodes, setEdges]);
 
   useTopCenterFitView(nodes);
 
