@@ -430,17 +430,6 @@ export const $PatchedQuery = {
       },
       readOnly: true,
     },
-    sql_tree: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/SQLTree",
-        },
-      ],
-      readOnly: true,
-    },
-    ra_tree: {
-      $ref: "#/components/schemas/RATree",
-    },
   },
 } as const;
 
@@ -591,26 +580,8 @@ export const $Query = {
       },
       readOnly: true,
     },
-    sql_tree: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/SQLTree",
-        },
-      ],
-      readOnly: true,
-    },
-    ra_tree: {
-      $ref: "#/components/schemas/RATree",
-    },
   },
-  required: [
-    "created",
-    "id",
-    "modified",
-    "name",
-    "sql_tree",
-    "validation_errors",
-  ],
+  required: ["created", "id", "modified", "name", "validation_errors"],
 } as const;
 
 export const $QueryExecution = {
@@ -671,6 +642,24 @@ export const $QuerySummary = {
     },
   },
   required: ["id", "name"],
+} as const;
+
+export const $QueryTree = {
+  type: "object",
+  properties: {
+    sql_tree: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/SQLTree",
+        },
+      ],
+      readOnly: true,
+    },
+    ra_tree: {
+      $ref: "#/components/schemas/RATree",
+    },
+  },
+  required: ["sql_tree"],
 } as const;
 
 export const $RATree = {

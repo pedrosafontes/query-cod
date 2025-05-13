@@ -839,6 +839,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/QueryExecution'
           description: ''
+  /api/queries/{id}/tree/:
+    get:
+      operationId: queries_tree_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this query.
+        required: true
+      tags:
+      - queries
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryTree'
+          description: ''
 components:
   schemas:
     Activation:
@@ -1177,12 +1198,6 @@ components:
             required:
             - title
           readOnly: true
-        sql_tree:
-          allOf:
-          - $ref: '#/components/schemas/SQLTree'
-          readOnly: true
-        ra_tree:
-          $ref: '#/components/schemas/RATree'
     PatchedUser:
       type: object
       properties:
@@ -1293,18 +1308,11 @@ components:
             required:
             - title
           readOnly: true
-        sql_tree:
-          allOf:
-          - $ref: '#/components/schemas/SQLTree'
-          readOnly: true
-        ra_tree:
-          $ref: '#/components/schemas/RATree'
       required:
       - created
       - id
       - modified
       - name
-      - sql_tree
       - validation_errors
     QueryExecution:
       type: object
@@ -1350,6 +1358,17 @@ components:
       required:
       - id
       - name
+    QueryTree:
+      type: object
+      properties:
+        sql_tree:
+          allOf:
+          - $ref: '#/components/schemas/SQLTree'
+          readOnly: true
+        ra_tree:
+          $ref: '#/components/schemas/RATree'
+      required:
+      - sql_tree
     RATree:
       type: object
       properties:

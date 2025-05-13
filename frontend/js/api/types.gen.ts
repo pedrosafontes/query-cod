@@ -134,8 +134,6 @@ export type PatchedQuery = {
       end_col: number;
     };
   }>;
-  readonly sql_tree?: SQLTree;
-  ra_tree?: RATree;
 };
 
 export type PatchedUser = {
@@ -174,8 +172,6 @@ export type Query = {
       end_col: number;
     };
   }>;
-  readonly sql_tree: SQLTree;
-  ra_tree?: RATree;
 };
 
 export type QueryExecution = {
@@ -203,6 +199,11 @@ export type QueryResultData = {
 export type QuerySummary = {
   readonly id: number;
   name: string;
+};
+
+export type QueryTree = {
+  readonly sql_tree: SQLTree;
+  ra_tree?: RATree;
 };
 
 export type RATree = {
@@ -556,6 +557,15 @@ export type QueriesSubqueriesExecutionsCreateData = {
 
 export type QueriesSubqueriesExecutionsCreateResponse = QueryExecution;
 
+export type QueriesTreeRetrieveData = {
+  /**
+   * A unique integer value identifying this query.
+   */
+  id: number;
+};
+
+export type QueriesTreeRetrieveResponse = QueryTree;
+
 export type $OpenApiTs = {
   "/api/auth/login/": {
     post: {
@@ -816,6 +826,14 @@ export type $OpenApiTs = {
       req: QueriesSubqueriesExecutionsCreateData;
       res: {
         200: QueryExecution;
+      };
+    };
+  };
+  "/api/queries/{id}/tree/": {
+    get: {
+      req: QueriesTreeRetrieveData;
+      res: {
+        200: QueryTree;
       };
     };
   };

@@ -1,7 +1,7 @@
 import { type Edge } from "@xyflow/react";
 import { useEffect, useState } from "react";
 
-import { SQLTree } from "api";
+import { QueriesService, SQLTree } from "api";
 import useLayout from "hooks/useLayout";
 
 import getLayoutedNodes from "../layout";
@@ -10,14 +10,28 @@ import { QueryDiagramProps } from "../types";
 import { SQLNode } from "./SQLNode";
 
 const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
+  const [sqlTree, setSqlTree] = useState<SQLTree | undefined>();
   const [nodes, setNodes] = useState<SQLNode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+
+  useEffect(() => {
+    if (!query) return;
+
+    const fetchRATree = async () => {
+      const { sql_tree: sqlTree } = await QueriesService.queriesTreeRetrieve({
+        id: query.id,
+      });
+      setSqlTree(sqlTree);
+    };
+
+    fetchRATree();
+  }, [query]);
 
   useEffect(() => {
     const nodes: SQLNode[] = [];
     const edges: Edge[] = [];
 
-    if (query?.sql_tree) {
+    if (query && sqlTree) {
       const processTree = (tree: SQLTree) => {
         const { children, ...data } = tree;
         const id = tree.id.toString();
@@ -48,12 +62,12 @@ const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
         }
       };
 
-      processTree(query.sql_tree);
+      processTree(sqlTree);
     }
 
     setNodes(nodes);
     setEdges(edges);
-  }, [query?.ra_tree]);
+  }, [sqlTree]);
 
   useLayout({ layout: getLayoutedNodes });
 

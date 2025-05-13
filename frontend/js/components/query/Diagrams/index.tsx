@@ -59,7 +59,7 @@ const Diagrams = ({
     setNodes(schemaNodes);
     setEdges(schemaEdges);
   }, [diagram, schemaNodes, schemaEdges, setNodes, setEdges]);
-  
+
   useEffect(() => {
     if (diagram !== "query") return;
     console.log("Setting up query diagram.");

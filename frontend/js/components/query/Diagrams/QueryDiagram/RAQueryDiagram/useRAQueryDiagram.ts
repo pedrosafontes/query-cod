@@ -1,7 +1,7 @@
 import { type Edge } from "@xyflow/react";
 import { useEffect, useState } from "react";
 
-import { RATree } from "api";
+import { QueriesService, RATree } from "api";
 import useLayout from "hooks/useLayout";
 
 import getLayoutedNodes from "../layout";
@@ -10,14 +10,28 @@ import { QueryDiagramProps } from "../types";
 import { RANode } from "./RANode";
 
 const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
+  const [raTree, setRaTree] = useState<RATree | undefined>();
   const [nodes, setNodes] = useState<RANode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+
+  useEffect(() => {
+    if (!query) return;
+
+    const fetchRATree = async () => {
+      const { ra_tree: raTree } = await QueriesService.queriesTreeRetrieve({
+        id: query.id,
+      });
+      setRaTree(raTree);
+    };
+
+    fetchRATree();
+  }, [query]);
 
   useEffect(() => {
     const nodes: RANode[] = [];
     const edges: Edge[] = [];
 
-    if (query?.ra_tree) {
+    if (query && raTree) {
       const processTree = ({ id, label, sub_trees: subTrees }: RATree) => {
         nodes.push({
           id: id.toString(),
@@ -46,12 +60,12 @@ const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
         }
       };
 
-      processTree(query.ra_tree);
+      processTree(raTree);
     }
 
     setNodes(nodes);
     setEdges(edges);
-  }, [query?.ra_tree]);
+  }, [raTree]);
 
   useLayout({ layout: getLayoutedNodes });
 
