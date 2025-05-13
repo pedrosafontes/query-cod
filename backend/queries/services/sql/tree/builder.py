@@ -83,8 +83,11 @@ class SQLTreeBuilder:
             return None, partial_query
 
     def _build_table(
-        self, table: Table | Subquery, partial_query: Select
+        self, table: Table | Subquery, partial_query: Select | None = None
     ) -> tuple[SQLTree, Select]:
+        if partial_query is None:
+            partial_query = select('*')
+
         match table:
             case Table():
                 return self._build_base_table(table, partial_query)
@@ -120,7 +123,7 @@ class SQLTreeBuilder:
                 raise NotImplementedError(f'Unsupported JOIN clause: {type(join)}')
 
             partial_query = partial_query.join(join)
-            right = self._build(join.this)
+            right, _ = self._build_table(join.this)
             condition = join.args.get('on')
             using = join.args.get('using')
 
