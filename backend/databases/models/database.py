@@ -1,6 +1,9 @@
 from django.db import models
+from django.utils.functional import cached_property
 
 from common.models import IndexedTimeStampedModel
+
+from .database_connection_info import DatabaseConnectionInfo
 
 
 class Database(IndexedTimeStampedModel):
@@ -24,3 +27,14 @@ class Database(IndexedTimeStampedModel):
         return f'{self.name}'
 
     objects: models.Manager['Database']
+
+    @cached_property
+    def connection_info(self) -> DatabaseConnectionInfo:
+        return DatabaseConnectionInfo(
+            database_type=self.database_type,
+            host=self.host,
+            port=self.port,
+            user=self.user,
+            password=self.password,
+            name=self.database_name,
+        )

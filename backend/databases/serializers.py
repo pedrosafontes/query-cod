@@ -3,7 +3,6 @@ from rest_framework import serializers
 from .models import Database
 from .services.schema import get_schema
 from .types import Schema
-from .utils.conversion import from_model
 
 
 class DatabaseSerializer(serializers.ModelSerializer[Database]):
@@ -18,8 +17,7 @@ class DatabaseSerializer(serializers.ModelSerializer[Database]):
         ]
 
     def get_schema(self, obj: Database) -> Schema:
-        db_info = from_model(obj)
-        return get_schema(db_info)
+        return get_schema(obj.connection_info)
 
 
 class DatabaseSummarySerializer(serializers.ModelSerializer[Database]):
