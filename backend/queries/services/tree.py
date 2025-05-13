@@ -18,9 +18,9 @@ Subqueries = Mapping[int, QueryAST]
 def build_query_tree(
     ast: QueryAST, db: DatabaseConnectionInfo
 ) -> tuple[QueryTree | None, Subqueries]:
+    schema = to_relational_schema(get_schema(db))
     match ast:
         case RAQuery():
-            schema = to_relational_schema(get_schema(db))
             return RATreeBuilder(schema).build(ast)
         case SQLQuery():
-            return SQLTreeBuilder().build(ast)
+            return SQLTreeBuilder(schema).build(ast)

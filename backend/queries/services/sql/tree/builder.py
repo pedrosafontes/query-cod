@@ -1,6 +1,8 @@
-from queries.services.types import SQLQuery
+from queries.services.types import RelationalSchema, SQLQuery
+from queries.types import QueryError
 from sqlglot.expressions import From, Join, Select, Subquery, Table, select
 
+from ..semantics import validate_sql_semantics
 from ..semantics.types import SetOperation
 from .types import (
     AliasNode,
@@ -20,16 +22,20 @@ class SQLTreeBuilder:
     _counter: int
     _subqueries: dict[int, SQLQuery]
 
+    def __init__(self, schema: RelationalSchema):
+        self._schema = schema
+
     def build(self, query: SQLQuery) -> tuple[SQLTree | None, dict[int, SQLQuery]]:
         self._counter = 0
         self._subqueries = {}
         return self._build(query), self._subqueries
 
-    def _add_subquery(self, subquery: SQLQuery) -> int:
+    def _add_subquery(self, subquery: SQLQuery) -> tuple[int, list[QueryError]]:
         subquery_id = self._counter
+        errors = validate_sql_semantics(subquery, self._schema)
         self._counter += 1
         self._subqueries[subquery_id] = subquery
-        return subquery_id
+        return subquery_id, errors
 
     def _build(self, query: SQLQuery) -> SQLTree | None:
         match query:
@@ -45,16 +51,20 @@ class SQLTreeBuilder:
     def _build_set_operation(self, query: SetOperation) -> SQLTree:
         left = self._build(query.left)
         right = self._build(query.right)
+        query_id, errors = self._add_subquery(query)
         return SetOpNode(
-            id=self._add_subquery(query),
+            id=query_id,
+            validation_errors=errors,
             operator=type(query).__name__.lower(),
             children=[q for q in [left, right] if q is not None],
         )
 
     def _build_subquery(self, subquery: Subquery) -> SQLTree:
         subquery_tree = self._build(subquery.this)
+        query_id, errors = self._add_subquery(subquery)
         return AliasNode(
-            id=self._add_subquery(subquery),
+            id=query_id,
+            validation_errors=errors,
             alias=subquery.alias_or_name,
             children=[subquery_tree] if subquery_tree else [],
         )
@@ -97,8 +107,10 @@ class SQLTreeBuilder:
 
     def _build_base_table(self, table: Table, partial_query: Select) -> tuple[SQLTree, Select]:
         partial_query = partial_query.from_(table)
+        query_id, errors = self._add_subquery(partial_query)
         return TableNode(
-            id=self._add_subquery(partial_query),
+            id=query_id,
+            validation_errors=errors,
             name=table.name,
             children=[],
         ), partial_query
@@ -108,8 +120,10 @@ class SQLTreeBuilder:
     ) -> tuple[SQLTree, Select]:
         partial_query = partial_query.from_(table)
         subquery_tree = self._build(table.this)
+        query_id, errors = self._add_subquery(partial_query)
         return AliasNode(
-            id=self._add_subquery(partial_query),
+            id=query_id,
+            validation_errors=errors,
             alias=table.alias_or_name,
             children=[subquery_tree] if subquery_tree else [],
         ), partial_query
@@ -127,8 +141,10 @@ class SQLTreeBuilder:
             condition = join.args.get('on')
             using = join.args.get('using')
 
+            query_id, errors = self._add_subquery(partial_query)
             left = JoinNode(
-                id=self._add_subquery(partial_query),
+                id=query_id,
+                validation_errors=errors,
                 children=[left, right] if right else [left],
                 method=join.method or join.args.get('kind', 'INNER'),
                 using=[col.name for col in using] if using else None,
@@ -143,8 +159,11 @@ class SQLTreeBuilder:
         where = query.args.get('where')
         if where:
             partial_query = partial_query.where(where.this)
+
+            query_id, errors = self._add_subquery(partial_query)
             return WhereNode(
-                id=self._add_subquery(partial_query),
+                id=query_id,
+                validation_errors=errors,
                 condition=where.this.sql(),
                 children=[join_node],
             ), partial_query
@@ -159,8 +178,11 @@ class SQLTreeBuilder:
             partial_query = partial_query.group_by(*group_by.expressions).select(
                 *group_by.expressions, append=False
             )
+
+            query_id, errors = self._add_subquery(partial_query)
             return GroupByNode(
-                id=self._add_subquery(partial_query),
+                id=query_id,
+                validation_errors=errors,
                 keys=[expr.sql() for expr in group_by.expressions],
                 children=[where_node],
             ), partial_query
@@ -174,8 +196,11 @@ class SQLTreeBuilder:
         if having:
             condition = having.this
             partial_query = partial_query.having(condition)
+
+            query_id, errors = self._add_subquery(partial_query)
             return HavingNode(
-                id=self._add_subquery(partial_query),
+                id=query_id,
+                validation_errors=errors,
                 condition=condition.sql(),
                 children=[group_by_node],
             ), partial_query
@@ -188,8 +213,10 @@ class SQLTreeBuilder:
         projections = query.expressions
         if projections:
             partial_query = partial_query.select(*projections, append=False)
+            query_id, errors = self._add_subquery(partial_query)
             return SelectNode(
-                id=self._add_subquery(partial_query),
+                id=query_id,
+                validation_errors=errors,
                 columns=[expr.sql() for expr in projections],
                 children=[having_node],
             ), partial_query
@@ -202,8 +229,10 @@ class SQLTreeBuilder:
         order_by = query.args.get('order')
         if order_by:
             partial_query = partial_query.order_by(*order_by.expressions)
+            query_id, errors = self._add_subquery(partial_query)
             return OrderByNode(
-                id=self._add_subquery(partial_query),
+                id=query_id,
+                validation_errors=errors,
                 keys=[expr.sql() for expr in order_by.expressions],
                 children=[projections_node],
             ), partial_query

@@ -1,10 +1,13 @@
 from dataclasses import dataclass
 
+from queries.types import QueryError
+
 
 @dataclass
 class SQLTreeNode:
     id: int
     children: list['SQLTree']
+    validation_errors: list[QueryError]
 
 
 @dataclass
