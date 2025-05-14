@@ -1,5 +1,7 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 
+import { cn } from "lib/utils";
+
 import {
   ResizableHandle,
   ResizablePanel,
@@ -15,6 +17,7 @@ const QueryPanels = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -43,11 +46,19 @@ const QueryPanels = ({
   return (
     <div ref={containerRef} className="w-full h-full">
       <ResizablePanelGroup direction="horizontal">
-        <ResizablePanel className="px-3 py-5" defaultSize={size} minSize={size}>
+        <ResizablePanel
+          className={cn(!collapsed && "px-3 py-5")}
+          collapsedSize={0}
+          collapsible
+          defaultSize={size}
+          minSize={size}
+          onCollapse={() => setCollapsed(true)}
+          onExpand={() => setCollapsed(false)}
+        >
           {left}
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel>{right}</ResizablePanel>
+        <ResizablePanel className="bg-secondary">{right}</ResizablePanel>
       </ResizablePanelGroup>
     </div>
   );

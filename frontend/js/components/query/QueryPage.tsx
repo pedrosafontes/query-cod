@@ -101,7 +101,7 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
               title="There was an error loading the query"
             />
           )}
-          {query && (
+          {!isLoading && query && (
             <QueryEditor key={query.id} query={query} setQuery={setQuery} />
           )}
         </>
