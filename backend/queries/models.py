@@ -36,8 +36,7 @@ class Query(IndexedTimeStampedModel):
 
     @property
     def is_executable(self) -> bool:
-        ast, errors = self.validation_result
-        return ast is not None and not errors
+        return self.ast is not None and not self.validation_errors
 
     @property
     def ast(self) -> QueryAST | None:
