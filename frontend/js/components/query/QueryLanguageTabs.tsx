@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LanguageEnum, QueriesService, Query } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
 type QueryLanguageTabsProps = {
-  query: Query;
+  query?: Query;
   setQuery: (query: Query) => void;
   setIsLoading: (isLoading: boolean) => void;
 };
@@ -15,8 +16,15 @@ const QueryLanguageTabs = ({
   setQuery,
   setIsLoading,
 }: QueryLanguageTabsProps) => {
-  const [language, setLanguage] = useState(query.language);
+  const [language, setLanguage] = useState<LanguageEnum>();
   const toast = useErrorToast();
+  useEffect(() => {
+    setLanguage(query?.language);
+  }, [query]);
+
+  if (!query) {
+    return <Skeleton className="h-10 w-52" />;
+  }
 
   const updateQueryLanguage = async (newLanguage: LanguageEnum) => {
     const oldLanguage = query.language;
@@ -39,10 +47,6 @@ const QueryLanguageTabs = ({
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    setLanguage(query.language);
-  }, [query.language]);
 
   return (
     <Tabs

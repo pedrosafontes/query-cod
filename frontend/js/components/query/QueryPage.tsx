@@ -5,8 +5,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query, QueryResultData } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
-import { Skeleton } from "../ui/skeleton";
-
 import Diagrams from "./Diagrams";
 import ExecuteQueryButton from "./ExecuteQueryButton";
 import QueryEditor from "./QueryEditor";
@@ -69,19 +67,39 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
     fetchQuery();
   }, [queryId]);
 
+  const renderEditor = () => {
+    if (isLoading) {
+      return (
+        <div className="flex justify-center items-center gap-2 pt-4 text-muted-foreground animate-pulse">
+          <Spinner className="text-inherit" size="small" />
+          <p>Loading query</p>
+        </div>
+      );
+    }
+    if (loadingError) {
+      return (
+        <ErrorAlert
+          description={loadingError.message}
+          title="There was an error loading the query"
+        />
+      );
+    }
+    if (query) {
+      return <QueryEditor key={query.id} query={query} setQuery={setQuery} />;
+    }
+    return null;
+  };
+
   return (
     <QueryPanels
       left={
         <>
           <div className="flex justify-between items-center gap-2 mb-5 w-full">
-            {query && (
-              <QueryLanguageTabs
-                query={query}
-                setIsLoading={setIsLoading}
-                setQuery={setQuery}
-              />
-            )}
-            {!query && <Skeleton className="h-10 w-52" />}
+            <QueryLanguageTabs
+              query={query}
+              setIsLoading={setIsLoading}
+              setQuery={setQuery}
+            />
             <ExecuteQueryButton
               disabled={isExecuting || isLoading || !!loadingError || hasErrors}
               handleExecuteQuery={handleExecuteQuery}
@@ -89,21 +107,7 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
               loading={isExecuting}
             />
           </div>
-          {isLoading && (
-            <div className="flex justify-center items-center gap-2 pt-4 text-muted-foreground animate-pulse">
-              <Spinner className="text-inherit" size="small" />
-              <p>Loading query</p>
-            </div>
-          )}
-          {loadingError && (
-            <ErrorAlert
-              description={loadingError.message}
-              title="There was an error loading the query"
-            />
-          )}
-          {!isLoading && query && (
-            <QueryEditor key={query.id} query={query} setQuery={setQuery} />
-          )}
+          {renderEditor()}
         </>
       }
       right={
