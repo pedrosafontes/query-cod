@@ -55,8 +55,9 @@ class RAtoSQLTranspiler:
 
     def _transpile_Projection(self, proj: Projection) -> Select:  # noqa: N802
         query = self._transpile_select(proj.subquery)
-        query.set('expressions', [])
-        return query.select(*[self._transpile_attribute(attr) for attr in proj.attributes])
+        return query.select(
+            *[self._transpile_attribute(attr) for attr in proj.attributes], append=False
+        )
 
     def _transpile_Selection(self, selection: Selection) -> Select:  # noqa: N802
         query = self._transpile_select(selection.subquery)
@@ -90,10 +91,6 @@ class RAtoSQLTranspiler:
         dividend, dividend_alias = self._transpile_relation(div.dividend, 'dividend')
         dividend_sub, dividend_sub_alias = self._transpile_relation(div.dividend, 'dividend_sub')
 
-        # Clear expressions
-        dividend.set('expressions', [])
-        dividend_sub.set('expressions', [])
-
         output_attrs = [a.name for a in self._schema_inferrer.infer(div).attrs]
         divisor_attrs = [a.name for a in self._schema_inferrer.infer(div.divisor).attrs]
 
@@ -108,12 +105,12 @@ class RAtoSQLTranspiler:
 
         # For each dividend tuple:
         # 1. Find all divisor tuples associated with it
-        found_divisors = dividend_sub.select(*divisor_attrs).where(*match_conditions)
+        found_divisors = dividend_sub.select(*divisor_attrs, append=False).where(*match_conditions)
         # 2. Check if there are any divisor tuples that are not associated with it
         divisor = self.transpile(div.divisor)
         missing_divisors = divisor.except_(found_divisors)
 
-        candidates = dividend.select(*output_attrs).distinct()
+        candidates = dividend.select(*output_attrs, append=False).distinct()
         return candidates.where(not_(Exists(this=missing_divisors)))
 
     def _transpile_attribute(self, attr: Attribute) -> Expression:
@@ -212,14 +209,12 @@ class RAtoSQLTranspiler:
         query = self._transpile_select(agg.subquery)
 
         if query.args.get('group_by'):
-            query = subquery(query, 'sub').select('*')
-        else:
-            query.set('expressions', [])
+            query = subquery(query, 'sub')
 
         attrs = [self._transpile_attribute(attr) for attr in agg.group_by]
 
         return (
-            query.select(*attrs)
+            query.select(*attrs, append=False)
             .select(*[self._transpile_aggregation(a) for a in agg.aggregations])
             .group_by(*attrs)
         )
@@ -242,10 +237,10 @@ class RAtoSQLTranspiler:
 
     def _transpile_select(self, query: RAQuery) -> Select:
         sql_query = self.transpile(query)
-        if isinstance(sql_query, Select):
-            return sql_query
-        else:
-            return subquery(sql_query, 'set_op').select('*')
+        if not isinstance(sql_query, Select):
+            sql_query = subquery(sql_query, 'set_op').select('*')
+
+        return sql_query.distinct()
 
     def _common_attrs(self, left: RAQuery, right: RAQuery) -> list[str]:
         l_output = self._schema_inferrer.infer(left)
