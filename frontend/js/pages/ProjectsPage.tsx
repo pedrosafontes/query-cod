@@ -2,6 +2,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { formatDistanceToNow } from "date-fns";
 import { Plus } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -75,6 +76,12 @@ const ProjectsPage = () => {
     },
   ];
 
+  const navigate = useNavigate();
+
+  const handleRowClick = (project: Project) => {
+    navigate(`/projects/${project.id}`);
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-end mb-4">
@@ -98,7 +105,12 @@ const ProjectsPage = () => {
           </DialogContent>
         </Dialog>
       </div>
-      <DataTable columns={columns} data={projects} loading={loading} />
+      <DataTable
+        columns={columns}
+        data={projects}
+        loading={loading}
+        onRowClick={handleRowClick}
+      />
     </div>
   );
 };
