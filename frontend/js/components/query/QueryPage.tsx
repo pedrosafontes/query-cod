@@ -93,8 +93,9 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
           />
         </div>
         {isLoading && (
-          <div className="flex items-center justify-center h-full">
-            <Spinner className="text-muted-foreground" />
+          <div className="flex justify-center items-center gap-2 pt-4 text-muted-foreground animate-pulse">
+            <Spinner className="text-inherit" size="small" />
+            <p>Loading query</p>
           </div>
         )}
         {loadingError && (
