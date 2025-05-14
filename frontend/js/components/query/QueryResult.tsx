@@ -1,14 +1,21 @@
 import type { ColumnDef } from "@tanstack/react-table";
+import { useEffect, useState } from "react";
 
 import { QueryResultData } from "../../api";
 import { DataTable } from "../common/DataTable";
+import { Button } from "../ui/button";
 
 type QueryResultProps = {
   result: QueryResultData;
 };
 
 const QueryResult = ({ result }: QueryResultProps) => {
-  if (result.columns.length === 0) {
+  const [closed, setClosed] = useState(false);
+  useEffect(() => {
+    setClosed(false);
+  }, [result]);
+
+  if (result.columns.length === 0 || closed) {
     return null;
   }
 
@@ -23,7 +30,7 @@ const QueryResult = ({ result }: QueryResultProps) => {
   );
 
   return (
-    <div className="[&_table]:text-xs [&_td]:px-3 [&_td]:py-2 [&_th]:px-3 [&_th]:py-2 [&_th]:h-auto">
+    <div className="[&_table]:text-xs [&_td]:px-3 [&_td]:py-2 [&_th]:px-3 [&_th]:py-2 [&_th]:h-auto relative">
       <DataTable
         key={result.columns.join()}
         cellClassName="text-nowrap"
@@ -31,6 +38,14 @@ const QueryResult = ({ result }: QueryResultProps) => {
         data={data}
         pageSize={5}
       />
+      <Button
+        className="absolute bottom-0 left-0"
+        size="sm"
+        variant="outline"
+        onClick={() => setClosed(true)}
+      >
+        Close
+      </Button>
     </div>
   );
 };
