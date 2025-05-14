@@ -44,7 +44,7 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
   const isExecutable = errors.length === 0;
 
   const getConfiguration = (): {
-    latex: string;
+    latex?: string;
     borderClass?: string;
     bgClass?: string;
   } => {
@@ -80,7 +80,7 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
       }
       case "SetOperation": {
         const { operator } = props as SetOperationNode;
-        let latex = "";
+        let latex: string | undefined = undefined;
         let borderClass = "border-yellow-300";
         let bgClass = "bg-yellow-50";
         switch (operator) {
@@ -97,6 +97,8 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
             latex = `\\times`;
             borderClass = "border-pink-300";
             bgClass = "bg-pink-50";
+            break;
+          default:
             break;
         }
         return {
@@ -142,6 +144,7 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
           bgClass: "bg-purple-50",
         };
       }
+      default: return {};
     }
   };
 
@@ -159,7 +162,7 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
         position={Position.Top}
         type="source"
       />
-      <LatexFormula expression={latex} />
+      <LatexFormula expression={latex || "\?"} />
       <Handle
         className="invisible size-0 border-0 bottom-1"
         position={Position.Bottom}
