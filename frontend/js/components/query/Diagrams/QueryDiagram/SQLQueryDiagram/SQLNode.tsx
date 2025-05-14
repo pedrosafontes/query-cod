@@ -1,7 +1,7 @@
 import { Handle, Position, type Node, type NodeProps } from "@xyflow/react";
 import {
   SquarePen,
-  BookType,
+  CircleHelp,
   Filter,
   Group,
   Merge,
@@ -62,19 +62,34 @@ const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
     icon: LucideIcon;
     title?: string;
     hoverContent?: ReactNode;
+    borderClass?: string;
+    bgClass?: string;
   } => {
     switch (type) {
       case "Table": {
         const { name } = props as TableNode;
-        return { icon: Table, title: name };
+        return {
+          icon: Table,
+          title: name,
+        };
       }
       case "Alias": {
         const { alias } = props as AliasNode;
-        return { icon: SquarePen, title: `AS ${alias}` };
+        return {
+          icon: SquarePen,
+          title: `AS ${alias}`,
+          borderClass: "border-gray-300",
+          bgClass: "bg-gray-50",
+        };
       }
       case "Join": {
         const { method } = props as JoinNode;
-        return { icon: Merge, title: `${method} JOIN` };
+        return {
+          icon: Merge,
+          title: `${method} JOIN`,
+          borderClass: "border-pink-300",
+          bgClass: "bg-pink-50",
+        };
       }
       case "Select": {
         const { columns } = props as SelectNode;
@@ -90,7 +105,13 @@ const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
             </ul>
           </>
         );
-        return { icon: List, title: "SELECT", hoverContent };
+        return {
+          icon: List,
+          title: "SELECT",
+          hoverContent,
+          borderClass: "border-blue-300",
+          bgClass: "bg-blue-50",
+        };
       }
       case "Where": {
         const { condition } = props as WhereNode;
@@ -100,7 +121,13 @@ const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
             <p className="text-muted-foreground">{condition}</p>
           </>
         );
-        return { icon: Filter, title: "WHERE", hoverContent };
+        return {
+          icon: Filter,
+          title: "WHERE",
+          hoverContent,
+          borderClass: "border-orange-300",
+          bgClass: "bg-orange-50",
+        };
       }
       case "GroupBy": {
         const { keys } = props as GroupByNode;
@@ -116,7 +143,13 @@ const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
             </ul>
           </>
         );
-        return { icon: Group, title: "GROUP BY", hoverContent };
+        return {
+          icon: Group,
+          title: "GROUP BY",
+          hoverContent,
+          borderClass: "border-green-300",
+          bgClass: "bg-green-50",
+        };
       }
       case "Having": {
         const { condition } = props as HavingNode;
@@ -126,7 +159,13 @@ const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
             <p className="text-muted-foreground">{condition}</p>
           </>
         );
-        return { icon: Filter, title: "HAVING", hoverContent };
+        return {
+          icon: Filter,
+          title: "HAVING",
+          hoverContent,
+          borderClass: "border-orange-300",
+          bgClass: "bg-orange-50",
+        };
       }
       case "OrderBy": {
         const { keys } = props as OrderByNode;
@@ -142,11 +181,20 @@ const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
             </ul>
           </>
         );
-        return { icon: SortAsc, title: "ORDER BY", hoverContent };
+        return {
+          icon: SortAsc,
+          title: "ORDER BY",
+          hoverContent,
+          borderClass: "border-purple-300",
+          bgClass: "bg-purple-50",
+        };
       }
       case "SetOp": {
         const { operator } = props as SetOpNode;
         let icon: LucideIcon;
+        const borderClass = "border-yellow-300";
+        const bgClass = "bg-yellow-50";
+
         switch (operator) {
           case "union":
             icon = SquaresUnite;
@@ -160,20 +208,33 @@ const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
           default:
             icon = SquaresExclude;
         }
-        return { icon, title: operator.toUpperCase() };
+        return {
+          icon,
+          title: operator.toUpperCase(),
+          borderClass,
+          bgClass,
+        };
       }
       default:
-        return { icon: BookType };
+        return {
+          icon: CircleHelp,
+        };
     }
   };
 
-  const { icon: Icon, title, hoverContent } = getConfiguration();
+  const {
+    icon: Icon,
+    title,
+    hoverContent,
+    borderClass,
+    bgClass,
+  } = getConfiguration();
 
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
         <Button
-          className={`bg-white border transition-colors ${isExecuting && "cursor-wait animate-[pulse-scale_1s_ease-in-out_infinite] bg-gray-100"}`}
+          className={`bg-white border transition-colors ${borderClass ?? "border"} ${bgClass ?? "bg-white"} ${isExecuting && "cursor-wait animate-[pulse-scale_1s_ease-in-out_infinite]"}`}
           disabled={!isExecutable}
           variant="ghost"
           onClick={executeSubquery}
