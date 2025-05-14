@@ -34,6 +34,7 @@ import {
   GroupByNode,
   HavingNode,
   OrderByNode,
+  QueryError,
 } from "api";
 
 import useExecuteSubquery from "../useExecuteSubquery";
@@ -42,17 +43,20 @@ export type SQLNodeData = {
   id: number;
   queryId: number;
   setQueryResult: (result?: QueryResultData) => void;
-} & Omit<SQLTree, "children">;
+  errors: QueryError[];
+} & Omit<SQLTree, "children" | "validation_errors">;
 
 export type SQLNode = Node<SQLNodeData, "sql">;
 
 const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
-  const { queryId, id, setQueryResult, type, ...props } = data;
+  const { queryId, id, setQueryResult, type, errors, ...props } = data;
   const { isExecuting, executeSubquery } = useExecuteSubquery({
     queryId,
     subqueryId: id,
     setQueryResult,
   });
+
+  const isExecutable = errors.length === 0;
 
   const getConfiguration = (): {
     icon: LucideIcon;
@@ -170,6 +174,7 @@ const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
       <HoverCardTrigger asChild>
         <Button
           className={`bg-white border transition-colors ${isExecuting && "cursor-wait animate-[pulse-scale_1s_ease-in-out_infinite] bg-gray-100"}`}
+          disabled={!isExecutable}
           variant="ghost"
           onClick={executeSubquery}
         >

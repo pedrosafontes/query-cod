@@ -9,13 +9,16 @@ import { QueryDiagramProps } from "../types";
 
 import { SQLNode } from "./SQLNode";
 
-const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
+const useSQLQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
   const [sqlTree, setSqlTree] = useState<SQLTree | undefined>();
   const [nodes, setNodes] = useState<SQLNode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 
   useEffect(() => {
-    if (!query) return;
+    if (!query) {
+      setSqlTree(undefined);
+      return;
+    }
 
     const fetchRATree = async () => {
       const { sql_tree: sqlTree } = await QueriesService.queriesTreeRetrieve({
@@ -33,7 +36,7 @@ const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
 
     if (query && sqlTree) {
       const processTree = (tree: SQLTree) => {
-        const { children, ...data } = tree;
+        const { children, validation_errors: errors, ...data } = tree;
         const id = tree.id.toString();
 
         nodes.push({
@@ -41,9 +44,10 @@ const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
           type: "sql",
           position: { x: 0, y: 0 },
           data: {
-            ...data,
             queryId: query.id,
             setQueryResult,
+            errors,
+            ...data,
           },
           deletable: false,
         });
@@ -74,4 +78,4 @@ const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
   return { nodes, edges };
 };
 
-export default useRAQueryDiagram;
+export default useSQLQueryDiagram;

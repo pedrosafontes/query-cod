@@ -15,7 +15,10 @@ const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
   const [edges, setEdges] = useState<Edge[]>([]);
 
   useEffect(() => {
-    if (!query) return;
+    if (!query) {
+      setRaTree(undefined);
+      return;
+    }
 
     const fetchRATree = async () => {
       const { ra_tree: raTree } = await QueriesService.queriesTreeRetrieve({
@@ -32,7 +35,12 @@ const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
     const edges: Edge[] = [];
 
     if (query && raTree) {
-      const processTree = ({ id, label, sub_trees: subTrees }: RATree) => {
+      const processTree = ({
+        id,
+        label,
+        sub_trees: subTrees,
+        validation_errors: errors,
+      }: RATree) => {
         nodes.push({
           id: id.toString(),
           type: "ra",
@@ -42,6 +50,7 @@ const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
             id,
             label,
             setQueryResult,
+            errors,
           },
           deletable: false,
         });
