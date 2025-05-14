@@ -25,6 +25,7 @@ const QueryResult = ({ result }: QueryResultProps) => {
   return (
     <div className="[&_table]:text-xs [&_td]:px-3 [&_td]:py-2 [&_th]:px-3 [&_th]:py-2 [&_th]:h-auto">
       <DataTable
+        key={result.columns.join()}
         cellClassName="text-nowrap"
         columns={columns}
         data={data}
