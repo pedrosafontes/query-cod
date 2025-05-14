@@ -146,7 +146,7 @@ class SQLTreeBuilder:
                 id=query_id,
                 validation_errors=errors,
                 children=[left, right] if right else [left],
-                method=join.method or join.args.get('kind', 'INNER'),
+                method=join.method or join.kind or join.side or '',
                 using=[col.name for col in using] if using else None,
                 condition=condition.sql() if condition else None,
             )
