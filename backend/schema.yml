@@ -882,9 +882,9 @@ components:
           items:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
-        type:
+        sql_node_type:
           allOf:
-          - $ref: '#/components/schemas/TypeEnum'
+          - $ref: '#/components/schemas/SqlNodeTypeEnum'
           readOnly: true
         validation_errors:
           type: array
@@ -896,7 +896,7 @@ components:
       - alias
       - children
       - id
-      - type
+      - sql_node_type
       - validation_errors
     Database:
       type: object
@@ -970,6 +970,29 @@ components:
       required:
       - id
       - name
+    DivisionNode:
+      type: object
+      properties:
+        id:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/RATree'
+          readOnly: true
+        ra_node_type:
+          allOf:
+          - $ref: '#/components/schemas/RaNodeTypeEnum'
+          readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+      required:
+      - children
+      - id
+      - ra_node_type
+      - validation_errors
     ErrorPosition:
       type: object
       properties:
@@ -993,9 +1016,9 @@ components:
           items:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
-        type:
+        sql_node_type:
           allOf:
-          - $ref: '#/components/schemas/TypeEnum'
+          - $ref: '#/components/schemas/SqlNodeTypeEnum'
           readOnly: true
         validation_errors:
           type: array
@@ -1009,7 +1032,42 @@ components:
       - children
       - id
       - keys
-      - type
+      - sql_node_type
+      - validation_errors
+    GroupedAggregationNode:
+      type: object
+      properties:
+        id:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/RATree'
+          readOnly: true
+        ra_node_type:
+          allOf:
+          - $ref: '#/components/schemas/RaNodeTypeEnum'
+          readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+        group_by:
+          type: array
+          items:
+            type: string
+        aggregations:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+      required:
+      - aggregations
+      - children
+      - group_by
+      - id
+      - ra_node_type
       - validation_errors
     HavingNode:
       type: object
@@ -1021,9 +1079,9 @@ components:
           items:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
-        type:
+        sql_node_type:
           allOf:
-          - $ref: '#/components/schemas/TypeEnum'
+          - $ref: '#/components/schemas/SqlNodeTypeEnum'
           readOnly: true
         validation_errors:
           type: array
@@ -1035,41 +1093,7 @@ components:
       - children
       - condition
       - id
-      - type
-      - validation_errors
-    JoinNode:
-      type: object
-      properties:
-        id:
-          type: integer
-        children:
-          type: array
-          items:
-            $ref: '#/components/schemas/SQLTree'
-          readOnly: true
-        type:
-          allOf:
-          - $ref: '#/components/schemas/TypeEnum'
-          readOnly: true
-        validation_errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/QueryError'
-        method:
-          type: string
-        condition:
-          type: string
-          nullable: true
-        using:
-          type: array
-          items:
-            type: string
-          nullable: true
-      required:
-      - children
-      - id
-      - method
-      - type
+      - sql_node_type
       - validation_errors
     LanguageEnum:
       enum:
@@ -1099,9 +1123,9 @@ components:
           items:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
-        type:
+        sql_node_type:
           allOf:
-          - $ref: '#/components/schemas/TypeEnum'
+          - $ref: '#/components/schemas/SqlNodeTypeEnum'
           readOnly: true
         validation_errors:
           type: array
@@ -1115,7 +1139,7 @@ components:
       - children
       - id
       - keys
-      - type
+      - sql_node_type
       - validation_errors
     PaginatedUserList:
       type: object
@@ -1213,6 +1237,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/QueryError'
+          readOnly: true
     PatchedUser:
       type: object
       properties:
@@ -1273,6 +1298,34 @@ components:
       - modified
       - name
       - queries
+    ProjectionNode:
+      type: object
+      properties:
+        id:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/RATree'
+          readOnly: true
+        ra_node_type:
+          allOf:
+          - $ref: '#/components/schemas/RaNodeTypeEnum'
+          readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+        attributes:
+          type: array
+          items:
+            type: string
+      required:
+      - attributes
+      - children
+      - id
+      - ra_node_type
+      - validation_errors
     Query:
       type: object
       properties:
@@ -1300,6 +1353,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/QueryError'
+          readOnly: true
       required:
       - created
       - id
@@ -1371,35 +1425,136 @@ components:
           - $ref: '#/components/schemas/SQLTree'
           readOnly: true
         ra_tree:
-          $ref: '#/components/schemas/RATree'
+          allOf:
+          - $ref: '#/components/schemas/RATree'
+          readOnly: true
       required:
+      - ra_tree
       - sql_tree
-    RATree:
+    RAJoinNode:
       type: object
       properties:
         id:
           type: integer
-        label:
-          type: string
-        sub_trees:
+        children:
           type: array
           items:
             $ref: '#/components/schemas/RATree'
+          readOnly: true
+        ra_node_type:
+          allOf:
+          - $ref: '#/components/schemas/RaNodeTypeEnum'
           readOnly: true
         validation_errors:
           type: array
           items:
             $ref: '#/components/schemas/QueryError'
+        operator:
+          type: string
       required:
+      - children
       - id
-      - label
-      - sub_trees
+      - operator
+      - ra_node_type
+      - validation_errors
+    RATree:
+      oneOf:
+      - $ref: '#/components/schemas/RelationNode'
+      - $ref: '#/components/schemas/ProjectionNode'
+      - $ref: '#/components/schemas/SelectionNode'
+      - $ref: '#/components/schemas/DivisionNode'
+      - $ref: '#/components/schemas/SetOperationNode'
+      - $ref: '#/components/schemas/RAJoinNode'
+      - $ref: '#/components/schemas/ThetaJoinNode'
+      - $ref: '#/components/schemas/GroupedAggregationNode'
+      - $ref: '#/components/schemas/TopNNode'
+    RaNodeTypeEnum:
+      enum:
+      - Relation
+      - Projection
+      - Selection
+      - Division
+      - SetOperation
+      - Join
+      - ThetaJoin
+      - GroupedAggregation
+      - TopN
+      type: string
+      description: |-
+        * `Relation` - Relation
+        * `Projection` - Projection
+        * `Selection` - Selection
+        * `Division` - Division
+        * `SetOperation` - SetOperation
+        * `Join` - Join
+        * `ThetaJoin` - ThetaJoin
+        * `GroupedAggregation` - GroupedAggregation
+        * `TopN` - TopN
+    RelationNode:
+      type: object
+      properties:
+        id:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/RATree'
+          readOnly: true
+        ra_node_type:
+          allOf:
+          - $ref: '#/components/schemas/RaNodeTypeEnum'
+          readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+        name:
+          type: string
+      required:
+      - children
+      - id
+      - name
+      - ra_node_type
+      - validation_errors
+    SQLJoinNode:
+      type: object
+      properties:
+        id:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/SQLTree'
+          readOnly: true
+        sql_node_type:
+          allOf:
+          - $ref: '#/components/schemas/SqlNodeTypeEnum'
+          readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+        method:
+          type: string
+        condition:
+          type: string
+          nullable: true
+        using:
+          type: array
+          items:
+            type: string
+          nullable: true
+      required:
+      - children
+      - id
+      - method
+      - sql_node_type
       - validation_errors
     SQLTree:
       oneOf:
       - $ref: '#/components/schemas/TableNode'
       - $ref: '#/components/schemas/AliasNode'
-      - $ref: '#/components/schemas/JoinNode'
+      - $ref: '#/components/schemas/SQLJoinNode'
       - $ref: '#/components/schemas/SelectNode'
       - $ref: '#/components/schemas/WhereNode'
       - $ref: '#/components/schemas/GroupByNode'
@@ -1416,9 +1571,9 @@ components:
           items:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
-        type:
+        sql_node_type:
           allOf:
-          - $ref: '#/components/schemas/TypeEnum'
+          - $ref: '#/components/schemas/SqlNodeTypeEnum'
           readOnly: true
         validation_errors:
           type: array
@@ -1432,7 +1587,33 @@ components:
       - children
       - columns
       - id
-      - type
+      - sql_node_type
+      - validation_errors
+    SelectionNode:
+      type: object
+      properties:
+        id:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/RATree'
+          readOnly: true
+        ra_node_type:
+          allOf:
+          - $ref: '#/components/schemas/RaNodeTypeEnum'
+          readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+        condition:
+          type: string
+      required:
+      - children
+      - condition
+      - id
+      - ra_node_type
       - validation_errors
     SendEmailReset:
       type: object
@@ -1452,9 +1633,9 @@ components:
           items:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
-        type:
+        sql_node_type:
           allOf:
-          - $ref: '#/components/schemas/TypeEnum'
+          - $ref: '#/components/schemas/SqlNodeTypeEnum'
           readOnly: true
         validation_errors:
           type: array
@@ -1466,7 +1647,33 @@ components:
       - children
       - id
       - operator
-      - type
+      - sql_node_type
+      - validation_errors
+    SetOperationNode:
+      type: object
+      properties:
+        id:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/RATree'
+          readOnly: true
+        ra_node_type:
+          allOf:
+          - $ref: '#/components/schemas/RaNodeTypeEnum'
+          readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+        operator:
+          type: string
+      required:
+      - children
+      - id
+      - operator
+      - ra_node_type
       - validation_errors
     SetPassword:
       type: object
@@ -1491,33 +1698,7 @@ components:
       required:
       - current_password
       - new_email
-    TableNode:
-      type: object
-      properties:
-        id:
-          type: integer
-        children:
-          type: array
-          items:
-            $ref: '#/components/schemas/SQLTree'
-          readOnly: true
-        type:
-          allOf:
-          - $ref: '#/components/schemas/TypeEnum'
-          readOnly: true
-        validation_errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/QueryError'
-        name:
-          type: string
-      required:
-      - children
-      - id
-      - name
-      - type
-      - validation_errors
-    TypeEnum:
+    SqlNodeTypeEnum:
       enum:
       - Table
       - Alias
@@ -1539,6 +1720,87 @@ components:
         * `Having` - Having
         * `OrderBy` - OrderBy
         * `SetOp` - SetOp
+    TableNode:
+      type: object
+      properties:
+        id:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/SQLTree'
+          readOnly: true
+        sql_node_type:
+          allOf:
+          - $ref: '#/components/schemas/SqlNodeTypeEnum'
+          readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+        name:
+          type: string
+      required:
+      - children
+      - id
+      - name
+      - sql_node_type
+      - validation_errors
+    ThetaJoinNode:
+      type: object
+      properties:
+        id:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/RATree'
+          readOnly: true
+        ra_node_type:
+          allOf:
+          - $ref: '#/components/schemas/RaNodeTypeEnum'
+          readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+        condition:
+          type: string
+      required:
+      - children
+      - condition
+      - id
+      - ra_node_type
+      - validation_errors
+    TopNNode:
+      type: object
+      properties:
+        id:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/RATree'
+          readOnly: true
+        ra_node_type:
+          allOf:
+          - $ref: '#/components/schemas/RaNodeTypeEnum'
+          readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+        limit:
+          type: integer
+        attribute:
+          type: string
+      required:
+      - attribute
+      - children
+      - id
+      - limit
+      - ra_node_type
+      - validation_errors
     User:
       type: object
       properties:
@@ -1599,9 +1861,9 @@ components:
           items:
             $ref: '#/components/schemas/SQLTree'
           readOnly: true
-        type:
+        sql_node_type:
           allOf:
-          - $ref: '#/components/schemas/TypeEnum'
+          - $ref: '#/components/schemas/SqlNodeTypeEnum'
           readOnly: true
         validation_errors:
           type: array
@@ -1613,7 +1875,7 @@ components:
       - children
       - condition
       - id
-      - type
+      - sql_node_type
       - validation_errors
   securitySchemes:
     cookieAuth:

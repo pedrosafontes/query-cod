@@ -26,10 +26,10 @@ export const $AliasNode = {
       },
       readOnly: true,
     },
-    type: {
+    sql_node_type: {
       allOf: [
         {
-          $ref: "#/components/schemas/TypeEnum",
+          $ref: "#/components/schemas/SqlNodeTypeEnum",
         },
       ],
       readOnly: true,
@@ -44,7 +44,7 @@ export const $AliasNode = {
       type: "string",
     },
   },
-  required: ["alias", "children", "id", "type", "validation_errors"],
+  required: ["alias", "children", "id", "sql_node_type", "validation_errors"],
 } as const;
 
 export const $Database = {
@@ -130,6 +130,37 @@ export const $DatabaseSummary = {
   required: ["id", "name"],
 } as const;
 
+export const $DivisionNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/RATree",
+      },
+      readOnly: true,
+    },
+    ra_node_type: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/RaNodeTypeEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
+  },
+  required: ["children", "id", "ra_node_type", "validation_errors"],
+} as const;
+
 export const $ErrorPosition = {
   type: "object",
   properties: {
@@ -159,10 +190,10 @@ export const $GroupByNode = {
       },
       readOnly: true,
     },
-    type: {
+    sql_node_type: {
       allOf: [
         {
-          $ref: "#/components/schemas/TypeEnum",
+          $ref: "#/components/schemas/SqlNodeTypeEnum",
         },
       ],
       readOnly: true,
@@ -180,7 +211,60 @@ export const $GroupByNode = {
       },
     },
   },
-  required: ["children", "id", "keys", "type", "validation_errors"],
+  required: ["children", "id", "keys", "sql_node_type", "validation_errors"],
+} as const;
+
+export const $GroupedAggregationNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/RATree",
+      },
+      readOnly: true,
+    },
+    ra_node_type: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/RaNodeTypeEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
+    group_by: {
+      type: "array",
+      items: {
+        type: "string",
+      },
+    },
+    aggregations: {
+      type: "array",
+      items: {
+        type: "array",
+        items: {
+          type: "string",
+        },
+      },
+    },
+  },
+  required: [
+    "aggregations",
+    "children",
+    "group_by",
+    "id",
+    "ra_node_type",
+    "validation_errors",
+  ],
 } as const;
 
 export const $HavingNode = {
@@ -196,10 +280,10 @@ export const $HavingNode = {
       },
       readOnly: true,
     },
-    type: {
+    sql_node_type: {
       allOf: [
         {
-          $ref: "#/components/schemas/TypeEnum",
+          $ref: "#/components/schemas/SqlNodeTypeEnum",
         },
       ],
       readOnly: true,
@@ -214,52 +298,13 @@ export const $HavingNode = {
       type: "string",
     },
   },
-  required: ["children", "condition", "id", "type", "validation_errors"],
-} as const;
-
-export const $JoinNode = {
-  type: "object",
-  properties: {
-    id: {
-      type: "integer",
-    },
-    children: {
-      type: "array",
-      items: {
-        $ref: "#/components/schemas/SQLTree",
-      },
-      readOnly: true,
-    },
-    type: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/TypeEnum",
-        },
-      ],
-      readOnly: true,
-    },
-    validation_errors: {
-      type: "array",
-      items: {
-        $ref: "#/components/schemas/QueryError",
-      },
-    },
-    method: {
-      type: "string",
-    },
-    condition: {
-      type: "string",
-      nullable: true,
-    },
-    using: {
-      type: "array",
-      items: {
-        type: "string",
-      },
-      nullable: true,
-    },
-  },
-  required: ["children", "id", "method", "type", "validation_errors"],
+  required: [
+    "children",
+    "condition",
+    "id",
+    "sql_node_type",
+    "validation_errors",
+  ],
 } as const;
 
 export const $LanguageEnum = {
@@ -295,10 +340,10 @@ export const $OrderByNode = {
       },
       readOnly: true,
     },
-    type: {
+    sql_node_type: {
       allOf: [
         {
-          $ref: "#/components/schemas/TypeEnum",
+          $ref: "#/components/schemas/SqlNodeTypeEnum",
         },
       ],
       readOnly: true,
@@ -316,7 +361,7 @@ export const $OrderByNode = {
       },
     },
   },
-  required: ["children", "id", "keys", "type", "validation_errors"],
+  required: ["children", "id", "keys", "sql_node_type", "validation_errors"],
 } as const;
 
 export const $PaginatedUserList = {
@@ -447,6 +492,7 @@ export const $PatchedQuery = {
       items: {
         $ref: "#/components/schemas/QueryError",
       },
+      readOnly: true,
     },
   },
 } as const;
@@ -534,6 +580,49 @@ export const $Project = {
   ],
 } as const;
 
+export const $ProjectionNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/RATree",
+      },
+      readOnly: true,
+    },
+    ra_node_type: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/RaNodeTypeEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
+    attributes: {
+      type: "array",
+      items: {
+        type: "string",
+      },
+    },
+  },
+  required: [
+    "attributes",
+    "children",
+    "id",
+    "ra_node_type",
+    "validation_errors",
+  ],
+} as const;
+
 export const $Query = {
   type: "object",
   properties: {
@@ -569,6 +658,7 @@ export const $Query = {
       items: {
         $ref: "#/components/schemas/QueryError",
       },
+      readOnly: true,
     },
   },
   required: ["created", "id", "modified", "name", "validation_errors"],
@@ -665,26 +755,36 @@ export const $QueryTree = {
       readOnly: true,
     },
     ra_tree: {
-      $ref: "#/components/schemas/RATree",
+      allOf: [
+        {
+          $ref: "#/components/schemas/RATree",
+        },
+      ],
+      readOnly: true,
     },
   },
-  required: ["sql_tree"],
+  required: ["ra_tree", "sql_tree"],
 } as const;
 
-export const $RATree = {
+export const $RAJoinNode = {
   type: "object",
   properties: {
     id: {
       type: "integer",
     },
-    label: {
-      type: "string",
-    },
-    sub_trees: {
+    children: {
       type: "array",
       items: {
         $ref: "#/components/schemas/RATree",
       },
+      readOnly: true,
+    },
+    ra_node_type: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/RaNodeTypeEnum",
+        },
+      ],
       readOnly: true,
     },
     validation_errors: {
@@ -693,8 +793,146 @@ export const $RATree = {
         $ref: "#/components/schemas/QueryError",
       },
     },
+    operator: {
+      type: "string",
+    },
   },
-  required: ["id", "label", "sub_trees", "validation_errors"],
+  required: ["children", "id", "operator", "ra_node_type", "validation_errors"],
+} as const;
+
+export const $RATree = {
+  oneOf: [
+    {
+      $ref: "#/components/schemas/RelationNode",
+    },
+    {
+      $ref: "#/components/schemas/ProjectionNode",
+    },
+    {
+      $ref: "#/components/schemas/SelectionNode",
+    },
+    {
+      $ref: "#/components/schemas/DivisionNode",
+    },
+    {
+      $ref: "#/components/schemas/SetOperationNode",
+    },
+    {
+      $ref: "#/components/schemas/RAJoinNode",
+    },
+    {
+      $ref: "#/components/schemas/ThetaJoinNode",
+    },
+    {
+      $ref: "#/components/schemas/GroupedAggregationNode",
+    },
+    {
+      $ref: "#/components/schemas/TopNNode",
+    },
+  ],
+} as const;
+
+export const $RaNodeTypeEnum = {
+  enum: [
+    "Relation",
+    "Projection",
+    "Selection",
+    "Division",
+    "SetOperation",
+    "Join",
+    "ThetaJoin",
+    "GroupedAggregation",
+    "TopN",
+  ],
+  type: "string",
+  description: `* \`Relation\` - Relation
+* \`Projection\` - Projection
+* \`Selection\` - Selection
+* \`Division\` - Division
+* \`SetOperation\` - SetOperation
+* \`Join\` - Join
+* \`ThetaJoin\` - ThetaJoin
+* \`GroupedAggregation\` - GroupedAggregation
+* \`TopN\` - TopN`,
+} as const;
+
+export const $RelationNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/RATree",
+      },
+      readOnly: true,
+    },
+    ra_node_type: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/RaNodeTypeEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
+    name: {
+      type: "string",
+    },
+  },
+  required: ["children", "id", "name", "ra_node_type", "validation_errors"],
+} as const;
+
+export const $SQLJoinNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/SQLTree",
+      },
+      readOnly: true,
+    },
+    sql_node_type: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/SqlNodeTypeEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
+    method: {
+      type: "string",
+    },
+    condition: {
+      type: "string",
+      nullable: true,
+    },
+    using: {
+      type: "array",
+      items: {
+        type: "string",
+      },
+      nullable: true,
+    },
+  },
+  required: ["children", "id", "method", "sql_node_type", "validation_errors"],
 } as const;
 
 export const $SQLTree = {
@@ -706,7 +944,7 @@ export const $SQLTree = {
       $ref: "#/components/schemas/AliasNode",
     },
     {
-      $ref: "#/components/schemas/JoinNode",
+      $ref: "#/components/schemas/SQLJoinNode",
     },
     {
       $ref: "#/components/schemas/SelectNode",
@@ -742,10 +980,10 @@ export const $SelectNode = {
       },
       readOnly: true,
     },
-    type: {
+    sql_node_type: {
       allOf: [
         {
-          $ref: "#/components/schemas/TypeEnum",
+          $ref: "#/components/schemas/SqlNodeTypeEnum",
         },
       ],
       readOnly: true,
@@ -763,7 +1001,47 @@ export const $SelectNode = {
       },
     },
   },
-  required: ["children", "columns", "id", "type", "validation_errors"],
+  required: ["children", "columns", "id", "sql_node_type", "validation_errors"],
+} as const;
+
+export const $SelectionNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/RATree",
+      },
+      readOnly: true,
+    },
+    ra_node_type: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/RaNodeTypeEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
+    condition: {
+      type: "string",
+    },
+  },
+  required: [
+    "children",
+    "condition",
+    "id",
+    "ra_node_type",
+    "validation_errors",
+  ],
 } as const;
 
 export const $SendEmailReset = {
@@ -790,10 +1068,10 @@ export const $SetOpNode = {
       },
       readOnly: true,
     },
-    type: {
+    sql_node_type: {
       allOf: [
         {
-          $ref: "#/components/schemas/TypeEnum",
+          $ref: "#/components/schemas/SqlNodeTypeEnum",
         },
       ],
       readOnly: true,
@@ -808,7 +1086,47 @@ export const $SetOpNode = {
       type: "string",
     },
   },
-  required: ["children", "id", "operator", "type", "validation_errors"],
+  required: [
+    "children",
+    "id",
+    "operator",
+    "sql_node_type",
+    "validation_errors",
+  ],
+} as const;
+
+export const $SetOperationNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/RATree",
+      },
+      readOnly: true,
+    },
+    ra_node_type: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/RaNodeTypeEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
+    operator: {
+      type: "string",
+    },
+  },
+  required: ["children", "id", "operator", "ra_node_type", "validation_errors"],
 } as const;
 
 export const $SetPassword = {
@@ -840,41 +1158,7 @@ export const $SetUsername = {
   required: ["current_password", "new_email"],
 } as const;
 
-export const $TableNode = {
-  type: "object",
-  properties: {
-    id: {
-      type: "integer",
-    },
-    children: {
-      type: "array",
-      items: {
-        $ref: "#/components/schemas/SQLTree",
-      },
-      readOnly: true,
-    },
-    type: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/TypeEnum",
-        },
-      ],
-      readOnly: true,
-    },
-    validation_errors: {
-      type: "array",
-      items: {
-        $ref: "#/components/schemas/QueryError",
-      },
-    },
-    name: {
-      type: "string",
-    },
-  },
-  required: ["children", "id", "name", "type", "validation_errors"],
-} as const;
-
-export const $TypeEnum = {
+export const $SqlNodeTypeEnum = {
   enum: [
     "Table",
     "Alias",
@@ -896,6 +1180,124 @@ export const $TypeEnum = {
 * \`Having\` - Having
 * \`OrderBy\` - OrderBy
 * \`SetOp\` - SetOp`,
+} as const;
+
+export const $TableNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/SQLTree",
+      },
+      readOnly: true,
+    },
+    sql_node_type: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/SqlNodeTypeEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
+    name: {
+      type: "string",
+    },
+  },
+  required: ["children", "id", "name", "sql_node_type", "validation_errors"],
+} as const;
+
+export const $ThetaJoinNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/RATree",
+      },
+      readOnly: true,
+    },
+    ra_node_type: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/RaNodeTypeEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
+    condition: {
+      type: "string",
+    },
+  },
+  required: [
+    "children",
+    "condition",
+    "id",
+    "ra_node_type",
+    "validation_errors",
+  ],
+} as const;
+
+export const $TopNNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/RATree",
+      },
+      readOnly: true,
+    },
+    ra_node_type: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/RaNodeTypeEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
+    limit: {
+      type: "integer",
+    },
+    attribute: {
+      type: "string",
+    },
+  },
+  required: [
+    "attribute",
+    "children",
+    "id",
+    "limit",
+    "ra_node_type",
+    "validation_errors",
+  ],
 } as const;
 
 export const $User = {
@@ -970,10 +1372,10 @@ export const $WhereNode = {
       },
       readOnly: true,
     },
-    type: {
+    sql_node_type: {
       allOf: [
         {
-          $ref: "#/components/schemas/TypeEnum",
+          $ref: "#/components/schemas/SqlNodeTypeEnum",
         },
       ],
       readOnly: true,
@@ -988,5 +1390,11 @@ export const $WhereNode = {
       type: "string",
     },
   },
-  required: ["children", "condition", "id", "type", "validation_errors"],
+  required: [
+    "children",
+    "condition",
+    "id",
+    "sql_node_type",
+    "validation_errors",
+  ],
 } as const;

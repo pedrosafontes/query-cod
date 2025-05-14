@@ -8,7 +8,7 @@ export type Activation = {
 export type AliasNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: TypeEnum;
+  readonly sql_node_type: SqlNodeTypeEnum;
   validation_errors: Array<QueryError>;
   alias: string;
 };
@@ -52,6 +52,13 @@ export type DatabaseSummary = {
   name: string;
 };
 
+export type DivisionNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+};
+
 export type ErrorPosition = {
   line: number;
   start_col: number;
@@ -61,27 +68,26 @@ export type ErrorPosition = {
 export type GroupByNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: TypeEnum;
+  readonly sql_node_type: SqlNodeTypeEnum;
   validation_errors: Array<QueryError>;
   keys: Array<string>;
+};
+
+export type GroupedAggregationNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  group_by: Array<string>;
+  aggregations: Array<Array<string>>;
 };
 
 export type HavingNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: TypeEnum;
+  readonly sql_node_type: SqlNodeTypeEnum;
   validation_errors: Array<QueryError>;
   condition: string;
-};
-
-export type JoinNode = {
-  id: number;
-  readonly children: Array<SQLTree>;
-  readonly type: TypeEnum;
-  validation_errors: Array<QueryError>;
-  method: string;
-  condition?: string | null;
-  using?: Array<string> | null;
 };
 
 /**
@@ -98,7 +104,7 @@ export type Login = {
 export type OrderByNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: TypeEnum;
+  readonly sql_node_type: SqlNodeTypeEnum;
   validation_errors: Array<QueryError>;
   keys: Array<string>;
 };
@@ -135,7 +141,7 @@ export type PatchedQuery = {
   language?: LanguageEnum;
   readonly created?: string;
   readonly modified?: string;
-  validation_errors?: Array<QueryError>;
+  readonly validation_errors?: Array<QueryError>;
 };
 
 export type PatchedUser = {
@@ -156,6 +162,14 @@ export type Project = {
   name: string;
 };
 
+export type ProjectionNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  attributes: Array<string>;
+};
+
 export type Query = {
   readonly id: number;
   name: string;
@@ -164,7 +178,7 @@ export type Query = {
   language?: LanguageEnum;
   readonly created: string;
   readonly modified: string;
-  validation_errors: Array<QueryError>;
+  readonly validation_errors: Array<QueryError>;
 };
 
 export type QueryError = {
@@ -203,20 +217,72 @@ export type QuerySummary = {
 
 export type QueryTree = {
   readonly sql_tree: SQLTree;
-  ra_tree?: RATree;
+  readonly ra_tree: RATree;
 };
 
-export type RATree = {
+export type RAJoinNode = {
   id: number;
-  label: string;
-  readonly sub_trees: Array<RATree>;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
   validation_errors: Array<QueryError>;
+  operator: string;
+};
+
+export type RATree =
+  | RelationNode
+  | ProjectionNode
+  | SelectionNode
+  | DivisionNode
+  | SetOperationNode
+  | RAJoinNode
+  | ThetaJoinNode
+  | GroupedAggregationNode
+  | TopNNode;
+
+/**
+ * * `Relation` - Relation
+ * * `Projection` - Projection
+ * * `Selection` - Selection
+ * * `Division` - Division
+ * * `SetOperation` - SetOperation
+ * * `Join` - Join
+ * * `ThetaJoin` - ThetaJoin
+ * * `GroupedAggregation` - GroupedAggregation
+ * * `TopN` - TopN
+ */
+export type RaNodeTypeEnum =
+  | "Relation"
+  | "Projection"
+  | "Selection"
+  | "Division"
+  | "SetOperation"
+  | "Join"
+  | "ThetaJoin"
+  | "GroupedAggregation"
+  | "TopN";
+
+export type RelationNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  name: string;
+};
+
+export type SQLJoinNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  readonly sql_node_type: SqlNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  method: string;
+  condition?: string | null;
+  using?: Array<string> | null;
 };
 
 export type SQLTree =
   | TableNode
   | AliasNode
-  | JoinNode
+  | SQLJoinNode
   | SelectNode
   | WhereNode
   | GroupByNode
@@ -227,9 +293,17 @@ export type SQLTree =
 export type SelectNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: TypeEnum;
+  readonly sql_node_type: SqlNodeTypeEnum;
   validation_errors: Array<QueryError>;
   columns: Array<string>;
+};
+
+export type SelectionNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  condition: string;
 };
 
 export type SendEmailReset = {
@@ -239,7 +313,15 @@ export type SendEmailReset = {
 export type SetOpNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: TypeEnum;
+  readonly sql_node_type: SqlNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  operator: string;
+};
+
+export type SetOperationNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
   validation_errors: Array<QueryError>;
   operator: string;
 };
@@ -254,14 +336,6 @@ export type SetUsername = {
   new_email: string;
 };
 
-export type TableNode = {
-  id: number;
-  readonly children: Array<SQLTree>;
-  readonly type: TypeEnum;
-  validation_errors: Array<QueryError>;
-  name: string;
-};
-
 /**
  * * `Table` - Table
  * * `Alias` - Alias
@@ -273,7 +347,7 @@ export type TableNode = {
  * * `OrderBy` - OrderBy
  * * `SetOp` - SetOp
  */
-export type TypeEnum =
+export type SqlNodeTypeEnum =
   | "Table"
   | "Alias"
   | "Join"
@@ -283,6 +357,31 @@ export type TypeEnum =
   | "Having"
   | "OrderBy"
   | "SetOp";
+
+export type TableNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  readonly sql_node_type: SqlNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  name: string;
+};
+
+export type ThetaJoinNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  condition: string;
+};
+
+export type TopNNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  limit: number;
+  attribute: string;
+};
 
 export type User = {
   readonly id: number;
@@ -304,7 +403,7 @@ export type UsernameResetConfirm = {
 export type WhereNode = {
   id: number;
   readonly children: Array<SQLTree>;
-  readonly type: TypeEnum;
+  readonly sql_node_type: SqlNodeTypeEnum;
   validation_errors: Array<QueryError>;
   condition: string;
 };

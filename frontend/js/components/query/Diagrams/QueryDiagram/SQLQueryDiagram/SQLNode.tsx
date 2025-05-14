@@ -27,7 +27,7 @@ import {
   SQLTree,
   TableNode,
   AliasNode,
-  JoinNode,
+  SQLJoinNode,
   SetOpNode,
   SelectNode,
   WhereNode,
@@ -49,7 +49,14 @@ export type SQLNodeData = {
 export type SQLNode = Node<SQLNodeData, "sql">;
 
 const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
-  const { queryId, id, setQueryResult, type, errors, ...props } = data;
+  const {
+    queryId,
+    id,
+    setQueryResult,
+    sql_node_type: type,
+    errors,
+    ...props
+  } = data;
   const { isExecuting, executeSubquery } = useExecuteSubquery({
     queryId,
     subqueryId: id,
@@ -83,7 +90,7 @@ const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
         };
       }
       case "Join": {
-        const { method } = props as JoinNode;
+        const { method } = props as SQLJoinNode;
         return {
           icon: Merge,
           title: `${method} JOIN`,
@@ -234,7 +241,7 @@ const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
     <HoverCard>
       <HoverCardTrigger asChild>
         <Button
-          className={`bg-white border transition-colors ${borderClass ?? "border"} ${bgClass ?? "bg-white"} ${isExecuting && "cursor-wait animate-[pulse-scale_1s_ease-in-out_infinite]"}`}
+          className={`border transition-colors ${borderClass ?? "border"} ${bgClass ?? "bg-white"} ${isExecuting && "cursor-wait animate-[pulse-scale_1s_ease-in-out_infinite]"}`}
           disabled={!isExecutable}
           variant="ghost"
           onClick={executeSubquery}

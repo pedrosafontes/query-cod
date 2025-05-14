@@ -3,7 +3,6 @@ from typing import Any
 
 from drf_spectacular.helpers import lazy_serializer
 from drf_spectacular.utils import PolymorphicProxySerializer, extend_schema_field
-from queries.serializers.error import QueryErrorSerializer
 from queries.services.sql.tree.types import (
     AliasNode,
     GroupByNode,
@@ -17,6 +16,8 @@ from queries.services.sql.tree.types import (
     WhereNode,
 )
 from rest_framework import serializers
+
+from ..error import QueryErrorSerializer
 
 
 class SQLNodeType(str, Enum):
@@ -33,8 +34,8 @@ class SQLNodeType(str, Enum):
 
 class SQLTreeNodeSerializer(serializers.Serializer[SQLTree]):
     id = serializers.IntegerField()
-    children = serializers.SerializerMethodField()
-    type = serializers.SerializerMethodField()
+    children = serializers.SerializerMethodField(required=False)
+    sql_node_type = serializers.SerializerMethodField()
     validation_errors = QueryErrorSerializer(many=True)
 
     @extend_schema_field(
@@ -42,7 +43,7 @@ class SQLTreeNodeSerializer(serializers.Serializer[SQLTree]):
             choices=[node_type.value for node_type in SQLNodeType], required=True
         )
     )
-    def get_type(self, obj: SQLTree) -> str:
+    def get_sql_node_type(self, obj: SQLTree) -> str:
         return obj.__class__.__name__.replace('Node', '')
 
     @extend_schema_field(
@@ -51,7 +52,7 @@ class SQLTreeNodeSerializer(serializers.Serializer[SQLTree]):
             serializers=[
                 lazy_serializer('TableNodeSerializer'),
                 lazy_serializer('AliasNodeSerializer'),
-                lazy_serializer('JoinNodeSerializer'),
+                lazy_serializer('SQLJoinNodeSerializer'),
                 lazy_serializer('SelectNodeSerializer'),
                 lazy_serializer('WhereNodeSerializer'),
                 lazy_serializer('GroupByNodeSerializer'),
@@ -63,8 +64,8 @@ class SQLTreeNodeSerializer(serializers.Serializer[SQLTree]):
             many=True,
         )
     )
-    def get_children(self, obj: SQLTree) -> list[dict[str, Any]]:
-        return [SQLTreeSerializer(child).data for child in obj.children]
+    def get_children(self, obj: SQLTree) -> list[dict[str, Any]] | None:
+        return [SQLTreeSerializer(child).data for child in obj.children] if obj.children else None
 
 
 class TableNodeSerializer(SQLTreeNodeSerializer):
@@ -75,7 +76,7 @@ class AliasNodeSerializer(SQLTreeNodeSerializer):
     alias = serializers.CharField()
 
 
-class JoinNodeSerializer(SQLTreeNodeSerializer):
+class SQLJoinNodeSerializer(SQLTreeNodeSerializer):
     method = serializers.CharField()
     condition = serializers.CharField(allow_null=True, required=False)
     using = serializers.ListField(child=serializers.CharField(), allow_null=True, required=False)
@@ -113,7 +114,7 @@ class SQLTreeSerializer(serializers.Serializer[SQLTree]):
             case AliasNode():
                 return AliasNodeSerializer(obj).data
             case JoinNode():
-                return JoinNodeSerializer(obj).data
+                return SQLJoinNodeSerializer(obj).data
             case SelectNode():
                 return SelectNodeSerializer(obj).data
             case WhereNode():
@@ -126,6 +127,8 @@ class SQLTreeSerializer(serializers.Serializer[SQLTree]):
                 return OrderByNodeSerializer(obj).data
             case SetOpNode():
                 return SetOpNodeSerializer(obj).data
+            case _:
+                raise ValueError(f'Unknown SQL tree node type: {type(obj)}')
 
 
 SQLTreeField = PolymorphicProxySerializer(
@@ -133,7 +136,7 @@ SQLTreeField = PolymorphicProxySerializer(
     serializers=[
         TableNodeSerializer,
         AliasNodeSerializer,
-        JoinNodeSerializer,
+        SQLJoinNodeSerializer,
         SelectNodeSerializer,
         WhereNodeSerializer,
         GroupByNodeSerializer,

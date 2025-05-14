@@ -35,32 +35,29 @@ const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
     const edges: Edge[] = [];
 
     if (query && raTree) {
-      const processTree = ({
-        id,
-        label,
-        sub_trees: subTrees,
-        validation_errors: errors,
-      }: RATree) => {
+      const processTree = (tree: RATree) => {
+        const { children, validation_errors: errors, ...data } = tree;
+        const id = tree.id.toString();
+
         nodes.push({
-          id: id.toString(),
+          id,
           type: "ra",
           position: { x: 0, y: 0 },
           data: {
             queryId: query.id,
-            id,
-            label,
             setQueryResult,
             errors,
+            ...data,
           },
           deletable: false,
         });
-        if (subTrees) {
-          subTrees.forEach((subTree) => {
+        if (children) {
+          children.forEach((subTree) => {
             processTree(subTree);
             edges.push({
               id: `${id}-${subTree.id}`,
               type: "smoothstep",
-              target: id.toString(),
+              target: id,
               source: subTree.id.toString(),
               deletable: false,
               animated: true,

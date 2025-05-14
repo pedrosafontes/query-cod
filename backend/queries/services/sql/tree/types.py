@@ -1,70 +1,58 @@
+import abc
 from dataclasses import dataclass
 
 from queries.types import QueryError
 
 
 @dataclass
-class SQLTreeNode:
+class SQLTree(abc.ABC):
     id: int
-    children: list['SQLTree']
+    children: list['SQLTree'] | None
     validation_errors: list[QueryError]
 
 
 @dataclass
-class TableNode(SQLTreeNode):
+class TableNode(SQLTree):
     name: str
 
 
 @dataclass
-class AliasNode(SQLTreeNode):
+class AliasNode(SQLTree):
     alias: str
 
 
 @dataclass
-class JoinNode(SQLTreeNode):
+class JoinNode(SQLTree):
     method: str
     condition: str | None
     using: list[str] | None
 
 
 @dataclass
-class SelectNode(SQLTreeNode):
+class SelectNode(SQLTree):
     columns: list[str]
 
 
 @dataclass
-class WhereNode(SQLTreeNode):
+class WhereNode(SQLTree):
     condition: str
 
 
 @dataclass
-class GroupByNode(SQLTreeNode):
+class GroupByNode(SQLTree):
     keys: list[str]
 
 
 @dataclass
-class HavingNode(SQLTreeNode):
+class HavingNode(SQLTree):
     condition: str
 
 
 @dataclass
-class OrderByNode(SQLTreeNode):
+class OrderByNode(SQLTree):
     keys: list[str]
 
 
 @dataclass
-class SetOpNode(SQLTreeNode):
+class SetOpNode(SQLTree):
     operator: str
-
-
-SQLTree = (
-    TableNode
-    | AliasNode
-    | JoinNode
-    | SelectNode
-    | WhereNode
-    | GroupByNode
-    | HavingNode
-    | OrderByNode
-    | SetOpNode
-)

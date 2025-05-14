@@ -112,7 +112,7 @@ class SQLTreeBuilder:
             id=query_id,
             validation_errors=errors,
             name=table.name,
-            children=[],
+            children=None,
         ), partial_query
 
     def _build_derived_table(
