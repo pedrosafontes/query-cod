@@ -53,9 +53,11 @@ describe("RANode Component", () => {
     renderNode({
       queryId,
       id: subqueryId,
-      label: "π_name(Employees)",
+      ra_node_type: "Projection",
+      attributes: ["name"],
+      errors: [],
       setQueryResult: mockSetQueryResult,
-    });
+    } as RANodeData);
 
     fireEvent.click(screen.getByRole("button"));
 
@@ -78,9 +80,11 @@ describe("RANode Component", () => {
     renderNode({
       queryId,
       id: subqueryId,
-      label: "π_name(Employees)",
+      ra_node_type: "Projection",
+      attributes: ["name"],
+      errors: [],
       setQueryResult: mockSetQueryResult,
-    });
+    } as RANodeData);
 
     fireEvent.click(screen.getByRole("button"));
 
