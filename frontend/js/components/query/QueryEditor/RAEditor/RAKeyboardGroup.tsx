@@ -1,3 +1,5 @@
+import { cn } from "lib/utils";
+
 import RAKeyboardButton from "./RAKeyboardButton";
 import { RAKeyboardItem } from "./RAKeyboardItems";
 
@@ -14,7 +16,7 @@ const RAKeyboardGroup = ({
   className,
   disabled,
 }: RAKeyboardGroupProps) => (
-  <div className={`flex gap-2 flex-wrap mb-2 ${className ?? ""}`}>
+  <div className={cn("flex gap-2 flex-wrap mb-2", className)}>
     {operators.map((op) => (
       <RAKeyboardButton
         key={op.label}

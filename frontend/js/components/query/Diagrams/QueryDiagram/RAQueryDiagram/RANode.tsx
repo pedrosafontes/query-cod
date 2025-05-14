@@ -15,6 +15,7 @@ import {
   TopNNode,
 } from "api";
 import LatexFormula from "components/query/QueryEditor/RAEditor/LatexFormula";
+import { cn } from "lib/utils";
 
 import useExecuteSubquery from "../useExecuteSubquery";
 
@@ -80,7 +81,7 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
       }
       case "SetOperation": {
         const { operator } = props as SetOperationNode;
-        let latex: string | undefined = undefined;
+        let latex: string | undefined;
         let borderClass = "border-yellow-300";
         let bgClass = "bg-yellow-50";
         switch (operator) {
@@ -144,7 +145,8 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
           bgClass: "bg-purple-50",
         };
       }
-      default: return {};
+      default:
+        return {};
     }
   };
 
@@ -152,7 +154,13 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
 
   return (
     <Button
-      className={`border transition-colors ${borderClass ?? "border"} ${bgClass ?? "bg-white"} ${isExecuting && "cursor-wait animate-[pulse-scale_1s_ease-in-out_infinite]"}`}
+      className={cn(
+        "border transition-colors",
+        borderClass ?? "border",
+        bgClass ?? "bg-white",
+        isExecuting &&
+          "cursor-wait animate-[pulse-scale_1s_ease-in-out_infinite]",
+      )}
       disabled={!isExecutable}
       variant="ghost"
       onClick={executeSubquery}
@@ -162,7 +170,7 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
         position={Position.Top}
         type="source"
       />
-      <LatexFormula expression={latex || "\?"} />
+      <LatexFormula expression={latex || "?"} />
       <Handle
         className="invisible size-0 border-0 bottom-1"
         position={Position.Bottom}

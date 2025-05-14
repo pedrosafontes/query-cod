@@ -36,6 +36,7 @@ import {
   OrderByNode,
   QueryError,
 } from "api";
+import { cn } from "lib/utils";
 
 import useExecuteSubquery from "../useExecuteSubquery";
 
@@ -241,7 +242,13 @@ const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
     <HoverCard>
       <HoverCardTrigger asChild>
         <Button
-          className={`border transition-colors ${borderClass ?? "border"} ${bgClass ?? "bg-white"} ${isExecuting && "cursor-wait animate-[pulse-scale_1s_ease-in-out_infinite]"}`}
+          className={cn(
+            "border transition-colors",
+            borderClass ?? "border",
+            bgClass ?? "bg-white",
+            isExecuting &&
+              "cursor-wait animate-[pulse-scale_1s_ease-in-out_infinite]",
+          )}
           disabled={!isExecutable}
           variant="ghost"
           onClick={executeSubquery}
