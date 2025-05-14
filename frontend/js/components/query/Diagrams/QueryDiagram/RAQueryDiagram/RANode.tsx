@@ -68,15 +68,15 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
         const { condition } = props as SelectionNode;
         return {
           latex: `\\sigma_{${condition}}`,
-          borderClass: "border-green-300",
-          bgClass: "bg-green-50",
+          borderClass: "border-orange-300",
+          bgClass: "bg-orange-50",
         };
       }
       case "Division": {
         return {
           latex: `\\div`,
-          borderClass: "border-orange-300",
-          bgClass: "bg-orange-50",
+          borderClass: "border-purple-300",
+          bgClass: "bg-purple-50",
         };
       }
       case "SetOperation": {
@@ -133,8 +133,8 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
           .join(", ");
         return {
           latex: `\\Gamma_{(${groupByLatex})(${aggregationsLatex})}`,
-          borderClass: "border-green-300",
-          bgClass: "bg-green-50",
+          borderClass: "border-teal-300",
+          bgClass: "bg-teal-50",
         };
       }
       case "TopN": {
