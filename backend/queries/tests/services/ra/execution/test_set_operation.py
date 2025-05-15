@@ -21,7 +21,7 @@ from queries.services.ra.parser.ast import (
                 left=Relation(name='department'),
                 right=Relation(name='department'),
             ),
-            'SELECT * FROM department UNION SELECT * FROM department',
+            'SELECT DISTINCT * FROM department UNION SELECT DISTINCT * FROM department',
         ),
         # Difference
         (
@@ -30,7 +30,7 @@ from queries.services.ra.parser.ast import (
                 left=Relation(name='employee'),
                 right=Relation(name='employee'),
             ),
-            'SELECT * FROM employee EXCEPT SELECT * FROM employee',
+            'SELECT DISTINCT * FROM employee EXCEPT SELECT DISTINCT * FROM employee',
         ),
         # Intersect
         (
@@ -39,7 +39,7 @@ from queries.services.ra.parser.ast import (
                 left=Relation(name='department'),
                 right=Relation(name='department'),
             ),
-            'SELECT * FROM department INTERSECT SELECT * FROM department',
+            'SELECT DISTINCT * FROM department INTERSECT SELECT DISTINCT * FROM department',
         ),
         # Cartesian product
         (
@@ -48,7 +48,7 @@ from queries.services.ra.parser.ast import (
                 left=Relation(name='department'),
                 right=Relation(name='employee'),
             ),
-            'SELECT * FROM department CROSS JOIN employee',
+            'SELECT DISTINCT * FROM department CROSS JOIN employee',
         ),
         # Chained operations
         (
@@ -61,7 +61,7 @@ from queries.services.ra.parser.ast import (
                     right=Relation(name='department'),
                 ),
             ),
-            'SELECT * FROM department UNION (SELECT * FROM department EXCEPT SELECT * FROM department)',
+            'SELECT DISTINCT * FROM department UNION (SELECT DISTINCT * FROM department EXCEPT SELECT DISTINCT * FROM department)',
         ),
         # Union after projection
         (
@@ -76,7 +76,7 @@ from queries.services.ra.parser.ast import (
                     subquery=Relation(name='employee'),
                 ),
             ),
-            'SELECT dept_name FROM department UNION SELECT name FROM employee',
+            'SELECT DISTINCT dept_name FROM department UNION SELECT DISTINCT name FROM employee',
         ),
         # Difference on projection
         (
@@ -91,7 +91,7 @@ from queries.services.ra.parser.ast import (
                     subquery=Relation(name='employee'),
                 ),
             ),
-            'SELECT dept_name FROM department EXCEPT SELECT name FROM employee',
+            'SELECT DISTINCT dept_name FROM department EXCEPT SELECT DISTINCT name FROM employee',
         ),
         # Cartesian product
         (
@@ -100,7 +100,7 @@ from queries.services.ra.parser.ast import (
                 left=Relation(name='employee'),
                 right=Relation(name='department'),
             ),
-            'SELECT * FROM employee CROSS JOIN department',
+            'SELECT DISTINCT * FROM employee CROSS JOIN department',
         ),
     ],
 )

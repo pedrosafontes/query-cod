@@ -51,7 +51,7 @@ class RAtoSQLTranspiler:
         return method(query)
 
     def _transpile_Relation(self, rel: Relation) -> Select:  # noqa: N802
-        return select('*').from_(rel.name)
+        return select('*').from_(rel.name).distinct()
 
     def _transpile_Projection(self, proj: Projection) -> Select:  # noqa: N802
         query = self._transpile_select(proj.subquery)
@@ -233,7 +233,7 @@ class RAtoSQLTranspiler:
             return select, relation.name
         else:
             # relation is a derived relation; therefore, it needs to be aliased
-            return subquery(select, alias).select('*'), alias
+            return subquery(select, alias).select('*').distinct(), alias
 
     def _transpile_select(self, query: RAQuery) -> Select:
         sql_query = self.transpile(query)

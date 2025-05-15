@@ -43,7 +43,7 @@ from queries.services.ra.parser.ast import (
                 ),
             ),
             """
-            SELECT name
+            SELECT DISTINCT name
             FROM employee
             NATURAL JOIN department
             WHERE dept_name = 'Engineering'
@@ -84,7 +84,7 @@ from queries.services.ra.parser.ast import (
                 ),
             ),
             """
-            SELECT *
+            SELECT DISTINCT *
             FROM employee NATURAL JOIN department
             ORDER BY age DESC
             LIMIT 2
@@ -113,7 +113,7 @@ from queries.services.ra.parser.ast import (
                 ),
             ),
             """
-            SELECT * FROM employee
+            SELECT DISTINCT * FROM employee
             CROSS JOIN department
             ON employee.dept_id = department.dept_id
             WHERE department.dept_name = 'HR'
@@ -149,7 +149,7 @@ from queries.services.ra.parser.ast import (
                 subquery=Relation('employee'),
             ),
             """
-            SELECT * FROM employee
+            SELECT DISTINCT * FROM employee
             WHERE (age = 25 OR age = 30)
                   AND NOT name = 'Carol'
             """,

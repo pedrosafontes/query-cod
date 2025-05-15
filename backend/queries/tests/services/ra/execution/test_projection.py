@@ -13,7 +13,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAQuery, Relat
                 attributes=[Attribute(name='dept_name', relation='department')],
                 subquery=Relation(name='department'),
             ),
-            'SELECT dept_name FROM department',
+            'SELECT DISTINCT dept_name FROM department',
         ),
         # Unqualified
         (
@@ -21,7 +21,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAQuery, Relat
                 attributes=[Attribute(name='dept_name')],
                 subquery=Relation(name='department'),
             ),
-            'SELECT dept_name FROM department',
+            'SELECT DISTINCT dept_name FROM department',
         ),
         # Multiple attributes
         (
@@ -32,7 +32,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAQuery, Relat
                 ],
                 subquery=Relation(name='department'),
             ),
-            'SELECT dept_id, dept_name FROM department',
+            'SELECT DISTINCT dept_id, dept_name FROM department',
         ),
         # Duplicate attributes
         (
@@ -43,7 +43,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAQuery, Relat
                 ],
                 subquery=Relation(name='employee'),
             ),
-            'SELECT name, name FROM employee',
+            'SELECT DISTINCT name, name FROM employee',
         ),
     ],
 )

@@ -22,7 +22,7 @@ from queries.services.ra.parser.ast import (
                 attribute=Attribute(name='age'),
                 subquery=Relation(name='employee'),
             ),
-            'SELECT * FROM employee ORDER BY age DESC LIMIT 2',
+            'SELECT DISTINCT * FROM employee ORDER BY age DESC LIMIT 2',
         ),
         # Top 10 departments by name
         (
@@ -31,7 +31,7 @@ from queries.services.ra.parser.ast import (
                 attribute=Attribute(name='dept_name'),
                 subquery=Relation(name='department'),
             ),
-            'SELECT * FROM department ORDER BY dept_name DESC LIMIT 10',
+            'SELECT DISTINCT * FROM department ORDER BY dept_name DESC LIMIT 10',
         ),
         # 4. Top 2 oldest employees in dept 1
         (
@@ -47,7 +47,7 @@ from queries.services.ra.parser.ast import (
                     subquery=Relation(name='employee'),
                 ),
             ),
-            'SELECT * FROM (SELECT * FROM employee WHERE dept_id = 1) ORDER BY age DESC LIMIT 2',
+            'SELECT DISTINCT * FROM (SELECT * FROM employee WHERE dept_id = 1) ORDER BY age DESC LIMIT 2',
         ),
     ],
 )

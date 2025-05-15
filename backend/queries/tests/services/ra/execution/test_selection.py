@@ -27,7 +27,7 @@ from queries.services.ra.parser.ast import (
                 ),
                 subquery=Relation(name='employee'),
             ),
-            'SELECT * FROM employee WHERE age > 30',
+            'SELECT DISTINCT * FROM employee WHERE age > 30',
         ),
         # Basic string equality
         (
@@ -39,7 +39,7 @@ from queries.services.ra.parser.ast import (
                 ),
                 subquery=Relation(name='department'),
             ),
-            "SELECT * FROM department WHERE dept_name = 'Engineering'",
+            "SELECT DISTINCT * FROM department WHERE dept_name = 'Engineering'",
         ),
         # Logical AND
         (
@@ -59,7 +59,7 @@ from queries.services.ra.parser.ast import (
                 ),
                 subquery=Relation(name='employee'),
             ),
-            'SELECT * FROM employee WHERE age >= 30 AND age <= 40',
+            'SELECT DISTINCT * FROM employee WHERE age >= 30 AND age <= 40',
         ),
         # Logical OR
         (
@@ -79,7 +79,7 @@ from queries.services.ra.parser.ast import (
                 ),
                 subquery=Relation(name='employee'),
             ),
-            "SELECT * FROM employee WHERE name = 'Alice' OR name = 'Carol'",
+            "SELECT DISTINCT * FROM employee WHERE name = 'Alice' OR name = 'Carol'",
         ),
         # Logical NOT
         (
@@ -93,7 +93,7 @@ from queries.services.ra.parser.ast import (
                 ),
                 subquery=Relation(name='employee'),
             ),
-            "SELECT * FROM employee WHERE NOT (name = 'Bob')",
+            "SELECT DISTINCT * FROM employee WHERE NOT (name = 'Bob')",
         ),
         # Grouped (a AND b) OR c
         (
@@ -121,7 +121,7 @@ from queries.services.ra.parser.ast import (
                 ),
                 subquery=Relation(name='employee'),
             ),
-            "SELECT * FROM employee WHERE (dept_id = 1 AND age > 30) OR name = 'Bob'",
+            "SELECT DISTINCT * FROM employee WHERE (dept_id = 1 AND age > 30) OR name = 'Bob'",
         ),
         # Attribute condition
         (
@@ -129,7 +129,7 @@ from queries.services.ra.parser.ast import (
                 condition=Attribute(name='senior'),
                 subquery=Relation(name='employee'),
             ),
-            'SELECT * FROM employee WHERE senior = TRUE',
+            'SELECT DISTINCT * FROM employee WHERE senior = TRUE',
         ),
     ],
 )

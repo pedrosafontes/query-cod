@@ -23,7 +23,7 @@ from queries.services.ra.parser.ast import (
                 left=Relation('employee'),
                 right=Relation('department'),
             ),
-            """SELECT * FROM employee NATURAL JOIN department""",
+            """SELECT DISTINCT * FROM employee NATURAL JOIN department""",
         ),
         # Semi-join
         (
@@ -33,8 +33,8 @@ from queries.services.ra.parser.ast import (
                 right=Relation('department'),
             ),
             """
-            SELECT * FROM employee WHERE EXISTS (
-                SELECT * FROM department
+            SELECT DISTINCT * FROM employee WHERE EXISTS (
+                SELECT DISTINCT * FROM department
                 WHERE employee.dept_id = department.dept_id
             )
             """,
@@ -51,7 +51,7 @@ from queries.services.ra.parser.ast import (
                 ),
             ),
             """
-            SELECT * FROM employee
+            SELECT DISTINCT * FROM employee
             CROSS JOIN department
             WHERE employee.age > 30
             """,
@@ -68,7 +68,7 @@ from queries.services.ra.parser.ast import (
                 ),
             ),
             """
-            SELECT * FROM employee
+            SELECT DISTINCT * FROM employee
             CROSS JOIN department
             WHERE employee.dept_id = department.dept_id
             """,
@@ -85,8 +85,8 @@ from queries.services.ra.parser.ast import (
                 right=Relation('employee'),
             ),
             """
-            SELECT * FROM (
-                SELECT * FROM employee NATURAL JOIN department
+            SELECT DISTINCT * FROM (
+                SELECT DISTINCT * FROM employee NATURAL JOIN department
             ) AS sub NATURAL JOIN employee
             """,
         ),
