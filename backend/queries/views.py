@@ -11,7 +11,9 @@ from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 
 from .models import Query
-from .serializers import QueryExecutionSerializer, QuerySerializer
+from .serializers import QuerySerializer
+from .serializers.execution import QueryExecutionSerializer
+from .serializers.tree import QueryTreeSerializer
 from .services.execution import execute_query, execute_subquery
 
 
@@ -78,3 +80,13 @@ class QueryViewSet(
             return Response({'success': True, 'results': results})
         else:
             return Response({'success': False})
+
+    @extend_schema(
+        request=None,
+        responses=QueryTreeSerializer,
+    )
+    @action(detail=True, methods=['get'], url_path='tree')
+    def tree(self, request: Request, pk: str) -> Response:
+        query = self.get_object()
+        serializer = QueryTreeSerializer(query)
+        return Response(serializer.data)

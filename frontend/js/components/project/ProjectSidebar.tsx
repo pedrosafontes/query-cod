@@ -20,6 +20,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { cn } from "lib/utils";
 
 import {
   ProjectsService,
@@ -129,7 +130,10 @@ const ProjectSidebar = ({
             </SidebarMenuItem>
           )}
           <SidebarMenuItem
-            className={`text-sm ${open ? "text-muted-foreground" : "text-primary"} inline`}
+            className={cn(
+              "text-sm inline",
+              open ? "text-muted-foreground" : "text-primary",
+            )}
           >
             <SidebarMenuButton onClick={toggleSidebar}>
               {open ? <PanelLeftClose /> : <PanelLeftOpen />}

@@ -3,6 +3,7 @@ import { editor } from "monaco-editor";
 
 import { Spinner } from "@/components/ui/spinner";
 import { registerLatexLanguage } from "lib/monaco-latex";
+import { cn } from "lib/utils";
 
 type CodeEditorProps = {
   value?: string;
@@ -39,7 +40,7 @@ const CodeEditor = ({
     }}
     theme="vs-light"
     value={value}
-    wrapperProps={{ className: `${className} !w-auto` }}
+    wrapperProps={{ className: cn(className, "!w-auto") }}
     onChange={onChange}
     onMount={onMount}
   />

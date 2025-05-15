@@ -1,7 +1,7 @@
 from databases.types import Columns, Schema
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import DataType as SQLGlotDataType
-from sqlglot.expressions import Except, Intersect, Select, Union
+from sqlglot.expressions import Query
 
 from .ra.parser.ast import RAQuery
 
@@ -88,5 +88,5 @@ def to_sqlglot_schema(schema: RelationalSchema) -> dict[str, dict[str, SQLGlotDa
     }
 
 
-SQLQuery = Select | Union | Intersect | Except
-QueryAST = RAQuery | SQLQuery
+SQLQuery = Query
+QueryAST = RAQuery | Query

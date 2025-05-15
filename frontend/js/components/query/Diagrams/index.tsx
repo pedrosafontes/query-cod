@@ -16,10 +16,11 @@ import SchemaDiagramNode from "components/database/SchemaNode";
 import useSchemaDiagram from "components/database/useSchemaDiagram";
 import { useTopCenterFitView } from "hooks/useTopCenterView";
 
-import RADiagramNode from "./RAQueryDiagram/RANode";
-import useRAQueryDiagram from "./RAQueryDiagram/useRAQueryDiagram";
+import RADiagramNode from "./QueryDiagram/RAQueryDiagram/RANode";
+import SQLDiagramNode from "./QueryDiagram/SQLQueryDiagram/SQLNode";
+import useQueryDiagram from "./QueryDiagram/useQueryDiagram";
 
-export type QueryDiagramsProps = {
+export type DiagramsProps = {
   databaseId: number;
   query?: Query;
   setQueryResult: (result?: QueryResultData) => void;
@@ -29,16 +30,17 @@ export type QueryDiagramsProps = {
 const nodeTypes = {
   table: SchemaDiagramNode,
   ra: RADiagramNode,
+  sql: SQLDiagramNode,
 };
 
 type DigramEnum = "schema" | "query";
 
-const QueryDiagrams = ({
+const Diagrams = ({
   databaseId,
   query,
   setQueryResult,
   children,
-}: QueryDiagramsProps) => {
+}: DiagramsProps) => {
   const [diagram, setDiagram] = useState<DigramEnum>("schema");
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -46,28 +48,22 @@ const QueryDiagrams = ({
   const { nodes: schemaNodes, edges: schemaEdges } = useSchemaDiagram({
     databaseId,
   });
-  const { nodes: queryNodes, edges: queryEdges } = useRAQueryDiagram({
+  const { nodes: queryNodes, edges: queryEdges } = useQueryDiagram({
     query,
     setQueryResult,
   });
 
   useEffect(() => {
-    if (diagram === "schema") {
-      setEdges(schemaEdges);
-      setNodes(schemaNodes);
-    } else {
-      setEdges(queryEdges);
-      setNodes(queryNodes);
-    }
-  }, [
-    diagram,
-    schemaNodes,
-    schemaEdges,
-    queryNodes,
-    queryEdges,
-    setNodes,
-    setEdges,
-  ]);
+    if (diagram !== "schema") return;
+    setNodes(schemaNodes);
+    setEdges(schemaEdges);
+  }, [diagram, schemaNodes, schemaEdges, setNodes, setEdges]);
+
+  useEffect(() => {
+    if (diagram !== "query") return;
+    setNodes(queryNodes);
+    setEdges(queryEdges);
+  }, [diagram, queryNodes, queryEdges, setNodes, setEdges]);
 
   useTopCenterFitView(nodes);
 
@@ -105,4 +101,4 @@ const QueryDiagrams = ({
   );
 };
 
-export default QueryDiagrams;
+export default Diagrams;

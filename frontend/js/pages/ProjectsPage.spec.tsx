@@ -11,6 +11,11 @@ jest.mock("api", () => ({
   },
 }));
 
+jest.mock("react-router", () => ({
+  ...jest.requireActual("react-router"),
+  useNavigate: jest.fn(),
+}));
+
 jest.mock("hooks/useErrorToast", () => ({
   useErrorToast: jest.fn(),
 }));

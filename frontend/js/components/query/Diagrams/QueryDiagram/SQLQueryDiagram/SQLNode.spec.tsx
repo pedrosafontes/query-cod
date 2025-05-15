@@ -2,7 +2,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
 import { QueriesService } from "api";
 
-import RADiagramNode, { RANodeData } from "./RANode";
+import SQLDiagramNode, { SQLNodeData } from "./SQLNode";
 
 jest.mock("@xyflow/react", () => {
   const original = jest.requireActual("@xyflow/react");
@@ -19,14 +19,14 @@ jest.mock("hooks/useErrorToast", () => ({
   useErrorToast: () => mockToast,
 }));
 
-describe("RANode Component", () => {
+describe("SQLNode Component", () => {
   const mockSetQueryResult = jest.fn();
   const queryId = 1;
   const subqueryId = 2;
 
-  const renderNode = (data: RANodeData) => {
+  const renderNode = (data: SQLNodeData) => {
     render(
-      <RADiagramNode
+      <SQLDiagramNode
         data={data}
         deletable={false}
         draggable={false}
@@ -37,7 +37,7 @@ describe("RANode Component", () => {
         positionAbsoluteY={0}
         selectable={false}
         selected={false}
-        type="ra"
+        type="sql"
         zIndex={0}
       />,
     );
@@ -53,9 +53,11 @@ describe("RANode Component", () => {
     renderNode({
       queryId,
       id: subqueryId,
-      label: "π_name(Employees)",
+      sql_node_type: "Select",
+      columns: ["name"],
+      errors: [],
       setQueryResult: mockSetQueryResult,
-    });
+    } as SQLNodeData);
 
     fireEvent.click(screen.getByRole("button"));
 
@@ -78,9 +80,11 @@ describe("RANode Component", () => {
     renderNode({
       queryId,
       id: subqueryId,
-      label: "π_name(Employees)",
+      sql_node_type: "Select",
+      columns: ["name"],
+      errors: [],
       setQueryResult: mockSetQueryResult,
-    });
+    } as SQLNodeData);
 
     fireEvent.click(screen.getByRole("button"));
 

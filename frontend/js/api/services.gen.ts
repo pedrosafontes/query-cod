@@ -69,6 +69,8 @@ import type {
   QueriesExecutionsCreateResponse,
   QueriesSubqueriesExecutionsCreateData,
   QueriesSubqueriesExecutionsCreateResponse,
+  QueriesTreeRetrieveData,
+  QueriesTreeRetrieveResponse,
 } from "./types.gen";
 
 export class AuthService {
@@ -681,6 +683,24 @@ export class QueriesService {
       path: {
         id: data.id,
         subquery_id: data.subqueryId,
+      },
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this query.
+   * @returns QueryTree
+   * @throws ApiError
+   */
+  public static queriesTreeRetrieve(
+    data: QueriesTreeRetrieveData,
+  ): CancelablePromise<QueriesTreeRetrieveResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/queries/{id}/tree/",
+      path: {
+        id: data.id,
       },
     });
   }

@@ -5,6 +5,14 @@ export type Activation = {
   token: string;
 };
 
+export type AliasNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  readonly sql_node_type: SqlNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  alias: string;
+};
+
 export type Database = {
   readonly id: number;
   name: string;
@@ -44,6 +52,44 @@ export type DatabaseSummary = {
   name: string;
 };
 
+export type DivisionNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+};
+
+export type ErrorPosition = {
+  line: number;
+  start_col: number;
+  end_col: number;
+};
+
+export type GroupByNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  readonly sql_node_type: SqlNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  keys: Array<string>;
+};
+
+export type GroupedAggregationNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  group_by: Array<string>;
+  aggregations: Array<Array<string>>;
+};
+
+export type HavingNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  readonly sql_node_type: SqlNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  condition: string;
+};
+
 /**
  * * `sql` - SQL
  * * `ra` - Relational Algebra
@@ -53,6 +99,14 @@ export type LanguageEnum = "sql" | "ra";
 export type Login = {
   username: string;
   password: string;
+};
+
+export type OrderByNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  readonly sql_node_type: SqlNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  keys: Array<string>;
 };
 
 export type PaginatedUserList = {
@@ -87,17 +141,7 @@ export type PatchedQuery = {
   language?: LanguageEnum;
   readonly created?: string;
   readonly modified?: string;
-  readonly validation_errors?: Array<{
-    title: string;
-    description?: string;
-    hint?: string;
-    position?: {
-      line: number;
-      start_col: number;
-      end_col: number;
-    };
-  }>;
-  tree?: RATree;
+  readonly validation_errors?: Array<QueryError>;
 };
 
 export type PatchedUser = {
@@ -118,6 +162,14 @@ export type Project = {
   name: string;
 };
 
+export type ProjectionNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  attributes: Array<string>;
+};
+
 export type Query = {
   readonly id: number;
   name: string;
@@ -126,17 +178,14 @@ export type Query = {
   language?: LanguageEnum;
   readonly created: string;
   readonly modified: string;
-  readonly validation_errors: Array<{
-    title: string;
-    description?: string;
-    hint?: string;
-    position?: {
-      line: number;
-      start_col: number;
-      end_col: number;
-    };
-  }>;
-  tree?: RATree;
+  readonly validation_errors: Array<QueryError>;
+};
+
+export type QueryError = {
+  title: string;
+  description?: string;
+  hint?: string;
+  position?: ErrorPosition;
 };
 
 export type QueryExecution = {
@@ -166,14 +215,115 @@ export type QuerySummary = {
   name: string;
 };
 
-export type RATree = {
+export type QueryTree = {
+  readonly sql_tree: SQLTree;
+  readonly ra_tree: RATree;
+};
+
+export type RAJoinNode = {
   id: number;
-  label: string;
-  readonly sub_trees: Array<RATree>;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  operator: string;
+};
+
+export type RATree =
+  | RelationNode
+  | ProjectionNode
+  | SelectionNode
+  | DivisionNode
+  | SetOperationNode
+  | RAJoinNode
+  | ThetaJoinNode
+  | GroupedAggregationNode
+  | TopNNode;
+
+/**
+ * * `Relation` - Relation
+ * * `Projection` - Projection
+ * * `Selection` - Selection
+ * * `Division` - Division
+ * * `SetOperation` - SetOperation
+ * * `Join` - Join
+ * * `ThetaJoin` - ThetaJoin
+ * * `GroupedAggregation` - GroupedAggregation
+ * * `TopN` - TopN
+ */
+export type RaNodeTypeEnum =
+  | "Relation"
+  | "Projection"
+  | "Selection"
+  | "Division"
+  | "SetOperation"
+  | "Join"
+  | "ThetaJoin"
+  | "GroupedAggregation"
+  | "TopN";
+
+export type RelationNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  name: string;
+};
+
+export type SQLJoinNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  readonly sql_node_type: SqlNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  method: string;
+  condition?: string | null;
+  using?: Array<string> | null;
+};
+
+export type SQLTree =
+  | TableNode
+  | AliasNode
+  | SQLJoinNode
+  | SelectNode
+  | WhereNode
+  | GroupByNode
+  | HavingNode
+  | OrderByNode
+  | SetOpNode;
+
+export type SelectNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  readonly sql_node_type: SqlNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  columns: Array<string>;
+};
+
+export type SelectionNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  condition: string;
 };
 
 export type SendEmailReset = {
   email: string;
+};
+
+export type SetOpNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  readonly sql_node_type: SqlNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  operator: string;
+};
+
+export type SetOperationNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  operator: string;
 };
 
 export type SetPassword = {
@@ -184,6 +334,53 @@ export type SetPassword = {
 export type SetUsername = {
   current_password: string;
   new_email: string;
+};
+
+/**
+ * * `Table` - Table
+ * * `Alias` - Alias
+ * * `Join` - Join
+ * * `Select` - Select
+ * * `Where` - Where
+ * * `GroupBy` - GroupBy
+ * * `Having` - Having
+ * * `OrderBy` - OrderBy
+ * * `SetOp` - SetOp
+ */
+export type SqlNodeTypeEnum =
+  | "Table"
+  | "Alias"
+  | "Join"
+  | "Select"
+  | "Where"
+  | "GroupBy"
+  | "Having"
+  | "OrderBy"
+  | "SetOp";
+
+export type TableNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  readonly sql_node_type: SqlNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  name: string;
+};
+
+export type ThetaJoinNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  condition: string;
+};
+
+export type TopNNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  limit: number;
+  attribute: string;
 };
 
 export type User = {
@@ -201,6 +398,14 @@ export type UserCreate = {
 
 export type UsernameResetConfirm = {
   new_email: string;
+};
+
+export type WhereNode = {
+  id: number;
+  readonly children: Array<SQLTree>;
+  readonly sql_node_type: SqlNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  condition: string;
 };
 
 export type AuthLoginCreateData = {
@@ -455,6 +660,15 @@ export type QueriesSubqueriesExecutionsCreateData = {
 };
 
 export type QueriesSubqueriesExecutionsCreateResponse = QueryExecution;
+
+export type QueriesTreeRetrieveData = {
+  /**
+   * A unique integer value identifying this query.
+   */
+  id: number;
+};
+
+export type QueriesTreeRetrieveResponse = QueryTree;
 
 export type $OpenApiTs = {
   "/api/auth/login/": {
@@ -716,6 +930,14 @@ export type $OpenApiTs = {
       req: QueriesSubqueriesExecutionsCreateData;
       res: {
         200: QueryExecution;
+      };
+    };
+  };
+  "/api/queries/{id}/tree/": {
+    get: {
+      req: QueriesTreeRetrieveData;
+      res: {
+        200: QueryTree;
       };
     };
   };

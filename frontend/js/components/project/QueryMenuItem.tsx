@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { cn } from "lib/utils";
 
 interface QueryMenuItemProps {
   name: string;
@@ -69,7 +70,7 @@ const QueryMenuItem = ({
   };
 
   return (
-    <SidebarMenuItem className={`${editing ? "py-1" : ""}`}>
+    <SidebarMenuItem className={cn(editing && "py-1")}>
       {editing ? (
         <Input
           ref={inputRef}

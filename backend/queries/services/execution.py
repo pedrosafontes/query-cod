@@ -1,6 +1,5 @@
 from databases.models.database import Database
 from databases.types import QueryResult
-from databases.utils.conversion import from_model
 from queries.models import Query
 
 from .ra.execution import execute_ra
@@ -22,9 +21,8 @@ def execute_subquery(query: Query, subquery_id: int) -> QueryResult | None:
 
 
 def _execute(ast: QueryAST, database: Database) -> QueryResult:
-    db = from_model(database)
     match ast:
         case sql_query if isinstance(sql_query, SQLQuery):
-            return execute_sql(sql_query, db)
+            return execute_sql(sql_query, database.connection_info)
         case RAQuery():
-            return execute_ra(ast, db)
+            return execute_ra(ast, database.connection_info)

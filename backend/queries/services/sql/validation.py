@@ -8,8 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlglot.errors import ParseError, SqlglotError
 
 from ..types import SQLQuery, to_relational_schema
-from .semantics import SQLSemanticAnalyzer
-from .semantics.errors import SQLSemanticError
+from .semantics import validate_sql_semantics
 
 
 def validate_sql(
@@ -43,16 +42,10 @@ def validate_sql(
         return None, syntax_errors
 
     # Check for semantic errors
-    try:
-        schema = to_relational_schema(get_schema(db))
-        SQLSemanticAnalyzer(schema).validate(tree)
-    except SQLSemanticError as e:
-        semantic_error: QueryError = {'title': e.title}
-        if e.description:
-            semantic_error['description'] = e.description
-        if e.hint:
-            semantic_error['hint'] = e.hint
-        return tree, [semantic_error]
+    schema = to_relational_schema(get_schema(db))
+    semantic_errors = validate_sql_semantics(tree, schema)
+    if semantic_errors:
+        return tree, semantic_errors
 
     try:
         execute_sql(f'EXPLAIN {query_text}', db)

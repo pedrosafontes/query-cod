@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "lib/utils";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -23,6 +24,7 @@ interface DataTableProps<TData, TValue> {
   pageSize?: number | null; // null or undefined disables pagination
   loading?: boolean;
   cellClassName?: string;
+  onRowClick?: (row: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -31,6 +33,7 @@ export function DataTable<TData, TValue>({
   pageSize,
   loading,
   cellClassName,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   const paginationEnabled = !!pageSize;
 
@@ -81,7 +84,16 @@ export function DataTable<TData, TValue>({
               rows.map((row) => (
                 <TableRow
                   key={row.id}
+                  className={cn(
+                    onRowClick && "cursor-pointer",
+                    "hover:bg-muted",
+                  )}
                   data-state={row.getIsSelected() && "selected"}
+                  onClick={(e) => {
+                    const target = e.target as HTMLElement;
+                    if (target.closest("button, a")) return;
+                    onRowClick?.(row.original);
+                  }}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id} className={cellClassName}>

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { AuthService, UserCreate } from "api";
+import AuthPage from "components/auth/AuthPage";
 import { useAuth } from "contexts/AuthContext";
 
 type SignupFormValues = Omit<UserCreate, "id"> & {
@@ -56,8 +57,7 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="max-w-sm mx-auto py-10">
-      <h1 className="text-xl font-semibold mb-3 text-center">Sign up</h1>
+    <AuthPage title="Sign up">
       <Form {...form}>
         <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
@@ -118,7 +118,7 @@ const SignupPage = () => {
           Log in
         </Link>
       </p>
-    </div>
+    </AuthPage>
   );
 };
 

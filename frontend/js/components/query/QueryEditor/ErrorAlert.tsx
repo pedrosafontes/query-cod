@@ -3,6 +3,7 @@ import Markdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { cn } from "lib/utils";
 
 interface ErrorAlertProps {
   title?: string;
@@ -20,7 +21,7 @@ const ErrorAlert = ({
   if (!title && !description) return null;
 
   return (
-    <Alert className={`${className} p-3`} variant="destructive">
+    <Alert className={cn(className, "p-3")} variant="destructive">
       {title && (
         <>
           {!hint && <AlertCircle className="h-4 w-4" />}

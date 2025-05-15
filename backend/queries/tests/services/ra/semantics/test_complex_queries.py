@@ -10,7 +10,7 @@ from queries.services.ra.parser.ast import (
     Relation,
     Selection,
 )
-from queries.services.ra.semantics import RASemanticAnalyzer
+from queries.services.ra.semantics.analyzer import RASemanticAnalyzer
 from queries.services.types import RelationalSchema
 
 

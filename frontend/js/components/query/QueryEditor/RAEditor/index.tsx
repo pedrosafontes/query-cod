@@ -99,6 +99,12 @@ const RAEditor = ({ query, setQuery }: RAEditorProps) => {
         />
       )}
 
+      <p className="mt-2 text-xs text-muted-foreground">
+        <span className="font-semibold">Hint</span>: Insert identifiers
+        containing underscores in the LaTex editor inside the{" "}
+        <span className="font-mono">text</span> tag.
+      </p>
+
       {query.validation_errors.map((error) => (
         <ErrorAlert
           key={error.title + error.description}
