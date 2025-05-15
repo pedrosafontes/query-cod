@@ -89,7 +89,9 @@ export function DataTable<TData, TValue>({
                     "hover:bg-muted",
                   )}
                   data-state={row.getIsSelected() && "selected"}
-                  onClick={() => {
+                  onClick={(e) => {
+                    const target = e.target as HTMLElement;
+                    if (target.closest("button, a")) return;
                     onRowClick?.(row.original);
                   }}
                 >
