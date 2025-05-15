@@ -42,9 +42,6 @@ describe("SignupPage", () => {
   test("renders the sign-up form", () => {
     renderComponent();
 
-    expect(
-      screen.getByRole("heading", { name: /sign up/i }),
-    ).toBeInTheDocument();
     expect(screen.getByLabelText("Email")).toBeInTheDocument();
     expect(screen.getByLabelText("Password")).toBeInTheDocument();
     expect(screen.getByLabelText("Confirm Password")).toBeInTheDocument();

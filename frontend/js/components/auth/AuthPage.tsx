@@ -13,7 +13,7 @@ const AuthPage = ({ title, children }: AuthPageProps) => {
   return (
     <div className="bg-gray-50 w-screen h-screen">
       <div className="flex gap-1 p-12 items-center justify-center font-semibold">
-        <img className="size-8" src={appIcon} alt="Query Cod icon" /> Query Cod
+        <img alt="Query Cod icon" className="size-8" src={appIcon} /> Query Cod
       </div>
       <Card className="max-w-sm mx-auto rounded-xl">
         <CardHeader>
