@@ -108,3 +108,20 @@ jobs:
         with:
           files: backend/junit/test-results.xml
       - run: npm run test
+  deploy:
+    name: Deploy to VM
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          password: ${{ secrets.VM_PASSWORD }}
+          script: |
+            cd /home/ubuntu/ra-sql-visualisation
+            make docker_down
+            make docker_migrate
+            make docker_up

@@ -36,7 +36,7 @@ docker_update_dependencies:
 	docker compose up -d --build
 
 docker_down:
-	docker compose down
+	docker compose down --remove-orphans
 
 docker_logs:
 	docker compose logs -f $(ARG)
