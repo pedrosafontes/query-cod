@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import type { Login } from "api";
+import AuthPage from "components/auth/AuthPage";
 import { useAuth } from "contexts/AuthContext";
 
 type LoginFormValues = Login;
@@ -42,8 +43,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="max-w-sm mx-auto py-10">
-      <h1 className="text-xl font-semibold mb-3 text-center">Log in</h1>
+    <AuthPage title="Log in">
       <Form {...form}>
         <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
@@ -91,6 +91,6 @@ export default function LoginPage() {
           Sign up
         </Link>
       </p>
-    </div>
+    </AuthPage>
   );
 }
