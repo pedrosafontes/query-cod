@@ -137,7 +137,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATICFILES_DIRS = (base_dir_join('../frontend'),)
+STATICFILES_DIRS = (base_dir_join('../frontend'), base_dir_join('static'))
 
 # Webpack
 WEBPACK_LOADER = {
