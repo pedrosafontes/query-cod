@@ -10,8 +10,10 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
 
+import appIcon from "../../../assets/images/query-cod.png";
 import { useAuth } from "../../contexts/AuthContext";
 
 const AppSidebar = () => {
@@ -28,6 +30,9 @@ const AppSidebar = () => {
 
   return (
     <Sidebar collapsible="icon">
+      <SidebarHeader>
+        <img alt="Query Cod icon" src={appIcon} />
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
