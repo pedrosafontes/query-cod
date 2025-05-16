@@ -11,4 +11,4 @@ class TableTranspiler:
                 return Relation(name=table.name)
 
             case Subquery():
-                return SQLtoRATranspiler().transpile(table)
+                return SQLtoRATranspiler().transpile(table.this)
