@@ -21,7 +21,7 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAQuery, Relat
                 attributes=[Attribute(name='dept_name')],
                 subquery=Relation(name='department'),
             ),
-            'SELECT DISTINCT dept_name FROM department',
+            'SELECT DISTINCT department.dept_name FROM department',
         ),
         # Multiple attributes
         (
