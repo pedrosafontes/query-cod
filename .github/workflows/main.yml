@@ -123,5 +123,6 @@ jobs:
           script: |
             cd /home/ubuntu/ra-sql-visualisation
             make docker_down
+            docker compose run --rm backend python manage.py collectstatic --noinput
             make docker_migrate
             make docker_up
