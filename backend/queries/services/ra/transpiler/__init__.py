@@ -43,15 +43,16 @@ from .renamer import RAExpressionRenamer
 
 
 class RAtoSQLTranspiler:
-    def __init__(self, schema: RelationalSchema):
+    def __init__(self, schema: RelationalSchema, distinct: bool = True):
         self._schema_inferrer = SchemaInferrer(schema)
+        self._distinct = distinct
 
     def transpile(self, query: RAQuery) -> SQLQuery:
         method: Callable[[RAQuery], Select] = getattr(self, f'_transpile_{type(query).__name__}')
         return method(query)
 
     def _transpile_Relation(self, rel: Relation) -> Select:  # noqa: N802
-        return select('*').from_(rel.name).distinct()
+        return select('*').from_(rel.name).distinct(distinct=self._distinct)
 
     def _transpile_Projection(self, proj: Projection) -> Select:  # noqa: N802
         query = self._transpile_select(proj.subquery)
@@ -233,14 +234,14 @@ class RAtoSQLTranspiler:
             return select, relation.name
         else:
             # relation is a derived relation; therefore, it needs to be aliased
-            return subquery(select, alias).select('*').distinct(), alias
+            return subquery(select, alias).select('*').distinct(distinct=self._distinct), alias
 
     def _transpile_select(self, query: RAQuery) -> Select:
         sql_query = self.transpile(query)
         if not isinstance(sql_query, Select):
             sql_query = subquery(sql_query, 'set_op').select('*')
 
-        return sql_query.distinct()
+        return sql_query.distinct(distinct=self._distinct)
 
     def _common_attrs(self, left: RAQuery, right: RAQuery) -> list[str]:
         l_output = self._schema_inferrer.infer(left)
