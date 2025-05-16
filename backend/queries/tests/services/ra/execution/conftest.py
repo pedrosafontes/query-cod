@@ -2,8 +2,8 @@ from collections.abc import Callable
 from typing import Any
 
 import pytest
-from queries.services.ra.execution.transpiler import RAtoSQLTranspiler
 from queries.services.ra.parser.ast import RAQuery
+from queries.services.ra.transpiler import RAtoSQLTranspiler
 from queries.services.types import RelationalSchema, to_sqlglot_schema
 from ra_sql_visualisation.types import DataType
 from sqlglot.executor import execute
