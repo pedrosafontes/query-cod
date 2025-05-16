@@ -8,6 +8,7 @@ from queries.services.types import SQLQuery
 from sqlglot.expressions import Column, Select, Star
 
 from .expression import ExpressionTranspiler
+from .join import JoinTranspiler
 from .table import TableTranspiler
 
 
@@ -21,7 +22,8 @@ class SQLtoRATranspiler:
 
     def _transpile_select(self, query: Select) -> RAQuery:
         from_query = self._transpile_from(query)
-        where_query = self._transpile_where(query, from_query)
+        join_query = self._transpile_joins(query, from_query)
+        where_query = self._transpile_where(query, join_query)
         projection_query = self._transpile_projection(query, where_query)
         return projection_query
 
@@ -31,6 +33,12 @@ class SQLtoRATranspiler:
             return TableTranspiler().transpile(from_clause.this)
         else:
             raise ValueError('FROM clause is required in SELECT query')
+
+    def _transpile_joins(self, query: Select, subquery: RAQuery) -> RAQuery:
+        left = subquery
+        for join in query.args.get('joins', []):
+            left = JoinTranspiler().transpile(join, left)
+        return left
 
     def _transpile_where(self, query: Select, subquery: RAQuery) -> RAQuery:
         where = query.args.get('where')
