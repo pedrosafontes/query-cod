@@ -4,10 +4,12 @@ from queries.services.ra.parser.ast import (
     RAQuery,
     Selection,
 )
+from queries.services.sql.semantics.types import AggregateFunction
 from queries.services.types import SQLQuery
-from sqlglot.expressions import Column, Select, Star
+from sqlglot.expressions import Alias, Column, Select, Star
 
 from .expression import ExpressionTranspiler
+from .group_by import GroupByTranspiler
 from .join import JoinTranspiler
 from .table import TableTranspiler
 
@@ -24,7 +26,8 @@ class SQLtoRATranspiler:
         from_query = self._transpile_from(query)
         join_query = self._transpile_joins(query, from_query)
         where_query = self._transpile_where(query, join_query)
-        projection_query = self._transpile_projection(query, where_query)
+        group_by_query, aggregates = self._transpile_group_by(query, where_query)
+        projection_query = self._transpile_projection(query, group_by_query, aggregates)
         return projection_query
 
     def _transpile_from(self, query: Select) -> RAQuery:
@@ -49,15 +52,28 @@ class SQLtoRATranspiler:
             )
         return subquery
 
-    def _transpile_projection(self, query: Select, subquery: RAQuery) -> RAQuery:
+    def _transpile_group_by(
+        self, query: Select, subquery: RAQuery
+    ) -> tuple[RAQuery, dict[AggregateFunction, str]]:
+        transpiler = GroupByTranspiler()
+        return transpiler.transpile(query, subquery), transpiler.aggregates
+
+    def _transpile_projection(
+        self, query: Select, subquery: RAQuery, aggregates: dict[AggregateFunction, str]
+    ) -> RAQuery:
         attributes: list[Attribute] = []
         for expr in query.expressions:
-            if isinstance(expr, Star):
-                return subquery
-            elif isinstance(expr, Column):
-                attributes.append(Attribute(name=expr.name, relation=expr.table))
-            else:
-                raise NotImplementedError(f'Unsupported projection expression: {type(expr)}')
+            match expr:
+                case Column():
+                    attributes.append(ExpressionTranspiler().transpile_column(expr))
+                case Star():
+                    return subquery
+                case Alias():
+                    inner = expr.this
+                    if isinstance(inner, AggregateFunction):
+                        attributes.append(Attribute(name=aggregates[inner]))
+                case _:
+                    raise NotImplementedError(f'Unsupported projection expression: {type(expr)}')
         return Projection(
             subquery=subquery,
             attributes=attributes,
