@@ -5,10 +5,16 @@ from queries.services.sql.semantics.types import aggregate_functions
 from queries.services.types import RelationalSchema, SQLQuery
 from sqlglot.expressions import (
     EQ,
+    GT,
+    GTE,
+    LT,
+    LTE,
+    NEQ,
     Boolean,
     Exists,
     ExpOrStr,
     Expression,
+    Identifier,
     Select,
     and_,
     column,
@@ -25,6 +31,7 @@ from ..parser.ast import (
     BinaryBooleanOperator,
     BooleanExpression,
     Comparison,
+    ComparisonOperator,
     ComparisonValue,
     Division,
     GroupedAggregation,
@@ -76,7 +83,7 @@ class RAtoSQLTranspiler:
         else:
             return query.where(condition)
 
-    def _transpile_condition(self, cond: BooleanExpression) -> ExpOrStr:
+    def _transpile_condition(self, cond: BooleanExpression) -> Expression:
         match cond:
             case BinaryBooleanExpression():
                 left = self._transpile_condition(cond.left)
@@ -91,7 +98,16 @@ class RAtoSQLTranspiler:
             case Comparison():
                 left = self._transpile_comparison_value(cond.left)
                 right = self._transpile_comparison_value(cond.right)
-                return f'{left} {cond.operator} {right}'
+                operators = {
+                    ComparisonOperator.EQUAL: EQ,
+                    ComparisonOperator.NOT_EQUAL: NEQ,
+                    ComparisonOperator.LESS_THAN: LT,
+                    ComparisonOperator.LESS_THAN_EQUAL: LTE,
+                    ComparisonOperator.GREATER_THAN: GT,
+                    ComparisonOperator.GREATER_THAN_EQUAL: GTE,
+                }
+                operator = operators[cond.operator]
+                return operator(this=left, expression=right)
             case Attribute() as attr:
                 return EQ(this=self._transpile_attribute(attr), expression=Boolean(this=True))
 
@@ -125,13 +141,15 @@ class RAtoSQLTranspiler:
     def _transpile_attribute(self, attr: Attribute) -> Expression:
         return column(attr.name, table=attr.relation)
 
-    def _transpile_comparison_value(self, comparison: ComparisonValue) -> ExpOrStr:
+    def _transpile_comparison_value(self, comparison: ComparisonValue) -> Expression:
         if isinstance(comparison, Attribute):
             return self._transpile_attribute(comparison)
+        elif isinstance(comparison, bool):
+            return Boolean(this=comparison)
         elif isinstance(comparison, str):
-            return f"'{comparison}'"  # String literal
+            return Literal.string(comparison)
         else:
-            return str(comparison)  # Numbers and other literals
+            return Literal.number(comparison)
 
     def _transpile_SetOperation(self, op: SetOperation) -> SQLQuery:  # noqa: N802
         left = self.transpile(op.left)
