@@ -43,10 +43,16 @@ class SetOperator(Enum):
     DIFFERENCE = 'DIFFERENCE'
     CARTESIAN = 'CARTESIAN'
 
+    def __str__(self) -> str:
+        return self.value
+
 
 class BinaryBooleanOperator(Enum):
     AND = 'AND'
     OR = 'OR'
+
+    def __str__(self) -> str:
+        return self.value
 
 
 @dataclass
@@ -55,10 +61,16 @@ class BinaryBooleanExpression:
     left: 'BooleanExpression'
     right: 'BooleanExpression'
 
+    def __str__(self) -> str:
+        return f'({self.left} {self.operator} {self.right})'
+
 
 @dataclass
 class NotExpression:
     expression: 'BooleanExpression'
+
+    def __str__(self) -> str:
+        return f'(NOT {self.expression})'
 
 
 class ComparisonOperator(Enum):
@@ -82,6 +94,9 @@ class Comparison(ASTNode):
     left: ComparisonValue
     right: ComparisonValue
 
+    def __str__(self) -> str:
+        return f'{self.left} {self.operator} {self.right}'
+
 
 BooleanExpression = BinaryBooleanExpression | NotExpression | Comparison | Attribute
 
@@ -92,10 +107,16 @@ class SetOperation(RAQuery):
     left: RAQuery
     right: RAQuery
 
+    def __str__(self) -> str:
+        return f'({self.left} {self.operator} {self.right})'
+
 
 class JoinOperator(Enum):
     NATURAL = 'NATURAL'
     SEMI = 'SEMI'
+
+    def __str__(self) -> str:
+        return f'{self.value} JOIN'
 
 
 @dataclass
@@ -104,11 +125,17 @@ class Join(RAQuery):
     left: RAQuery
     right: RAQuery
 
+    def __str__(self) -> str:
+        return f'({self.left} {self.operator} {self.right})'
+
 
 @dataclass
 class Division(RAQuery):
     dividend: RAQuery
     divisor: RAQuery
+
+    def __str__(self) -> str:
+        return f'({self.dividend} / {self.divisor})'
 
 
 @dataclass
@@ -117,17 +144,26 @@ class ThetaJoin(RAQuery):
     right: RAQuery
     condition: BooleanExpression
 
+    def __str__(self) -> str:
+        return f'({self.left} JOIN {self.right} ON {self.condition})'
+
 
 @dataclass
 class Projection(RAQuery):
     attributes: list[Attribute]
     subquery: RAQuery
 
+    def __str__(self) -> str:
+        return f'PROJECT ({", ".join(str(attr) for attr in self.attributes)}) (\n{self.subquery}\n)'
+
 
 @dataclass
 class Selection(RAQuery):
     condition: BooleanExpression
     subquery: RAQuery
+
+    def __str__(self) -> str:
+        return f'SELECT ({self.condition}) (\n{self.subquery}\n)'
 
 
 class AggregationFunction(Enum):
@@ -147,6 +183,9 @@ class Aggregation:
     aggregation_function: AggregationFunction
     output: str
 
+    def __str__(self) -> str:
+        return f'({self.input}, {self.aggregation_function}, {self.output})'
+
 
 @dataclass
 class GroupedAggregation(RAQuery):
@@ -154,9 +193,17 @@ class GroupedAggregation(RAQuery):
     aggregations: list[Aggregation]
     subquery: RAQuery
 
+    def __str__(self) -> str:
+        group_by = ', '.join(str(attr) for attr in self.group_by)
+        aggregations = ', '.join(str(agg) for agg in self.aggregations)
+        return f'GROUP (({group_by}), ({aggregations})) (\n{self.subquery}\n)'
+
 
 @dataclass
 class TopN(RAQuery):
     limit: int
     attribute: Attribute
     subquery: RAQuery
+
+    def __str__(self) -> str:
+        return f'T ({self.limit}, {self.attribute}) (\n{self.subquery}\n)'
