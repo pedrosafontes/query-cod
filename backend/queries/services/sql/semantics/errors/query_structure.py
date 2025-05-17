@@ -1,10 +1,10 @@
 from abc import ABC
 from dataclasses import dataclass
-from typing import cast, get_args
+from typing import cast
 
 from sqlglot.expressions import Expression, Select
 
-from ..types import AggregateFunction
+from ..types import aggregate_functions
 from .base import SQLSemanticError
 
 
@@ -143,7 +143,7 @@ class NestedAggregateError(AggregateError):
 
     @property
     def description(self) -> str | None:
-        outer: Expression | None = self.source.find_ancestor(*get_args(AggregateFunction))
+        outer: Expression | None = self.source.find_ancestor(*aggregate_functions)
         return f'In: `{outer.sql()}`' if outer else None
 
 
