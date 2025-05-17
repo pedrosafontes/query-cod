@@ -4,9 +4,9 @@ from queries.services.ra.parser.ast import (
     RAQuery,
     Selection,
 )
-from queries.services.sql.semantics.types import AggregateFunction
+from queries.services.sql.semantics.types import AggregateFunction, aggregate_functions
 from queries.services.types import SQLQuery
-from sqlglot.expressions import Alias, Column, Select, Star
+from sqlglot.expressions import Alias, Column, Select, Star, column
 
 from .expression import ExpressionTranspiler
 from .group_by import GroupByTranspiler
@@ -27,7 +27,8 @@ class SQLtoRATranspiler:
         join_query = self._transpile_joins(query, from_query)
         where_query = self._transpile_where(query, join_query)
         group_by_query, aggregates = self._transpile_group_by(query, where_query)
-        projection_query = self._transpile_projection(query, group_by_query, aggregates)
+        having_query = self._transpile_having(query, group_by_query, aggregates)
+        projection_query = self._transpile_projection(query, having_query, aggregates)
         return projection_query
 
     def _transpile_from(self, query: Select) -> RAQuery:
@@ -57,6 +58,20 @@ class SQLtoRATranspiler:
     ) -> tuple[RAQuery, dict[AggregateFunction, str]]:
         transpiler = GroupByTranspiler()
         return transpiler.transpile(query, subquery), transpiler.aggregates
+
+    def _transpile_having(
+        self, query: Select, subquery: RAQuery, aggregates: dict[AggregateFunction, str]
+    ) -> RAQuery:
+        having = query.args.get('having')
+        if having:
+            condition = having.this
+            for aggregate in condition.find_all(*aggregate_functions):
+                aggregate.replace(column(aggregates[aggregate]))
+            return Selection(
+                subquery=subquery,
+                condition=ExpressionTranspiler().transpile(condition),
+            )
+        return subquery
 
     def _transpile_projection(
         self, query: Select, subquery: RAQuery, aggregates: dict[AggregateFunction, str]
