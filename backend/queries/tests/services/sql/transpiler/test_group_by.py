@@ -73,7 +73,7 @@ from queries.services.ra.parser.ast import (
         ),
     ],
 )
-def test_where_transpilation(
+def test_group_by_transpilation(
     sql_text: str, expected_ra: RAQuery, assert_equivalent: Callable[[str, RAQuery], None]
 ) -> None:
     assert_equivalent(sql_text, expected_ra)
