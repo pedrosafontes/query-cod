@@ -15,7 +15,7 @@ class QueryValidator:
     def __init__(self, schema: RelationalSchema) -> None:
         self.schema = schema
 
-    def validate(self, query: Expression, outer_scope: Scope | None) -> ProjectionsScope:
+    def validate(self, query: Expression, outer_scope: Scope | None = None) -> ProjectionsScope:
         scope = Scope(outer_scope)
         match query:
             case Select():
