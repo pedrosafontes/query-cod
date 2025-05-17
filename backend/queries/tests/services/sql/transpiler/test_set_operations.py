@@ -38,6 +38,18 @@ from queries.services.ra.parser.ast import (
                 right=Relation(name='department'),
             ),
         ),
+        # (
+        #     'SELECT * FROM department UNION (SELECT * FROM department EXCEPT SELECT * FROM department)',
+        #     SetOperation(
+        #         operator=SetOperator.UNION,
+        #         left=Relation(name='department'),
+        #         right=SetOperation(
+        #             operator=SetOperator.DIFFERENCE,
+        #             left=Relation(name='department'),
+        #             right=Relation(name='department'),
+        #         ),
+        #     ),
+        # ),
         (
             'SELECT dept_name FROM department UNION SELECT name FROM employee',
             SetOperation(
