@@ -42,3 +42,14 @@ class JoinTranspiler:
                 right=right,
                 condition=ExpressionTranspiler().transpile(condition),
             )
+
+    # def _validate_using(
+    #     self, using: list[Identifier], left: Attributes, right: Attributes, join: Join
+    # ) -> None:
+    #     # All columns in USING must be present in both tables
+    #     for ident in using:
+    #         col = ident.name
+    #         if col not in left:
+    #             raise ColumnNotFoundError.from_expression(join, col)
+    #         assert_comparable(left[col], right[col], join)
+    #         self.scope.tables.merge_common_column(col)

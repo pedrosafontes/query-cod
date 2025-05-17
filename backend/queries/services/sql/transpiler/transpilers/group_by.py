@@ -2,9 +2,10 @@ from collections import defaultdict
 
 from queries.services.ra.parser.ast import Aggregation, GroupedAggregation, RAQuery
 from queries.services.sql.semantics.types import AggregateFunction, aggregate_functions
-from queries.services.sql.transpiler.expression import ExpressionTranspiler
 from queries.services.sql.transpiler.utils import convert_sqlglot_aggregation_function
 from sqlglot.expressions import Column, Select
+
+from .expression import ExpressionTranspiler
 
 
 class GroupByTranspiler:
