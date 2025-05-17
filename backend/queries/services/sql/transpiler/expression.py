@@ -1,5 +1,3 @@
-from typing import cast
-
 from queries.services.ra.parser.ast import (
     Attribute,
     BinaryBooleanExpression,
@@ -42,7 +40,7 @@ class ExpressionTranspiler:
     ) -> BooleanExpression:
         match expr:
             case Column():
-                return Attribute(name=expr.this, relation=expr.table or None)
+                return self.transpile_column(expr)
 
             case Paren():
                 return self.transpile(expr.this)
@@ -58,21 +56,30 @@ class ExpressionTranspiler:
             case _:
                 raise NotImplementedError(f'Expression {type(expr)} not supported')
 
+    def transpile_column(
+        self,
+        expr: Column,
+    ) -> Attribute:
+        return Attribute(name=str(expr.this), relation=expr.table or None)
+
     def _transpile_value(
         self,
         value: Expression,
     ) -> ComparisonValue:
-        if isinstance(value, Column):
-            return cast(Attribute, self.transpile(value))
-        elif isinstance(value, Literal):
-            if value.is_string:
-                return str(value.this)
-            elif value.is_number:
-                return float(value.this)
-        elif isinstance(value, Boolean):
-            return bool(value.this)
-
-        raise NotImplementedError(f'Value {type(value)} not supported')
+        match value:
+            case Column():
+                return self.transpile_column(value)
+            case Literal():
+                if value.is_string:
+                    return str(value.this)
+                elif value.is_number:
+                    return float(value.this)
+                else:
+                    raise NotImplementedError(f'Literal type {type(value)} not supported')
+            case Boolean():
+                return bool(value.this)
+            case _:
+                raise NotImplementedError(f'Value {type(value)} not supported')
 
     def _transpile_comparison(self, comp: SQLComparison) -> Comparison:
         operator: ComparisonOperator
