@@ -1,5 +1,7 @@
 from collections.abc import Callable
+from typing import cast
 
+from queries.services.sql.semantics.types import aggregate_functions
 from queries.services.types import RelationalSchema, SQLQuery
 from sqlglot.expressions import (
     EQ,
@@ -56,6 +58,12 @@ class RAtoSQLTranspiler:
 
     def _transpile_Projection(self, proj: Projection) -> Select:  # noqa: N802
         query = self._transpile_select(proj.subquery)
+
+        if any(
+            [expr.find(*aggregate_functions) for expr in cast(list[Expression], query.expressions)]
+        ):
+            query = subquery(query, 'sub')
+
         return query.select(
             *[self._transpile_attribute(attr) for attr in proj.attributes], append=False
         )
