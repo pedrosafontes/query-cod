@@ -13,8 +13,6 @@ from sqlglot.expressions import (
     Count,
     Div,
     DPipe,
-    Except,
-    Intersect,
     Length,
     Lower,
     Max,
@@ -27,12 +25,10 @@ from sqlglot.expressions import (
     Substring,
     Sum,
     Trim,
-    Union,
     Upper,
 )
 
 
-SetOperation = Union | Intersect | Except
 ArithmeticOperation = Add | Sub | Mul | Div
 StringOperation = Lower | Upper | Trim | Length | Substring | DPipe | StrPosition
 Comparison = EQ | NEQ | GT | GTE | LT | LTE

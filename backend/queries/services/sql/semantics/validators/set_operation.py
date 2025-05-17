@@ -1,4 +1,5 @@
 from queries.services.types import RelationalSchema
+from sqlglot.expressions import SetOperation
 
 from ..errors import (
     ColumnCountMismatchError,
@@ -8,7 +9,6 @@ from ..errors import (
 from ..scope import Scope
 from ..scope.projections import ProjectionsScope
 from ..type_utils import assert_comparable
-from ..types import SetOperation
 
 
 class SetOperationValidator:

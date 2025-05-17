@@ -2,11 +2,11 @@ from queries.services.types import RelationalSchema
 from sqlglot import Expression
 from sqlglot.expressions import (
     Select,
+    SetOperation,
 )
 
 from ..scope import Scope
 from ..scope.projections import ProjectionsScope
-from ..types import SetOperation
 from .select import SelectValidator
 from .set_operation import SetOperationValidator
 
