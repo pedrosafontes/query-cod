@@ -15,6 +15,7 @@ from sqlglot.expressions import (
     ExpOrStr,
     Expression,
     Identifier,
+    Literal,
     Select,
     and_,
     column,
@@ -78,10 +79,14 @@ class RAtoSQLTranspiler:
     def _transpile_Selection(self, selection: Selection) -> Select:  # noqa: N802
         query = self._transpile_select(selection.subquery)
         condition = self._transpile_condition(selection.condition)
-        if query.args.get('group'):
+        if query.args.get('group') or self._refers_to(condition, query.expressions):
             return query.having(condition)
         else:
             return query.where(condition)
+
+    def _refers_to(self, condition: Expression, exprs: list[Expression]) -> bool:
+        idents = condition.find_all(Identifier)
+        return any([ident.this == expr.alias for ident in idents for expr in exprs])
 
     def _transpile_condition(self, cond: BooleanExpression) -> Expression:
         match cond:
