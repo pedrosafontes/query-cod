@@ -1,12 +1,12 @@
 import pytest
 from queries.services.sql.semantics.errors import (
     AmbiguousColumnReferenceError,
-    ColumnNotFoundError,
     InvalidJoinConditionError,
     MissingJoinConditionError,
     TypeMismatchError,
 )
 from queries.services.types import RelationalSchema
+from sqlglot.errors import OptimizeError
 
 from .conftest import assert_invalid, assert_valid
 
@@ -60,7 +60,7 @@ def test_valid_joins(query: str, schema: RelationalSchema) -> None:
         # USING on non-existent column
         (
             'SELECT * FROM products JOIN categories USING (nonexistent_column)',
-            ColumnNotFoundError,
+            OptimizeError,
         ),
         # Ambiguous columns in SELECT with JOIN
         (

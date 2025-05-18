@@ -2,9 +2,9 @@ import pytest
 from queries.services.sql.semantics.errors import (
     ColumnNotFoundError,
     OrderByExpressionError,
-    OrderByPositionError,
 )
 from queries.services.types import RelationalSchema
+from sqlglot.errors import OptimizeError
 
 from .conftest import assert_invalid, assert_valid
 
@@ -40,7 +40,7 @@ def test_valid_order_by(query: str, schema: RelationalSchema) -> None:
         # Non-existent column
         ('SELECT * FROM products ORDER BY nonexistent_column', ColumnNotFoundError),
         # Invalid ORDER BY position
-        ('SELECT product_id FROM products ORDER BY 2', OrderByPositionError),
+        ('SELECT product_id FROM products ORDER BY 2', OptimizeError),
         # ORDER BY column not in SELECT with GROUP BY
         (
             'SELECT category_id, COUNT(*) FROM products GROUP BY category_id ORDER BY price',

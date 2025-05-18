@@ -7,7 +7,7 @@ from ..errors import (
     MissingJoinConditionError,
 )
 from ..scope import Scope
-from ..type_utils import assert_comparable
+from ..utils import assert_comparable
 from .expression import ExpressionValidator
 from .table import TableValidator
 

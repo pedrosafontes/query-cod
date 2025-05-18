@@ -1,7 +1,4 @@
-from typing import cast
-
 from queries.services.types import RelationalSchema
-from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import (
     Column,
     From,
@@ -12,8 +9,9 @@ from sqlglot.expressions import (
 
 from ..context import ValidationContext
 from ..errors import OrderByExpressionError, OrderByPositionError
+from ..inferrer import infer_type
 from ..scope import Scope
-from ..type_utils import assert_integer_literal, is_aggregate
+from ..utils import assert_integer_literal, is_aggregate
 from .expression import ExpressionValidator
 from .join import JoinValidator
 from .table import TableValidator
@@ -62,10 +60,8 @@ class SelectValidator:
         if group:
             # Validate GROUP BY expressions
             for expr in group.expressions:
-                self.scope.group_by.add(
-                    expr,
-                    self.expr_validator.validate_basic(expr, ValidationContext(in_group_by=True)),
-                )
+                self.scope.group_by.add(expr, infer_type(expr, self.scope))
+                self.expr_validator.validate_basic(expr, ValidationContext(in_group_by=True))
 
     def validate_having(self, select: Select) -> None:
         having = select.args.get('having')
@@ -74,21 +70,20 @@ class SelectValidator:
 
     def validate_projection(self, select: Select) -> None:
         for expr in select.expressions:
-            t = (
-                self.scope.group_by.resolve(
-                    expr
-                )  # Expression has already been validated if it is in group by
-                if self.scope.group_by.contains(expr)
-                else self.expr_validator.validate(expr)
-            )
-            if isinstance(t, DataType):
-                # Projection is a single column or expression
+            if self.scope.group_by.contains(expr.unalias()):
+                t = self.scope.group_by.resolve(expr.unalias())
                 self.scope.projections.add(expr, t)
-            else:
-                # Projection contains star expansion
-                for table, columns in cast(RelationalSchema, t).items():
+                continue
+
+            schema = self.expr_validator.validate(expr)
+            if schema:
+                for table, columns in schema.items():
                     for col, col_type in columns.items():
                         self.scope.projections.add(Column(this=col, table=table), col_type)
+            else:
+                # Projection is a single column or expression
+                t = infer_type(expr, self.scope)
+                self.scope.projections.add(expr, t)
 
     def validate_order_by(self, select: Select) -> None:
         order = select.args.get('order')

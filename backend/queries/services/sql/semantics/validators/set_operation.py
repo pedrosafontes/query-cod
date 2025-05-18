@@ -7,8 +7,8 @@ from ..errors import (
 )
 from ..scope import Scope
 from ..scope.projections import ProjectionsScope
-from ..type_utils import assert_comparable
 from ..types import SetOperation
+from ..utils import assert_comparable
 
 
 class SetOperationValidator:

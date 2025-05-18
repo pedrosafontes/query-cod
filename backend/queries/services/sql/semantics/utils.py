@@ -52,7 +52,7 @@ def assert_scalar_subquery(subquery: Subquery) -> None:
     [scalar] = expressions
     group = select.args.get('group')
 
-    if not is_aggregate(scalar) or group:
+    if not is_aggregate(scalar.unalias()) or group:
         raise NonScalarExpressionError(subquery)
 
 
@@ -100,6 +100,7 @@ def convert_sqlglot_type(sqlglot_type: SQLGLotDataType) -> DataType:
         SQLGLotDataType.Type.VARCHAR: DataType.VARCHAR,
         SQLGLotDataType.Type.TEXT: DataType.VARCHAR,
         SQLGLotDataType.Type.INT: DataType.INTEGER,
+        SQLGLotDataType.Type.BIGINT: DataType.INTEGER,
         SQLGLotDataType.Type.SMALLINT: DataType.SMALLINT,
         SQLGLotDataType.Type.FLOAT: DataType.FLOAT,
         SQLGLotDataType.Type.DOUBLE: DataType.DOUBLE_PRECISION,
