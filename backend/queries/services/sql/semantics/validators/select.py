@@ -31,7 +31,7 @@ class SelectValidator:
         self.process_from(select)
         self.validate_joins(select)
         self.validate_where(select)
-        self.validate_group_by(select)
+        self.process_group_by(select)
         self.validate_having(select)
         self.validate_projection(select)
         self.validate_order_by(select)
@@ -55,12 +55,12 @@ class SelectValidator:
         if where:
             self.expr_validator._validate_boolean(where.this, ValidationContext(in_where=True))
 
-    def validate_group_by(self, select: Select) -> None:
+    def process_group_by(self, select: Select) -> None:
         group = select.args.get('group')
         if group:
+            self.scope.group_by.add(group.expressions)
             # Validate GROUP BY expressions
             for expr in group.expressions:
-                self.scope.group_by.add(expr, infer_type(expr, self.scope))
                 self.expr_validator.validate_basic(expr, ValidationContext(in_group_by=True))
 
     def validate_having(self, select: Select) -> None:
@@ -71,7 +71,7 @@ class SelectValidator:
     def validate_projection(self, select: Select) -> None:
         for expr in select.expressions:
             if self.scope.group_by.contains(expr.unalias()):
-                t = self.scope.group_by.resolve(expr.unalias())
+                t = infer_type(expr, self.scope)
                 self.scope.projections.add(expr, t)
                 continue
 
@@ -100,9 +100,9 @@ class SelectValidator:
                 if not (1 <= pos <= num_projections):
                     raise OrderByPositionError(node, 1, num_projections)
             else:
-                resolved = self.scope.projections.resolve(node)
+                resolved = self.scope.projections.contains(node)
                 if self.scope.is_grouped:
-                    resolved = resolved or self.scope.group_by.resolve(node)
+                    resolved = resolved or self.scope.group_by.contains(node)
                     if not resolved:
                         if is_aggregate(node):
                             self.expr_validator.validate_basic(node)
