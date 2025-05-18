@@ -1,4 +1,4 @@
-from queries.services.types import Attributes, RelationalSchema
+from queries.services.types import Attributes, RelationalSchema, flatten
 from sqlglot.expressions import Subquery, Table
 
 from ..errors import (
@@ -42,16 +42,18 @@ class TableValidator:
 
         # Derived columns must have a unique alias
         query = subquery.this
-        cols = {}
-        for expr in query.expressions:
+        projections = self.query_validator.validate(query, self.scope)
+
+        aliases = []
+        for expr in projections.expressions:
             alias = expr.alias_or_name
 
             if not alias:
                 raise MissingDerivedColumnAliasError(expr)
 
-            if alias in cols:
+            if alias in aliases:
                 raise DuplicateAliasError(expr)
 
-            cols[alias] = self._type_inferrer.infer(expr)
+            aliases.append(alias)
 
-        return cols
+        return flatten(projections.schema)

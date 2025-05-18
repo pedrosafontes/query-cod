@@ -34,7 +34,7 @@ class SelectValidator:
 
     def validate(self, select: Select) -> None:
         self.process_from(select)
-        self.validate_joins(select)
+        self.process_joins(select)
         self.validate_where(select)
         self.process_group_by(select)
         self.validate_having(select)
@@ -44,13 +44,14 @@ class SelectValidator:
     def process_from(self, select: Select) -> None:
         from_clause: From | None = select.args.get('from')
         if from_clause:
-            schema = self.table_validator.validate(from_clause.this)
-            self.scope.tables.add(from_clause.this, schema)
+            table = from_clause.this
+            attributes = self.table_validator.validate(table)
+            self.scope.tables.add(table, attributes)
 
-    def validate_joins(self, select: Select) -> None:
+    def process_joins(self, select: Select) -> None:
         joins: list[Join] = select.args.get('joins', [])
         for join in joins:
-            self.join_validator.validate_join(join)
+            self.join_validator.process_join(join)
 
     def validate_where(self, select: Select) -> None:
         where: Expression | None = select.args.get('where')

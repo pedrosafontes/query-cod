@@ -28,7 +28,7 @@ class OrderByValidator:
         literal_type = self.type_inferrer.infer(node)
         if literal_type != expected_type:
             raise TypeMismatchError(node, expected_type, literal_type)
-        
+
         pos = int(node.this)
         num_projections = len(self.scope.projections.expressions)
         if not (1 <= pos <= num_projections):

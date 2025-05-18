@@ -1,4 +1,5 @@
 import re
+from typing import cast
 
 from queries.services.sql.semantics.scope import Scope
 from ra_sql_visualisation.types import DataType
@@ -12,14 +13,11 @@ from sqlglot.expressions import (
     CurrentTime,
     CurrentTimestamp,
     Expression,
-    Is,
     Length,
     Literal,
     Paren,
 )
-from sqlglot.expressions import DataType as SQLGlotDataType
 
-from .errors.object_reference import ColumnNotFoundError
 from .types import (
     AggregateFunction,
     ArithmeticOperation,
@@ -36,9 +34,6 @@ class TypeInferrer:
         self.scope = scope
 
     def infer(self, node: Expression) -> DataType:
-        if node.type and node.type.this != SQLGlotDataType.Type.UNKNOWN:
-            return convert_sqlglot_type(node.type)
-
         match node:
             case Boolean():
                 return DataType.BOOLEAN
@@ -59,13 +54,9 @@ class TypeInferrer:
                 return self.infer(node.this)
 
             case Column():
-                t = self.scope.tables.resolve_column(node)
-                if t is None:
-                    raise ColumnNotFoundError.from_column(node)
-                else:
-                    return t
+                return cast(DataType, self.scope.tables.resolve_column(node))
 
-            case Alias() | Paren() | Is():
+            case Alias() | Paren():
                 return self.infer(node.this)
 
             case expr if isinstance(expr, Comparison | BooleanExpression | Predicate):
@@ -82,8 +73,8 @@ class TypeInferrer:
             case expr if isinstance(expr, StringOperation):
                 return self._infer_string_operation_type(expr)
 
-            case Cast() as cast:
-                return convert_sqlglot_type(cast.args['to'])
+            case Cast():
+                return convert_sqlglot_type(node.args['to'])
 
     def _infer_literal_type(self, node: Literal) -> DataType:
         value = node.this

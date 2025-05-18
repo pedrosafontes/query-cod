@@ -140,9 +140,7 @@ class ExpressionValidator:
 
     # ──────── Primary Expressions ────────
     def _validate_column(self, column: Column, context: ValidationContext) -> None:
-        t = self.scope.tables.resolve_column(column)
-
-        if t is None:
+        if self.scope.tables.resolve_column(column) is None:
             raise ColumnNotFoundError.from_column(column)
 
         if (

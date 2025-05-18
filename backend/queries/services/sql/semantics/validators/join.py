@@ -25,7 +25,7 @@ class JoinValidator:
         self.expr_validator = expr_validator
         self.table_validator = table_validator
 
-    def validate_join(self, join: Join) -> None:
+    def process_join(self, join: Join) -> None:
         left_cols = self.scope.tables.get_columns()
         right_cols = self.table_validator.validate(join.this)
         self.scope.tables.add(join.this, right_cols)
