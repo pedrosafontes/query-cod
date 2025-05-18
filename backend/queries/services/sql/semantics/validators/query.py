@@ -22,6 +22,4 @@ class QueryValidator:
                 SelectValidator(self.schema, scope).validate(query)
             case query if isinstance(query, SetOperation):
                 SetOperationValidator(self.schema, scope).validate(query)
-            case _:
-                raise NotImplementedError(f'Unsupported query type: {type(query)}')
         return scope.projections
