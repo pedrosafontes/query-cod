@@ -14,6 +14,7 @@ from sqlglot.expressions import (
     DPipe,
     Except,
     Exists,
+    In,
     Intersect,
     Is,
     Length,
@@ -40,4 +41,4 @@ StringOperation = Lower | Upper | Trim | Length | Substring | DPipe | StrPositio
 Comparison = EQ | NEQ | GT | GTE | LT | LTE
 BooleanExpression = And | Or | Not
 AggregateFunction = Count | Sum | Avg | Min | Max
-Predicate = Exists | Between | Like | Is
+Predicate = Exists | Between | Like | Is | In

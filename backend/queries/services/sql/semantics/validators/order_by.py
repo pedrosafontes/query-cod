@@ -1,8 +1,11 @@
+from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import Expression, Literal
 
 from ..errors import OrderByExpressionError, OrderByPositionError
+from ..errors.data_type import TypeMismatchError
+from ..inference import TypeInferrer
 from ..scope import Scope
-from ..utils import assert_integer_literal, is_aggregate
+from ..utils import is_aggregate
 from .expression import ExpressionValidator
 
 
@@ -10,6 +13,7 @@ class OrderByValidator:
     def __init__(self, scope: Scope, expr_validator: ExpressionValidator):
         self.scope = scope
         self.expr_validator = expr_validator
+        self.type_inferrer = TypeInferrer(scope)
 
     def validate(self, order_by_expressions: list[Expression]) -> None:
         for item in order_by_expressions:
@@ -20,7 +24,11 @@ class OrderByValidator:
                 self._validate_expression(node)
 
     def _validate_position(self, node: Literal) -> None:
-        assert_integer_literal(node)
+        expected_type = DataType.INTEGER
+        literal_type = self.type_inferrer.infer(node)
+        if literal_type != expected_type:
+            raise TypeMismatchError(node, expected_type, literal_type)
+        
         pos = int(node.this)
         num_projections = len(self.scope.projections.expressions)
         if not (1 <= pos <= num_projections):

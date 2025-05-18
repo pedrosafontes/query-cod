@@ -51,7 +51,7 @@ from ..errors import (
     UngroupedColumnError,
 )
 from ..errors.data_type import NonScalarExpressionError
-from ..inferrer import TypeInferrer
+from ..inference import TypeInferrer
 from ..scope import Scope
 from ..types import (
     AggregateFunction,

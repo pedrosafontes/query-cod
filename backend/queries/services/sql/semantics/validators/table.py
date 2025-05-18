@@ -7,7 +7,7 @@ from ..errors import (
     MissingDerivedTableAliasError,
     RelationNotFoundError,
 )
-from ..inferrer import TypeInferrer
+from ..inference import TypeInferrer
 from ..scope import Scope
 
 

@@ -10,7 +10,7 @@ from sqlglot.expressions import (
 )
 
 from ..context import ValidationContext
-from ..inferrer import TypeInferrer
+from ..inference import TypeInferrer
 from ..scope import Scope
 from .expression import ExpressionValidator
 from .join import JoinValidator

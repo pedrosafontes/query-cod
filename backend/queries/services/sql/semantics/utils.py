@@ -1,12 +1,7 @@
-import re
-
 from ra_sql_visualisation.types import DataType
 from sqlglot import Expression
 from sqlglot.expressions import (
     DataType as SQLGLotDataType,
-)
-from sqlglot.expressions import (
-    Literal,
 )
 
 from .errors import (
@@ -35,46 +30,8 @@ def assert_string(t: DataType, source: Expression) -> None:
         raise TypeMismatchError(source, DataType.VARCHAR, t)
 
 
-def assert_integer_literal(literal: Literal) -> None:
-    if not literal.is_int:
-        raise TypeMismatchError(literal, DataType.INTEGER, infer_literal_type(literal))
-
-
 def is_aggregate(expr: Expression) -> bool:
     return isinstance(expr, AggregateFunction)
-
-
-def infer_literal_type(node: Literal) -> DataType:
-    value = node.this
-
-    if node.is_int:
-        return DataType.INTEGER
-    elif node.is_number:
-        return DataType.FLOAT
-    elif node.is_string:
-        value = str(value).lower()
-        if _is_date_format(value):
-            return DataType.DATE
-        elif _is_time_format(value):
-            return DataType.TIME
-        elif _is_timestamp_format(value):
-            return DataType.TIMESTAMP
-        else:
-            return DataType.VARCHAR
-    else:
-        raise ValueError(f'Unsupported literal: {node}')
-
-
-def _is_date_format(s: str) -> bool:
-    return bool(re.fullmatch(r'\d{4}-\d{2}-\d{2}', s))
-
-
-def _is_time_format(s: str) -> bool:
-    return bool(re.fullmatch(r'\d{2}:\d{2}(:\d{2})?', s))
-
-
-def _is_timestamp_format(s: str) -> bool:
-    return bool(re.fullmatch(r'\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(:\d{2})?', s))
 
 
 def convert_sqlglot_type(sqlglot_type: SQLGLotDataType) -> DataType:
