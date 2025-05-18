@@ -182,21 +182,18 @@ class ExpressionValidator:
         return schema
 
     def _validate_scalar_subquery(self, subquery: Subquery) -> DataType:
-        sub_schema = self.query_validator.validate(subquery.this, self.scope).schema
+        projections = self.query_validator.validate(subquery.this, self.scope)
 
         select = subquery.this
-        expressions: list[Expression] = select.expressions
 
-        if len(expressions) != 1:
+        if len(projections.expressions) != 1:
             raise NonScalarExpressionError(subquery)
 
-        [scalar] = expressions
+        [(expr, t)] = projections.expressions.items()
 
-        if not is_aggregate(scalar.unalias()) or select.args.get('group'):
+        if not is_aggregate(expr.unalias()) or select.args.get('group'):
             raise NonScalarExpressionError(subquery)
 
-        [(_, columns)] = sub_schema.items()
-        [(_, t)] = columns.items()
         return t
 
     def _validate_comparison(self, comp: Comparison, context: ValidationContext) -> None:
@@ -223,8 +220,6 @@ class ExpressionValidator:
         self.validate_expression(op.left, context)
         self.validate_expression(op.right, context)
 
-        print(op.left.to_s())
-        print(op.right.to_s())
         lt = self._type_inferrer.infer(op.left)
         rt = self._type_inferrer.infer(op.right)
 
@@ -254,10 +249,7 @@ class ExpressionValidator:
 
     def _validate_string_operation(self, op: StringOperation, context: ValidationContext) -> None:
         match op:
-            case Lower() | Upper() | Trim():
-                self._validate_string(op.this, context)
-
-            case Length():
+            case Lower() | Upper() | Trim() | Length():
                 self._validate_string(op.this, context)
 
             case Substring():
@@ -296,36 +288,33 @@ class ExpressionValidator:
     def _validate_in(self, pred: In, context: ValidationContext) -> None:
         self.validate_expression(pred.this, context)
         lt = self._type_inferrer.infer(pred.this)
+
         if subquery := pred.args.get('query'):
             rt = self._validate_quantified_predicate_query(subquery.this)
             assert_comparable(lt, rt, pred)
         else:
             # If the IN clause is not a subquery, it must be a list of literals
             for val in pred.expressions:
-                self.validate_expression(val, context)
                 rt = self._type_inferrer.infer(val)
                 assert_comparable(lt, rt, pred)
 
     def _validate_quantified_predicate_query(self, query: SQLQuery) -> DataType:
-        schema = self.query_validator.validate(query, self.scope).schema
-        try:
-            [(_, columns)] = schema.items()  # Single table
-            [(_, rt)] = columns.items()  # Single column
-        except ValueError:  # Unpack error
-            raise ColumnCountMismatchError(query, 1, len(columns)) from None
-        return rt
+        projections = self.query_validator.validate(query, self.scope)
+        if len(projections.expressions) != 1:
+            raise ColumnCountMismatchError(query, 1, len(projections.expressions))
+        [t] = projections.types
+        return t
 
     def _validate_between(self, pred: Between, context: ValidationContext) -> None:
-        self.validate_expression(pred.this, context)
-        self.validate_expression(pred.args['low'], context)
-        self.validate_expression(pred.args['high'], context)
+        expr = pred.this
+        self.validate_expression(expr, context)
 
-        t = self._type_inferrer.infer(pred.this)
+        expr_t = self._type_inferrer.infer(expr)
         low_t = self._type_inferrer.infer(pred.args['low'])
         high_t = self._type_inferrer.infer(pred.args['high'])
 
-        assert_comparable(t, low_t, pred)
-        assert_comparable(t, high_t, pred)
+        assert_comparable(expr_t, low_t, pred)
+        assert_comparable(expr_t, high_t, pred)
 
     # ──────── Type Utilities ────────
 
