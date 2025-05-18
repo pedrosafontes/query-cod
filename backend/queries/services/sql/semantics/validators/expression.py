@@ -20,7 +20,6 @@ from sqlglot.expressions import (
     CurrentTimestamp,
     DPipe,
     Exists,
-    Identifier,
     In,
     Is,
     Length,
@@ -158,28 +157,6 @@ class ExpressionValidator:
             and not context.in_aggregate
         ):
             raise UngroupedColumnError(column, [column.name])
-
-    def validate_star(self, expr: Expression) -> RelationalSchema:
-        table_ident: Identifier | None = expr.args.get('table')
-
-        schema = (
-            self.scope.tables.get_table_schema(table_ident.this, expr)
-            if table_ident
-            else self.scope.tables.get_schema()
-        )
-
-        if self.scope.is_grouped:
-            missing: list[str] = []
-            for table, table_schema in schema.items():
-                for col, _ in table_schema.items():
-                    col_expr = Column(this=col, table=table)
-                    if not self.scope.group_by.contains(col_expr):
-                        missing.append(col)
-
-            if missing:
-                raise UngroupedColumnError(expr, missing)
-
-        return schema
 
     def _validate_scalar_subquery(self, subquery: Subquery) -> DataType:
         projections = self.query_validator.validate(subquery.this, self.scope)

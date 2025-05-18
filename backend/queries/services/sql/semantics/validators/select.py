@@ -15,6 +15,7 @@ from ..scope import Scope
 from .expression import ExpressionValidator
 from .join import JoinValidator
 from .order_by import OrderByValidator
+from .star import StarValidator
 from .table import TableValidator
 
 
@@ -23,6 +24,7 @@ class SelectValidator:
         self.schema = schema
         self.scope = scope
         self.expr_validator = ExpressionValidator(schema, scope)
+        self.star_validator = StarValidator(scope)
         self.table_validator = TableValidator(schema, scope)
         self.join_validator = JoinValidator(
             schema, scope, self.expr_validator, self.table_validator
@@ -73,7 +75,7 @@ class SelectValidator:
         for expr in cast(list[Expression], select.expressions):
             inner = expr.unalias()
             if inner.is_star:
-                schema = self.expr_validator.validate_star(inner)
+                schema = self.star_validator.validate(inner)
                 for table, columns in schema.items():
                     for col, col_type in columns.items():
                         self.scope.projections.add(Column(this=col, table=table), col_type)
