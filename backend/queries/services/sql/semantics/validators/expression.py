@@ -1,6 +1,6 @@
 from collections.abc import Callable
 
-from queries.services.types import RelationalSchema
+from queries.services.types import RelationalSchema, SQLQuery
 from ra_sql_visualisation.types import DataType
 from sqlglot import Expression
 from sqlglot.expressions import (
@@ -65,9 +65,9 @@ from ..utils import (
     assert_boolean,
     assert_comparable,
     assert_numeric,
-    assert_scalar_subquery,
     assert_string,
     convert_sqlglot_type,
+    is_aggregate,
 )
 
 
@@ -183,23 +183,33 @@ class ExpressionValidator:
 
     def _validate_scalar_subquery(self, subquery: Subquery) -> DataType:
         sub_schema = self.query_validator.validate(subquery.this, self.scope).schema
-        assert_scalar_subquery(subquery)
+
+        select = subquery.this
+        expressions: list[Expression] = select.expressions
+
+        if len(expressions) != 1:
+            raise NonScalarExpressionError(subquery)
+
+        [scalar] = expressions
+
+        if not is_aggregate(scalar.unalias()) or select.args.get('group'):
+            raise NonScalarExpressionError(subquery)
+
         [(_, columns)] = sub_schema.items()
         [(_, t)] = columns.items()
         return t
 
-    # ──────── Comparison ────────
     def _validate_comparison(self, comp: Comparison, context: ValidationContext) -> None:
         self.validate_expression(comp.left, context)
 
         lt = self._type_inferrer.infer(comp.left)
         match comp.right:
             case All() | Any():
-                query_expr = comp.right.this
-                if isinstance(query_expr, Subquery):
+                query = comp.right.this
+                if isinstance(query, Subquery):
                     # Unwrap the subquery
-                    query_expr = query_expr.this
-                rt = self._validate_quantified_predicate_query(query_expr)
+                    query = query.this
+                rt = self._validate_quantified_predicate_query(query)
             case Subquery():
                 rt = self._validate_scalar_subquery(comp.right)
             case _:
@@ -207,7 +217,6 @@ class ExpressionValidator:
                 rt = self._type_inferrer.infer(comp.right)
         assert_comparable(lt, rt, comp)
 
-    # ──────── Expressions ────────
     def _validate_arithmetic_operation(
         self, op: ArithmeticOperation, context: ValidationContext
     ) -> None:
@@ -275,7 +284,6 @@ class ExpressionValidator:
         if not source_t.can_cast_to(target_t):
             raise InvalidCastError(cast, source_t, target_t)
 
-    # ──────── Predicate Expressions ────────
     def _validate_boolean_expr(self, expr: BooleanExpression, context: ValidationContext) -> None:
         match expr:
             case And() | Or():
@@ -298,7 +306,7 @@ class ExpressionValidator:
                 rt = self._type_inferrer.infer(val)
                 assert_comparable(lt, rt, pred)
 
-    def _validate_quantified_predicate_query(self, query: Expression) -> DataType:
+    def _validate_quantified_predicate_query(self, query: SQLQuery) -> DataType:
         schema = self.query_validator.validate(query, self.scope).schema
         try:
             [(_, columns)] = schema.items()  # Single table

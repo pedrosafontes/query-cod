@@ -7,11 +7,9 @@ from sqlglot.expressions import (
 )
 from sqlglot.expressions import (
     Literal,
-    Subquery,
 )
 
 from .errors import (
-    NonScalarExpressionError,
     TypeMismatchError,
 )
 from .types import AggregateFunction
@@ -40,20 +38,6 @@ def assert_string(t: DataType, source: Expression) -> None:
 def assert_integer_literal(literal: Literal) -> None:
     if not literal.is_int:
         raise TypeMismatchError(literal, DataType.INTEGER, infer_literal_type(literal))
-
-
-def assert_scalar_subquery(subquery: Subquery) -> None:
-    select = subquery.this
-    expressions = select.expressions
-
-    if len(expressions) != 1:
-        raise NonScalarExpressionError(subquery)
-
-    [scalar] = expressions
-    group = select.args.get('group')
-
-    if not is_aggregate(scalar.unalias()) or group:
-        raise NonScalarExpressionError(subquery)
 
 
 def is_aggregate(expr: Expression) -> bool:
