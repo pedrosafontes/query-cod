@@ -1,6 +1,5 @@
 from queries.services.types import RelationalSchema, SQLQuery, to_sqlglot_schema
 from queries.types import QueryError
-from sqlglot import Expression
 from sqlglot.optimizer.annotate_types import annotate_types
 from sqlglot.optimizer.qualify_columns import qualify_columns
 
@@ -26,10 +25,10 @@ class SQLSemanticAnalyzer:
     def __init__(self, schema: RelationalSchema) -> None:
         self.schema = schema
 
-    def validate(self, query: Expression) -> None:
+    def validate(self, query: SQLQuery) -> None:
         sqlglot_schema = to_sqlglot_schema(self.schema)
-        qualified = qualify_columns(
+        qualified: SQLQuery = qualify_columns(
             query, schema=sqlglot_schema, expand_stars=False, expand_alias_refs=False
         )
-        typed = annotate_types(qualified, schema=sqlglot_schema)
+        typed: SQLQuery = annotate_types(qualified, schema=sqlglot_schema)
         QueryValidator(self.schema).validate(typed, outer_scope=None)
