@@ -29,6 +29,6 @@ class SQLSemanticAnalyzer:
         sqlglot_schema = to_sqlglot_schema(self.schema)
         qualified: SQLQuery = qualify_columns(
             query, schema=sqlglot_schema, expand_stars=False, expand_alias_refs=False
-        )
+        )  # type: ignore[assignment]
         typed: SQLQuery = annotate_types(qualified, schema=sqlglot_schema)
         QueryValidator(self.schema).validate(typed, outer_scope=None)

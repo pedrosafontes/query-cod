@@ -168,7 +168,8 @@ class ExpressionValidator:
 
         [(expr, t)] = projections.expressions.items()
 
-        if not is_aggregate(expr.unalias()) or select.args.get('group'):
+        inner: Expression = expr.unalias()  # type: ignore[no-untyped-call]
+        if not is_aggregate(inner) or select.args.get('group'):
             raise NonScalarExpressionError(subquery)
 
         return t

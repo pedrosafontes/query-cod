@@ -73,7 +73,7 @@ class SelectValidator:
 
     def validate_projection(self, select: Select) -> None:
         for expr in cast(list[Expression], select.expressions):
-            inner = expr.unalias()
+            inner: Expression = expr.unalias()  # type: ignore[no-untyped-call]
             if inner.is_star:
                 schema = self.star_validator.validate(inner)
                 for table, columns in schema.items():
