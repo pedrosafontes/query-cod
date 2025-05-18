@@ -1,6 +1,6 @@
 from queries.services.sql.semantics.scope import Scope
 from ra_sql_visualisation.types import DataType
-from sqlglot.expressions import Alias, Column, Expression
+from sqlglot.expressions import Alias, Column, Count, Expression
 from sqlglot.expressions import DataType as SQLGlotDataType
 
 from .errors.object_reference import ColumnNotFoundError
@@ -8,28 +8,40 @@ from .types import AggregateFunction, ArithmeticOperation, BooleanExpression, Pr
 from .utils import convert_sqlglot_type
 
 
-def infer_type(node: Expression, scope: Scope) -> DataType:
-    if node.type and node.type.this != SQLGlotDataType.Type.UNKNOWN:
-        return convert_sqlglot_type(node.type)
+class TypeInferrer:
+    def __init__(self, scope: Scope) -> None:
+        self.scope = scope
 
-    match node:
-        case Alias():
-            return infer_type(node.this, scope)
+    def infer(self, node: Expression) -> DataType:
+        if node.type and node.type.this != SQLGlotDataType.Type.UNKNOWN:
+            return convert_sqlglot_type(node.type)
 
-        case Column():
-            t = scope.tables.resolve_column(node)
-            if t is None:
-                raise ColumnNotFoundError.from_column(node)
-            else:
-                return t
+        match node:
+            case Alias():
+                return self.infer(node.this)
 
-        case expr if isinstance(expr, BooleanExpression | Predicate):
-            return DataType.BOOLEAN
+            case Column():
+                t = self.scope.tables.resolve_column(node)
+                if t is None:
+                    raise ColumnNotFoundError.from_column(node)
+                else:
+                    return t
 
-        case expr if isinstance(expr, AggregateFunction):
-            return DataType.NUMERIC
+            case expr if isinstance(expr, BooleanExpression | Predicate):
+                return DataType.BOOLEAN
 
-        case expr if isinstance(expr, ArithmeticOperation):
-            return DataType.NUMERIC
+            case agg if isinstance(expr, AggregateFunction):
+                return self._infer_aggregate_type(agg)
 
-    raise NotImplementedError(f'Type inference not implemented for {type(node)}')
+            case expr if isinstance(expr, ArithmeticOperation):
+                lt = self.infer(expr.left)
+                rt = self.infer(expr.right)
+                return DataType.dominant([lt, rt])
+
+        raise NotImplementedError(f'Type inference not implemented for {type(node)}')
+
+    def _infer_aggregate_type(self, agg: Expression) -> DataType:
+        if isinstance(agg, Count):
+            return DataType.INTEGER
+        else:
+            return self.infer(agg.this)

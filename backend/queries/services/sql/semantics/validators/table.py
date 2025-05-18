@@ -7,7 +7,7 @@ from ..errors import (
     MissingDerivedTableAliasError,
     RelationNotFoundError,
 )
-from ..inferrer import infer_type
+from ..inferrer import TypeInferrer
 from ..scope import Scope
 
 
@@ -18,6 +18,7 @@ class TableValidator:
         self.schema = schema
         self.scope = scope
         self.query_validator = QueryValidator(schema)
+        self._type_inferrer = TypeInferrer(scope)
 
     def validate(self, table: Table | Subquery) -> Attributes:
         match table:
@@ -51,6 +52,6 @@ class TableValidator:
             if alias in cols:
                 raise DuplicateAliasError(expr)
 
-            cols[alias] = infer_type(expr, self.scope)
+            cols[alias] = self._type_inferrer.infer(expr)
 
         return cols
