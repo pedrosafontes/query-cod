@@ -13,11 +13,11 @@ from ..scope import Scope
 
 class TableValidator:
     def __init__(self, schema: RelationalSchema, scope: Scope) -> None:
-        from .query import QueryValidator
+        from .query import SQLSemanticAnalyzer
 
         self.schema = schema
         self.scope = scope
-        self.query_validator = QueryValidator(schema)
+        self.query_validator = SQLSemanticAnalyzer(schema)
         self._type_inferrer = TypeInferrer(scope)
 
     def validate(self, table: Table | Subquery) -> Attributes:

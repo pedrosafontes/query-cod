@@ -10,11 +10,11 @@ from .select import SelectValidator
 from .set_operation import SetOperationValidator
 
 
-class QueryValidator:
+class SQLSemanticAnalyzer:
     def __init__(self, schema: RelationalSchema) -> None:
         self.schema = schema
 
-    def validate(self, query: SQLQuery, outer_scope: Scope | None) -> ProjectionsScope:
+    def validate(self, query: SQLQuery, outer_scope: Scope | None = None) -> ProjectionsScope:
         scope = Scope(outer_scope)
         match query:
             case Select():

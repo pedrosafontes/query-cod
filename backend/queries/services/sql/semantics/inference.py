@@ -76,6 +76,9 @@ class TypeInferrer:
             case Cast():
                 return convert_sqlglot_type(node.args['to'])
 
+            case _:
+                raise NotImplementedError(f'Unsupported expression: {type(node)}')
+
     def _infer_literal_type(self, node: Literal) -> DataType:
         value = node.this
 

@@ -13,10 +13,10 @@ from ..utils import assert_comparable
 
 class SetOperationValidator:
     def __init__(self, schema: RelationalSchema, scope: Scope) -> None:
-        from .query import QueryValidator
+        from .query import SQLSemanticAnalyzer
 
         self.scope = scope
-        self.query_validator = QueryValidator(schema)
+        self.query_validator = SQLSemanticAnalyzer(schema)
 
     def validate(self, query: SetOperation) -> ProjectionsScope:
         left = self.query_validator.validate(query.left, self.scope)
