@@ -2,7 +2,8 @@ from queries.services.types import RelationalSchema, SQLQuery
 from queries.types import QueryError
 
 from .errors.base import SQLSemanticError
-from .validators.query import SQLSemanticAnalyzer
+from .scope import SQLScope
+from .validators.query import QueryValidator
 
 
 def validate_sql_semantics(query: SQLQuery, schema: RelationalSchema) -> list[QueryError]:
@@ -19,4 +20,10 @@ def validate_sql_semantics(query: SQLQuery, schema: RelationalSchema) -> list[Qu
     return []
 
 
-__all__ = ['SQLSemanticAnalyzer', 'validate_sql_semantics']
+class SQLSemanticAnalyzer:
+    def __init__(self, schema: RelationalSchema):
+        self.schema = schema
+
+    def validate(self, query: SQLQuery) -> None:
+        scope = SQLScope.build(query, self.schema)
+        QueryValidator().validate(scope)

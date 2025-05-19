@@ -1,17 +1,13 @@
 from typing import cast
 
-from queries.services.types import RelationalSchema
 from sqlglot.expressions import (
-    Column,
     Expression,
     From,
     Join,
-    Select,
 )
 
 from ..context import ValidationContext
-from ..inference import TypeInferrer
-from ..scope import Scope
+from ..scope import SelectScope
 from .expression import ExpressionValidator
 from .join import JoinValidator
 from .order_by import OrderByValidator
@@ -20,72 +16,62 @@ from .table import TableValidator
 
 
 class SelectValidator:
-    def __init__(self, schema: RelationalSchema, scope: Scope) -> None:
-        self.schema = schema
+    def __init__(self, scope: SelectScope) -> None:
         self.scope = scope
-        self.expr_validator = ExpressionValidator(schema, scope)
+        self.select = scope.query
+        self.expr_validator = ExpressionValidator(scope)
         self.star_validator = StarValidator(scope)
-        self.table_validator = TableValidator(schema, scope)
-        self.join_validator = JoinValidator(
-            schema, scope, self.expr_validator, self.table_validator
-        )
-        self.order_by_validator = OrderByValidator(self.scope, self.expr_validator)
-        self._type_inferrer = TypeInferrer(self.scope)
+        self.table_validator = TableValidator(scope)
+        self.join_validator = JoinValidator(scope, self.expr_validator, self.table_validator)
+        self.order_by_validator = OrderByValidator(scope, self.expr_validator)
 
-    def validate(self, select: Select) -> None:
-        self.process_from(select)
-        self.process_joins(select)
-        self.validate_where(select)
-        self.process_group_by(select)
-        self.validate_having(select)
-        self.validate_projection(select)
-        self.validate_order_by(select)
+    def validate(self) -> None:
+        self.validate_from()
+        self.validate_joins()
+        self.validate_where()
+        self.validate_group_by()
+        self.validate_having()
+        self.validate_projection()
+        self.validate_order_by()
 
-    def process_from(self, select: Select) -> None:
-        from_clause: From | None = select.args.get('from')
+    def validate_from(self) -> None:
+        from_clause: From | None = self.select.args.get('from')
         if from_clause:
-            table = from_clause.this
-            attributes = self.table_validator.validate(table)
-            self.scope.tables.add(table, attributes)
+            self.table_validator.validate(from_clause.this)
 
-    def process_joins(self, select: Select) -> None:
-        joins: list[Join] = select.args.get('joins', [])
-        for join in joins:
-            self.join_validator.process_join(join)
+    def validate_joins(self) -> None:
+        from_clause: From | None = self.select.args.get('from')
+        if from_clause:
+            left_cols = self.scope.get_schema(from_clause.this)
+            joins: list[Join] = self.select.args.get('joins', [])
+            for join in joins:
+                left_cols = self.join_validator.validate(left_cols, join)
 
-    def validate_where(self, select: Select) -> None:
-        where: Expression | None = select.args.get('where')
+    def validate_where(self) -> None:
+        where: Expression | None = self.select.args.get('where')
         if where:
             self.expr_validator._validate_boolean(where.this, ValidationContext(in_where=True))
 
-    def process_group_by(self, select: Select) -> None:
-        group = select.args.get('group')
+    def validate_group_by(self) -> None:
+        group = self.select.args.get('group')
         if group:
-            expressions: list[Expression] = group.expressions
-            self.scope.group_by.add(expressions)
-            # Validate GROUP BY expressions
-            for expr in expressions:
-                self.expr_validator.validate_expression(expr, ValidationContext(in_group_by=True))
+            for expr in group.expressions:
+                self.expr_validator.validate_expression(expr)
 
-    def validate_having(self, select: Select) -> None:
-        having: Expression | None = select.args.get('having')
+    def validate_having(self) -> None:
+        having: Expression | None = self.select.args.get('having')
         if having:
             self.expr_validator._validate_boolean(having.this, ValidationContext(in_having=True))
 
-    def validate_projection(self, select: Select) -> None:
-        for expr in cast(list[Expression], select.expressions):
+    def validate_projection(self) -> None:
+        for expr in cast(list[Expression], self.select.expressions):
             inner: Expression = expr.unalias()  # type: ignore[no-untyped-call]
             if inner.is_star:
-                schema = self.star_validator.validate(inner)
-                for table, columns in schema.items():
-                    for col, col_type in columns.items():
-                        self.scope.projections.add(Column(this=col, table=table), col_type)
-            else:
-                if not self.scope.group_by.contains(inner):
-                    self.expr_validator.validate_expression(inner)
-                self.scope.projections.add(expr, self._type_inferrer.infer(expr))
+                self.star_validator.validate(inner)
+            elif not self.scope.group_by.contains(inner):
+                self.expr_validator.validate_expression(inner, ValidationContext(in_select=True))
 
-    def validate_order_by(self, select: Select) -> None:
-        order = select.args.get('order')
+    def validate_order_by(self) -> None:
+        order = self.select.args.get('order')
         if order:
             self.order_by_validator.validate(order.expressions)

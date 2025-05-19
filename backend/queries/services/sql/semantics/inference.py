@@ -1,7 +1,7 @@
 import re
 from typing import cast
 
-from queries.services.sql.semantics.scope import Scope
+from queries.services.sql.semantics.scope import SQLScope
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import (
     Alias,
@@ -30,7 +30,7 @@ from .utils import convert_sqlglot_type
 
 
 class TypeInferrer:
-    def __init__(self, scope: Scope) -> None:
+    def __init__(self, scope: SQLScope) -> None:
         self.scope = scope
 
     def infer(self, node: Expression) -> DataType:

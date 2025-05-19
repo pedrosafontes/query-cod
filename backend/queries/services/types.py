@@ -17,7 +17,8 @@ def merge_common_column(result_schema: RelationalSchema, col: str) -> None:
     for schema in result_schema.values():
         if col in schema:
             types.append(schema.pop(col))
-    result_schema.setdefault(None, {})[col] = DataType.dominant(types)
+    if types:
+        result_schema.setdefault(None, {})[col] = DataType.dominant(types)
 
 
 def flatten(schema: RelationalSchema) -> Attributes:

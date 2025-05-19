@@ -1,24 +1,12 @@
-from queries.services.types import RelationalSchema, SQLQuery
-from sqlglot.expressions import (
-    Select,
-)
-
-from ..scope import Scope
-from ..scope.projections import ProjectionsScope
-from ..types import SetOperation
+from ..scope import SelectScope, SetOperationScope, SQLScope
 from .select import SelectValidator
 from .set_operation import SetOperationValidator
 
 
-class SQLSemanticAnalyzer:
-    def __init__(self, schema: RelationalSchema) -> None:
-        self.schema = schema
-
-    def validate(self, query: SQLQuery, outer_scope: Scope | None = None) -> ProjectionsScope:
-        scope = Scope(outer_scope)
-        match query:
-            case Select():
-                SelectValidator(self.schema, scope).validate(query)
-            case query if isinstance(query, SetOperation):
-                SetOperationValidator(self.schema, scope).validate(query)
-        return scope.projections
+class QueryValidator:
+    def validate(self, scope: SQLScope) -> None:
+        match scope:
+            case SelectScope():
+                SelectValidator(scope).validate()
+            case SetOperationScope():
+                SetOperationValidator(scope).validate()

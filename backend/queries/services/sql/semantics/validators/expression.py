@@ -1,6 +1,6 @@
 from collections.abc import Callable
 
-from queries.services.types import RelationalSchema, SQLQuery
+from queries.services.types import SQLQuery
 from ra_sql_visualisation.types import DataType
 from sqlglot import Expression
 from sqlglot.expressions import (
@@ -52,7 +52,7 @@ from ..errors import (
 )
 from ..errors.data_type import NonScalarExpressionError
 from ..inference import TypeInferrer
-from ..scope import Scope
+from ..scope import SelectScope
 from ..types import (
     AggregateFunction,
     ArithmeticOperation,
@@ -71,11 +71,8 @@ from ..utils import (
 
 
 class ExpressionValidator:
-    def __init__(self, schema: RelationalSchema, scope: Scope) -> None:
-        from .query import SQLSemanticAnalyzer
-
+    def __init__(self, scope: SelectScope) -> None:
         self.scope = scope
-        self.query_validator = SQLSemanticAnalyzer(schema)
         self._type_inferrer = TypeInferrer(scope)
 
     def validate_expression(
@@ -83,6 +80,8 @@ class ExpressionValidator:
         node: Expression,
         context: ValidationContext | None = None,
     ) -> None:
+        from .query import QueryValidator
+
         if context is None:
             context = ValidationContext()
         match node:
@@ -121,7 +120,8 @@ class ExpressionValidator:
                 self._validate_in(node, context)
 
             case Exists():
-                self.query_validator.validate(node.this, self.scope)
+                scope = self.scope.subquery_scopes[node.this]
+                QueryValidator().validate(scope)
 
             case Between():
                 self._validate_between(node, context)
@@ -145,7 +145,10 @@ class ExpressionValidator:
 
         if (
             # Scenario: Grouped HAVING, SELECT, or ORDER BY
-            (self.scope.is_grouped and not context.in_group_by)
+            (
+                self.scope.is_grouped
+                and (context.in_having or context.in_select or context.in_order_by)
+            )
             # Condition: Column must be in the GROUP BY clause or appear in an aggregate function
             and not (self.scope.group_by.contains(column) or context.in_aggregate)
         ) or (
@@ -157,14 +160,17 @@ class ExpressionValidator:
             raise UngroupedColumnError(column, [column.name])
 
     def _validate_scalar_subquery(self, subquery: Subquery) -> DataType:
-        projections = self.query_validator.validate(subquery.this, self.scope)
+        from .query import QueryValidator
 
         select = subquery.this
 
-        if len(projections.expressions) != 1:
+        scope = self.scope.subquery_scopes[select]
+        QueryValidator().validate(scope)
+
+        if len(scope.projections.expressions) != 1:
             raise NonScalarExpressionError(subquery)
 
-        [(expr, t)] = projections.expressions.items()
+        [(expr, t)] = scope.projections.expressions.items()
 
         inner: Expression = expr.unalias()  # type: ignore[no-untyped-call]
         if not is_aggregate(inner) or select.args.get('group'):
@@ -275,10 +281,14 @@ class ExpressionValidator:
                 assert_comparable(lt, rt, pred)
 
     def _validate_quantified_predicate_query(self, query: SQLQuery) -> DataType:
-        projections = self.query_validator.validate(query, self.scope)
-        if len(projections.expressions) != 1:
-            raise ColumnCountMismatchError(query, 1, len(projections.expressions))
-        [t] = projections.types
+        from .query import QueryValidator
+
+        scope = self.scope.subquery_scopes[query]
+        QueryValidator().validate(scope)
+
+        if len(scope.projections.expressions) != 1:
+            raise ColumnCountMismatchError(query, 1, len(scope.projections.expressions))
+        [t] = scope.projections.types
         return t
 
     def _validate_between(self, pred: Between, context: ValidationContext) -> None:

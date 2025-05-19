@@ -1,34 +1,31 @@
-from queries.services.types import RelationalSchema
-
 from ..errors import (
     ColumnCountMismatchError,
     ColumnTypeMismatchError,
     TypeMismatchError,
 )
-from ..scope import Scope
-from ..scope.projections import ProjectionsScope
-from ..types import SetOperation
+from ..scope import SetOperationScope
 from ..utils import assert_comparable
 
 
 class SetOperationValidator:
-    def __init__(self, schema: RelationalSchema, scope: Scope) -> None:
-        from .query import SQLSemanticAnalyzer
-
+    def __init__(self, scope: SetOperationScope) -> None:
         self.scope = scope
-        self.query_validator = SQLSemanticAnalyzer(schema)
+        self.set_operation = scope.query
 
-    def validate(self, query: SetOperation) -> ProjectionsScope:
-        left = self.query_validator.validate(query.left, self.scope)
-        right = self.query_validator.validate(query.right, self.scope)
+    def validate(self) -> None:
+        from .query import QueryValidator
 
-        if (l_len := len(left.types)) != (r_len := len(right.types)):
-            raise ColumnCountMismatchError(query.right, l_len, r_len)
+        QueryValidator().validate(self.scope.left)
+        QueryValidator().validate(self.scope.right)
 
-        for i, (lt, rt) in enumerate(zip(left.types, right.types, strict=True)):
+        left_types = self.scope.left.projections.types
+        right_types = self.scope.right.projections.types
+
+        if (l_len := len(left_types)) != (r_len := len(right_types)):
+            raise ColumnCountMismatchError(self.set_operation.right, l_len, r_len)
+
+        for i, (lt, rt) in enumerate(zip(left_types, right_types, strict=True)):
             try:
-                assert_comparable(lt, rt, query)
+                assert_comparable(lt, rt, self.set_operation)
             except TypeMismatchError:
-                raise ColumnTypeMismatchError(query, lt, rt, i) from None
-
-        return left
+                raise ColumnTypeMismatchError(self.set_operation, lt, rt, i) from None

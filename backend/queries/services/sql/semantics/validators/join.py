@@ -1,4 +1,4 @@
-from queries.services.types import Attributes, RelationalSchema
+from queries.services.types import Attributes, RelationalSchema, flatten, merge_common_column
 from sqlglot.expressions import Identifier, Join
 
 from ..errors import (
@@ -6,7 +6,7 @@ from ..errors import (
     InvalidJoinConditionError,
     MissingJoinConditionError,
 )
-from ..scope import Scope
+from ..scope import SelectScope
 from ..utils import assert_comparable
 from .expression import ExpressionValidator
 from .table import TableValidator
@@ -15,29 +15,35 @@ from .table import TableValidator
 class JoinValidator:
     def __init__(
         self,
-        schema: RelationalSchema,
-        scope: Scope,
+        scope: SelectScope,
         expr_validator: ExpressionValidator,
         table_validator: TableValidator,
     ) -> None:
-        self.schema = schema
         self.scope = scope
         self.expr_validator = expr_validator
         self.table_validator = table_validator
 
-    def process_join(self, join: Join) -> None:
-        left_cols = self.scope.tables.get_columns()
-        right_cols = self.table_validator.validate(join.this)
-        self.scope.tables.add(join.this, right_cols)
+    def validate(self, left_schema: RelationalSchema, join: Join) -> RelationalSchema:
+        table = join.this
+        self.table_validator.validate(table)
+
+        left_cols = flatten(left_schema)
+        right_schema = self.scope.get_schema(table)
+        right_cols = flatten(right_schema)
+
+        join_schema = left_schema | right_schema
 
         kind = join.method or join.args.get('kind', 'INNER')
-        using = join.args.get('using')
+        using: list[Identifier] | None = join.args.get('using')
         condition = join.args.get('on')
 
-        if using:
-            self._validate_using(using, left_cols, right_cols, join)
-        elif kind == 'NATURAL':
-            self._validate_natural_join(left_cols, right_cols, join)
+        if using or kind == 'NATURAL':
+            shared_columns = list(set(left_cols) & set(right_cols))
+            join_columns = [ident.name for ident in using] if using else shared_columns
+            self._validate_join_columns(join_columns, left_cols, right_cols, join)
+
+            for col in join_columns:
+                merge_common_column(join_schema, col)
         elif kind == 'CROSS':
             # CROSS JOINS must not have a condition
             if condition:
@@ -48,20 +54,12 @@ class JoinValidator:
                 raise MissingJoinConditionError(join)
             self.expr_validator._validate_boolean(condition)
 
-    def _validate_using(
-        self, using: list[Identifier], left: Attributes, right: Attributes, join: Join
+        return join_schema
+
+    def _validate_join_columns(
+        self, join_columns: list[str], left: Attributes, right: Attributes, join: Join
     ) -> None:
-        # All columns in USING must be present in both tables
-        for ident in using:
-            col = ident.name
+        for col in join_columns:
             if col not in left:
                 raise ColumnNotFoundError.from_expression(join, col)
             assert_comparable(left[col], right[col], join)
-            self.scope.tables.merge_common_column(col)
-
-    def _validate_natural_join(self, left: Attributes, right: Attributes, join: Join) -> None:
-        shared = set(left) & set(right)
-        # All common columns must be comparable
-        for col in shared:
-            assert_comparable(left[col], right[col], join)
-            self.scope.tables.merge_common_column(col)

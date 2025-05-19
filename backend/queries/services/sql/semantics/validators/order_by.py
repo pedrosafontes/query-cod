@@ -4,13 +4,13 @@ from sqlglot.expressions import Expression, Literal
 from ..errors import OrderByExpressionError, OrderByPositionError
 from ..errors.data_type import TypeMismatchError
 from ..inference import TypeInferrer
-from ..scope import Scope
+from ..scope import SelectScope
 from ..utils import is_aggregate
 from .expression import ExpressionValidator
 
 
 class OrderByValidator:
-    def __init__(self, scope: Scope, expr_validator: ExpressionValidator):
+    def __init__(self, scope: SelectScope, expr_validator: ExpressionValidator):
         self.scope = scope
         self.expr_validator = expr_validator
         self.type_inferrer = TypeInferrer(scope)
