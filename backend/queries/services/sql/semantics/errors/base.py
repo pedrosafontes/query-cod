@@ -21,4 +21,7 @@ class SQLSemanticError(Exception, ABC):
         return None
 
     def __str__(self) -> str:
-        return f'{self.title}:  {self.description}'
+        if self.description:
+            return f'{self.title}:  {self.description}'
+        else:
+            return self.title

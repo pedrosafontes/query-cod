@@ -208,7 +208,7 @@ class RAtoSQLTranspiler:
     def _transpile_GroupedAggregation(self, agg: GroupedAggregation) -> Select:  # noqa: N802
         query = self._transpile_select(agg.subquery)
 
-        if query.args.get('group_by'):
+        if query.args.get('group'):
             query = subquery(query, 'sub')
 
         attrs = [self._transpile_attribute(attr) for attr in agg.group_by]

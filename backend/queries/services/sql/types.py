@@ -8,12 +8,15 @@ from sqlglot.expressions import (
     Add,
     And,
     Avg,
+    Between,
     Count,
     Div,
     DPipe,
-    Except,
-    Intersect,
+    Exists,
+    In,
+    Is,
     Length,
+    Like,
     Lower,
     Max,
     Min,
@@ -25,14 +28,13 @@ from sqlglot.expressions import (
     Substring,
     Sum,
     Trim,
-    Union,
     Upper,
 )
 
 
-SetOperation = Union | Intersect | Except
 ArithmeticOperation = Add | Sub | Mul | Div
 StringOperation = Lower | Upper | Trim | Length | Substring | DPipe | StrPosition
 Comparison = EQ | NEQ | GT | GTE | LT | LTE
 BooleanExpression = And | Or | Not
 AggregateFunction = Count | Sum | Avg | Min | Max
+Predicate = Exists | Between | Like | Is | In

@@ -2,9 +2,9 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import cast, get_args
 
+from queries.services.sql.types import AggregateFunction
 from sqlglot.expressions import Expression, Select
 
-from ..types import AggregateFunction
 from .base import SQLSemanticError
 
 
@@ -30,17 +30,6 @@ class OrderByPositionError(OrderByError):
     @property
     def description(self) -> str:
         return f'Must be between 1 and {self.max_position}.'
-
-
-@dataclass
-class OrderByExpressionError(OrderByError):
-    @property
-    def title(self) -> str:
-        return 'Invalid ORDER BY expression'
-
-    @property
-    def description(self) -> str:
-        return f'ORDER BY expression "{self.source}" must be present in the SELECT list.'
 
 
 @dataclass

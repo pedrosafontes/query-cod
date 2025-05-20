@@ -15,7 +15,6 @@ def schema() -> RelationalSchema:
             'category_id': DataType.INTEGER,
             'in_stock': DataType.BOOLEAN,
             'created_at': DataType.DATE,
-            'binary_data': DataType.BIT_VARYING,
         },
         'categories': {
             'category_id': DataType.INTEGER,

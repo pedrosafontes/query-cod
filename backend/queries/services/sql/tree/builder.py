@@ -1,9 +1,8 @@
 from queries.services.types import RelationalSchema, SQLQuery
 from queries.types import QueryError
-from sqlglot.expressions import From, Join, Select, Subquery, Table, select
+from sqlglot.expressions import From, Join, Select, SetOperation, Subquery, Table, select
 
 from ..semantics import validate_sql_semantics
-from ..semantics.types import SetOperation
 from .types import (
     AliasNode,
     GroupByNode,

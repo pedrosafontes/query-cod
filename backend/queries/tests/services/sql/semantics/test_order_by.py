@@ -1,8 +1,8 @@
 import pytest
 from queries.services.sql.semantics.errors import (
     ColumnNotFoundError,
-    OrderByExpressionError,
     OrderByPositionError,
+    UngroupedColumnError,
 )
 from queries.services.types import RelationalSchema
 
@@ -44,7 +44,7 @@ def test_valid_order_by(query: str, schema: RelationalSchema) -> None:
         # ORDER BY column not in SELECT with GROUP BY
         (
             'SELECT category_id, COUNT(*) FROM products GROUP BY category_id ORDER BY price',
-            OrderByExpressionError,
+            UngroupedColumnError,
         ),
     ],
 )
