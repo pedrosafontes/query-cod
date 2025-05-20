@@ -1,4 +1,5 @@
 from collections import defaultdict
+
 from databases.types import Columns, Schema
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import DataType as SQLGlotDataType

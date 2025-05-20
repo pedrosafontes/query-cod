@@ -27,7 +27,9 @@ class JoinValidator:
 
         left_schema = self.scope.join_schemas[join]
         left_cols = flatten(left_schema)
+        
         right_schema = self.scope.tables.get_table_schema(table.alias_or_name)
+        assert right_schema is not None
         right_cols = flatten(right_schema)
 
         kind = join.method or join.kind
