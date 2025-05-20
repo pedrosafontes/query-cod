@@ -33,17 +33,6 @@ class OrderByPositionError(OrderByError):
 
 
 @dataclass
-class OrderByExpressionError(OrderByError):
-    @property
-    def title(self) -> str:
-        return 'Invalid ORDER BY expression'
-
-    @property
-    def description(self) -> str:
-        return f'ORDER BY expression "{self.source}" must be present in the SELECT list.'
-
-
-@dataclass
 class JoinError(QueryStructureError, ABC):
     pass
 

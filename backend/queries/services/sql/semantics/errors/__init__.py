@@ -20,7 +20,6 @@ from .query_structure import (
     MissingDerivedTableAliasError,
     MissingJoinConditionError,
     NestedAggregateError,
-    OrderByExpressionError,
     OrderByPositionError,
     UngroupedColumnError,
 )
@@ -40,7 +39,6 @@ __all__ = [
     'MissingJoinConditionError',
     'InvalidJoinConditionError',
     'OrderByPositionError',
-    'OrderByExpressionError',
     'TypeMismatchError',
     'NonScalarExpressionError',
     'ColumnCountMismatchError',
