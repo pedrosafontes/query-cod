@@ -28,7 +28,7 @@ class SQLScope:
 class SelectScope(SQLScope):
     def __init__(self, select: Select, schema: RelationalSchema, parent: SQLScope | None):
         self.query = select
-        self.schema = schema
+        self.db_schema = schema
         self._tables: TablesScope = TablesScope(parent.tables if parent else None)
         self._projections = ProjectionsScope()
         self.group_by = GroupByScope(select.args.get('group', []))

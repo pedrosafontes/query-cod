@@ -22,7 +22,7 @@ class TableValidator:
                 return self._validate_derived_table(table)
 
     def _validate_table(self, table: Table) -> None:
-        if table.name not in self.scope.schema:
+        if table.name not in self.scope.db_schema:
             raise RelationNotFoundError(table)
 
     def _validate_derived_table(self, subquery: Subquery) -> None:

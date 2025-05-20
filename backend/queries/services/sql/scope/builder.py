@@ -58,7 +58,7 @@ def _process_where(scope: SelectScope) -> None:
         for query in where.find_all(Subquery, Select):
             if isinstance(query, Subquery):
                 query = query.this
-            scope.subquery_scopes[query] = build_scope(query, scope.schema, scope)
+            scope.subquery_scopes[query] = build_scope(query, scope.db_schema, scope)
 
 
 def _process_joins(scope: SelectScope) -> None:
@@ -96,11 +96,11 @@ def _process_select(scope: SelectScope) -> None:
 def _process_table(scope: SelectScope, table: Table | Subquery) -> Attributes:
     match table:
         case Table():
-            attributes = scope.schema.get(table.name, {}).copy()
+            attributes = scope.db_schema.get(table.name, {}).copy()
 
         case Subquery():
             query = table.this
-            child = build_scope(query, scope.schema, scope)
+            child = build_scope(query, scope.db_schema, scope)
             scope.derived_table_scopes[query] = child
 
             attributes = flatten(child.projections.schema)
