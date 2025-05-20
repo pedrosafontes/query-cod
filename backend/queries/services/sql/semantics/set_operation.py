@@ -12,8 +12,8 @@ class SetOperationValidator:
     def validate(scope: SetOperationScope) -> None:
         from .query import QueryValidator
 
-        QueryValidator().validate(scope.left)
-        QueryValidator().validate(scope.right)
+        QueryValidator.validate(scope.left)
+        QueryValidator.validate(scope.right)
 
         left_types = scope.left.projections.types
         right_types = scope.right.projections.types

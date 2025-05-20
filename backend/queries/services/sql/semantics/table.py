@@ -34,7 +34,7 @@ class TableValidator:
 
         # Derived columns must have a unique alias
         subquery_scope = self.scope.derived_table_scopes[subquery.this]
-        QueryValidator().validate(subquery_scope)
+        QueryValidator.validate(subquery_scope)
 
         aliases = []
         for expr in subquery_scope.projections.expressions:

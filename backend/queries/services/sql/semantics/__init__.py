@@ -26,4 +26,4 @@ class SQLSemanticAnalyzer:
 
     def validate(self, query: SQLQuery) -> None:
         scope = SQLScope.build(query, self.schema)
-        QueryValidator().validate(scope)
+        QueryValidator.validate(scope)
