@@ -46,7 +46,7 @@ class SelectScope(SQLScope):
 
     @property
     def is_grouped(self) -> bool:
-        return bool(self.query.args.get('group'))
+        return bool(self.group_by.exprs)
 
     def expand_star(self, star: Column | Star) -> list[Column] | None:
         table_ident: Identifier | None = star.args.get('table')
