@@ -2,13 +2,11 @@ from typing import cast
 
 from queries.services.types import Attributes, RelationalSchema, SQLQuery, flatten
 from sqlglot.expressions import (
-    Column,
     Expression,
     From,
     Identifier,
     Join,
     Select,
-    Star,
     Subquery,
     Table,
 )
@@ -67,11 +65,12 @@ def _process_joins(scope: SelectScope) -> None:
     joins: list[Join] = scope.query.args.get('joins', [])
 
     for join in joins:
-        scope.join_schemas[join] = scope.tables.get_schema()
+        left_schema = scope.tables.get_schema()
+        scope.join_schemas[join] = left_schema
 
         table = join.this
 
-        left_cols = scope.tables.get_columns()
+        left_cols = flatten(left_schema)
         right_cols = _process_table(scope, table)
 
         kind = join.method or join.kind
@@ -82,7 +81,7 @@ def _process_joins(scope: SelectScope) -> None:
             join_columns = [ident.name for ident in using] if using else shared_columns
 
             for col in join_columns:
-                scope.tables.merge_common_column(col)
+                scope.tables.merge_column(col)
 
 
 def _process_select(scope: SelectScope) -> None:
@@ -92,20 +91,6 @@ def _process_select(scope: SelectScope) -> None:
                 scope.projections.add(col, TypeInferrer(scope).infer(col))
         else:
             scope.projections.add(expr, TypeInferrer(scope).infer(expr))
-
-
-def expand_star(scope: SelectScope, star: Column | Star) -> list[Column] | None:
-    table_ident: Identifier | None = star.args.get('table')
-
-    if table_ident:
-        table_schema = scope.tables.get_table_schema(table_ident.this)
-        if not table_schema:
-            return None
-        schema = table_schema
-    else:
-        schema = scope.tables.get_schema()
-
-    return [Column(name=col, table=table) for table, cols in schema.items() for col in cols.keys()]
 
 
 def _process_table(scope: SelectScope, table: Table | Subquery) -> Attributes:

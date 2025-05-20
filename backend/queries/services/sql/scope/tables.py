@@ -16,11 +16,12 @@ class TablesScope:
     def __init__(self, parent: TablesScope | None = None) -> None:
         self.parent = parent
         self._schema: RelationalSchema = defaultdict(dict)
-        self._tables: list[Table | Subquery] = []
+        self._tables_schemas: RelationalSchema = defaultdict(dict)
 
     def add(self, table: Table | Subquery, attributes: Attributes) -> None:
-        self._tables.append(table)
-        self._schema[table.alias_or_name] = attributes
+        name = table.alias_or_name
+        self._tables_schemas[name] = attributes.copy()
+        self._schema[name] = attributes.copy()
 
     def resolve_column(self, column: Column, validate: bool = True) -> DataType | None:
         return (
@@ -60,28 +61,13 @@ class TablesScope:
         [(_, t)] = matches
         return t
 
-    def merge_common_column(self, col: str) -> None:
+    def merge_column(self, col: str) -> None:
         merge_common_column(self._schema, col)
-
-    # ────── Utilities ──────
 
     def get_schema(self) -> RelationalSchema:
         return copy.deepcopy(self._schema)
 
     def get_table_schema(self, table: str) -> RelationalSchema | None:
-        if table not in self._schema:
+        if table not in self._tables_schemas:
             return None
-        return {table: self._schema[table].copy()}
-
-    def get_columns(self) -> Attributes:
-        # Get all column types from all tables
-        all_column_types = defaultdict(list)
-        for attributes in self._schema.values():
-            for col, t in attributes.items():
-                all_column_types[col].append(t)
-        # Get the dominant type for each column
-        column_types = {}
-        for col, types in all_column_types.items():
-            column_types[col] = DataType.dominant(types)
-
-        return column_types
+        return {table: self._tables_schemas[table].copy()}
