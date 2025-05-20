@@ -15,13 +15,13 @@ from ..semantics.errors import (
 class TablesScope:
     def __init__(self, parent: TablesScope | None = None) -> None:
         self.parent = parent
-        self._schema: RelationalSchema = defaultdict(dict)
+        self._joined_schema: RelationalSchema = defaultdict(dict)
         self._tables_schemas: RelationalSchema = defaultdict(dict)
 
     def add(self, table: Table | Subquery, attributes: Attributes) -> None:
         name = table.alias_or_name
         self._tables_schemas[name] = attributes.copy()
-        self._schema[name] = attributes.copy()
+        self._joined_schema[name] = attributes.copy()
 
     def resolve_column(self, column: Column, validate: bool = True) -> DataType | None:
         return (
@@ -31,16 +31,16 @@ class TablesScope:
         )
 
     def _resolve_qualified(self, column: Column) -> DataType | None:
-        if column.table not in self._schema:
+        if column.table not in self._joined_schema:
             # Check if the table is in the parent scope
             return self.parent._resolve_qualified(column) if self.parent else None
         # Table is in the current scope
-        return self._schema[column.table].get(column.name)
+        return self._joined_schema[column.table].get(column.name)
 
     def _resolve_unqualified(self, column: Column, validate: bool) -> DataType | None:
         matches = [
             (table, attributes[column.name])
-            for table, attributes in self._schema.items()
+            for table, attributes in self._joined_schema.items()
             if column.name in attributes
         ]
 
@@ -62,10 +62,10 @@ class TablesScope:
         return t
 
     def merge_column(self, col: str) -> None:
-        merge_common_column(self._schema, col)
+        merge_common_column(self._joined_schema, col)
 
     def get_schema(self) -> RelationalSchema:
-        return copy.deepcopy(self._schema)
+        return copy.deepcopy(self._joined_schema)
 
     def get_table_schema(self, table: str) -> RelationalSchema | None:
         if table not in self._tables_schemas:
