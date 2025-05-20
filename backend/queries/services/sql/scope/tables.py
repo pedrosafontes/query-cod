@@ -42,9 +42,11 @@ class TablesScope:
             for table, attributes in self._schema.items()
             if column.name in attributes
         ]
+
         if not matches:
             # Check if the column is in the parent scope
             return self.parent._resolve_unqualified(column, validate) if self.parent else None
+
         # Check for ambiguous column
         if len(matches) > 1:
             if validate:
@@ -53,6 +55,7 @@ class TablesScope:
                 )
             else:
                 return None
+        
         # There is only one match
         [(_, t)] = matches
         return t
@@ -65,7 +68,7 @@ class TablesScope:
     def get_schema(self) -> RelationalSchema:
         return copy.deepcopy(self._schema)
 
-    def get_table_schema(self, table: str, source: Expression) -> RelationalSchema | None:
+    def get_table_schema(self, table: str) -> RelationalSchema | None:
         if table not in self._schema:
             return None
         return {table: self._schema[table].copy()}

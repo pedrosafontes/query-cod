@@ -168,7 +168,7 @@ class SelectScope(SQLScope):
         table_ident: Identifier | None = star.args.get('table')
 
         if table_ident:
-            maybe_schema = self._tables.get_table_schema(table_ident.this, star)
+            maybe_schema = self._tables.get_table_schema(table_ident.this)
             if not maybe_schema:
                 return None
             schema = maybe_schema
