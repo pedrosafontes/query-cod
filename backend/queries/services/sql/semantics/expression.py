@@ -2,43 +2,8 @@ from collections.abc import Callable
 
 from queries.services.types import SQLQuery
 from ra_sql_visualisation.types import DataType
-from sqlglot.expressions import (
-    Alias,
-    All,
-    And,
-    Any,
-    Avg,
-    Between,
-    Boolean,
-    Cast,
-    Coalesce,
-    Column,
-    Count,
-    CurrentDate,
-    CurrentTime,
-    CurrentTimestamp,
-    DPipe,
-    Exists,
-    Expression,
-    In,
-    Is,
-    Length,
-    Like,
-    Literal,
-    Lower,
-    Max,
-    Min,
-    Not,
-    Or,
-    Paren,
-    Star,
-    StrPosition,
-    Subquery,
-    Substring,
-    Sum,
-    Trim,
-    Upper,
-)
+from sqlglot import Expression
+from sqlglot import expressions as exp
 
 from ..inference import TypeInferrer
 from ..scope import SelectScope
@@ -86,13 +51,13 @@ class ExpressionValidator:
             context = ValidationContext()
         match node:
             # Primary Expressions
-            case Column():
+            case exp.Column():
                 self._validate_column(node, context)
 
-            case Subquery():
+            case exp.Subquery():
                 self._validate_scalar_subquery(node)
 
-            case Alias() | Paren() | Is() | Coalesce():
+            case exp.Alias() | exp.Paren() | exp.Is():
                 self.validate(node.this, context)
 
             # Comparison
@@ -109,29 +74,34 @@ class ExpressionValidator:
             case op if isinstance(op, StringOperation):
                 self._validate_string_operation(node, context)
 
-            case Cast():
+            case exp.Cast():
                 self._validate_cast(node, context)
 
             # Predicates
             case expr if isinstance(expr, BooleanExpression):
                 self._validate_boolean_expr(node, context)
 
-            case In():
+            case exp.In():
                 self._validate_in(node, context)
 
-            case Exists():
+            case exp.Exists():
                 scope = self.scope.subquery_scopes[node.this]
                 QueryValidator().validate(scope)
 
-            case Between():
+            case exp.Between():
                 self._validate_between(node, context)
 
-            case Like():
+            case exp.Like():
                 self._validate_string(node.this, context)
                 self._validate_string(node.expression, context)
 
             case _ if isinstance(
-                node, Literal | Boolean | CurrentTime | CurrentDate | CurrentTimestamp
+                node,
+                exp.Literal
+                | exp.Boolean
+                | exp.CurrentTime
+                | exp.CurrentDate
+                | exp.CurrentTimestamp,
             ):
                 pass
 
@@ -139,7 +109,7 @@ class ExpressionValidator:
                 raise NonScalarExpressionError(node)
 
     # ──────── Primary Expressions ────────
-    def _validate_column(self, column: Column, context: ValidationContext) -> None:
+    def _validate_column(self, column: exp.Column, context: ValidationContext) -> None:
         if self.scope.tables.resolve_column(column) is None:
             raise ColumnNotFoundError.from_column(column)
 
@@ -149,17 +119,17 @@ class ExpressionValidator:
                 self.scope.is_grouped
                 and (context.in_having or context.in_select or context.in_order_by)
             )
-            # Condition: Column must be in the GROUP BY clause or appear in an aggregate function
+            # Condition: exp.Column must be in the GROUP BY clause or appear in an aggregate function
             and not (self.scope.group_by.contains(column) or context.in_aggregate)
         ) or (
             # Scenario: Ungrouped HAVING
             (not self.scope.is_grouped and context.in_having)
-            # Condition: Column must be in an aggregate function
+            # Condition: exp.Column must be in an aggregate function
             and not context.in_aggregate
         ):
             raise UngroupedColumnError(column, [column.name])
 
-    def _validate_scalar_subquery(self, subquery: Subquery) -> DataType:
+    def _validate_scalar_subquery(self, subquery: exp.Subquery) -> DataType:
         from .query import QueryValidator
 
         select = subquery.this
@@ -183,13 +153,13 @@ class ExpressionValidator:
 
         lt = self._type_inferrer.infer(comp.left)
         match comp.right:
-            case All() | Any():
+            case exp.All() | exp.Any():
                 query = comp.right.this
-                if isinstance(query, Subquery):
+                if isinstance(query, exp.Subquery):
                     # Unwrap the subquery
                     query = query.this
                 rt = self._validate_quantified_predicate_query(query)
-            case Subquery():
+            case exp.Subquery():
                 rt = self._validate_scalar_subquery(comp.right)
             case _:
                 self.validate(comp.right, context)
@@ -219,37 +189,37 @@ class ExpressionValidator:
         arg = aggr.this
         context = context.enter_aggregate()
         match aggr:
-            case Count():
-                if not isinstance(arg, Star):
+            case exp.Count():
+                if not isinstance(arg, exp.Star):
                     self.validate(arg, context)
 
-            case Avg() | Sum():
+            case exp.Avg() | exp.Sum():
                 self._validate_numeric(arg, context)
 
-            case Min() | Max():
+            case exp.Min() | exp.Max():
                 self.validate(arg, context)
 
     def _validate_string_operation(self, op: StringOperation, context: ValidationContext) -> None:
         match op:
-            case Lower() | Upper() | Trim() | Length():
+            case exp.Lower() | exp.Upper() | exp.Trim() | exp.Length():
                 self._validate_string(op.this, context)
 
-            case Substring():
+            case exp.Substring():
                 self._validate_string(op.this, context)
                 if start := op.args.get('start'):
                     self._validate_numeric(start, context)
                 if length := op.args.get('length'):
                     self._validate_numeric(length, context)
 
-            case DPipe():
+            case exp.DPipe():
                 self._validate_string(op.left, context)
                 self._validate_string(op.right, context)
 
-            case StrPosition():
+            case exp.StrPosition():
                 self._validate_string(op.this, context)
                 self._validate_string(op.args['substr'], context)
 
-    def _validate_cast(self, cast: Cast, context: ValidationContext) -> None:
+    def _validate_cast(self, cast: exp.Cast, context: ValidationContext) -> None:
         self.validate(cast.this, context)
 
         source_t = self._type_inferrer.infer(cast.this)
@@ -260,14 +230,14 @@ class ExpressionValidator:
 
     def _validate_boolean_expr(self, expr: BooleanExpression, context: ValidationContext) -> None:
         match expr:
-            case And() | Or():
+            case exp.And() | exp.Or():
                 self.validate_boolean(expr.left, context)
                 self.validate_boolean(expr.right, context)
 
-            case Not():
+            case exp.Not():
                 self.validate_boolean(expr.this, context)
 
-    def _validate_in(self, pred: In, context: ValidationContext) -> None:
+    def _validate_in(self, pred: exp.In, context: ValidationContext) -> None:
         self.validate(pred.this, context)
         lt = self._type_inferrer.infer(pred.this)
 
@@ -291,7 +261,7 @@ class ExpressionValidator:
         [t] = scope.projections.types
         return t
 
-    def _validate_between(self, pred: Between, context: ValidationContext) -> None:
+    def _validate_between(self, pred: exp.Between, context: ValidationContext) -> None:
         expr = pred.this
         self.validate(expr, context)
 
