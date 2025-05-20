@@ -1,10 +1,10 @@
-from ..errors import (
+from ..scope import SetOperationScope
+from .errors import (
     ColumnCountMismatchError,
     ColumnTypeMismatchError,
     TypeMismatchError,
 )
-from ..scope import SetOperationScope
-from ..utils import assert_comparable
+from .utils import assert_comparable
 
 
 class SetOperationValidator:

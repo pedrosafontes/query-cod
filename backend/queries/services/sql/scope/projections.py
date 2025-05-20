@@ -6,7 +6,7 @@ from queries.services.types import RelationalSchema
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import Column, Expression
 
-from ..errors import (
+from ..semantics.errors import (
     DuplicateAliasError,
 )
 

@@ -2,9 +2,9 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import cast, get_args
 
+from queries.services.sql.types import AggregateFunction
 from sqlglot.expressions import Expression, Select
 
-from ..types import AggregateFunction
 from .base import SQLSemanticError
 
 

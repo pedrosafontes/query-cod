@@ -1,12 +1,12 @@
 from sqlglot.expressions import Subquery, Table
 
-from ..errors import (
+from ..scope import SelectScope
+from .errors import (
     DuplicateAliasError,
     MissingDerivedColumnAliasError,
     MissingDerivedTableAliasError,
     RelationNotFoundError,
 )
-from ..scope import SelectScope
 
 
 class TableValidator:

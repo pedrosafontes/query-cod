@@ -1,7 +1,7 @@
 from sqlglot.expressions import Column, Star
 
-from ..errors.query_structure import UngroupedColumnError
 from ..scope import SelectScope
+from .errors import UngroupedColumnError
 
 
 class StarValidator:

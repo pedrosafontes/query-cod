@@ -31,7 +31,6 @@ class SQLScope:
                 return SelectScope.build(query, schema, parent)
             case _ if isinstance(query, SetOperation):
                 return SetOperationScope.build(query, schema, parent)
-            
 
     @property
     def tables(self) -> TablesScope:

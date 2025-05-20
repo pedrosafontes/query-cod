@@ -1,15 +1,15 @@
 from queries.services.types import Attributes, RelationalSchema, flatten, merge_common_column
 from sqlglot.expressions import Identifier, Join
 
-from ..errors import (
+from ..scope import SelectScope
+from .errors import (
     ColumnNotFoundError,
     InvalidJoinConditionError,
     MissingJoinConditionError,
 )
-from ..scope import SelectScope
-from ..utils import assert_comparable
 from .expression import ExpressionValidator
 from .table import TableValidator
+from .utils import assert_comparable
 
 
 class JoinValidator:

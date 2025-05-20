@@ -1,12 +1,11 @@
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import Expression, Literal
 
-from ..errors import OrderByExpressionError, OrderByPositionError
-from ..errors.data_type import TypeMismatchError
 from ..inference import TypeInferrer
 from ..scope import SelectScope
-from ..utils import is_aggregate
+from .errors import OrderByExpressionError, OrderByPositionError, TypeMismatchError
 from .expression import ExpressionValidator
+from .utils import is_aggregate
 
 
 class OrderByValidator:

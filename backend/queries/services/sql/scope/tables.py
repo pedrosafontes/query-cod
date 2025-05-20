@@ -4,10 +4,9 @@ from collections import defaultdict
 
 from queries.services.types import Attributes, RelationalSchema, merge_common_column
 from ra_sql_visualisation.types import DataType
-from sqlglot import Expression
-from sqlglot.expressions import Column, Subquery, Table
+from sqlglot.expressions import Column, Expression, Subquery, Table
 
-from ..errors import (
+from ..semantics.errors import (
     AmbiguousColumnReferenceError,
     DuplicateAliasError,
     RelationNotFoundError,

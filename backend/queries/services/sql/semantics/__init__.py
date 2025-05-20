@@ -1,9 +1,9 @@
 from queries.services.types import RelationalSchema, SQLQuery
 from queries.types import QueryError
 
+from ..scope import SQLScope
 from .errors.base import SQLSemanticError
-from .scope import SQLScope
-from .validators.query import QueryValidator
+from .query import QueryValidator
 
 
 def validate_sql_semantics(query: SQLQuery, schema: RelationalSchema) -> list[QueryError]:

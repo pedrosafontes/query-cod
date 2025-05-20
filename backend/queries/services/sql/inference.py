@@ -1,7 +1,6 @@
 import re
 from typing import cast
 
-from queries.services.sql.semantics.scope import SQLScope
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import (
     Alias,
@@ -18,6 +17,7 @@ from sqlglot.expressions import (
     Paren,
 )
 
+from .scope import SQLScope
 from .types import (
     AggregateFunction,
     ArithmeticOperation,

@@ -6,8 +6,8 @@ from sqlglot.expressions import (
     Join,
 )
 
-from ..context import ValidationContext
 from ..scope import SelectScope
+from .context import ValidationContext
 from .expression import ExpressionValidator
 from .join import JoinValidator
 from .order_by import OrderByValidator

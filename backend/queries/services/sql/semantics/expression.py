@@ -2,7 +2,6 @@ from collections.abc import Callable
 
 from queries.services.types import SQLQuery
 from ra_sql_visualisation.types import DataType
-from sqlglot import Expression
 from sqlglot.expressions import (
     Alias,
     All,
@@ -20,6 +19,7 @@ from sqlglot.expressions import (
     CurrentTimestamp,
     DPipe,
     Exists,
+    Expression,
     In,
     Is,
     Length,
@@ -40,17 +40,6 @@ from sqlglot.expressions import (
     Upper,
 )
 
-from ..context import ValidationContext
-from ..errors import (
-    AggregateInWhereError,
-    ArithmeticTypeMismatchError,
-    ColumnCountMismatchError,
-    ColumnNotFoundError,
-    InvalidCastError,
-    NestedAggregateError,
-    UngroupedColumnError,
-)
-from ..errors.data_type import NonScalarExpressionError
 from ..inference import TypeInferrer
 from ..scope import SelectScope
 from ..types import (
@@ -60,12 +49,23 @@ from ..types import (
     Comparison,
     StringOperation,
 )
-from ..utils import (
+from ..utils import convert_sqlglot_type
+from .context import ValidationContext
+from .errors import (
+    AggregateInWhereError,
+    ArithmeticTypeMismatchError,
+    ColumnCountMismatchError,
+    ColumnNotFoundError,
+    InvalidCastError,
+    NestedAggregateError,
+    UngroupedColumnError,
+)
+from .errors.data_type import NonScalarExpressionError
+from .utils import (
     assert_boolean,
     assert_comparable,
     assert_numeric,
     assert_string,
-    convert_sqlglot_type,
     is_aggregate,
 )
 
