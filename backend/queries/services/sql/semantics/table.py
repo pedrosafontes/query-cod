@@ -32,10 +32,11 @@ class TableValidator:
         if not subquery.alias_or_name:
             raise MissingDerivedTableAliasError(subquery)
 
-        # Derived columns must have a unique alias
+        # Validate the subquery
         subquery_scope = self.scope.derived_table_scopes[subquery.this]
         QueryValidator.validate(subquery_scope)
 
+        # Derived columns must have a unique alias
         aliases = []
         for expr in subquery_scope.projections.expressions:
             alias = expr.alias_or_name
