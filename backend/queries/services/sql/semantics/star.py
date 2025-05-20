@@ -9,11 +9,15 @@ class StarValidator:
         self.scope = scope
 
     def validate(self, expr: Star | Column) -> None:
-        if self.scope.is_grouped:
-            missing: list[str] = []
-            for col in self.scope.expand_star(expr):
-                if not self.scope.group_by.contains(col):
-                    missing.append(col.name)
+        if not self.scope.is_grouped:
+            return
 
-            if missing:
-                raise UngroupedColumnError(expr, missing)
+        # Find columns expanded from star that are not in the GROUP BY
+        missing = [
+            col.name
+            for col in self.scope.expand_star(expr)
+            if not self.scope.group_by.contains(col)
+        ]
+
+        if missing:
+            raise UngroupedColumnError(expr, missing)
