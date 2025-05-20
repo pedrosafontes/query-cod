@@ -1,6 +1,6 @@
 import pytest
 from queries.services.sql.parser import parse_sql
-from queries.services.sql.semantics import QueryValidator
+from queries.services.sql.semantics import SQLSemanticAnalyzer
 from queries.services.types import RelationalSchema
 from ra_sql_visualisation.types import DataType
 
@@ -15,7 +15,6 @@ def schema() -> RelationalSchema:
             'category_id': DataType.INTEGER,
             'in_stock': DataType.BOOLEAN,
             'created_at': DataType.DATE,
-            'binary_data': DataType.BIT_VARYING,
         },
         'categories': {
             'category_id': DataType.INTEGER,
@@ -39,11 +38,11 @@ def schema() -> RelationalSchema:
 def assert_valid(query: str, schema: RelationalSchema) -> None:
     select = parse_sql(query)
     print(select.to_s())
-    QueryValidator(schema).validate(select)
+    SQLSemanticAnalyzer(schema).validate(select)
 
 
 def assert_invalid(query: str, schema: RelationalSchema, exc: type[Exception]) -> None:
     select = parse_sql(query)
     print(select.to_s())
     with pytest.raises(exc):
-        QueryValidator(schema).validate(select)
+        SQLSemanticAnalyzer(schema).validate(select)

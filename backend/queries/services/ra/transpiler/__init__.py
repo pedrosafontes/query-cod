@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from typing import cast
 
-from queries.services.sql.semantics.types import aggregate_functions
+from queries.services.sql.types import aggregate_functions
 from queries.services.types import RelationalSchema, SQLQuery
 from sqlglot.expressions import (
     EQ,
@@ -240,7 +240,7 @@ class RAtoSQLTranspiler:
     def _transpile_GroupedAggregation(self, agg: GroupedAggregation) -> Select:  # noqa: N802
         query = self._transpile_select(agg.subquery)
 
-        if query.args.get('group_by'):
+        if query.args.get('group'):
             query = subquery(query, 'sub')
 
         attrs = [self._transpile_attribute(attr) for attr in agg.group_by]

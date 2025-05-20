@@ -4,7 +4,7 @@ from queries.services.ra.parser.ast import (
     RAQuery,
     Selection,
 )
-from queries.services.sql.semantics.types import AggregateFunction, aggregate_functions
+from queries.services.sql.types import AggregateFunction, aggregate_functions
 from sqlglot.expressions import Alias, Column, Select, Star, column
 
 from .expression import ExpressionTranspiler

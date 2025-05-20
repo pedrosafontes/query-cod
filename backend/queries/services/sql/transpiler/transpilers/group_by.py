@@ -1,8 +1,8 @@
 from collections import defaultdict
 
 from queries.services.ra.parser.ast import Aggregation, GroupedAggregation, RAQuery
-from queries.services.sql.semantics.types import AggregateFunction, aggregate_functions
 from queries.services.sql.transpiler.utils import convert_sqlglot_aggregation_function
+from queries.services.sql.types import AggregateFunction, aggregate_functions
 from sqlglot.expressions import Column, Select
 
 from .expression import ExpressionTranspiler

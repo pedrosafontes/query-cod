@@ -8,10 +8,10 @@ from queries.services.ra.parser.ast import (
     ComparisonValue,
     NotExpression,
 )
-from queries.services.sql.semantics.types import (
+from queries.services.sql.types import (
     BooleanExpression as SQLBooleanExpression,
 )
-from queries.services.sql.semantics.types import (
+from queries.services.sql.types import (
     Comparison as SQLComparison,
 )
 from sqlglot.expressions import (

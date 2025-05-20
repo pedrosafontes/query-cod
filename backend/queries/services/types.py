@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from databases.types import Columns, Schema
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import DataType as SQLGlotDataType
@@ -17,15 +19,21 @@ def merge_common_column(result_schema: RelationalSchema, col: str) -> None:
     for schema in result_schema.values():
         if col in schema:
             types.append(schema.pop(col))
-    result_schema.setdefault(None, {})[col] = DataType.dominant(types)
+    if types:
+        result_schema.setdefault(None, {})[col] = DataType.dominant(types)
 
 
 def flatten(schema: RelationalSchema) -> Attributes:
-    flat: Attributes = {}
+    column_types = defaultdict(list)
     for attributes in schema.values():
-        for attr, t in attributes.items():
-            flat[attr] = t
-    return flat
+        for col, t in attributes.items():
+            column_types[col].append(t)
+    # Get the dominant type for each column
+    flat_schema = {}
+    for col, types in column_types.items():
+        flat_schema[col] = DataType.dominant(types)
+
+    return flat_schema
 
 
 def to_relational_schema(schema: Schema) -> RelationalSchema:

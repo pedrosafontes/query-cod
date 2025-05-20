@@ -1,5 +1,5 @@
 from queries.services.ra.parser.ast import AggregationFunction
-from queries.services.sql.semantics.types import AggregateFunction
+from queries.services.sql.types import AggregateFunction
 from sqlglot.expressions import Avg, Count, Max, Min, Sum
 
 

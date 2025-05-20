@@ -10,10 +10,15 @@ from sqlglot.expressions import (
     Add,
     And,
     Avg,
+    Between,
     Count,
     Div,
     DPipe,
+    Exists,
+    In,
+    Is,
     Length,
+    Like,
     Lower,
     Max,
     Min,
@@ -35,3 +40,4 @@ Comparison = EQ | NEQ | GT | GTE | LT | LTE
 BooleanExpression = And | Or | Not
 AggregateFunction = Count | Sum | Avg | Min | Max
 aggregate_functions = get_args(AggregateFunction)
+Predicate = Exists | Between | Like | Is | In
