@@ -75,7 +75,7 @@ class ExpressionValidator:
         self.scope = scope
         self._type_inferrer = TypeInferrer(scope)
 
-    def validate_expression(
+    def validate(
         self,
         node: Expression,
         context: ValidationContext | None = None,
@@ -93,7 +93,7 @@ class ExpressionValidator:
                 self._validate_scalar_subquery(node)
 
             case Alias() | Paren() | Is() | Coalesce():
-                self.validate_expression(node.this, context)
+                self.validate(node.this, context)
 
             # Comparison
             case comp if isinstance(comp, Comparison):
@@ -179,7 +179,7 @@ class ExpressionValidator:
         return t
 
     def _validate_comparison(self, comp: Comparison, context: ValidationContext) -> None:
-        self.validate_expression(comp.left, context)
+        self.validate(comp.left, context)
 
         lt = self._type_inferrer.infer(comp.left)
         match comp.right:
@@ -192,15 +192,15 @@ class ExpressionValidator:
             case Subquery():
                 rt = self._validate_scalar_subquery(comp.right)
             case _:
-                self.validate_expression(comp.right, context)
+                self.validate(comp.right, context)
                 rt = self._type_inferrer.infer(comp.right)
         assert_comparable(lt, rt, comp)
 
     def _validate_arithmetic_operation(
         self, op: ArithmeticOperation, context: ValidationContext
     ) -> None:
-        self.validate_expression(op.left, context)
-        self.validate_expression(op.right, context)
+        self.validate(op.left, context)
+        self.validate(op.right, context)
 
         lt = self._type_inferrer.infer(op.left)
         rt = self._type_inferrer.infer(op.right)
@@ -221,13 +221,13 @@ class ExpressionValidator:
         match aggr:
             case Count():
                 if not isinstance(arg, Star):
-                    self.validate_expression(arg, context)
+                    self.validate(arg, context)
 
             case Avg() | Sum():
                 self._validate_numeric(arg, context)
 
             case Min() | Max():
-                self.validate_expression(arg, context)
+                self.validate(arg, context)
 
     def _validate_string_operation(self, op: StringOperation, context: ValidationContext) -> None:
         match op:
@@ -250,7 +250,7 @@ class ExpressionValidator:
                 self._validate_string(op.args['substr'], context)
 
     def _validate_cast(self, cast: Cast, context: ValidationContext) -> None:
-        self.validate_expression(cast.this, context)
+        self.validate(cast.this, context)
 
         source_t = self._type_inferrer.infer(cast.this)
         target_t = convert_sqlglot_type(cast.args['to'])
@@ -261,14 +261,14 @@ class ExpressionValidator:
     def _validate_boolean_expr(self, expr: BooleanExpression, context: ValidationContext) -> None:
         match expr:
             case And() | Or():
-                self._validate_boolean(expr.left, context)
-                self._validate_boolean(expr.right, context)
+                self.validate_boolean(expr.left, context)
+                self.validate_boolean(expr.right, context)
 
             case Not():
-                self._validate_boolean(expr.this, context)
+                self.validate_boolean(expr.this, context)
 
     def _validate_in(self, pred: In, context: ValidationContext) -> None:
-        self.validate_expression(pred.this, context)
+        self.validate(pred.this, context)
         lt = self._type_inferrer.infer(pred.this)
 
         if subquery := pred.args.get('query'):
@@ -293,7 +293,7 @@ class ExpressionValidator:
 
     def _validate_between(self, pred: Between, context: ValidationContext) -> None:
         expr = pred.this
-        self.validate_expression(expr, context)
+        self.validate(expr, context)
 
         expr_t = self._type_inferrer.infer(expr)
         low_t = self._type_inferrer.infer(pred.args['low'])
@@ -304,7 +304,7 @@ class ExpressionValidator:
 
     # ──────── Type Utilities ────────
 
-    def _validate_boolean(self, expr: Expression, context: ValidationContext | None = None) -> None:
+    def validate_boolean(self, expr: Expression, context: ValidationContext | None = None) -> None:
         self._validate_type(assert_boolean, expr, context)
 
     def _validate_numeric(self, expr: Expression, context: ValidationContext | None = None) -> None:
@@ -319,5 +319,5 @@ class ExpressionValidator:
         expr: Expression,
         context: ValidationContext | None = None,
     ) -> None:
-        self.validate_expression(expr, context)
+        self.validate(expr, context)
         assertion(self._type_inferrer.infer(expr), expr)

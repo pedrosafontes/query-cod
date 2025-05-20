@@ -46,7 +46,7 @@ class SelectValidator:
     def validate_where(scope: SelectScope) -> None:
         where: Expression | None = scope.query.args.get('where')
         if where:
-            ExpressionValidator(scope)._validate_boolean(
+            ExpressionValidator(scope).validate_boolean(
                 where.this, ValidationContext(in_where=True)
             )
 
@@ -55,13 +55,13 @@ class SelectValidator:
         group = scope.query.args.get('group')
         if group:
             for expr in group.expressions:
-                ExpressionValidator(scope).validate_expression(expr)
+                ExpressionValidator(scope).validate(expr)
 
     @staticmethod
     def validate_having(scope: SelectScope) -> None:
         having: Expression | None = scope.query.args.get('having')
         if having:
-            ExpressionValidator(scope)._validate_boolean(
+            ExpressionValidator(scope).validate_boolean(
                 having.this, ValidationContext(in_having=True)
             )
 
@@ -72,9 +72,7 @@ class SelectValidator:
             if inner.is_star:
                 StarValidator(scope).validate(inner)
             elif not scope.group_by.contains(inner):
-                ExpressionValidator(scope).validate_expression(
-                    inner, ValidationContext(in_select=True)
-                )
+                ExpressionValidator(scope).validate(inner, ValidationContext(in_select=True))
 
     @staticmethod
     def validate_order_by(scope: SelectScope) -> None:

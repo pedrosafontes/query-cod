@@ -40,8 +40,8 @@ class OrderByValidator:
             if self.scope.group_by.contains(node):
                 return
             if is_aggregate(node):
-                self.expr_validator.validate_expression(node)
+                self.expr_validator.validate(node)
             else:
                 raise OrderByExpressionError(node)
         else:
-            self.expr_validator.validate_expression(node)
+            self.expr_validator.validate(node)

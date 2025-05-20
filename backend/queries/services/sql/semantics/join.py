@@ -50,7 +50,7 @@ class JoinValidator:
             # INNER, LEFT, RIGHT, and FULL OUTER joins must have a condition
             if not condition:
                 raise MissingJoinConditionError(join)
-            self.expr_validator._validate_boolean(condition)
+            self.expr_validator.validate_boolean(condition)
 
         return join_schema
 
