@@ -8,24 +8,21 @@ from .utils import assert_comparable
 
 
 class SetOperationValidator:
-    def __init__(self, scope: SetOperationScope) -> None:
-        self.scope = scope
-        self.set_operation = scope.query
-
-    def validate(self) -> None:
+    @staticmethod
+    def validate(scope: SetOperationScope) -> None:
         from .query import QueryValidator
 
-        QueryValidator().validate(self.scope.left)
-        QueryValidator().validate(self.scope.right)
+        QueryValidator().validate(scope.left)
+        QueryValidator().validate(scope.right)
 
-        left_types = self.scope.left.projections.types
-        right_types = self.scope.right.projections.types
+        left_types = scope.left.projections.types
+        right_types = scope.right.projections.types
 
         if (l_len := len(left_types)) != (r_len := len(right_types)):
-            raise ColumnCountMismatchError(self.set_operation.right, l_len, r_len)
+            raise ColumnCountMismatchError(scope.query.right, l_len, r_len)
 
         for i, (lt, rt) in enumerate(zip(left_types, right_types, strict=True)):
             try:
-                assert_comparable(lt, rt, self.set_operation)
+                assert_comparable(lt, rt, scope.query)
             except TypeMismatchError:
-                raise ColumnTypeMismatchError(self.set_operation, lt, rt, i) from None
+                raise ColumnTypeMismatchError(scope.query, lt, rt, i) from None

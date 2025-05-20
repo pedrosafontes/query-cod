@@ -9,22 +9,21 @@ from .utils import is_aggregate
 
 
 class OrderByValidator:
-    def __init__(self, scope: SelectScope, expr_validator: ExpressionValidator):
+    def __init__(self, scope: SelectScope):
         self.scope = scope
-        self.expr_validator = expr_validator
-        self.type_inferrer = TypeInferrer(scope)
+        self.expr_validator = ExpressionValidator(scope)
+        self._type_inferrer = TypeInferrer(scope)
 
-    def validate(self, order_by_expressions: list[Expression]) -> None:
-        for item in order_by_expressions:
-            node = item.this
-            if isinstance(node, Literal):
-                self._validate_position(node)
-            else:
-                self._validate_expression(node)
+    def validate(self, expr: Expression) -> None:
+        node = expr.this
+        if isinstance(node, Literal):
+            self._validate_position(node)
+        else:
+            self._validate_expression(node)
 
     def _validate_position(self, node: Literal) -> None:
         expected_type = DataType.INTEGER
-        literal_type = self.type_inferrer.infer(node)
+        literal_type = self._type_inferrer.infer(node)
         if literal_type != expected_type:
             raise TypeMismatchError(node, expected_type, literal_type)
 

@@ -7,6 +7,6 @@ class QueryValidator:
     def validate(self, scope: SQLScope) -> None:
         match scope:
             case SelectScope():
-                SelectValidator(scope).validate()
+                SelectValidator.validate(scope)
             case SetOperationScope():
-                SetOperationValidator(scope).validate()
+                SetOperationValidator.validate(scope)

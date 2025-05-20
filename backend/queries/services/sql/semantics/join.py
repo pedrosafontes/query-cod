@@ -16,12 +16,10 @@ class JoinValidator:
     def __init__(
         self,
         scope: SelectScope,
-        expr_validator: ExpressionValidator,
-        table_validator: TableValidator,
     ) -> None:
         self.scope = scope
-        self.expr_validator = expr_validator
-        self.table_validator = table_validator
+        self.expr_validator = ExpressionValidator(scope)
+        self.table_validator = TableValidator(scope)
 
     def validate(self, left_schema: RelationalSchema, join: Join) -> RelationalSchema:
         table = join.this
