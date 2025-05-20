@@ -17,7 +17,7 @@ class StarValidator:
             raise RelationNotFoundError(expr)
 
         # Find columns expanded from star that are not in the GROUP BY
-        missing = [col.name for col in expanded_cols if not self.scope.group_by.contains(col)]
+        missing = [col.name for col in expanded_cols if col not in self.scope.group_by]
 
         if missing:
             raise UngroupedColumnError(expr, missing)

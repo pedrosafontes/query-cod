@@ -35,7 +35,7 @@ class OrderByValidator:
             raise OrderByPositionError(literal, 1, self.max_position)
 
     def _validate_expression(self, expr: Expression) -> None:
-        if self.scope.projections.contains(expr) or self.scope.group_by.contains(expr):
+        if expr in self.scope.projections or expr in self.scope.group_by:
             # Ordering by a projection is valid
             return
 

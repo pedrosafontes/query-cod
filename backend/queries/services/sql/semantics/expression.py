@@ -118,7 +118,7 @@ class ExpressionValidator:
                 and (context.in_having or context.in_select or context.in_order_by)
             )
             # Condition: Column must be in the GROUP BY clause or appear in an aggregate function
-            and not (self.scope.group_by.contains(column) or context.in_aggregate)
+            and not (column in self.scope.group_by or context.in_aggregate)
         ) or (
             # Scenario: Ungrouped HAVING
             (not self.scope.is_grouped and context.in_having)

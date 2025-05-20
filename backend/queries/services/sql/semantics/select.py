@@ -76,7 +76,7 @@ class SelectValidator:
                 raise DuplicateAliasError(expr)
             table_aliases[table].add(alias)
 
-            if not scope.group_by.contains(expr.unalias()):  # type: ignore[no-untyped-call]
+            if expr.unalias() not in scope.group_by:  # type: ignore[no-untyped-call]
                 ExpressionValidator(scope).validate(expr, ValidationContext(in_select=True))
 
     @staticmethod

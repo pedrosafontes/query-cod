@@ -25,7 +25,7 @@ class ProjectionsScope:
         table = expr.args.get('table')
         self.schema[table][alias] = t
 
-    def contains(self, expr: Expression) -> bool:
+    def __contains__(self, expr: Expression) -> bool:
         return any(
             expr == projection or expr.alias_or_name == projection.alias_or_name
             for projection in self.expressions
