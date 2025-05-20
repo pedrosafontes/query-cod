@@ -5,7 +5,7 @@ from collections import defaultdict
 
 from queries.services.types import Attributes, RelationalSchema, merge_common_column
 from ra_sql_visualisation.types import DataType
-from sqlglot.expressions import Column, Expression, Subquery, Table
+from sqlglot.expressions import Column, Subquery, Table
 
 from ..semantics.errors import (
     AmbiguousColumnReferenceError,
@@ -55,7 +55,7 @@ class TablesScope:
                 )
             else:
                 return None
-        
+
         # There is only one match
         [(_, t)] = matches
         return t

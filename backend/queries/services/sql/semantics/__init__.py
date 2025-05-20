@@ -1,7 +1,7 @@
 from queries.services.types import RelationalSchema, SQLQuery
 from queries.types import QueryError
 
-from ..scope import SQLScope
+from ..scope.builder import build_scope
 from .errors.base import SQLSemanticError
 from .query import QueryValidator
 
@@ -25,5 +25,5 @@ class SQLSemanticAnalyzer:
         self.schema = schema
 
     def validate(self, query: SQLQuery) -> None:
-        scope = SQLScope.build(query, self.schema)
+        scope = build_scope(query, self.schema)
         QueryValidator.validate(scope)
