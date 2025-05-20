@@ -2,23 +2,23 @@ from __future__ import annotations
 
 from collections import defaultdict
 
-from queries.services.types import RelationalSchema
+from queries.services.types import RelationalSchema, flatten
 from ra_sql_visualisation.types import DataType
-from sqlglot.expressions import Column, Expression
+from sqlglot.expressions import Expression
 
 
 class ProjectionsScope:
     def __init__(self) -> None:
         self.schema: RelationalSchema = defaultdict(dict)  # Track projections by alias
-        self.expressions: dict[Expression, DataType] = {}  # Track projections by expression
+        self.expressions: list[Expression] = []  # Track projections by expression
 
     @property
     def types(self) -> list[DataType]:
-        return list(self.expressions.values())
+        return list(flatten(self.schema).values())
 
     def add(self, expr: Expression, t: DataType) -> None:
         # Add to expressions
-        self.expressions[expr] = t
+        self.expressions.append(expr)
 
         # Add to schema
         alias = expr.alias_or_name
@@ -26,26 +26,7 @@ class ProjectionsScope:
         self.schema[table][alias] = t
 
     def contains(self, expr: Expression) -> bool:
-        return self.resolve(expr) is not None
-
-    def resolve(self, expr: Expression) -> DataType | None:
-        if expr in self.expressions:
-            # Exact match
-            return self.expressions[expr]
-
-        # Resolve by alias
-        name = expr.alias_or_name
-        table = expr.table if isinstance(expr, Column) else None
-        return self._resolve_qualified(name, table) if table else self._resolve_unqualified(name)
-
-    def _resolve_qualified(self, name: str, table: str) -> DataType | None:
-        return self.schema[table].get(name)
-
-    def _resolve_unqualified(self, name: str) -> DataType | None:
-        matches = [schema[name] for schema in self.schema.values() if name in schema]
-
-        if not matches:
-            return None
-        else:
-            [match] = matches
-            return match
+        return any(
+            expr == projection or expr.alias_or_name == projection.alias_or_name
+            for projection in self.expressions
+        )

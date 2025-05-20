@@ -140,13 +140,13 @@ class ExpressionValidator:
         if len(scope.projections.expressions) != 1:
             raise NonScalarExpressionError(subquery)
 
-        [(expr, t)] = scope.projections.expressions.items()
+        [expr] = scope.projections.expressions
 
         inner: Expression = expr.unalias()  # type: ignore[no-untyped-call]
         if not is_aggregate(inner) or select.args.get('group'):
             raise NonScalarExpressionError(subquery)
 
-        return t
+        return self._type_inferrer.infer(inner)
 
     def _validate_comparison(self, comp: Comparison, context: ValidationContext) -> None:
         # Validate and infer the type of the left side
