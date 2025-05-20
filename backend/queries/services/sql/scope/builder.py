@@ -7,12 +7,12 @@ from sqlglot.expressions import (
     Identifier,
     Join,
     Select,
+    SetOperation,
     Subquery,
     Table,
 )
 
 from ..inference import TypeInferrer
-from ..types import SetOperation
 from .query import SelectScope, SetOperationScope, SQLScope
 
 
@@ -24,6 +24,8 @@ def build_scope(
             return _build_select_scope(query, schema, parent)
         case _ if isinstance(query, SetOperation):
             return _build_set_operation_scope(query, schema, parent)
+        case _:
+            raise NotImplementedError(f'Unsupported query type: {type(query)}')
 
 
 def _build_set_operation_scope(

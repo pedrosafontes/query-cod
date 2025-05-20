@@ -1,15 +1,8 @@
 from __future__ import annotations
 
 from queries.services.types import RelationalSchema, SQLQuery
-from sqlglot.expressions import (
-    Column,
-    Expression,
-    Identifier,
-    Join,
-    Select,
-)
+from sqlglot.expressions import Column, Expression, Identifier, Join, Select, SetOperation
 
-from ..types import SetOperation
 from .group_by import GroupByScope
 from .projections import ProjectionsScope
 from .tables import TablesScope
