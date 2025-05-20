@@ -43,4 +43,9 @@ class ProjectionsScope:
 
     def _resolve_unqualified(self, name: str) -> DataType | None:
         matches = [schema[name] for schema in self.schema.values() if name in schema]
-        return matches[0] if matches else None
+
+        if not matches:
+            return None
+        else:
+            [match] = matches
+            return match
