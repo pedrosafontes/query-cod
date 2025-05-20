@@ -6,10 +6,6 @@ from queries.services.types import RelationalSchema
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import Column, Expression
 
-from ..semantics.errors import (
-    DuplicateAliasError,
-)
-
 
 class ProjectionsScope:
     def __init__(self) -> None:
@@ -27,9 +23,6 @@ class ProjectionsScope:
         # Add to schema
         alias = expr.alias_or_name
         table = expr.args.get('table')
-        # Check for duplicate alias
-        if alias and alias in self.schema[table]:
-            raise DuplicateAliasError(expr)
         self.schema[table][alias] = t
 
     def contains(self, expr: Expression) -> bool:

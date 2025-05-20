@@ -54,7 +54,7 @@ class TypeInferrer:
                 return self.infer(node.this)
 
             case Column():
-                return cast(DataType, self.scope.tables.resolve_column(node))
+                return cast(DataType, self.scope.tables.resolve_column(node, validate=False))
 
             case Alias() | Paren():
                 return self.infer(node.this)

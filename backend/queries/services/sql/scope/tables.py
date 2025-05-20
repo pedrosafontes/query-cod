@@ -9,68 +9,71 @@ from sqlglot.expressions import Column, Expression, Subquery, Table
 
 from ..semantics.errors import (
     AmbiguousColumnReferenceError,
-    DuplicateAliasError,
-    RelationNotFoundError,
 )
 
 
 class TablesScope:
     def __init__(self, parent: TablesScope | None = None) -> None:
         self.parent = parent
-        self._tables: RelationalSchema = defaultdict(dict)
+        self._schema: RelationalSchema = defaultdict(dict)
+        self._tables: list[Table | Subquery] = []
 
     def add(self, table: Table | Subquery, attributes: Attributes) -> None:
-        alias = table.alias_or_name
-        # Check for duplicate alias
-        if alias in self._tables:
-            raise DuplicateAliasError(table)
-        self._tables[alias] = attributes
+        self._tables.append(table)
+        self._schema[table.alias_or_name] = attributes
 
-    def resolve_column(self, column: Column) -> DataType | None:
+    def resolve_column(self, column: Column, validate: bool = True) -> DataType | None:
         return (
-            self._resolve_qualified(column) if column.table else self._resolve_unqualified(column)
+            self._resolve_qualified(column)
+            if column.table
+            else self._resolve_unqualified(column, validate)
         )
 
     def _resolve_qualified(self, column: Column) -> DataType | None:
-        if column.table not in self._tables:
+        if column.table not in self._schema:
             # Check if the table is in the parent scope
             return self.parent._resolve_qualified(column) if self.parent else None
         # Table is in the current scope
-        return self._tables[column.table].get(column.name)
+        return self._schema[column.table].get(column.name)
 
-    def _resolve_unqualified(self, column: Column) -> DataType | None:
+    def _resolve_unqualified(self, column: Column, validate: bool) -> DataType | None:
         matches = [
             (table, attributes[column.name])
-            for table, attributes in self._tables.items()
+            for table, attributes in self._schema.items()
             if column.name in attributes
         ]
         if not matches:
             # Check if the column is in the parent scope
-            return self.parent._resolve_unqualified(column) if self.parent else None
+            return self.parent._resolve_unqualified(column, validate) if self.parent else None
         # Check for ambiguous column
         if len(matches) > 1:
-            raise AmbiguousColumnReferenceError(column, [table for table, _ in matches if table])
+            if validate:
+                raise AmbiguousColumnReferenceError(
+                    column, [table for table, _ in matches if table]
+                )
+            else:
+                return None
         # There is only one match
         [(_, t)] = matches
         return t
 
     def merge_common_column(self, col: str) -> None:
-        merge_common_column(self._tables, col)
+        merge_common_column(self._schema, col)
 
     # ────── Utilities ──────
 
     def get_schema(self) -> RelationalSchema:
-        return copy.deepcopy(self._tables)
+        return copy.deepcopy(self._schema)
 
-    def get_table_schema(self, table: str, source: Expression) -> RelationalSchema:
-        if table not in self._tables:
-            raise RelationNotFoundError(source, table)
-        return {table: self._tables[table].copy()}
+    def get_table_schema(self, table: str, source: Expression) -> RelationalSchema | None:
+        if table not in self._schema:
+            return None
+        return {table: self._schema[table].copy()}
 
     def get_columns(self) -> Attributes:
         # Get all column types from all tables
         all_column_types = defaultdict(list)
-        for attributes in self._tables.values():
+        for attributes in self._schema.values():
             for col, t in attributes.items():
                 all_column_types[col].append(t)
         # Get the dominant type for each column

@@ -74,7 +74,7 @@ class SelectScope(SQLScope):
         self.schema = schema
         self._tables: TablesScope = TablesScope(parent.tables if parent else None)
         self._projections = ProjectionsScope()
-        self.group_by = GroupByScope()
+        self.group_by = GroupByScope(select.args.get('group', []))
         self.derived_table_scopes: dict[SQLQuery, SQLScope] = {}
         self.subquery_scopes: dict[SQLQuery, SQLScope] = {}
         self.join_schemas: dict[Join, RelationalSchema] = {}
@@ -101,7 +101,7 @@ class SelectScope(SQLScope):
 
     @property
     def is_grouped(self) -> bool:
-        return bool(self.group_by._exprs)
+        return bool(self.query.args.get('group'))
 
     @classmethod
     def build(
@@ -114,7 +114,6 @@ class SelectScope(SQLScope):
         scope._process_from(select)
         scope._process_joins(select)
         scope._process_where(select)
-        scope._process_group_by(select)
         scope._process_select(select)
         return scope
 
@@ -144,7 +143,7 @@ class SelectScope(SQLScope):
 
             self._process_table(table)
 
-            kind = join.method or join.args.get('kind', 'INNER')
+            kind = join.method or join.kind
             using: list[Identifier] | None = join.args.get('using')
 
             if using or kind == 'NATURAL':
@@ -154,31 +153,27 @@ class SelectScope(SQLScope):
                 for col in join_columns:
                     self._tables.merge_common_column(col)
 
-    def _process_group_by(self, select: Select) -> None:
-        group = select.args.get('group')
-        if group:
-            expressions: list[Expression] = group.expressions
-            self.group_by.add(expressions)
-
     def _process_select(self, select: Select) -> None:
         from ..inference import TypeInferrer
 
         for expr in cast(list[Expression], select.expressions):
             inner: Expression = expr.unalias()  # type: ignore[no-untyped-call]
             if inner.is_star:
-                for col in self.expand_star(expr):
+                for col in self.expand_star(expr) or []:
                     self._projections.add(col, TypeInferrer(self).infer(col))
             else:
                 self._projections.add(expr, TypeInferrer(self).infer(expr))
 
-    def expand_star(self, star: Column | Star) -> list[Column]:
+    def expand_star(self, star: Column | Star) -> list[Column] | None:
         table_ident: Identifier | None = star.args.get('table')
 
-        schema = (
-            self._tables.get_table_schema(table_ident.this, star)
-            if table_ident
-            else self._tables.get_schema()
-        )
+        if table_ident:
+            maybe_schema = self._tables.get_table_schema(table_ident.this, star)
+            if not maybe_schema:
+                return None
+            schema = maybe_schema
+        else:
+            schema = self._tables.get_schema()
 
         return [
             Column(name=col, table=table) for table, cols in schema.items() for col in cols.keys()

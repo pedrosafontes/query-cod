@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import cast
 
 from sqlglot.expressions import (
@@ -7,6 +8,7 @@ from sqlglot.expressions import (
 
 from ..scope import SelectScope
 from .context import ValidationContext
+from .errors import DuplicateAliasError
 from .expression import ExpressionValidator
 from .join import JoinValidator
 from .order_by import OrderByValidator
@@ -62,12 +64,20 @@ class SelectValidator:
 
     @staticmethod
     def validate_projection(scope: SelectScope) -> None:
+        table_aliases: dict[str | None, set[str]] = defaultdict(set)
         for expr in cast(list[Expression], scope.query.expressions):
-            inner: Expression = expr.unalias()  # type: ignore[no-untyped-call]
-            if inner.is_star:
-                StarValidator(scope).validate(inner)
-            elif not scope.group_by.contains(inner):
-                ExpressionValidator(scope).validate(inner, ValidationContext(in_select=True))
+            if expr.is_star:
+                StarValidator(scope).validate(expr)
+                continue
+
+            alias = expr.alias_or_name
+            table = expr.args.get('table')
+            if alias and alias in table_aliases[table]:
+                raise DuplicateAliasError(expr)
+            table_aliases[table].add(alias)
+
+            if not scope.group_by.contains(expr.unalias()):  # type: ignore[no-untyped-call]
+                ExpressionValidator(scope).validate(expr, ValidationContext(in_select=True))
 
     @staticmethod
     def validate_order_by(scope: SelectScope) -> None:

@@ -4,11 +4,8 @@ from sqlglot.expressions import Expression
 
 
 class GroupByScope:
-    def __init__(self) -> None:
-        self._exprs: list[Expression] = []
-
-    def add(self, exprs: list[Expression]) -> None:
-        self._exprs.extend(exprs)
+    def __init__(self, exprs: list[Expression]) -> None:
+        self.exprs = exprs
 
     def contains(self, expr: Expression) -> bool:
-        return any(expr == grouped or expr.name == grouped.name for grouped in self._exprs)
+        return any(expr == grouped or expr.name == grouped.name for grouped in self.exprs)
