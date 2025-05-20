@@ -77,6 +77,7 @@ class SelectScope(SQLScope):
         self.group_by = GroupByScope()
         self.derived_table_scopes: dict[SQLQuery, SQLScope] = {}
         self.subquery_scopes: dict[SQLQuery, SQLScope] = {}
+        self.join_schemas: dict[Join, RelationalSchema] = {}
 
     @property
     def tables(self) -> TablesScope:
@@ -134,6 +135,8 @@ class SelectScope(SQLScope):
         joins: list[Join] = select.args.get('joins', [])
 
         for join in joins:
+            self.join_schemas[join] = self._tables.get_schema()
+
             table = join.this
 
             left_cols = self._tables.get_columns()

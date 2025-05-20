@@ -3,7 +3,6 @@ from typing import cast
 from sqlglot.expressions import (
     Expression,
     From,
-    Join,
 )
 
 from ..scope import SelectScope
@@ -34,13 +33,9 @@ class SelectValidator:
 
     @staticmethod
     def validate_joins(scope: SelectScope) -> None:
-        from_clause: From | None = scope.query.args.get('from')
-        if from_clause:
-            join_validator = JoinValidator(scope)
-            left_cols = scope.get_schema(from_clause.this)
-            joins: list[Join] = scope.query.args.get('joins', [])
-            for join in joins:
-                left_cols = join_validator.validate(left_cols, join)
+        join_validator = JoinValidator(scope)
+        for join in scope.query.args.get('joins', []):
+            join_validator.validate(join)
 
     @staticmethod
     def validate_where(scope: SelectScope) -> None:

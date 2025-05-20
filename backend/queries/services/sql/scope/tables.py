@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from collections import defaultdict
 
 from queries.services.types import Attributes, RelationalSchema, merge_common_column
@@ -59,12 +60,12 @@ class TablesScope:
     # ────── Utilities ──────
 
     def get_schema(self) -> RelationalSchema:
-        return self._tables
+        return copy.deepcopy(self._tables)
 
     def get_table_schema(self, table: str, source: Expression) -> RelationalSchema:
         if table not in self._tables:
             raise RelationNotFoundError(source, table)
-        return {table: self._tables[table]}
+        return {table: self._tables[table].copy()}
 
     def get_columns(self) -> Attributes:
         # Get all column types from all tables
