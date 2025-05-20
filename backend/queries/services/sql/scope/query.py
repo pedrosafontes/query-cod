@@ -3,10 +3,10 @@ from __future__ import annotations
 from queries.services.types import RelationalSchema, SQLQuery
 from sqlglot.expressions import (
     Column,
+    Expression,
     Identifier,
     Join,
     Select,
-    Star,
 )
 
 from ..types import SetOperation
@@ -48,7 +48,10 @@ class SelectScope(SQLScope):
     def is_grouped(self) -> bool:
         return bool(self.group_by.exprs)
 
-    def expand_star(self, star: Column | Star) -> list[Column] | None:
+    def expand_star(self, star: Expression) -> list[Column] | None:
+        if not star.is_star:
+            raise ValueError('Expected a star expression')
+
         table_ident: Identifier | None = star.args.get('table')
 
         if table_ident:
