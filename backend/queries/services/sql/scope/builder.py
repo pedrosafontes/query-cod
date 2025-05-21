@@ -33,7 +33,7 @@ def _build_derived_table_scope(
     subquery: Subquery, schema: RelationalSchema, parent: SQLScope | None = None
 ) -> DerivedTableScope:
     child = build_scope(subquery.this, schema, parent)
-    return DerivedTableScope(subquery, child)
+    return DerivedTableScope(subquery, schema, child)
 
 
 def _build_set_operation_scope(
@@ -41,7 +41,7 @@ def _build_set_operation_scope(
 ) -> SetOperationScope:
     left = build_scope(query.left, schema, parent)
     right = build_scope(query.right, schema, parent)
-    scope = SetOperationScope(query, left, right)
+    scope = SetOperationScope(query, schema, left, right)
     return scope
 
 

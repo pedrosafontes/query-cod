@@ -6,6 +6,7 @@ from queries.services.types import Attributes, RelationalSchema, SQLQuery
 from sqlglot.expressions import (
     Column,
     Expression,
+    From,
     Identifier,
     Join,
     Select,
@@ -14,13 +15,15 @@ from sqlglot.expressions import (
     column,
 )
 
-from ..types import SQLTable
 from .group_by import GroupByScope
 from .projections import ProjectionsScope
 from .tables import TablesScope
 
 
 class SQLScope:
+    def __init__(self, db_schema: RelationalSchema):
+        self.db_schema = db_schema
+
     @property
     def query(self) -> SQLQuery:
         raise NotImplementedError('Subclasses must implement this method')
@@ -35,9 +38,9 @@ class SQLScope:
 
 
 class SelectScope(SQLScope):
-    def __init__(self, select: Select, schema: RelationalSchema, parent: SQLScope | None):
+    def __init__(self, select: Select, db_schema: RelationalSchema, parent: SQLScope | None):
+        super().__init__(db_schema)
         self.select = select
-        self.db_schema = schema
         self._tables: TablesScope = TablesScope(self, parent.tables if parent else None)
         self._projections = ProjectionsScope()
         self.group_by = GroupByScope(select.args.get('group', []))
@@ -61,7 +64,7 @@ class SelectScope(SQLScope):
         return bool(self.group_by.exprs)
 
     @property
-    def from_(self) -> SQLTable | None:
+    def from_(self) -> From | None:
         return self.select.args.get('from')
 
     @property
@@ -103,7 +106,14 @@ class SelectScope(SQLScope):
 
 
 class SetOperationScope(SQLScope):
-    def __init__(self, set_operation: SetOperation, left: SQLScope, right: SQLScope):
+    def __init__(
+        self,
+        set_operation: SetOperation,
+        db_schema: RelationalSchema,
+        left: SQLScope,
+        right: SQLScope,
+    ):
+        super().__init__(db_schema)
         self.set_operation = set_operation
         self.left = left
         self.right = right
@@ -122,7 +132,8 @@ class SetOperationScope(SQLScope):
 
 
 class DerivedTableScope(SQLScope):
-    def __init__(self, subquery: Subquery, child: SQLScope):
+    def __init__(self, subquery: Subquery, db_schema: RelationalSchema, child: SQLScope):
+        super().__init__(db_schema)
         self.subquery = subquery
         self.child = child
 
