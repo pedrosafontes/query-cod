@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import copy
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, cast
+from collections.abc import Callable
+from typing import TYPE_CHECKING, TypeVar, cast
 
 from queries.services.types import (
     Attributes,
@@ -11,7 +11,7 @@ from queries.services.types import (
     merge_common_column,
 )
 from ra_sql_visualisation.types import DataType
-from sqlglot.expressions import Column, Join, table_
+from sqlglot.expressions import Column
 
 from ..semantics.errors import (
     AmbiguousColumnReferenceError,
@@ -21,13 +21,6 @@ from ..types import SQLTable
 
 if TYPE_CHECKING:
     from .query import DerivedTableScope, SelectScope
-
-
-@dataclass
-class Source:
-    table: SQLTable
-    joins: list[Join]
-    attributes: Attributes
 
 
 class TablesScope:
@@ -43,41 +36,61 @@ class TablesScope:
         self._tables_schemas[name] = attributes.copy()
         self._joined_schema[name] = attributes.copy()
 
-    def resolve_column(self, column: Column, validate: bool = True) -> DataType | None:
-        result = self.find_col(column, validate)
-        return result[1] if result else None
-
-    def find_col(self, column: Column, validate: bool = True) -> tuple[Source, DataType] | None:
-        return (
-            self._find_qualified(column)
-            if column.table
-            else self._find_unqualified(column, validate)
-        )
-
-    def _find_qualified(self, column: Column) -> tuple[Source, DataType] | None:
-        table = column.table
-        if (
-            table in self._tables_schemas
-            and table in self._joined_schema
-            and column.name in self._joined_schema[table]
-        ):
-            # Table is in the current scope
+    def __contains__(self, column: Column) -> bool:
+        if column.table:
             return (
-                self._get_source(table),
-                self._joined_schema[table][column.name],
+                column.table in self._joined_schema
+                and column.name in self._joined_schema[column.table]
             )
         else:
-            # Check if the table is in the parent scope
-            return self.parent._find_qualified(column) if self.parent else None
+            return any(column.name in attributes for attributes in self._joined_schema.values())
 
-    def _find_unqualified(self, column: Column, validate: bool) -> tuple[Source, DataType] | None:
+    def find_column_type(self, column: Column) -> DataType | None:
+        return self._resolve_column(
+            column, lambda scope, table, column: scope._joined_schema[table][column.name]
+        )
+
+    def can_resolve(self, column: Column) -> bool:
+        return (
+            self._resolve_column(column, lambda scope, table, column: True, validate=True)
+            is not None
+        )
+
+    T = TypeVar('T')
+
+    def _resolve_column(
+        self,
+        column: Column,
+        func: Callable[[TablesScope, str | None, Column], T],
+        validate: bool = True,
+    ) -> T | None:
+        return (
+            self._resolve_qualified(column, func)
+            if column.table
+            else self._resolve_unqualified(column, func, validate)
+        )
+
+    def _resolve_qualified(
+        self, column: Column, func: Callable[[TablesScope, str | None, Column], T]
+    ) -> T | None:
+        if column in self:
+            # Column is in the current scope
+            table = column.table
+            return func(self, table, column)
+        else:
+            # Check if the table is in the parent scope
+            return self.parent._resolve_qualified(column, func) if self.parent else None
+
+    def _resolve_unqualified(
+        self, column: Column, func: Callable[[TablesScope, str | None, Column], T], validate: bool
+    ) -> T | None:
         tables = [
             table for table, attributes in self._joined_schema.items() if column.name in attributes
         ]
 
         if not tables:
             # Check if the column is in the parent scope
-            return self.parent._find_unqualified(column, validate) if self.parent else None
+            return self.parent._resolve_unqualified(column, func, validate) if self.parent else None
 
         # Check for ambiguous column
         if len(tables) > 1:
@@ -89,10 +102,7 @@ class TablesScope:
         # There is only one match
         [table] = tables
 
-        return (
-            self._get_source(table),
-            self._joined_schema[table][column.name],
-        )
+        return func(self, table, column)
 
     def merge_column(self, col: str) -> None:
         merge_common_column(self._joined_schema, col)
@@ -110,19 +120,3 @@ class TablesScope:
 
     def get_columns(self, table: str) -> Attributes:
         return cast(Attributes, self.find_columns(table))
-
-    def _get_source(self, table_name: str | None) -> Source:
-        if table_name:
-            return Source(
-                table=self.derived_table_scopes[table_name].query
-                if table_name in self.derived_table_scopes
-                else table_(table_name),
-                joins=[],
-                attributes=self.get_columns(table_name),
-            )
-        else:
-            return Source(
-                table=cast(SQLTable, self.select_scope.from_),
-                joins=self.select_scope.joins,
-                attributes=self.get_all_columns(),
-            )

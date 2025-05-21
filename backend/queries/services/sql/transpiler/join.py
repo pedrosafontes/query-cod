@@ -18,6 +18,7 @@ class JoinTranspiler:
     def __init__(self, scope: SelectScope):
         self.scope = scope
         self.table_transpiler = TableTranspiler(scope)
+        self.expr_transpiler = ExpressionTranspiler(scope)
 
     def transpile(self, join: SQLJoin, left: RAQuery) -> RAQuery:
         right = self.table_transpiler.transpile(join.this)
@@ -44,7 +45,7 @@ class JoinTranspiler:
             return ThetaJoin(
                 left=left,
                 right=right,
-                condition=ExpressionTranspiler.transpile(condition),
+                condition=self.expr_transpiler.transpile(condition),
             )
         else:
             raise ValueError('Invalid JOIN clause')

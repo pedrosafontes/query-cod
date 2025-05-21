@@ -43,7 +43,7 @@ class SelectTranspiler:
         if scope.where:
             return Selection(
                 subquery=subquery,
-                condition=ExpressionTranspiler.transpile(scope.where.this),
+                condition=ExpressionTranspiler(scope).transpile(scope.where.this),
             )
         return subquery
 
@@ -51,8 +51,8 @@ class SelectTranspiler:
     def _transpile_group_by(
         scope: SelectScope, subquery: RAQuery
     ) -> tuple[RAQuery, dict[AggregateFunction, str]]:
-        transpiler = GroupByTranspiler()
-        return transpiler.transpile(scope, subquery), transpiler.aggregates
+        transpiler = GroupByTranspiler(scope)
+        return transpiler.transpile(subquery), transpiler.aggregates
 
     @staticmethod
     def _transpile_having(
@@ -65,7 +65,7 @@ class SelectTranspiler:
                 aggregate.replace(column(aggregates[aggregate]))
             return Selection(
                 subquery=subquery,
-                condition=ExpressionTranspiler.transpile(condition),
+                condition=ExpressionTranspiler(scope).transpile(condition),
             )
         return subquery
 
@@ -77,7 +77,7 @@ class SelectTranspiler:
         for expr in scope.select.expressions:
             match expr:
                 case Column():
-                    attributes.append(ExpressionTranspiler.transpile_column(expr))
+                    attributes.append(ExpressionTranspiler(scope).transpile_column(expr))
                 case Star():
                     return subquery
                 case Alias():

@@ -10,21 +10,23 @@ from .utils import convert_sqlglot_aggregation_function
 
 
 class GroupByTranspiler:
-    def __init__(self) -> None:
+    def __init__(self, scope: SelectScope) -> None:
+        self.scope = scope
+        self.expr_transpiler = ExpressionTranspiler(scope)
         self._alias_counts: dict[str, int] = defaultdict(int)
         self.aggregates: dict[AggregateFunction, str] = {}
 
-    def transpile(self, scope: SelectScope, subquery: RAQuery) -> RAQuery:
+    def transpile(self, subquery: RAQuery) -> RAQuery:
         group_by = []
-        if scope.group:
-            for expr in scope.group.expressions:
+        if self.scope.group:
+            for expr in self.scope.group.expressions:
                 if isinstance(expr, Column):
-                    group_by.append(ExpressionTranspiler.transpile_column(expr))
+                    group_by.append(self.expr_transpiler.transpile_column(expr))
                 else:
                     raise NotImplementedError(f'Unsupported GROUP BY expression: {type(expr)}')
 
-        self._extract_having_aggregations(scope)
-        self._extract_select_aggregations(scope)
+        self._extract_having_aggregations()
+        self._extract_select_aggregations()
 
         aggregations = [
             self._transpile_aggregation(aggregate, output)
@@ -43,7 +45,7 @@ class GroupByTranspiler:
     def _transpile_aggregation(self, aggregate: AggregateFunction, output: str) -> Aggregation:
         attr = aggregate.this
         if isinstance(attr, Column):
-            attr = ExpressionTranspiler.transpile_column(attr)
+            attr = self.expr_transpiler.transpile_column(attr)
             return Aggregation(
                 input=attr,
                 aggregation_function=convert_sqlglot_aggregation_function(aggregate),
@@ -52,13 +54,13 @@ class GroupByTranspiler:
         else:
             raise NotImplementedError(f'Unsupported aggregation expression: {type(attr)}')
 
-    def _extract_having_aggregations(self, scope: SelectScope) -> None:
-        if scope.having:
-            for aggregate in scope.having.this.find_all(*aggregate_functions):
+    def _extract_having_aggregations(self) -> None:
+        if self.scope.having:
+            for aggregate in self.scope.having.this.find_all(*aggregate_functions):
                 self._add_aggregate(aggregate)
 
-    def _extract_select_aggregations(self, scope: SelectScope) -> None:
-        for select_item in scope.select.expressions:
+    def _extract_select_aggregations(self) -> None:
+        for select_item in self.scope.select.expressions:
             expr = select_item.this
             if isinstance(expr, AggregateFunction):
                 self._add_aggregate(expr, select_item.alias)

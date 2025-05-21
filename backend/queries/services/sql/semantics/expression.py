@@ -108,7 +108,7 @@ class ExpressionValidator:
                 raise NonScalarExpressionError(expr)
 
     def _validate_column(self, column: exp.Column, context: ValidationContext) -> None:
-        if self.scope.tables.resolve_column(column) is None:
+        if not self.scope.tables.can_resolve(column):
             raise ColumnNotFoundError.from_column(column)
 
         if (
