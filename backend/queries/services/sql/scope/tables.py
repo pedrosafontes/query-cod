@@ -102,7 +102,7 @@ class TablesScope:
             return None
         return self._tables_schemas[table].copy()
 
-    def get_columns(self, table: str) -> Attributes | None:
+    def get_columns(self, table: str) -> Attributes:
         return cast(Attributes, self.find_columns(table))
 
     def _get_table_query(self, table: str) -> TableQuery:

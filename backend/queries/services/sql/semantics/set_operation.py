@@ -19,10 +19,10 @@ class SetOperationValidator:
         right_types = scope.right.projections.types
 
         if (l_len := len(left_types)) != (r_len := len(right_types)):
-            raise ColumnCountMismatchError(scope.query.right, l_len, r_len)
+            raise ColumnCountMismatchError(scope.set_operation.right, l_len, r_len)
 
         for i, (lt, rt) in enumerate(zip(left_types, right_types, strict=True)):
             try:
-                assert_comparable(lt, rt, scope.query)
+                assert_comparable(lt, rt, scope.set_operation)
             except TypeMismatchError:
-                raise ColumnTypeMismatchError(scope.query, lt, rt, i) from None
+                raise ColumnTypeMismatchError(scope.set_operation, lt, rt, i) from None

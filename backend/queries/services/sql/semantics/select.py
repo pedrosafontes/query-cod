@@ -29,19 +29,19 @@ class SelectValidator:
 
     @staticmethod
     def validate_from(scope: SelectScope) -> None:
-        from_clause: From | None = scope.query.args.get('from')
+        from_clause: From | None = scope.select.args.get('from')
         if from_clause:
             TableValidator(scope).validate(from_clause.this)
 
     @staticmethod
     def validate_joins(scope: SelectScope) -> None:
         join_validator = JoinValidator(scope)
-        for join in scope.query.args.get('joins', []):
+        for join in scope.select.args.get('joins', []):
             join_validator.validate(join)
 
     @staticmethod
     def validate_where(scope: SelectScope) -> None:
-        where: Expression | None = scope.query.args.get('where')
+        where: Expression | None = scope.select.args.get('where')
         if where:
             ExpressionValidator(scope).validate_boolean(
                 where.this, ValidationContext(in_where=True)
@@ -49,14 +49,14 @@ class SelectValidator:
 
     @staticmethod
     def validate_group_by(scope: SelectScope) -> None:
-        group = scope.query.args.get('group')
+        group = scope.select.args.get('group')
         if group:
             for expr in group.expressions:
                 ExpressionValidator(scope).validate(expr)
 
     @staticmethod
     def validate_having(scope: SelectScope) -> None:
-        having: Expression | None = scope.query.args.get('having')
+        having: Expression | None = scope.select.args.get('having')
         if having:
             ExpressionValidator(scope).validate_boolean(
                 having.this, ValidationContext(in_having=True)
@@ -65,7 +65,7 @@ class SelectValidator:
     @staticmethod
     def validate_projection(scope: SelectScope) -> None:
         table_aliases: dict[str | None, set[str]] = defaultdict(set)
-        for expr in cast(list[Expression], scope.query.expressions):
+        for expr in cast(list[Expression], scope.select.expressions):
             if expr.is_star:
                 StarValidator(scope).validate(expr)
                 continue
@@ -81,7 +81,7 @@ class SelectValidator:
 
     @staticmethod
     def validate_order_by(scope: SelectScope) -> None:
-        order = scope.query.args.get('order')
+        order = scope.select.args.get('order')
         if order:
             order_by_validator = OrderByValidator(scope)
             for expr in order.expressions:

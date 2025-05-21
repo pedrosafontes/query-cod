@@ -49,13 +49,13 @@ def _build_select_scope(
 
 
 def _process_from(scope: SelectScope) -> None:
-    from_clause: From | None = scope.query.args.get('from')
+    from_clause: From | None = scope.select.args.get('from')
     if from_clause:
         _process_table(scope, from_clause.this)
 
 
 def _process_where(scope: SelectScope) -> None:
-    where: Expression | None = scope.query.args.get('where')
+    where: Expression | None = scope.select.args.get('where')
     if where:
         for query in where.find_all(Subquery, Select):
             if isinstance(query, Subquery):
@@ -64,7 +64,7 @@ def _process_where(scope: SelectScope) -> None:
 
 
 def _process_joins(scope: SelectScope) -> None:
-    joins: list[Join] = scope.query.args.get('joins', [])
+    joins: list[Join] = scope.select.args.get('joins', [])
 
     for join in joins:
         left_cols = scope.tables.get_all_columns()
@@ -86,7 +86,7 @@ def _process_joins(scope: SelectScope) -> None:
 
 
 def _process_select(scope: SelectScope) -> None:
-    for expr in cast(list[Expression], scope.query.expressions):
+    for expr in cast(list[Expression], scope.select.expressions):
         if expr.is_star:
             for col in scope.expand_star(expr) or []:
                 scope.projections.add(col, TypeInferrer(scope).infer(col))

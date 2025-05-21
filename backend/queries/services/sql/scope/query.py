@@ -10,6 +10,10 @@ from .tables import TablesScope
 
 class SQLScope:
     @property
+    def query(self) -> SQLQuery:
+        raise NotImplementedError('Subclasses must implement this method')
+
+    @property
     def tables(self) -> TablesScope:
         raise NotImplementedError('Subclasses must implement this method')
 
@@ -20,13 +24,17 @@ class SQLScope:
 
 class SelectScope(SQLScope):
     def __init__(self, select: Select, schema: RelationalSchema, parent: SQLScope | None):
-        self.query = select
+        self.select = select
         self.db_schema = schema
         self._tables: TablesScope = TablesScope(parent.tables if parent else None)
         self._projections = ProjectionsScope()
         self.group_by = GroupByScope(select.args.get('group', []))
         self.subquery_scopes: dict[SQLQuery, SQLScope] = {}
         self.joined_left_cols: dict[Join, Attributes] = {}
+
+    @property
+    def query(self) -> Select:
+        return self.select
 
     @property
     def tables(self) -> TablesScope:
@@ -59,10 +67,14 @@ class SelectScope(SQLScope):
 
 
 class SetOperationScope(SQLScope):
-    def __init__(self, query: SetOperation, left: SQLScope, right: SQLScope):
-        self.query = query
+    def __init__(self, set_operation: SetOperation, left: SQLScope, right: SQLScope):
+        self.set_operation = set_operation
         self.left = left
         self.right = right
+
+    @property
+    def query(self) -> SetOperation:
+        return self.set_operation
 
     @property
     def tables(self) -> TablesScope:
