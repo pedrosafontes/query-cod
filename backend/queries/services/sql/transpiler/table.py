@@ -1,6 +1,7 @@
 from queries.services.ra.parser.ast import RAQuery, Relation
-from queries.services.sql.scope.query import SelectScope
 from sqlglot.expressions import Subquery, Table
+
+from ..scope.query import SelectScope
 
 
 class TableTranspiler:

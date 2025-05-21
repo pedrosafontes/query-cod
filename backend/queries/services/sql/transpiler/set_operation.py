@@ -1,7 +1,8 @@
 from queries.services.ra.parser.ast import SetOperation as RASetOperation
 from queries.services.ra.parser.ast import SetOperator
-from queries.services.sql.scope.query import SetOperationScope
 from sqlglot.expressions import Except, Intersect, Union
+
+from ..scope.query import SetOperationScope
 
 
 class SetOperationTranspiler:

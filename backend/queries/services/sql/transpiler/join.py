@@ -6,10 +6,10 @@ from queries.services.ra.parser.ast import (
     SetOperator,
     ThetaJoin,
 )
-from queries.services.sql.scope.query import SelectScope
 from sqlglot.expressions import Expression
 from sqlglot.expressions import Join as SQLJoin
 
+from ..scope.query import SelectScope
 from .expression import ExpressionTranspiler
 from .table import TableTranspiler
 

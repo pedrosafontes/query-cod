@@ -1,11 +1,11 @@
 from collections import defaultdict
 
 from queries.services.ra.parser.ast import Aggregation, GroupedAggregation, RAQuery
-from queries.services.sql.transpiler.utils import convert_sqlglot_aggregation_function
-from queries.services.sql.types import AggregateFunction, aggregate_functions
 from sqlglot.expressions import Column, Select
 
+from ..types import AggregateFunction, aggregate_functions
 from .expression import ExpressionTranspiler
+from .utils import convert_sqlglot_aggregation_function
 
 
 class GroupByTranspiler:

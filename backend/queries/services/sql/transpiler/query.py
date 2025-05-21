@@ -1,8 +1,8 @@
 from queries.services.ra.parser.ast import (
     RAQuery,
 )
-from queries.services.sql.scope.query import SelectScope, SetOperationScope, SQLScope
 
+from ..scope.query import SelectScope, SetOperationScope, SQLScope
 from .select import SelectTranspiler
 from .set_operation import SetOperationTranspiler
 

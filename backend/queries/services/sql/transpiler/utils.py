@@ -1,6 +1,7 @@
 from queries.services.ra.parser.ast import AggregationFunction
-from queries.services.sql.types import AggregateFunction
 from sqlglot.expressions import Avg, Count, Max, Min, Sum
+
+from ..types import AggregateFunction
 
 
 def convert_sqlglot_aggregation_function(

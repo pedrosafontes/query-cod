@@ -7,11 +7,11 @@ from queries.services.ra.parser.ast import (
     Selection,
 )
 from queries.services.sql.scope.query import SelectScope
-from queries.services.sql.transpiler.transpilers.from_ import FromTranspiler
 from queries.services.sql.types import AggregateFunction, aggregate_functions
 from sqlglot.expressions import Alias, Column, Expression, Star, column
 
 from .expression import ExpressionTranspiler
+from .from_ import FromTranspiler
 from .group_by import GroupByTranspiler
 from .join import JoinTranspiler
 
