@@ -17,5 +17,5 @@ class TableTranspiler:
                 return Relation(name=table.name)
 
             case Subquery() as subquery:
-                subquery_scope = self.scope.tables.derived_table_scopes[subquery.alias_or_name]
-                return QueryTranspiler.transpile(subquery_scope)
+                derived_table_scope = self.scope.tables.derived_table_scopes[subquery.alias_or_name]
+                return QueryTranspiler.transpile(derived_table_scope.child)

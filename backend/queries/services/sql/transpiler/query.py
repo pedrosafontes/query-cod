@@ -12,8 +12,8 @@ class QueryTranspiler:
     def transpile(scope: SQLScope) -> RAQuery:
         match scope:
             case SelectScope():
-                return SelectTranspiler().transpile(scope)
+                return SelectTranspiler.transpile(scope)
             case SetOperationScope():
-                return SetOperationTranspiler().transpile(scope)
+                return SetOperationTranspiler.transpile(scope)
             case _:
                 raise NotImplementedError(f'Unsupported scope type: {type(scope)}')

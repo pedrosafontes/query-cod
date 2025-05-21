@@ -3,7 +3,16 @@ from __future__ import annotations
 from typing import cast
 
 from queries.services.types import Attributes, RelationalSchema, SQLQuery
-from sqlglot.expressions import Column, Expression, Identifier, Join, Select, SetOperation, column
+from sqlglot.expressions import (
+    Column,
+    Expression,
+    Identifier,
+    Join,
+    Select,
+    SetOperation,
+    Subquery,
+    column,
+)
 
 from ..types import SQLTable
 from .group_by import GroupByScope
@@ -110,3 +119,21 @@ class SetOperationScope(SQLScope):
     @property
     def projections(self) -> ProjectionsScope:
         return self.left.projections
+
+
+class DerivedTableScope(SQLScope):
+    def __init__(self, subquery: Subquery, child: SQLScope):
+        self.subquery = subquery
+        self.child = child
+
+    @property
+    def query(self) -> Subquery:
+        return self.subquery
+
+    @property
+    def tables(self) -> TablesScope:
+        return self.child.tables
+
+    @property
+    def projections(self) -> ProjectionsScope:
+        return self.child.projections

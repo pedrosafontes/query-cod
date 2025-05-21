@@ -12,7 +12,7 @@ from sqlglot.expressions import (
 
 from ..inference import TypeInferrer
 from ..types import SQLTable
-from .query import SelectScope, SetOperationScope, SQLScope
+from .query import DerivedTableScope, SelectScope, SetOperationScope, SQLScope
 
 
 def build_scope(
@@ -23,8 +23,17 @@ def build_scope(
             return _build_select_scope(query, schema, parent)
         case _ if isinstance(query, SetOperation):
             return _build_set_operation_scope(query, schema, parent)
+        case Subquery():
+            return _build_derived_table_scope(query, schema, parent)
         case _:
             raise NotImplementedError(f'Unsupported query type: {type(query)}')
+
+
+def _build_derived_table_scope(
+    subquery: Subquery, schema: RelationalSchema, parent: SQLScope | None = None
+) -> DerivedTableScope:
+    child = build_scope(subquery.this, schema, parent)
+    return DerivedTableScope(subquery, child)
 
 
 def _build_set_operation_scope(
@@ -95,11 +104,10 @@ def _process_table(scope: SelectScope, table: SQLTable) -> Attributes:
             attributes = scope.db_schema.get(table.name, {}).copy()
 
         case Subquery():
-            query = table.this
-            child = build_scope(query, scope.db_schema, scope)
-            scope.tables.derived_table_scopes[table.alias_or_name] = child
+            derived_table_scope = _build_derived_table_scope(table, scope.db_schema, scope)
+            scope.tables.derived_table_scopes[table.alias_or_name] = derived_table_scope
 
-            attributes = flatten(child.projections.schema)
+            attributes = flatten(derived_table_scope.projections.schema)
 
     scope.tables.add(table, attributes)
 

@@ -1,39 +1,44 @@
 from __future__ import annotations
 
 import copy
-from collections import defaultdict
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
 from queries.services.types import (
     Attributes,
     RelationalSchema,
-    SQLQuery,
     flatten,
     merge_common_column,
 )
 from ra_sql_visualisation.types import DataType
-from sqlglot.expressions import Column, Subquery, Table, table_
+from sqlglot.expressions import Column, Join, table_
 
 from ..semantics.errors import (
     AmbiguousColumnReferenceError,
 )
+from ..types import SQLTable
 
 
 if TYPE_CHECKING:
-    from .query import SQLScope
+    from .query import DerivedTableScope, SelectScope
 
-TableQuery = SQLQuery | Table
-ResolvedTable = tuple[TableQuery, Attributes]
+
+@dataclass
+class Source:
+    table: SQLTable
+    joins: list[Join]
+    attributes: Attributes
 
 
 class TablesScope:
-    def __init__(self, parent: TablesScope | None = None) -> None:
+    def __init__(self, select_scope: SelectScope, parent: TablesScope | None = None) -> None:
+        self.select_scope = select_scope
         self.parent = parent
-        self._joined_schema: RelationalSchema = defaultdict(dict)
-        self._tables_schemas: RelationalSchema = defaultdict(dict)
-        self.derived_table_scopes: dict[str, SQLScope] = {}
+        self._joined_schema: RelationalSchema = {}
+        self._tables_schemas: RelationalSchema = {}
+        self.derived_table_scopes: dict[str, DerivedTableScope] = {}
 
-    def add(self, table: Table | Subquery, attributes: Attributes) -> None:
+    def add(self, table: SQLTable, attributes: Attributes) -> None:
         name = table.alias_or_name
         self._tables_schemas[name] = attributes.copy()
         self._joined_schema[name] = attributes.copy()
@@ -42,30 +47,30 @@ class TablesScope:
         result = self.find_col(column, validate)
         return result[1] if result else None
 
-    def find_col(
-        self, column: Column, validate: bool = True
-    ) -> tuple[ResolvedTable | None, DataType] | None:
+    def find_col(self, column: Column, validate: bool = True) -> tuple[Source, DataType] | None:
         return (
             self._find_qualified(column)
             if column.table
             else self._find_unqualified(column, validate)
         )
 
-    def _find_qualified(self, column: Column) -> tuple[ResolvedTable | None, DataType] | None:
+    def _find_qualified(self, column: Column) -> tuple[Source, DataType] | None:
         table = column.table
-        if table in self._joined_schema and table in self._tables_schemas:
+        if (
+            table in self._tables_schemas
+            and table in self._joined_schema
+            and column.name in self._joined_schema[table]
+        ):
             # Table is in the current scope
             return (
-                (self._get_table_query(table), self.get_columns(table)),
+                self._get_source(table),
                 self._joined_schema[table][column.name],
             )
         else:
             # Check if the table is in the parent scope
             return self.parent._find_qualified(column) if self.parent else None
 
-    def _find_unqualified(
-        self, column: Column, validate: bool
-    ) -> tuple[ResolvedTable | None, DataType] | None:
+    def _find_unqualified(self, column: Column, validate: bool) -> tuple[Source, DataType] | None:
         tables = [
             table for table, attributes in self._joined_schema.items() if column.name in attributes
         ]
@@ -83,8 +88,9 @@ class TablesScope:
 
         # There is only one match
         [table] = tables
+
         return (
-            (self._get_table_query(table), self.get_columns(table)) if table else None,
+            self._get_source(table),
             self._joined_schema[table][column.name],
         )
 
@@ -105,6 +111,18 @@ class TablesScope:
     def get_columns(self, table: str) -> Attributes:
         return cast(Attributes, self.find_columns(table))
 
-    def _get_table_query(self, table: str) -> TableQuery:
-        scope = self.derived_table_scopes.get(table)
-        return scope.query if scope else table_(table)
+    def _get_source(self, table_name: str | None) -> Source:
+        if table_name:
+            return Source(
+                table=self.derived_table_scopes[table_name].query
+                if table_name in self.derived_table_scopes
+                else table_(table_name),
+                joins=[],
+                attributes=self.get_columns(table_name),
+            )
+        else:
+            return Source(
+                table=cast(SQLTable, self.select_scope.from_),
+                joins=self.select_scope.joins,
+                attributes=self.get_all_columns(),
+            )
