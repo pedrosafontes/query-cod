@@ -1,15 +1,19 @@
 from queries.services.ra.parser.ast import RAQuery, Relation
+from queries.services.sql.scope.query import SelectScope
 from sqlglot.expressions import Subquery, Table
 
 
 class TableTranspiler:
-    @staticmethod
-    def transpile(table: Table | Subquery) -> RAQuery:
-        from .query import SQLtoRATranspiler
+    def __init__(self, scope: SelectScope) -> None:
+        self.scope = scope
+
+    def transpile(self, table: Table | Subquery) -> RAQuery:
+        from .query import QueryTranspiler
 
         match table:
             case Table():
                 return Relation(name=table.name)
 
-            case Subquery():
-                return SQLtoRATranspiler().transpile(table.this)
+            case Subquery() as subquery:
+                subquery_scope = self.scope.tables.derived_table_scopes[subquery.alias_or_name]
+                return QueryTranspiler.transpile(subquery_scope)

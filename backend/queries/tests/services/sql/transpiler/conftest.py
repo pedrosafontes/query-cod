@@ -5,7 +5,7 @@ import pytest
 from queries.services.ra.parser.ast import RAQuery
 from queries.services.ra.transpiler import RAtoSQLTranspiler
 from queries.services.sql.parser import parse_sql
-from queries.services.sql.transpiler.transpilers.query import SQLtoRATranspiler
+from queries.services.sql.transpiler.transpilers import SQLtoRATranspiler
 from queries.services.types import RelationalSchema, to_sqlglot_schema
 from ra_sql_visualisation.types import DataType
 from sqlglot.executor import execute
@@ -62,7 +62,7 @@ def assert_equivalent(
     sqlglot_schema = to_sqlglot_schema(schema)
 
     def _assert_equivalent(sql_text: str, expected_ra: RAQuery) -> None:
-        ra = SQLtoRATranspiler().transpile(parse_sql(sql_text))
+        ra = SQLtoRATranspiler(schema).transpile(parse_sql(sql_text))
         print(ra)
         sql = RAtoSQLTranspiler(schema, distinct=False).transpile(ra)
         print(sql.sql())

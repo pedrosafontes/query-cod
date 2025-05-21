@@ -6,44 +6,41 @@ from queries.services.ra.parser.ast import (
     RAQuery,
     Selection,
 )
+from queries.services.sql.scope.query import SelectScope
+from queries.services.sql.transpiler.transpilers.from_ import FromTranspiler
 from queries.services.sql.types import AggregateFunction, aggregate_functions
-from sqlglot.expressions import Alias, Column, Expression, From, Select, Star, column
+from sqlglot.expressions import Alias, Column, Expression, Star, column
 
 from .expression import ExpressionTranspiler
 from .group_by import GroupByTranspiler
 from .join import JoinTranspiler
-from .table import TableTranspiler
 
 
 class SelectTranspiler:
     @staticmethod
-    def transpile(select: Select) -> RAQuery:
-        from_query = SelectTranspiler._transpile_from(select)
-        join_query = SelectTranspiler._transpile_joins(select, from_query)
-        where_query = SelectTranspiler._transpile_where(select, join_query)
-        group_by_query, aggregates = SelectTranspiler._transpile_group_by(select, where_query)
-        having_query = SelectTranspiler._transpile_having(select, group_by_query, aggregates)
-        projection_query = SelectTranspiler._transpile_projection(select, having_query, aggregates)
+    def transpile(scope: SelectScope) -> RAQuery:
+        from_query = SelectTranspiler._transpile_from(scope)
+        join_query = SelectTranspiler._transpile_joins(scope, from_query)
+        where_query = SelectTranspiler._transpile_where(scope, join_query)
+        group_by_query, aggregates = SelectTranspiler._transpile_group_by(scope, where_query)
+        having_query = SelectTranspiler._transpile_having(scope, group_by_query, aggregates)
+        projection_query = SelectTranspiler._transpile_projection(scope, having_query, aggregates)
         return projection_query
 
     @staticmethod
-    def _transpile_from(select: Select) -> RAQuery:
-        from_clause: From | None = select.args.get('from')
-        if from_clause:
-            return TableTranspiler.transpile(from_clause.this)
-        else:
-            raise ValueError('FROM clause is required in SELECT query')
+    def _transpile_from(scope: SelectScope) -> RAQuery:
+        return FromTranspiler.transpile(scope)
 
     @staticmethod
-    def _transpile_joins(select: Select, subquery: RAQuery) -> RAQuery:
+    def _transpile_joins(scope: SelectScope, subquery: RAQuery) -> RAQuery:
         left = subquery
-        for join in select.args.get('joins', []):
-            left = JoinTranspiler.transpile(join, left)
+        for join in scope.select.args.get('joins', []):
+            left = JoinTranspiler(scope).transpile(join, left)
         return left
 
     @staticmethod
-    def _transpile_where(select: Select, subquery: RAQuery) -> RAQuery:
-        where: Expression | None = select.args.get('where')
+    def _transpile_where(scope: SelectScope, subquery: RAQuery) -> RAQuery:
+        where: Expression | None = scope.select.args.get('where')
         if where:
             return Selection(
                 subquery=subquery,
@@ -53,16 +50,16 @@ class SelectTranspiler:
 
     @staticmethod
     def _transpile_group_by(
-        select: Select, subquery: RAQuery
+        scope: SelectScope, subquery: RAQuery
     ) -> tuple[RAQuery, dict[AggregateFunction, str]]:
         transpiler = GroupByTranspiler()
-        return transpiler.transpile(select, subquery), transpiler.aggregates
+        return transpiler.transpile(scope.select, subquery), transpiler.aggregates
 
     @staticmethod
     def _transpile_having(
-        select: Select, subquery: RAQuery, aggregates: dict[AggregateFunction, str]
+        scope: SelectScope, subquery: RAQuery, aggregates: dict[AggregateFunction, str]
     ) -> RAQuery:
-        having: Expression | None = select.args.get('having')
+        having: Expression | None = scope.select.args.get('having')
         if having:
             condition: Expression = having.this
             aggregate_exprs: Iterator[AggregateFunction] = condition.find_all(*aggregate_functions)
@@ -76,10 +73,10 @@ class SelectTranspiler:
 
     @staticmethod
     def _transpile_projection(
-        select: Select, subquery: RAQuery, aggregates: dict[AggregateFunction, str]
+        scope: SelectScope, subquery: RAQuery, aggregates: dict[AggregateFunction, str]
     ) -> RAQuery:
         attributes: list[Attribute] = []
-        for expr in select.expressions:
+        for expr in scope.select.expressions:
             match expr:
                 case Column():
                     attributes.append(ExpressionTranspiler.transpile_column(expr))

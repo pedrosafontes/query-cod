@@ -6,6 +6,7 @@ from queries.services.ra.parser.ast import (
     SetOperator,
     ThetaJoin,
 )
+from queries.services.sql.scope.query import SelectScope
 from sqlglot.expressions import Expression
 from sqlglot.expressions import Join as SQLJoin
 
@@ -14,13 +15,16 @@ from .table import TableTranspiler
 
 
 class JoinTranspiler:
-    @staticmethod
-    def transpile(join: SQLJoin, left: RAQuery) -> RAQuery:
-        right = TableTranspiler.transpile(join.this)
+    def __init__(self, scope: SelectScope):
+        self.scope = scope
+        self.table_transpiler = TableTranspiler(scope)
+
+    def transpile(self, join: SQLJoin, left: RAQuery) -> RAQuery:
+        right = self.table_transpiler.transpile(join.this)
 
         kind = join.method or join.args.get('kind', 'INNER')
         using = join.args.get('using')
-        condition = join.args.get('on')
+        condition: Expression | None = join.args.get('on')
 
         if using:
             raise NotImplementedError('USING clause is not supported yet')
@@ -36,13 +40,14 @@ class JoinTranspiler:
                 left=left,
                 right=right,
             )
-        else:
-            assert isinstance(condition, Expression)
+        elif condition:
             return ThetaJoin(
                 left=left,
                 right=right,
                 condition=ExpressionTranspiler.transpile(condition),
             )
+        else:
+            raise ValueError('Invalid JOIN clause')
 
     # def _validate_using(
     #     self, using: list[Identifier], left: Attributes, right: Attributes, join: Join

@@ -1,20 +1,19 @@
 from queries.services.ra.parser.ast import (
     RAQuery,
 )
-from queries.services.types import SQLQuery
-from sqlglot.expressions import Select, SetOperation
+from queries.services.sql.scope.query import SelectScope, SetOperationScope, SQLScope
 
 from .select import SelectTranspiler
 from .set_operation import SetOperationTranspiler
 
 
-class SQLtoRATranspiler:
+class QueryTranspiler:
     @staticmethod
-    def transpile(query: SQLQuery) -> RAQuery:
-        match query:
-            case Select():
-                return SelectTranspiler().transpile(query)
-            case query if isinstance(query, SetOperation):
-                return SetOperationTranspiler().transpile(query)
+    def transpile(scope: SQLScope) -> RAQuery:
+        match scope:
+            case SelectScope():
+                return SelectTranspiler().transpile(scope)
+            case SetOperationScope():
+                return SetOperationTranspiler().transpile(scope)
             case _:
-                raise NotImplementedError(f'Unsupported query type: {type(query)}')
+                raise NotImplementedError(f'Unsupported scope type: {type(scope)}')

@@ -1,12 +1,13 @@
 from queries.services.ra.parser.ast import SetOperation as RASetOperation
 from queries.services.ra.parser.ast import SetOperator
-from sqlglot.expressions import Except, Intersect, SetOperation, Union
+from queries.services.sql.scope.query import SetOperationScope
+from sqlglot.expressions import Except, Intersect, Union
 
 
 class SetOperationTranspiler:
     @staticmethod
-    def transpile(set_operation: SetOperation) -> RASetOperation:
-        from .query import SQLtoRATranspiler
+    def transpile(scope: SetOperationScope) -> RASetOperation:
+        from .query import QueryTranspiler
 
         operators = {
             Union: SetOperator.UNION,
@@ -15,7 +16,7 @@ class SetOperationTranspiler:
         }
 
         return RASetOperation(
-            operator=operators[type(set_operation)],
-            left=SQLtoRATranspiler.transpile(set_operation.left),
-            right=SQLtoRATranspiler.transpile(set_operation.right),
+            operator=operators[type(scope.set_operation)],
+            left=QueryTranspiler.transpile(scope.left),
+            right=QueryTranspiler.transpile(scope.right),
         )
