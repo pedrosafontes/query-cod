@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 from queries.services.types import Attributes, RelationalSchema, SQLQuery
 from sqlglot.expressions import Column, Expression, Identifier, Join, Select, SetOperation, column
 
@@ -27,7 +29,7 @@ class SelectScope(SQLScope):
     def __init__(self, select: Select, schema: RelationalSchema, parent: SQLScope | None):
         self.select = select
         self.db_schema = schema
-        self._tables: TablesScope = TablesScope(parent.tables if parent else None)
+        self._tables: TablesScope = TablesScope(self, parent.tables if parent else None)
         self._projections = ProjectionsScope()
         self.group_by = GroupByScope(select.args.get('group', []))
         self.subquery_scopes: dict[SQLQuery, SQLScope] = {}
@@ -52,6 +54,10 @@ class SelectScope(SQLScope):
     @property
     def from_(self) -> SQLTable | None:
         return self.select.args.get('from')
+
+    @property
+    def joins(self) -> list[Join]:
+        return cast(list[Join], self.select.args.get('joins', []))
 
     @property
     def where(self) -> Expression | None:

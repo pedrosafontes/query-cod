@@ -34,7 +34,7 @@ class SelectTranspiler:
     @staticmethod
     def _transpile_joins(scope: SelectScope, subquery: RAQuery) -> RAQuery:
         left = subquery
-        for join in scope.select.args.get('joins', []):
+        for join in scope.joins:
             left = JoinTranspiler(scope).transpile(join, left)
         return left
 

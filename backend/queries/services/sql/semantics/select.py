@@ -34,7 +34,7 @@ class SelectValidator:
     @staticmethod
     def validate_joins(scope: SelectScope) -> None:
         join_validator = JoinValidator(scope)
-        for join in scope.select.args.get('joins', []):
+        for join in scope.joins:
             join_validator.validate(join)
 
     @staticmethod

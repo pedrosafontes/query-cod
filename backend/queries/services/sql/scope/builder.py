@@ -4,7 +4,6 @@ from queries.services.types import Attributes, RelationalSchema, SQLQuery, flatt
 from sqlglot.expressions import (
     Expression,
     Identifier,
-    Join,
     Select,
     SetOperation,
     Subquery,
@@ -62,9 +61,7 @@ def _process_where(scope: SelectScope) -> None:
 
 
 def _process_joins(scope: SelectScope) -> None:
-    joins: list[Join] = scope.select.args.get('joins', [])
-
-    for join in joins:
+    for join in scope.joins:
         left_cols = scope.tables.get_all_columns()
         scope.joined_left_cols[join] = left_cols
 
