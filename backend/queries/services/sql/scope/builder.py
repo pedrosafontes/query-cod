@@ -67,12 +67,11 @@ def _process_joins(scope: SelectScope) -> None:
     joins: list[Join] = scope.query.args.get('joins', [])
 
     for join in joins:
-        left_schema = scope.tables.get_schema()
-        scope.join_schemas[join] = left_schema
+        left_cols = scope.tables.get_all_columns()
+        scope.joined_left_cols[join] = left_cols
 
         table = join.this
 
-        left_cols = flatten(left_schema)
         right_cols = _process_table(scope, table)
 
         kind = join.method or join.kind
@@ -103,7 +102,7 @@ def _process_table(scope: SelectScope, table: Table | Subquery) -> Attributes:
         case Subquery():
             query = table.this
             child = build_scope(query, scope.db_schema, scope)
-            scope.derived_table_scopes[query] = child
+            scope.tables.derived_table_scopes[table.alias_or_name] = child
 
             attributes = flatten(child.projections.schema)
 

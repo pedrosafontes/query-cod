@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from queries.services.types import RelationalSchema, SQLQuery
-from sqlglot.expressions import Column, Expression, Identifier, Join, Select, SetOperation
+from queries.services.types import Attributes, RelationalSchema, SQLQuery
+from sqlglot.expressions import Column, Expression, Identifier, Join, Select, SetOperation, column
 
 from .group_by import GroupByScope
 from .projections import ProjectionsScope
@@ -25,9 +25,8 @@ class SelectScope(SQLScope):
         self._tables: TablesScope = TablesScope(parent.tables if parent else None)
         self._projections = ProjectionsScope()
         self.group_by = GroupByScope(select.args.get('group', []))
-        self.derived_table_scopes: dict[SQLQuery, SQLScope] = {}
         self.subquery_scopes: dict[SQLQuery, SQLScope] = {}
-        self.join_schemas: dict[Join, RelationalSchema] = {}
+        self.joined_left_cols: dict[Join, Attributes] = {}
 
     @property
     def tables(self) -> TablesScope:
@@ -48,16 +47,15 @@ class SelectScope(SQLScope):
         table_ident: Identifier | None = star.args.get('table')
 
         if table_ident:
-            table_schema = self.tables.get_table_schema(table_ident.this)
-            if not table_schema:
+            table = table_ident.this
+            columns = self.tables.find_columns(table)
+            if columns is None:
                 return None
-            schema = table_schema
+            schema = {table: columns}
         else:
             schema = self.tables.get_schema()
 
-        return [
-            Column(name=col, table=table) for table, cols in schema.items() for col in cols.keys()
-        ]
+        return [column(col, table) for table, cols in schema.items() for col in cols.keys()]
 
 
 class SetOperationScope(SQLScope):
