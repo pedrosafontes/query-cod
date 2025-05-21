@@ -134,6 +134,9 @@ class ExpressionValidator:
 
         # Validate the subquery
         scope = self.scope.subquery_scopes[select]
+        if not isinstance(scope, SelectScope):
+            raise NonScalarExpressionError(subquery)
+
         QueryValidator.validate(scope)
 
         # Check if the subquery returns a scalar: a single column and a single row
@@ -143,7 +146,7 @@ class ExpressionValidator:
         [expr] = scope.projections.expressions
 
         inner: Expression = expr.unalias()  # type: ignore[no-untyped-call]
-        if not is_aggregate(inner) or select.args.get('group'):
+        if not is_aggregate(inner) or scope.is_grouped:
             raise NonScalarExpressionError(subquery)
 
         return self._type_inferrer.infer(inner)

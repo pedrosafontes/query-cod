@@ -3,7 +3,6 @@ from typing import cast
 from queries.services.types import Attributes, RelationalSchema, SQLQuery, flatten
 from sqlglot.expressions import (
     Expression,
-    From,
     Identifier,
     Join,
     Select,
@@ -50,15 +49,13 @@ def _build_select_scope(
 
 
 def _process_from(scope: SelectScope) -> None:
-    from_clause: From | None = scope.select.args.get('from')
-    if from_clause:
-        _process_table(scope, from_clause.this)
+    if scope.from_:
+        _process_table(scope, scope.from_.this)
 
 
 def _process_where(scope: SelectScope) -> None:
-    where: Expression | None = scope.select.args.get('where')
-    if where:
-        for query in where.find_all(Subquery, Select):
+    if scope.where:
+        for query in scope.where.find_all(Subquery, Select):
             if isinstance(query, Subquery):
                 query = query.this
             scope.subquery_scopes[query] = build_scope(query, scope.db_schema, scope)

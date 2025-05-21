@@ -3,6 +3,7 @@ from __future__ import annotations
 from queries.services.types import Attributes, RelationalSchema, SQLQuery
 from sqlglot.expressions import Column, Expression, Identifier, Join, Select, SetOperation, column
 
+from ..types import SQLTable
 from .group_by import GroupByScope
 from .projections import ProjectionsScope
 from .tables import TablesScope
@@ -47,6 +48,26 @@ class SelectScope(SQLScope):
     @property
     def is_grouped(self) -> bool:
         return bool(self.group_by.exprs)
+
+    @property
+    def from_(self) -> SQLTable | None:
+        return self.select.args.get('from')
+
+    @property
+    def where(self) -> Expression | None:
+        return self.select.args.get('where')
+
+    @property
+    def group(self) -> Expression | None:
+        return self.select.args.get('group')
+
+    @property
+    def having(self) -> Expression | None:
+        return self.select.args.get('having')
+
+    @property
+    def order_by(self) -> Expression | None:
+        return self.select.args.get('order')
 
     def expand_star(self, star: Expression) -> list[Column] | None:
         if not star.is_star:

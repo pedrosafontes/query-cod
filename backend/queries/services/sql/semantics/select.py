@@ -3,7 +3,6 @@ from typing import cast
 
 from sqlglot.expressions import (
     Expression,
-    From,
 )
 
 from ..scope import SelectScope
@@ -29,9 +28,8 @@ class SelectValidator:
 
     @staticmethod
     def validate_from(scope: SelectScope) -> None:
-        from_clause: From | None = scope.select.args.get('from')
-        if from_clause:
-            TableValidator(scope).validate(from_clause.this)
+        if scope.from_:
+            TableValidator(scope).validate(scope.from_.this)
 
     @staticmethod
     def validate_joins(scope: SelectScope) -> None:
@@ -41,25 +39,22 @@ class SelectValidator:
 
     @staticmethod
     def validate_where(scope: SelectScope) -> None:
-        where: Expression | None = scope.select.args.get('where')
-        if where:
+        if scope.where:
             ExpressionValidator(scope).validate_boolean(
-                where.this, ValidationContext(in_where=True)
+                scope.where.this, ValidationContext(in_where=True)
             )
 
     @staticmethod
     def validate_group_by(scope: SelectScope) -> None:
-        group = scope.select.args.get('group')
-        if group:
-            for expr in group.expressions:
+        if scope.group:
+            for expr in scope.group.expressions:
                 ExpressionValidator(scope).validate(expr)
 
     @staticmethod
     def validate_having(scope: SelectScope) -> None:
-        having: Expression | None = scope.select.args.get('having')
-        if having:
+        if scope.having:
             ExpressionValidator(scope).validate_boolean(
-                having.this, ValidationContext(in_having=True)
+                scope.having.this, ValidationContext(in_having=True)
             )
 
     @staticmethod
@@ -81,8 +76,7 @@ class SelectValidator:
 
     @staticmethod
     def validate_order_by(scope: SelectScope) -> None:
-        order = scope.select.args.get('order')
-        if order:
+        if scope.order_by:
             order_by_validator = OrderByValidator(scope)
-            for expr in order.expressions:
+            for expr in scope.order_by.expressions:
                 order_by_validator.validate(expr)

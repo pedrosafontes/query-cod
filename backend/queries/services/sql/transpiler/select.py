@@ -40,11 +40,10 @@ class SelectTranspiler:
 
     @staticmethod
     def _transpile_where(scope: SelectScope, subquery: RAQuery) -> RAQuery:
-        where: Expression | None = scope.select.args.get('where')
-        if where:
+        if scope.where:
             return Selection(
                 subquery=subquery,
-                condition=ExpressionTranspiler.transpile(where.this),
+                condition=ExpressionTranspiler.transpile(scope.where.this),
             )
         return subquery
 
@@ -53,15 +52,14 @@ class SelectTranspiler:
         scope: SelectScope, subquery: RAQuery
     ) -> tuple[RAQuery, dict[AggregateFunction, str]]:
         transpiler = GroupByTranspiler()
-        return transpiler.transpile(scope.select, subquery), transpiler.aggregates
+        return transpiler.transpile(scope, subquery), transpiler.aggregates
 
     @staticmethod
     def _transpile_having(
         scope: SelectScope, subquery: RAQuery, aggregates: dict[AggregateFunction, str]
     ) -> RAQuery:
-        having: Expression | None = scope.select.args.get('having')
-        if having:
-            condition: Expression = having.this
+        if scope.having:
+            condition: Expression = scope.having.this
             aggregate_exprs: Iterator[AggregateFunction] = condition.find_all(*aggregate_functions)
             for aggregate in aggregate_exprs:
                 aggregate.replace(column(aggregates[aggregate]))
