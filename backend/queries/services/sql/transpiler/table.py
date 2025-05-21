@@ -2,13 +2,14 @@ from queries.services.ra.parser.ast import RAQuery, Relation
 from sqlglot.expressions import Subquery, Table
 
 from ..scope.query import SelectScope
+from ..types import SQLTable
 
 
 class TableTranspiler:
     def __init__(self, scope: SelectScope) -> None:
         self.scope = scope
 
-    def transpile(self, table: Table | Subquery) -> RAQuery:
+    def transpile(self, table: SQLTable) -> RAQuery:
         from .query import QueryTranspiler
 
         match table:

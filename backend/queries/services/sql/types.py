@@ -27,8 +27,10 @@ from sqlglot.expressions import (
     Or,
     StrPosition,
     Sub,
+    Subquery,
     Substring,
     Sum,
+    Table,
     Trim,
     Upper,
 )
@@ -41,3 +43,4 @@ BooleanExpression = And | Or | Not
 AggregateFunction = Count | Sum | Avg | Min | Max
 aggregate_functions = get_args(AggregateFunction)
 Predicate = Exists | Between | Like | Is | In
+SQLTable = Table | Subquery

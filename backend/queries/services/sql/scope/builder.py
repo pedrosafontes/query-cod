@@ -13,6 +13,7 @@ from sqlglot.expressions import (
 )
 
 from ..inference import TypeInferrer
+from ..types import SQLTable
 from .query import SelectScope, SetOperationScope, SQLScope
 
 
@@ -94,7 +95,7 @@ def _process_select(scope: SelectScope) -> None:
             scope.projections.add(expr, TypeInferrer(scope).infer(expr))
 
 
-def _process_table(scope: SelectScope, table: Table | Subquery) -> Attributes:
+def _process_table(scope: SelectScope, table: SQLTable) -> Attributes:
     match table:
         case Table():
             attributes = scope.db_schema.get(table.name, {}).copy()
