@@ -9,7 +9,8 @@ from .set_operation import SetOperationTranspiler
 
 
 class SQLtoRATranspiler:
-    def transpile(self, query: SQLQuery) -> RAQuery:
+    @staticmethod
+    def transpile(query: SQLQuery) -> RAQuery:
         match query:
             case Select():
                 return SelectTranspiler().transpile(query)

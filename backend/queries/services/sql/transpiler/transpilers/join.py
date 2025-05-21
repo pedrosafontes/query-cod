@@ -14,8 +14,9 @@ from .table import TableTranspiler
 
 
 class JoinTranspiler:
-    def transpile(self, join: SQLJoin, left: RAQuery) -> RAQuery:
-        right = TableTranspiler().transpile(join.this)
+    @staticmethod
+    def transpile(join: SQLJoin, left: RAQuery) -> RAQuery:
+        right = TableTranspiler.transpile(join.this)
 
         kind = join.method or join.args.get('kind', 'INNER')
         using = join.args.get('using')
@@ -40,7 +41,7 @@ class JoinTranspiler:
             return ThetaJoin(
                 left=left,
                 right=right,
-                condition=ExpressionTranspiler().transpile(condition),
+                condition=ExpressionTranspiler.transpile(condition),
             )
 
     # def _validate_using(

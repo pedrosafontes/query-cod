@@ -4,7 +4,8 @@ from sqlglot.expressions import Except, Intersect, SetOperation, Union
 
 
 class SetOperationTranspiler:
-    def transpile(self, set_operation: SetOperation) -> RASetOperation:
+    @staticmethod
+    def transpile(set_operation: SetOperation) -> RASetOperation:
         from .query import SQLtoRATranspiler
 
         operators = {
@@ -15,6 +16,6 @@ class SetOperationTranspiler:
 
         return RASetOperation(
             operator=operators[type(set_operation)],
-            left=SQLtoRATranspiler().transpile(set_operation.left),
-            right=SQLtoRATranspiler().transpile(set_operation.right),
+            left=SQLtoRATranspiler.transpile(set_operation.left),
+            right=SQLtoRATranspiler.transpile(set_operation.right),
         )

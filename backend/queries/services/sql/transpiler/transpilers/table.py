@@ -3,7 +3,8 @@ from sqlglot.expressions import Subquery, Table
 
 
 class TableTranspiler:
-    def transpile(self, table: Table | Subquery) -> RAQuery:
+    @staticmethod
+    def transpile(table: Table | Subquery) -> RAQuery:
         from .query import SQLtoRATranspiler
 
         match table:
