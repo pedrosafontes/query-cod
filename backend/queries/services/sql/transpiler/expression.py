@@ -38,7 +38,7 @@ class ExpressionTranspiler:
     def __init__(self, scope: SelectScope) -> None:
         self.scope = scope
 
-    def transpile(self, expr: Expression) -> BooleanExpression:        
+    def transpile(self, expr: Expression) -> BooleanExpression:
         match expr:
             case Column():
                 return self.transpile_column(expr)
