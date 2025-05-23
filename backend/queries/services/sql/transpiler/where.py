@@ -35,18 +35,19 @@ class WhereTranspiler:
         transpiled_exists = [self._transpile_exists(expr) for expr in exists]
         exists_context_relations = self._all_context_relations(transpiled_exists)
 
-        result = cartesian(
-            [
-                relation
-                for relation in unnest_cartesian_operands(join_query)
-                + context_relations
-                + not_exists_context_relations
-                if relation not in exists_context_relations
-            ]
-        )
+        from_and_context = [
+            relation
+            for relation in unnest_cartesian_operands(join_query)
+            + context_relations
+            + not_exists_context_relations
+            if relation not in exists_context_relations
+        ]
 
+        result = cartesian(from_and_context) if from_and_context else None
         result = self._perform_decorrelation(natural_join, result, transpiled_exists)
         result = self._perform_decorrelation(anti_join, result, transpiled_not_exists)
+
+        assert result
 
         if subquery_free:
             result = result.select(self.expr_transpiler.transpile(subquery_free))
@@ -95,11 +96,11 @@ class WhereTranspiler:
 
     def _perform_decorrelation(
         self,
-        join: Callable[[list[RAQuery]], RAQuery | None],
+        join: Callable[[list[RAQuery]], RAQuery],
         left: RAQuery | None,
         transpiled_exists: list[tuple[RAQuery, list[RAQuery], list[Attribute]]],
     ) -> RAQuery | None:
-        return join(
-            ([left] if left else [])
-            + [subquery.project(parameters) for subquery, _, parameters in transpiled_exists]
-        )
+        relations = ([left] if left else []) + [
+            subquery.project(parameters) for subquery, _, parameters in transpiled_exists
+        ]
+        return join(relations) if relations else None
