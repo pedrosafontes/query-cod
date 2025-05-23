@@ -17,7 +17,6 @@ from sqlglot.expressions import (
     Identifier,
     Literal,
     Select,
-    Subquery,
     and_,
     column,
     not_,
@@ -191,23 +190,26 @@ class RAtoSQLTranspiler:
                     right = self.transpile(join.right)
                     return left.join(right, join_type='NATURAL', join_alias='r')
 
-            case JoinOperator.SEMI:
+            case JoinOperator.SEMI | JoinOperator.ANTI:
                 right, right_alias = self._transpile_relation(join.right, 'r')
                 common = self._common_attrs(join.left, join.right)
 
-                return left.where(
-                    Exists(
-                        this=right.where(
-                            *[
-                                EQ(
-                                    this=column(name, table=left_alias),
-                                    expression=column(name, table=right_alias),
-                                )
-                                for name in common
-                            ]
-                        )
+                condition: Expression = Exists(
+                    this=right.where(
+                        *[
+                            EQ(
+                                this=column(name, table=left_alias),
+                                expression=column(name, table=right_alias),
+                            )
+                            for name in common
+                        ]
                     )
                 )
+
+                if join.operator == JoinOperator.ANTI:
+                    condition = not_(condition)
+
+                return left.where(condition)
 
     def _transpile_ThetaJoin(self, join: ThetaJoin) -> Select:  # noqa: N802
         left, left_alias = self._transpile_relation(join.left, 'l')
@@ -277,9 +279,7 @@ class RAtoSQLTranspiler:
 
     def _transpile_select(self, query: RAQuery) -> Select:
         sql_query = self.transpile(query)
-        if isinstance(sql_query, Subquery):
-            return sql_query
-        elif not isinstance(sql_query, Select):
+        if not isinstance(sql_query, Select):
             sql_query = subquery(sql_query, 'set_op').select('*')
 
         return sql_query.distinct(distinct=self._distinct)
