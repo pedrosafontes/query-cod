@@ -19,8 +19,9 @@ class WhereTranspiler:
     def __init__(self, scope: SelectScope):
         self.scope = scope
         self.expr_transpiler = ExpressionTranspiler(scope)
+        self.parameters: list[Attribute] = []
 
-    def transpile(self, join_query: RAQuery) -> tuple[RAQuery, list[Attribute]]:
+    def transpile(self, join_query: RAQuery) -> RAQuery:
         assert self.scope.where
 
         subquery_free, exists, not_exists = self._split_condition(self.scope.where.this)
@@ -28,6 +29,7 @@ class WhereTranspiler:
         context_relations, parameters = (
             ContextRelationInferrer(self.scope).infer(subquery_free) if subquery_free else ([], [])
         )
+        self.parameters = parameters
 
         transpiled_not_exists = [self._transpile_exists(expr) for expr in not_exists]
         not_exists_context_relations = self._all_context_relations(transpiled_not_exists)
@@ -52,7 +54,7 @@ class WhereTranspiler:
         if subquery_free:
             result = result.select(self.expr_transpiler.transpile(subquery_free))
 
-        return result, parameters
+        return result
 
     def _split_condition(
         self, condition: Expression

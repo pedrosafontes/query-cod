@@ -47,7 +47,8 @@ class SelectTranspiler:
     @staticmethod
     def _transpile_where(scope: SelectScope, subquery: RAQuery) -> tuple[RAQuery, list[Attribute]]:
         if scope.where:
-            return WhereTranspiler(scope).transpile(subquery)
+            where_transpiler = WhereTranspiler(scope)
+            return where_transpiler.transpile(subquery), where_transpiler.parameters
         else:
             return subquery, []
 
