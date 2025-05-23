@@ -109,15 +109,13 @@ def attribute(attr: str | Attribute) -> Attribute:
 
 class RAQuery(ASTNode):
     def project(self, attributes: Sequence[str | Attribute], append: bool = False) -> 'RAQuery':
-        all_attributes = []
+        projections: list[Attribute] = [attribute(attr) for attr in attributes]
 
         if append and isinstance(self, Projection):
-            all_attributes = self.attributes
-
-        all_attributes.extend(attributes)
+            projections = projections + self.attributes
 
         return Projection(
-            [attribute(attr) for attr in all_attributes],
+            projections,
             self.subquery if isinstance(self, Projection) else self,
         )
 
@@ -163,23 +161,23 @@ class RAQuery(ASTNode):
         return TopN(limit, attribute(attr), self)
 
 
-def cartesian(relations: list[RAQuery]) -> RAQuery | None:
+def cartesian(relations: list[RAQuery]) -> RAQuery:
     return _combine_relations(relations, lambda left, right: left.cartesian(right))
 
 
-def natural_join(relations: list[RAQuery]) -> RAQuery | None:
+def natural_join(relations: list[RAQuery]) -> RAQuery:
     return _combine_relations(relations, lambda left, right: left.natural_join(right))
 
 
-def anti_join(relations: list[RAQuery]) -> RAQuery | None:
+def anti_join(relations: list[RAQuery]) -> RAQuery:
     return _combine_relations(relations, lambda left, right: left.anti_join(right))
 
 
 def _combine_relations(
     relations: list[RAQuery], operator: Callable[[RAQuery, RAQuery], RAQuery]
-) -> RAQuery | None:
+) -> RAQuery:
     if not relations:
-        return None
+        raise ValueError('No relations provided for combination')
     if len(relations) == 1:
         return relations[0]
     result = relations[0]
