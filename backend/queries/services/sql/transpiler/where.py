@@ -22,29 +22,21 @@ class WhereTranspiler:
 
         subquery_free, exists, not_exists = self._split_condition(self.scope.where.this)
 
-        subquery_free_context_relations: list[RAQuery] = []
-        subquery_free_parameters: list[Attribute] = []
-        if subquery_free:
-            (
-                subquery_free_context_relations,
-                subquery_free_parameters,
-            ) = ContextRelationInferrer(self.scope).infer(subquery_free)
+        context_relations, parameters = (
+            ContextRelationInferrer(self.scope).infer(subquery_free) if subquery_free else ([], [])
+        )
 
         transpiled_not_exists = [self._transpile_exists(expr) for expr in not_exists]
-        not_exists_context_relations = [
-            relation for _, relations, _ in transpiled_not_exists for relation in relations
-        ]
+        not_exists_context_relations = self._all_context_relations(transpiled_not_exists)
 
         transpiled_exists = [self._transpile_exists(expr) for expr in exists]
-        exists_context_relations = [
-            relation for _, relations, _ in transpiled_exists for relation in relations
-        ]
+        exists_context_relations = self._all_context_relations(transpiled_exists)
 
         output_relation = cartesian(
             [
                 relation
                 for relation in unnest_cartesian_operands(join_query)
-                + subquery_free_context_relations
+                + context_relations
                 + not_exists_context_relations
                 if relation not in exists_context_relations
             ]
@@ -58,7 +50,7 @@ class WhereTranspiler:
         if subquery_free:
             output_relation = output_relation.select(self.expr_transpiler.transpile(subquery_free))
 
-        return output_relation, subquery_free_parameters
+        return output_relation, parameters
 
     def _split_condition(
         self, condition: Expression
@@ -75,12 +67,12 @@ class WhereTranspiler:
         not_exists = [
             p.this for p in predicates if isinstance(p, Not) and isinstance(p.this, Exists)
         ]
-        subquery_free = [p for p in predicates if p not in exists and p not in not_exists]
+        other = [p for p in predicates if p not in exists and p not in not_exists]
 
         # Combine subquery-free predicates into a single AND expression
-        combined = and_(*subquery_free) if subquery_free else None
+        subquery_free = and_(*other) if other else None
 
-        return combined, exists, not_exists
+        return subquery_free, exists, not_exists
 
     def _transpile_exists(self, exists: Exists) -> tuple[RAQuery, list[RAQuery], list[Attribute]]:
         from .query import QueryTranspiler
@@ -90,3 +82,12 @@ class WhereTranspiler:
         context_relations, parameters = ContextRelationInferrer(scope).infer(subquery)
 
         return QueryTranspiler.transpile(scope), context_relations, parameters
+
+    def _all_context_relations(
+        self, transpiled_exists: list[tuple[RAQuery, list[RAQuery], list[Attribute]]]
+    ) -> list[RAQuery]:
+        return [
+            relation
+            for _, context_relations, _ in transpiled_exists
+            for relation in context_relations
+        ]
