@@ -12,7 +12,7 @@ from queries.services.types import (
     merge_common_column,
 )
 from ra_sql_visualisation.types import DataType
-from sqlglot.expressions import Column, select
+from sqlglot.expressions import Column, Table, select, table_
 
 from ..semantics.errors import (
     AmbiguousColumnReferenceError,
@@ -26,7 +26,8 @@ if TYPE_CHECKING:
 
 @dataclass
 class Source:
-    scope: SQLScope
+    table: Table | SQLScope
+    name: str | None
     attributes: Attributes
 
 
@@ -37,8 +38,12 @@ class TablesScope:
         self._joined_schema: RelationalSchema = {}
         self._tables_schemas: RelationalSchema = {}
         self.derived_table_scopes: dict[str, DerivedTableScope] = {}
+        self._aliases: dict[str, str] = {}
 
     def add(self, table: SQLTable, attributes: Attributes) -> None:
+        if table.alias:
+            self._aliases[table.alias] = table.name
+
         name = table.alias_or_name
         self._tables_schemas[name] = attributes.copy()
         self._joined_schema[name] = attributes.copy()
@@ -131,27 +136,28 @@ class TablesScope:
     def get_columns(self, table: str) -> Attributes:
         return cast(Attributes, self.find_columns(table))
 
-    def _get_source(self, table: str | None) -> Source:
+    def _get_source(self, name_or_alias: str | None) -> Source:
         from ..scope.builder import build_scope
 
-        if table:
-            query = select('*').from_(table)
+        if name_or_alias:
+            aliased = self._aliases.get(name_or_alias)
+            name = aliased or name_or_alias
+            alias = name_or_alias if aliased else None
             return Source(
-                scope=self.derived_table_scopes[table]
-                if table in self.derived_table_scopes
-                else build_scope(
-                    query,
-                    self.select_scope.db_schema,
-                ),
-                attributes=self.get_schema()[table],
+                table=self.derived_table_scopes[name_or_alias]
+                if name_or_alias in self.derived_table_scopes
+                else table_(table=name, alias=alias),
+                name=name_or_alias,
+                attributes=self.get_schema()[name_or_alias],
             )
         else:
             query = select('*').from_(self.select_scope.from_.this)
             query.set('joins', self.select_scope.joins)
             return Source(
-                scope=build_scope(
+                table=build_scope(
                     query,
                     self.select_scope.db_schema,
                 ),
+                name=None,
                 attributes=self.get_all_columns(),
             )
