@@ -18,15 +18,18 @@ class JoinTranspiler:
     def transpile(self, join: SQLJoin, left: RAQuery) -> RAQuery:
         right = self.table_transpiler.transpile(join.this)
 
+        kind = join.method or join.args.get('kind', 'INNER')
         using = join.args.get('using')
         condition: Expression | None = join.args.get('on')
 
         if using:
             raise NotImplementedError('USING clause is not supported yet')
+        elif kind == 'NATURAL':
+            return left.natural_join(right)
         elif condition:
             return left.theta_join(right, self.expr_transpiler.transpile(condition))
         else:
-            return left.natural_join(right)
+            return left.cartesian(right)
 
     # def _validate_using(
     #     self, using: list[Identifier], left: Attributes, right: Attributes, join: Join
