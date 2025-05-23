@@ -108,7 +108,7 @@ class SetOperation(RAQuery):
     right: RAQuery
 
     def __str__(self) -> str:
-        return f'({self.left} {self.operator} {self.right})'
+        return f'({self.left}\n{self.operator}\n{self.right})'
 
 
 class JoinOperator(Enum):
@@ -126,7 +126,7 @@ class Join(RAQuery):
     right: RAQuery
 
     def __str__(self) -> str:
-        return f'({self.left} {self.operator} {self.right})'
+        return f'({self.left}\n{self.operator}\n{self.right})'
 
 
 @dataclass
@@ -154,7 +154,7 @@ class Projection(RAQuery):
     subquery: RAQuery
 
     def __str__(self) -> str:
-        return f'PROJECT ({", ".join(str(attr) for attr in self.attributes)}) (\n{self.subquery}\n)'
+        return f'PROJECT ({", ".join(str(attr) for attr in self.attributes)}) (\n{indent(str(self.subquery))}\n)'
 
 
 @dataclass
@@ -163,7 +163,7 @@ class Selection(RAQuery):
     subquery: RAQuery
 
     def __str__(self) -> str:
-        return f'SELECT ({self.condition}) (\n{self.subquery}\n)'
+        return f'SELECT ({self.condition}) (\n{indent(str(self.subquery))}\n)'
 
 
 class AggregationFunction(Enum):
@@ -196,7 +196,7 @@ class GroupedAggregation(RAQuery):
     def __str__(self) -> str:
         group_by = ', '.join(str(attr) for attr in self.group_by)
         aggregations = ', '.join(str(agg) for agg in self.aggregations)
-        return f'GROUP (({group_by}), ({aggregations})) (\n{self.subquery}\n)'
+        return f'GROUP (({group_by}), ({aggregations})) (\n{indent(str(self.subquery))}\n)'
 
 
 @dataclass
@@ -206,7 +206,7 @@ class TopN(RAQuery):
     subquery: RAQuery
 
     def __str__(self) -> str:
-        return f'T ({self.limit}, {self.attribute}) (\n{self.subquery}\n)'
+        return f'T ({self.limit}, {self.attribute}) (\n{indent(str(self.subquery))}\n)'
 
 
 @dataclass
@@ -216,3 +216,7 @@ class Rename(RAQuery):
 
     def __str__(self) -> str:
         return f'RENAME ({self.alias}) {self.subquery}'
+
+
+def indent(text: str) -> str:
+    return '\n'.join('    ' + line for line in text.split('\n'))
