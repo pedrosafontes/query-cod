@@ -135,6 +135,9 @@ class RAQuery(ASTNode):
     def semi_join(self, other: 'RAQuery') -> 'Join':
         return Join(JoinOperator.SEMI, self, other)
 
+    def anti_join(self, other: 'RAQuery') -> 'Join':
+        return Join(JoinOperator.ANTI, self, other)
+
     def theta_join(self, other: 'RAQuery', condition: BooleanExpression) -> 'ThetaJoin':
         return ThetaJoin(self, other, condition)
 
@@ -159,6 +162,10 @@ def cartesian(relations: list[RAQuery]) -> RAQuery | None:
 
 def natural_join(relations: list[RAQuery]) -> RAQuery | None:
     return _combine_relations(relations, lambda left, right: left.natural_join(right))
+
+
+def anti_join(relations: list[RAQuery]) -> RAQuery | None:
+    return _combine_relations(relations, lambda left, right: left.anti_join(right))
 
 
 def _combine_relations(
@@ -213,6 +220,7 @@ class SetOperation(RAQuery):
 class JoinOperator(Enum):
     NATURAL = 'NATURAL'
     SEMI = 'SEMI'
+    ANTI = 'ANTI'
 
     def __str__(self) -> str:
         return f'{self.value} JOIN'

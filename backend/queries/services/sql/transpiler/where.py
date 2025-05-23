@@ -1,6 +1,9 @@
+from collections.abc import Callable
+
 from queries.services.ra.parser.ast import (
     Attribute,
     RAQuery,
+    anti_join,
     cartesian,
     natural_join,
     unnest_cartesian_operands,
@@ -32,7 +35,7 @@ class WhereTranspiler:
         transpiled_exists = [self._transpile_exists(expr) for expr in exists]
         exists_context_relations = self._all_context_relations(transpiled_exists)
 
-        output_relation = cartesian(
+        result = cartesian(
             [
                 relation
                 for relation in unnest_cartesian_operands(join_query)
@@ -42,15 +45,13 @@ class WhereTranspiler:
             ]
         )
 
-        output_relation = natural_join(
-            ([output_relation] if output_relation else [])
-            + [subquery.project(parameters) for subquery, _, parameters in transpiled_exists]
-        )
+        result = self._perform_decorrelation(natural_join, result, transpiled_exists)
+        result = self._perform_decorrelation(anti_join, result, transpiled_exists)
 
         if subquery_free:
-            output_relation = output_relation.select(self.expr_transpiler.transpile(subquery_free))
+            result = result.select(self.expr_transpiler.transpile(subquery_free))
 
-        return output_relation, parameters
+        return result, parameters
 
     def _split_condition(
         self, condition: Expression
@@ -91,3 +92,14 @@ class WhereTranspiler:
             for _, context_relations, _ in transpiled_exists
             for relation in context_relations
         ]
+
+    def _perform_decorrelation(
+        self,
+        join: Callable[[list[RAQuery]], RAQuery | None],
+        left: RAQuery | None,
+        transpiled_exists: list[tuple[RAQuery, list[RAQuery], list[Attribute]]],
+    ) -> RAQuery | None:
+        return join(
+            ([left] if left else [])
+            + [subquery.project(parameters) for subquery, _, parameters in transpiled_exists]
+        )
