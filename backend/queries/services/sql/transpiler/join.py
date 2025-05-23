@@ -35,12 +35,6 @@ class JoinTranspiler:
                 left=left,
                 right=right,
             )
-        elif kind == 'CROSS':
-            return SetOperation(
-                operator=SetOperator.CARTESIAN,
-                left=left,
-                right=right,
-            )
         elif condition:
             return ThetaJoin(
                 left=left,
@@ -48,7 +42,11 @@ class JoinTranspiler:
                 condition=self.expr_transpiler.transpile(condition),
             )
         else:
-            raise ValueError('Invalid JOIN clause')
+            return SetOperation(
+                operator=SetOperator.CARTESIAN,
+                left=left,
+                right=right,
+            )
 
     # def _validate_using(
     #     self, using: list[Identifier], left: Attributes, right: Attributes, join: Join
