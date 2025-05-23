@@ -11,9 +11,10 @@ from queries.services.sql.types import AggregateFunction, aggregate_functions
 from sqlglot.expressions import Alias, Column, Expression, Star, column
 
 from .expression import ExpressionTranspiler
-from .from_ import FromTranspiler
 from .group_by import GroupByTranspiler
 from .join import JoinTranspiler
+from .table import TableTranspiler
+from .where import WhereTranspiler
 
 
 class SelectTranspiler:
@@ -21,15 +22,20 @@ class SelectTranspiler:
     def transpile(scope: SelectScope) -> RAQuery:
         from_query = SelectTranspiler._transpile_from(scope)
         join_query = SelectTranspiler._transpile_joins(scope, from_query)
-        where_query = SelectTranspiler._transpile_where(scope, join_query)
+        where_query, parameters = SelectTranspiler._transpile_where(scope, join_query)
         group_by_query, aggregates = SelectTranspiler._transpile_group_by(scope, where_query)
         having_query = SelectTranspiler._transpile_having(scope, group_by_query, aggregates)
-        projection_query = SelectTranspiler._transpile_projection(scope, having_query, aggregates)
+        projection_query = SelectTranspiler._transpile_projection(
+            scope, having_query, aggregates, parameters
+        )
         return projection_query
 
     @staticmethod
     def _transpile_from(scope: SelectScope) -> RAQuery:
-        return FromTranspiler.transpile(scope)
+        if not scope.from_:
+            raise ValueError('FROM clause is required in SELECT query')
+
+        return TableTranspiler(scope).transpile(scope.from_.this)
 
     @staticmethod
     def _transpile_joins(scope: SelectScope, subquery: RAQuery) -> RAQuery:
@@ -39,13 +45,11 @@ class SelectTranspiler:
         return left
 
     @staticmethod
-    def _transpile_where(scope: SelectScope, subquery: RAQuery) -> RAQuery:
+    def _transpile_where(scope: SelectScope, subquery: RAQuery) -> tuple[RAQuery, list[Attribute]]:
         if scope.where:
-            return Selection(
-                subquery=subquery,
-                condition=ExpressionTranspiler(scope).transpile(scope.where.this),
-            )
-        return subquery
+            return WhereTranspiler(scope).transpile(subquery)
+        else:
+            return subquery, []
 
     @staticmethod
     def _transpile_group_by(
@@ -71,9 +75,12 @@ class SelectTranspiler:
 
     @staticmethod
     def _transpile_projection(
-        scope: SelectScope, subquery: RAQuery, aggregates: dict[AggregateFunction, str]
+        scope: SelectScope,
+        subquery: RAQuery,
+        aggregates: dict[AggregateFunction, str],
+        parameters: list[Attribute],
     ) -> RAQuery:
-        attributes: list[Attribute] = []
+        attributes: list[Attribute] = parameters
         for expr in scope.select.expressions:
             match expr:
                 case Column():
