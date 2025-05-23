@@ -15,14 +15,12 @@ from .ast import (
     Division,
     GroupedAggregation,
     Join,
-    JoinOperator,
     NotExpression,
     Projection,
     RAQuery,
     Relation,
     Selection,
     SetOperation,
-    SetOperator,
     ThetaJoin,
     TopN,
 )
@@ -56,23 +54,24 @@ class RATransformer(Transformer[Relation, RAQuery]):
 
     def projection(self, args: tuple[list[Attribute], RAQuery]) -> Projection:
         attrs, query = args
-        return Projection(attributes=attrs, subquery=query)
+        return query.project(attrs, optimise=False)
 
     def selection(self, args: tuple[BooleanExpression, RAQuery]) -> Selection:
         condition, query = args
-        return Selection(condition=condition, subquery=query)
+        return query.select(condition)
 
     def grouped_aggregation(
         self, args: tuple[list[Attribute], list[Aggregation], RAQuery]
     ) -> GroupedAggregation:
         group_by, aggregations, query = args
-        return GroupedAggregation(group_by=group_by, aggregations=aggregations, subquery=query)
+        return query.grouped_aggregation(group_by, aggregations)
 
     def aggregation(self, args: tuple[Attribute, AggregationFunction, Attribute]) -> Aggregation:
+        input_, aggregation_function, output = args
         return Aggregation(
-            input=args[0],
-            aggregation_function=args[1],
-            output=args[2].name,
+            input=input_,
+            aggregation_function=aggregation_function,
+            output=output.name,
         )
 
     def count(self, _: tuple[()]) -> AggregationFunction:
@@ -92,32 +91,39 @@ class RATransformer(Transformer[Relation, RAQuery]):
 
     def topn(self, args: tuple[Token, Attribute, RAQuery]) -> TopN:
         limit, attr, query = args
-        return TopN(limit=int(limit), attribute=attr, subquery=query)
+        return query.top_n(int(limit), attr)
 
     def union(self, args: tuple[RAQuery, RAQuery]) -> SetOperation:
-        return SetOperation(operator=SetOperator.UNION, left=args[0], right=args[1])
+        left, right = args
+        return left.union(right)
 
     def difference(self, args: tuple[RAQuery, RAQuery]) -> SetOperation:
-        return SetOperation(operator=SetOperator.DIFFERENCE, left=args[0], right=args[1])
+        left, right = args
+        return left.difference(right)
 
     def intersection(self, args: tuple[RAQuery, RAQuery]) -> SetOperation:
-        return SetOperation(operator=SetOperator.INTERSECT, left=args[0], right=args[1])
+        left, right = args
+        return left.intersect(right)
 
     def cartesian(self, args: tuple[RAQuery, RAQuery]) -> SetOperation:
-        return SetOperation(operator=SetOperator.CARTESIAN, left=args[0], right=args[1])
+        left, right = args
+        return left.cartesian(right)
 
     def natural_join(self, args: tuple[RAQuery, RAQuery]) -> Join:
-        return Join(operator=JoinOperator.NATURAL, left=args[0], right=args[1])
+        left, right = args
+        return left.natural_join(right)
 
     def semi_join(self, args: tuple[RAQuery, RAQuery]) -> Join:
-        return Join(operator=JoinOperator.SEMI, left=args[0], right=args[1])
+        left, right = args
+        return left.semi_join(right)
 
     def theta_join(self, args: tuple[RAQuery, BooleanExpression, RAQuery]) -> ThetaJoin:
         left, condition, right = args
-        return ThetaJoin(left=left, right=right, condition=condition)
+        return left.theta_join(right, condition)
 
     def division(self, args: tuple[RAQuery, RAQuery]) -> Division:
-        return Division(dividend=args[0], divisor=args[1])
+        dividend, divisor = args
+        return dividend.divide(divisor)
 
     def and_(self, args: tuple[BooleanExpression, BooleanExpression]) -> BinaryBooleanExpression:
         left, right = args
