@@ -108,15 +108,17 @@ def attribute(attr: str | Attribute) -> Attribute:
 
 
 class RAQuery(ASTNode):
-    def project(self, attributes: Sequence[str | Attribute], append: bool = False) -> 'RAQuery':
+    def project(
+        self, attributes: Sequence[str | Attribute], append: bool = False, optimise: bool = True
+    ) -> 'Projection':
         projections: list[Attribute] = [attribute(attr) for attr in attributes]
 
-        if append and isinstance(self, Projection):
+        if append and optimise and isinstance(self, Projection):
             projections = projections + self.attributes
 
         return Projection(
             projections,
-            self.subquery if isinstance(self, Projection) else self,
+            self.subquery if optimise and isinstance(self, Projection) else self,
         )
 
     def select(self, condition: BooleanExpression) -> 'Selection':
