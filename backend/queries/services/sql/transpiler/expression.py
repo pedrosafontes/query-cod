@@ -9,22 +9,8 @@ from queries.services.ra.parser.ast import (
     NotExpression,
 )
 from queries.services.sql.scope.query import SelectScope
-from sqlglot.expressions import (
-    EQ,
-    GT,
-    GTE,
-    LT,
-    LTE,
-    NEQ,
-    And,
-    Boolean,
-    Column,
-    Expression,
-    Literal,
-    Not,
-    Or,
-    Paren,
-)
+from sqlglot import Expression
+from sqlglot import expressions as exp
 
 from ..types import (
     BooleanExpression as SQLBooleanExpression,
@@ -40,10 +26,10 @@ class ExpressionTranspiler:
 
     def transpile(self, expr: Expression) -> BooleanExpression:
         match expr:
-            case Column():
+            case exp.Column():
                 return self.transpile_column(expr)
 
-            case Paren():
+            case exp.Paren():
                 return self.transpile(expr.this)
 
             case comp if isinstance(comp, SQLComparison):
@@ -55,21 +41,21 @@ class ExpressionTranspiler:
             case _:
                 raise NotImplementedError(f'Expression {type(expr)} not supported')
 
-    def transpile_column(self, expr: Column) -> Attribute:
+    def transpile_column(self, expr: exp.Column) -> Attribute:
         return Attribute(name=str(expr.this), relation=expr.table or None)
 
     def _transpile_value(self, value: Expression) -> ComparisonValue:
         match value:
-            case Column():
+            case exp.Column():
                 return self.transpile_column(value)
-            case Literal():
+            case exp.Literal():
                 if value.is_string:
                     return str(value.this)
                 elif value.is_number:
                     return float(value.this)
                 else:
                     raise NotImplementedError(f'Literal type {type(value)} not supported')
-            case Boolean():
+            case exp.Boolean():
                 return bool(value.this)
             case _:
                 raise NotImplementedError(f'Value {type(value)} not supported')
@@ -77,17 +63,17 @@ class ExpressionTranspiler:
     def _transpile_comparison(self, comp: SQLComparison) -> Comparison:
         operator: ComparisonOperator
         match comp:
-            case EQ():
+            case exp.EQ():
                 operator = ComparisonOperator.EQUAL
-            case NEQ():
+            case exp.NEQ():
                 operator = ComparisonOperator.NOT_EQUAL
-            case GT():
+            case exp.GT():
                 operator = ComparisonOperator.GREATER_THAN
-            case GTE():
+            case exp.GTE():
                 operator = ComparisonOperator.GREATER_THAN_EQUAL
-            case LT():
+            case exp.LT():
                 operator = ComparisonOperator.LESS_THAN
-            case LTE():
+            case exp.LTE():
                 operator = ComparisonOperator.LESS_THAN_EQUAL
         return Comparison(
             operator=operator,
@@ -97,21 +83,21 @@ class ExpressionTranspiler:
 
     def _transpile_boolean_expr(self, expr: SQLBooleanExpression) -> BooleanExpression:
         match expr:
-            case And():
+            case exp.And():
                 return BinaryBooleanExpression(
                     operator=BinaryBooleanOperator.AND,
                     left=self.transpile(expr.left),
                     right=self.transpile(expr.right),
                 )
 
-            case Or():
+            case exp.Or():
                 return BinaryBooleanExpression(
                     operator=BinaryBooleanOperator.OR,
                     left=self.transpile(expr.left),
                     right=self.transpile(expr.right),
                 )
 
-            case Not():
+            case exp.Not():
                 return NotExpression(
                     expression=self.transpile(expr.this),
                 )
