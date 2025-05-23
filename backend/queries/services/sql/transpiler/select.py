@@ -21,7 +21,9 @@ class SelectTranspiler:
         from_query = SelectTranspiler._transpile_from(scope)
         join_query = SelectTranspiler._transpile_joins(scope, from_query)
         where_query, parameters = SelectTranspiler._transpile_where(scope, join_query)
-        group_by_query, aggregates = SelectTranspiler._transpile_group_by(scope, where_query)
+        group_by_query, aggregates = SelectTranspiler._transpile_group_by(
+            scope, where_query, parameters
+        )
         having_query = SelectTranspiler._transpile_having(scope, group_by_query, aggregates)
         projection_query = SelectTranspiler._transpile_projection(
             scope, having_query, aggregates, parameters
@@ -51,10 +53,10 @@ class SelectTranspiler:
 
     @staticmethod
     def _transpile_group_by(
-        scope: SelectScope, subquery: RAQuery
+        scope: SelectScope, subquery: RAQuery, parameters: list[Attribute]
     ) -> tuple[RAQuery, dict[AggregateFunction, str]]:
         transpiler = GroupByTranspiler(scope)
-        return transpiler.transpile(subquery), transpiler.aggregates
+        return transpiler.transpile(subquery, parameters), transpiler.aggregates
 
     @staticmethod
     def _transpile_having(

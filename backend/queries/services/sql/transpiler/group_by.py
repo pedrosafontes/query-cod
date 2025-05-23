@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from queries.services.ra.parser.ast import Aggregation, RAQuery
+from queries.services.ra.parser.ast import Aggregation, Attribute, RAQuery
 from sqlglot.expressions import Column
 
 from ..scope.query import SelectScope
@@ -16,7 +16,7 @@ class GroupByTranspiler:
         self._alias_counts: dict[str, int] = defaultdict(int)
         self.aggregates: dict[AggregateFunction, str] = {}
 
-    def transpile(self, subquery: RAQuery) -> RAQuery:
+    def transpile(self, subquery: RAQuery, parameters: list[Attribute]) -> RAQuery:
         group_by = []
         if self.scope.group:
             for expr in self.scope.group.expressions:
@@ -34,7 +34,7 @@ class GroupByTranspiler:
         ]
 
         if aggregations:
-            return subquery.grouped_aggregation(group_by, aggregations)
+            return subquery.grouped_aggregation(parameters + group_by, aggregations)
         else:
             return subquery
 
