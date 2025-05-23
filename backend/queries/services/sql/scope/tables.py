@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, TypeVar, cast
 
 from queries.services.types import (
@@ -11,7 +12,7 @@ from queries.services.types import (
     merge_common_column,
 )
 from ra_sql_visualisation.types import DataType
-from sqlglot.expressions import Column
+from sqlglot.expressions import Column, select
 
 from ..semantics.errors import (
     AmbiguousColumnReferenceError,
@@ -20,7 +21,13 @@ from ..types import SQLTable
 
 
 if TYPE_CHECKING:
-    from .query import DerivedTableScope, SelectScope
+    from .query import DerivedTableScope, SelectScope, SQLScope
+
+
+@dataclass
+class Source:
+    scope: SQLScope
+    attributes: Attributes
 
 
 class TablesScope:
@@ -49,6 +56,9 @@ class TablesScope:
         return self._resolve_column(
             column, lambda scope, table, column: scope._joined_schema[table][column.name]
         )
+
+    def find_column_source(self, column: Column) -> Source | None:
+        return self._resolve_column(column, lambda scope, table, column: scope._get_source(table))
 
     def can_resolve(self, column: Column) -> bool:
         return (
@@ -120,3 +130,28 @@ class TablesScope:
 
     def get_columns(self, table: str) -> Attributes:
         return cast(Attributes, self.find_columns(table))
+
+    def _get_source(self, table: str | None) -> Source:
+        from ..scope.builder import build_scope
+
+        if table:
+            query = select('*').from_(table)
+            return Source(
+                scope=self.derived_table_scopes[table]
+                if table in self.derived_table_scopes
+                else build_scope(
+                    query,
+                    self.select_scope.db_schema,
+                ),
+                attributes=self.get_schema()[table],
+            )
+        else:
+            query = select('*').from_(self.select_scope.from_.this)
+            query.set('joins', self.select_scope.joins)
+            return Source(
+                scope=build_scope(
+                    query,
+                    self.select_scope.db_schema,
+                ),
+                attributes=self.get_all_columns(),
+            )
