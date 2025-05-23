@@ -17,6 +17,7 @@ from sqlglot.expressions import (
     Identifier,
     Literal,
     Select,
+    Subquery,
     and_,
     column,
     not_,
@@ -42,6 +43,7 @@ from ..parser.ast import (
     Projection,
     RAQuery,
     Relation,
+    Rename,
     Selection,
     SetOperation,
     SetOperator,
@@ -258,18 +260,26 @@ class RAtoSQLTranspiler:
         query = self._transpile_select(top_n.subquery)
         return query.limit(top_n.limit).order_by(self._transpile_attribute(top_n.attribute).desc())
 
+    def _transpile_Rename(self, rename: Rename) -> Select:  # noqa: N802
+        query = self._transpile_select(rename.subquery)
+        return subquery(query, rename.alias).select('*')
+
     def _transpile_relation(self, relation: RAQuery, alias: str) -> tuple[Select, str]:
         select = self._transpile_select(relation)
         if isinstance(relation, Relation):
             # relation is a base table
             return select, relation.name
+        elif isinstance(relation, Rename):
+            return select, relation.alias
         else:
             # relation is a derived relation; therefore, it needs to be aliased
             return subquery(select, alias).select('*').distinct(distinct=self._distinct), alias
 
     def _transpile_select(self, query: RAQuery) -> Select:
         sql_query = self.transpile(query)
-        if not isinstance(sql_query, Select):
+        if isinstance(sql_query, Subquery):
+            return sql_query
+        elif not isinstance(sql_query, Select):
             sql_query = subquery(sql_query, 'set_op').select('*')
 
         return sql_query.distinct(distinct=self._distinct)
