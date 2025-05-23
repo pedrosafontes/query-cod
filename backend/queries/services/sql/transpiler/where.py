@@ -1,17 +1,15 @@
 from queries.services.ra.parser.ast import (
     Attribute,
     RAQuery,
-    SetOperation,
-    SetOperator,
     cartesian,
     natural_join,
+    unnest_cartesian_operands,
 )
-from sqlglot.expressions import And, Column, Exists, Expression, Not, Table, and_
+from sqlglot.expressions import And, Exists, Expression, Not, and_
 
-from ..scope.query import SelectScope, SQLScope
-from ..scope.tables import Source
+from ..scope.query import SelectScope
+from .context import ContextRelationInferrer
 from .expression import ExpressionTranspiler
-from .table import TableTranspiler
 
 
 class WhereTranspiler:
@@ -30,7 +28,7 @@ class WhereTranspiler:
             (
                 subquery_free_context_relations,
                 subquery_free_parameters,
-            ) = WhereTranspiler._get_context_relations(self.scope, subquery_free)
+            ) = ContextRelationInferrer(self.scope).infer(subquery_free)
 
         transpiled_not_exists = [self._transpile_exists(expr) for expr in not_exists]
         not_exists_context_relations = [
@@ -42,17 +40,10 @@ class WhereTranspiler:
             relation for _, relations, _ in transpiled_exists for relation in relations
         ]
 
-        def extract_relations(query: RAQuery) -> list[RAQuery]:
-            match query:
-                case SetOperation(operator=SetOperator.CARTESIAN):
-                    return extract_relations(query.left) + extract_relations(query.right)
-                case _:
-                    return [query]
-
         output_relation = cartesian(
             [
                 relation
-                for relation in extract_relations(join_query)
+                for relation in unnest_cartesian_operands(join_query)
                 + subquery_free_context_relations
                 + not_exists_context_relations
                 if relation not in exists_context_relations
@@ -74,11 +65,9 @@ class WhereTranspiler:
     ) -> tuple[Expression | None, list[Exists], list[Exists]]:
         # Assume one top-level AND
         def extract_predicates(expr: Expression) -> list[Expression]:
-            match expr:
-                case And():
-                    return extract_predicates(expr.left) + extract_predicates(expr.right)
-                case _:
-                    return [expr]
+            if isinstance(expr, And):
+                return extract_predicates(expr.left) + extract_predicates(expr.right)
+            return [expr]
 
         predicates = extract_predicates(condition)
 
@@ -98,33 +87,6 @@ class WhereTranspiler:
 
         subquery = exists.this
         scope = self.scope.subquery_scopes[subquery]
-        context_relations, parameters = WhereTranspiler._get_context_relations(scope, subquery)
+        context_relations, parameters = ContextRelationInferrer(scope).infer(subquery)
 
         return QueryTranspiler.transpile(scope), context_relations, parameters
-
-    @staticmethod
-    def _get_context_relations(
-        scope: SQLScope, expr: Expression
-    ) -> tuple[list[RAQuery], list[Attribute]]:
-        sources: list[Source] = []
-        for column in expr.find_all(Column):
-            if column not in scope.tables and (source := scope.tables.find_column_source(column)):
-                sources.append(source)
-
-        relations = [WhereTranspiler._transpile_source(scope, source) for source in sources]
-        parameters = [
-            Attribute(name=name, relation=source.name)
-            for source in sources
-            for name in source.attributes
-        ]
-        return relations, parameters
-
-    @staticmethod
-    def _transpile_source(scope: SQLScope, source: Source) -> RAQuery:
-        from .query import QueryTranspiler
-
-        match source.table:
-            case Table():
-                return TableTranspiler(scope).transpile(source.table)
-            case SQLScope():
-                return QueryTranspiler.transpile(source.table)

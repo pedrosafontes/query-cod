@@ -174,6 +174,14 @@ def _combine_relations(
     return result
 
 
+def unnest_cartesian_operands(query: RAQuery) -> list[RAQuery]:
+    match query:
+        case SetOperation(operator=SetOperator.CARTESIAN):
+            return unnest_cartesian_operands(query.left) + unnest_cartesian_operands(query.right)
+        case _:
+            return [query]
+
+
 @dataclass
 class Relation(RAQuery):
     name: str
