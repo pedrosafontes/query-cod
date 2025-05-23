@@ -1,21 +1,30 @@
-from queries.services.ra.parser.ast import RAQuery, Relation
+from queries.services.ra.parser.ast import RAQuery, Relation, Rename
 from sqlglot.expressions import Subquery, Table
 
-from ..scope.query import SelectScope
+from ..scope.query import SQLScope
 from ..types import SQLTable
 
 
 class TableTranspiler:
-    def __init__(self, scope: SelectScope) -> None:
+    def __init__(self, scope: SQLScope) -> None:
         self.scope = scope
 
     def transpile(self, table: SQLTable) -> RAQuery:
         from .query import QueryTranspiler
 
+        relation: RAQuery
         match table:
             case Table():
-                return Relation(name=table.name)
+                relation = Relation(name=table.name)
 
             case Subquery() as subquery:
                 derived_table_scope = self.scope.tables.derived_table_scopes[subquery.alias_or_name]
-                return QueryTranspiler.transpile(derived_table_scope.child)
+                relation = QueryTranspiler.transpile(derived_table_scope.child)
+
+        if table.alias:
+            relation = Rename(
+                alias=table.alias,
+                subquery=relation,
+            )
+
+        return relation

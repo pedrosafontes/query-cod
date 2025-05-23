@@ -207,3 +207,12 @@ class TopN(RAQuery):
 
     def __str__(self) -> str:
         return f'T ({self.limit}, {self.attribute}) (\n{self.subquery}\n)'
+
+
+@dataclass
+class Rename(RAQuery):
+    alias: str
+    subquery: RAQuery
+
+    def __str__(self) -> str:
+        return f'RENAME ({self.alias}) {self.subquery}'
