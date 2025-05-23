@@ -46,7 +46,7 @@ class WhereTranspiler:
         )
 
         result = self._perform_decorrelation(natural_join, result, transpiled_exists)
-        result = self._perform_decorrelation(anti_join, result, transpiled_exists)
+        result = self._perform_decorrelation(anti_join, result, transpiled_not_exists)
 
         if subquery_free:
             result = result.select(self.expr_transpiler.transpile(subquery_free))
