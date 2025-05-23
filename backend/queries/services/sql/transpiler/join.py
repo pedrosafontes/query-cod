@@ -1,10 +1,5 @@
 from queries.services.ra.parser.ast import (
-    Join,
-    JoinOperator,
     RAQuery,
-    SetOperation,
-    SetOperator,
-    ThetaJoin,
 )
 from sqlglot.expressions import Expression
 from sqlglot.expressions import Join as SQLJoin
@@ -30,23 +25,11 @@ class JoinTranspiler:
         if using:
             raise NotImplementedError('USING clause is not supported yet')
         elif kind == 'NATURAL':
-            return Join(
-                operator=JoinOperator.NATURAL,
-                left=left,
-                right=right,
-            )
+            return left.natural_join(right)
         elif condition:
-            return ThetaJoin(
-                left=left,
-                right=right,
-                condition=self.expr_transpiler.transpile(condition),
-            )
+            return left.theta_join(right, self.expr_transpiler.transpile(condition))
         else:
-            return SetOperation(
-                operator=SetOperator.CARTESIAN,
-                left=left,
-                right=right,
-            )
+            return left.cartesian(right)
 
     # def _validate_using(
     #     self, using: list[Identifier], left: Attributes, right: Attributes, join: Join

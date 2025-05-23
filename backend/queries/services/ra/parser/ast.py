@@ -1,3 +1,4 @@
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import TypedDict
@@ -14,18 +15,6 @@ class ASTNode:
     position: NodePosition | None = field(default=None, compare=False)
 
 
-class RAQuery(ASTNode):
-    pass
-
-
-@dataclass
-class Relation(RAQuery):
-    name: str
-
-    def __str__(self) -> str:
-        return self.name
-
-
 @dataclass
 class Attribute(ASTNode):
     name: str
@@ -35,16 +24,6 @@ class Attribute(ASTNode):
         if self.relation:
             return f'{self.relation}.{self.name}'
         return self.name
-
-
-class SetOperator(Enum):
-    UNION = 'UNION'
-    INTERSECT = 'INTERSECT'
-    DIFFERENCE = 'DIFFERENCE'
-    CARTESIAN = 'CARTESIAN'
-
-    def __str__(self) -> str:
-        return self.value
 
 
 class BinaryBooleanOperator(Enum):
@@ -99,6 +78,118 @@ class Comparison(ASTNode):
 
 
 BooleanExpression = BinaryBooleanExpression | NotExpression | Comparison | Attribute
+
+
+class AggregationFunction(Enum):
+    COUNT = 'count'
+    SUM = 'sum'
+    AVG = 'avg'
+    MIN = 'min'
+    MAX = 'max'
+
+    def __str__(self) -> str:
+        return self.value
+
+
+@dataclass
+class Aggregation:
+    input: Attribute
+    aggregation_function: AggregationFunction
+    output: str
+
+    def __str__(self) -> str:
+        return f'({self.input}, {self.aggregation_function}, {self.output})'
+
+
+def attribute(attr: str | Attribute) -> Attribute:
+    if isinstance(attr, str):
+        return Attribute(name=attr)
+    return attr
+
+
+class RAQuery(ASTNode):
+    def project(self, attributes: Sequence[str | Attribute]) -> 'RAQuery':
+        return Projection(
+            [attribute(attr) for attr in attributes],
+            self.subquery if isinstance(self, Projection) else self,
+        )
+
+    def select(self, condition: BooleanExpression) -> 'Selection':
+        return Selection(condition, self)
+
+    def union(self, other: 'RAQuery') -> 'SetOperation':
+        return SetOperation(SetOperator.UNION, self, other)
+
+    def intersect(self, other: 'RAQuery') -> 'SetOperation':
+        return SetOperation(SetOperator.INTERSECT, self, other)
+
+    def difference(self, other: 'RAQuery') -> 'SetOperation':
+        return SetOperation(SetOperator.DIFFERENCE, self, other)
+
+    def cartesian(self, other: 'RAQuery') -> 'SetOperation':
+        return SetOperation(SetOperator.CARTESIAN, self, other)
+
+    def natural_join(self, other: 'RAQuery') -> 'Join':
+        return Join(JoinOperator.NATURAL, self, other)
+
+    def semi_join(self, other: 'RAQuery') -> 'Join':
+        return Join(JoinOperator.SEMI, self, other)
+
+    def theta_join(self, other: 'RAQuery', condition: BooleanExpression) -> 'ThetaJoin':
+        return ThetaJoin(self, other, condition)
+
+    def divide(self, other: 'RAQuery') -> 'Division':
+        return Division(self, other)
+
+    def rename(self, alias: str) -> 'Rename':
+        return Rename(alias, self)
+
+    def grouped_aggregation(
+        self, group_by: Sequence[str | Attribute], aggregations: list[Aggregation]
+    ) -> 'GroupedAggregation':
+        return GroupedAggregation([attribute(attr) for attr in group_by], aggregations, self)
+
+    def top_n(self, limit: int, attr: str | Attribute) -> 'TopN':
+        return TopN(limit, attribute(attr), self)
+
+
+def cartesian(relations: list[RAQuery]) -> RAQuery | None:
+    return _combine_relations(relations, lambda left, right: left.cartesian(right))
+
+
+def natural_join(relations: list[RAQuery]) -> RAQuery | None:
+    return _combine_relations(relations, lambda left, right: left.natural_join(right))
+
+
+def _combine_relations(
+    relations: list[RAQuery], operator: Callable[[RAQuery, RAQuery], RAQuery]
+) -> RAQuery | None:
+    if not relations:
+        return None
+    if len(relations) == 1:
+        return relations[0]
+    result = relations[0]
+    for relation in relations[1:]:
+        result = operator(result, relation)
+    return result
+
+
+@dataclass
+class Relation(RAQuery):
+    name: str
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class SetOperator(Enum):
+    UNION = 'UNION'
+    INTERSECT = 'INTERSECT'
+    DIFFERENCE = 'DIFFERENCE'
+    CARTESIAN = 'CARTESIAN'
+
+    def __str__(self) -> str:
+        return self.value
 
 
 @dataclass
@@ -164,27 +255,6 @@ class Selection(RAQuery):
 
     def __str__(self) -> str:
         return f'SELECT ({self.condition}) (\n{indent(str(self.subquery))}\n)'
-
-
-class AggregationFunction(Enum):
-    COUNT = 'count'
-    SUM = 'sum'
-    AVG = 'avg'
-    MIN = 'min'
-    MAX = 'max'
-
-    def __str__(self) -> str:
-        return self.value
-
-
-@dataclass
-class Aggregation:
-    input: Attribute
-    aggregation_function: AggregationFunction
-    output: str
-
-    def __str__(self) -> str:
-        return f'({self.input}, {self.aggregation_function}, {self.output})'
 
 
 @dataclass

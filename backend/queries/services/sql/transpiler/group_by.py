@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from queries.services.ra.parser.ast import Aggregation, GroupedAggregation, RAQuery
+from queries.services.ra.parser.ast import Aggregation, RAQuery
 from sqlglot.expressions import Column
 
 from ..scope.query import SelectScope
@@ -34,11 +34,7 @@ class GroupByTranspiler:
         ]
 
         if aggregations:
-            return GroupedAggregation(
-                group_by=group_by,
-                aggregations=aggregations,
-                subquery=subquery,
-            )
+            return subquery.grouped_aggregation(group_by, aggregations)
         else:
             return subquery
 

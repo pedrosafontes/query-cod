@@ -1,4 +1,4 @@
-from queries.services.ra.parser.ast import RAQuery, Relation, Rename
+from queries.services.ra.parser.ast import RAQuery, Relation
 from sqlglot.expressions import Subquery, Table
 
 from ..scope.query import SQLScope
@@ -22,9 +22,6 @@ class TableTranspiler:
                 relation = QueryTranspiler.transpile(derived_table_scope.child)
 
         if table.alias:
-            relation = Rename(
-                alias=table.alias,
-                subquery=relation,
-            )
+            relation = relation.rename(table.alias)
 
         return relation

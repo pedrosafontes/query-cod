@@ -1,12 +1,10 @@
 from queries.services.ra.parser.ast import (
     Attribute,
-    Join,
-    JoinOperator,
-    Projection,
     RAQuery,
-    Selection,
     SetOperation,
     SetOperator,
+    cartesian,
+    natural_join,
 )
 from sqlglot.expressions import And, Column, Exists, Expression, Not, Table, and_
 
@@ -44,8 +42,6 @@ class WhereTranspiler:
             relation for _, relations, _ in transpiled_exists for relation in relations
         ]
 
-        output_relation: RAQuery | None = None
-
         def extract_relations(query: RAQuery) -> list[RAQuery]:
             match query:
                 case SetOperation(operator=SetOperator.CARTESIAN):
@@ -53,38 +49,23 @@ class WhereTranspiler:
                 case _:
                     return [query]
 
-        for relation in (
-            extract_relations(join_query)
-            + subquery_free_context_relations
-            + not_exists_context_relations
-        ):
-            if relation not in exists_context_relations or relation in not_exists_context_relations:
-                if output_relation is None:
-                    output_relation = relation
-                else:
-                    output_relation = SetOperation(
-                        left=output_relation,
-                        right=relation,
-                        operator=SetOperator.CARTESIAN,
-                    )
+        output_relation = cartesian(
+            [
+                relation
+                for relation in extract_relations(join_query)
+                + subquery_free_context_relations
+                + not_exists_context_relations
+                if relation not in exists_context_relations
+            ]
+        )
 
-        for subquery, _, parameters in transpiled_exists:
-            relation = Projection(
-                attributes=parameters,
-                subquery=subquery.subquery if isinstance(subquery, Projection) else subquery,
-            )
-            if output_relation is None:
-                output_relation = relation
-            else:
-                output_relation = Join(
-                    operator=JoinOperator.NATURAL, left=output_relation, right=relation
-                )
+        output_relation = natural_join(
+            ([output_relation] if output_relation else [])
+            + [subquery.project(parameters) for subquery, _, parameters in transpiled_exists]
+        )
 
         if subquery_free:
-            output_relation = Selection(
-                subquery=output_relation,
-                condition=self.expr_transpiler.transpile(subquery_free),
-            )
+            output_relation = output_relation.select(self.expr_transpiler.transpile(subquery_free))
 
         return output_relation, subquery_free_parameters
 

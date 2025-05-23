@@ -2,9 +2,7 @@ from collections.abc import Iterator
 
 from queries.services.ra.parser.ast import (
     Attribute,
-    Projection,
     RAQuery,
-    Selection,
 )
 from queries.services.sql.scope.query import SelectScope
 from queries.services.sql.types import AggregateFunction, aggregate_functions
@@ -67,10 +65,7 @@ class SelectTranspiler:
             aggregate_exprs: Iterator[AggregateFunction] = condition.find_all(*aggregate_functions)
             for aggregate in aggregate_exprs:
                 aggregate.replace(column(aggregates[aggregate]))
-            return Selection(
-                subquery=subquery,
-                condition=ExpressionTranspiler(scope).transpile(condition),
-            )
+            return subquery.select(ExpressionTranspiler(scope).transpile(condition))
         return subquery
 
     @staticmethod
@@ -93,7 +88,4 @@ class SelectTranspiler:
                         attributes.append(Attribute(name=aggregates[inner]))
                 case _:
                     raise NotImplementedError(f'Unsupported projection expression: {type(expr)}')
-        return Projection(
-            subquery=subquery.subquery if isinstance(subquery, Projection) else subquery,
-            attributes=attributes,
-        )
+        return subquery.project(attributes)
