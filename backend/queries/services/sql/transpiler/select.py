@@ -94,6 +94,6 @@ class SelectTranspiler:
                 case _:
                     raise NotImplementedError(f'Unsupported projection expression: {type(expr)}')
         return Projection(
-            subquery=subquery,
+            subquery=subquery.subquery if isinstance(subquery, Projection) else subquery,
             attributes=attributes,
         )
