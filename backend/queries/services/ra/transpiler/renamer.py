@@ -4,7 +4,7 @@ from queries.services.ra.parser.ast import (
     BooleanExpression,
     Comparison,
     ComparisonValue,
-    NotExpression,
+    Not,
 )
 
 
@@ -23,19 +23,17 @@ class RAExpressionRenamer:
 
     def rename_condition(self, cond: BooleanExpression) -> BooleanExpression:
         match cond:
-            case BinaryBooleanExpression(operator=operator, left=left, right=right):
-                return BinaryBooleanExpression(
-                    operator=operator,
+            case BinaryBooleanExpression(left=left, right=right):
+                return type(cond)(
                     left=self.rename_condition(left),
                     right=self.rename_condition(right),
                 )
-            case NotExpression(expression=inner):
-                return NotExpression(expression=self.rename_condition(inner))
-            case Comparison(left=l, right=r, operator=op):
-                return Comparison(
-                    left=self._rename_comparison_value(l),
-                    right=self._rename_comparison_value(r),
-                    operator=op,
+            case Not(expression=inner):
+                return Not(expression=self.rename_condition(inner))
+            case Comparison(left=left, right=right):
+                return type(cond)(
+                    left=self._rename_comparison_value(left),
+                    right=self._rename_comparison_value(right),
                 )
             case Attribute() as attr:
                 return self.rename_attribute(attr)

@@ -1,54 +1,18 @@
 from collections.abc import Callable
 from typing import cast
 
+import queries.services.ra.parser.ast as ra
+import sqlglot.expressions as sql
 from queries.services.sql.types import aggregate_functions
-from queries.services.types import RelationalSchema, SQLQuery
-from sqlglot.expressions import (
-    EQ,
-    GT,
-    GTE,
-    LT,
-    LTE,
-    NEQ,
-    Boolean,
-    Exists,
-    ExpOrStr,
-    Expression,
-    Identifier,
-    Literal,
-    Select,
-    and_,
-    column,
-    not_,
-    or_,
-    select,
-    subquery,
+from queries.services.types import (
+    RelationalSchema,
+    SQLQuery,
+    ra_to_sql_bin_bool_ops,
+    ra_to_sql_comparisons,
 )
+from sqlglot.expressions import Expression, Select, select, subquery, column, Exists
 
-from ..parser.ast import (
-    Aggregation,
-    Attribute,
-    BinaryBooleanExpression,
-    BinaryBooleanOperator,
-    BooleanExpression,
-    Comparison,
-    ComparisonOperator,
-    ComparisonValue,
-    Division,
-    GroupedAggregation,
-    Join,
-    JoinOperator,
-    NotExpression,
-    Projection,
-    RAQuery,
-    Relation,
-    Rename,
-    Selection,
-    SetOperation,
-    SetOperator,
-    ThetaJoin,
-    TopN,
-)
+from ..parser.ast import RAQuery, Relation
 from ..shared.inference import SchemaInferrer
 from .renamer import RAExpressionRenamer
 
@@ -62,10 +26,10 @@ class RAtoSQLTranspiler:
         method: Callable[[RAQuery], Select] = getattr(self, f'_transpile_{type(query).__name__}')
         return method(query)
 
-    def _transpile_Relation(self, rel: Relation) -> Select:  # noqa: N802
+    def _transpile_Relation(self, rel: ra.Relation) -> Select:  # noqa: N802
         return select('*').from_(rel.name).distinct(distinct=self._distinct)
 
-    def _transpile_Projection(self, proj: Projection) -> Select:  # noqa: N802
+    def _transpile_Projection(self, proj: ra.Projection) -> Select:  # noqa: N802
         query = self._transpile_select(proj.subquery)
 
         if any(
@@ -77,7 +41,7 @@ class RAtoSQLTranspiler:
             *[self._transpile_attribute(attr) for attr in proj.attributes], append=False
         )
 
-    def _transpile_Selection(self, selection: Selection) -> Select:  # noqa: N802
+    def _transpile_Selection(self, selection: ra.Selection) -> Select:  # noqa: N802
         query = self._transpile_select(selection.subquery)
         condition = self._transpile_condition(selection.condition)
         if query.args.get('group') or self._refers_to(condition, query.expressions):
@@ -86,38 +50,29 @@ class RAtoSQLTranspiler:
             return query.where(condition)
 
     def _refers_to(self, condition: Expression, exprs: list[Expression]) -> bool:
-        idents = condition.find_all(Identifier)
+        idents = condition.find_all(sql.Identifier)
         return any([ident.this == expr.alias for ident in idents for expr in exprs])
 
-    def _transpile_condition(self, cond: BooleanExpression) -> Expression:
+    def _transpile_condition(self, cond: ra.BooleanExpression) -> Expression:
         match cond:
-            case BinaryBooleanExpression():
+            case ra.BinaryBooleanExpression():
                 left = self._transpile_condition(cond.left)
                 right = self._transpile_condition(cond.right)
-                match cond.operator:
-                    case BinaryBooleanOperator.AND:
-                        return and_(left, right)
-                    case BinaryBooleanOperator.OR:
-                        return or_(left, right)
-            case NotExpression():
-                return not_(self._transpile_condition(cond.expression))
-            case Comparison():
+                sql_operator = ra_to_sql_bin_bool_ops[type(cond)]
+                return sql_operator(left, right)
+            case ra.Not():
+                return sql.not_(self._transpile_condition(cond.expression))
+            case ra.Comparison():
                 left = self._transpile_comparison_value(cond.left)
                 right = self._transpile_comparison_value(cond.right)
-                operators = {
-                    ComparisonOperator.EQUAL: EQ,
-                    ComparisonOperator.NOT_EQUAL: NEQ,
-                    ComparisonOperator.LESS_THAN: LT,
-                    ComparisonOperator.LESS_THAN_EQUAL: LTE,
-                    ComparisonOperator.GREATER_THAN: GT,
-                    ComparisonOperator.GREATER_THAN_EQUAL: GTE,
-                }
-                operator = operators[cond.operator]
-                return operator(this=left, expression=right)
-            case Attribute() as attr:
-                return EQ(this=self._transpile_attribute(attr), expression=Boolean(this=True))
+                sql_comparison = ra_to_sql_comparisons[type(cond)]
+                return sql_comparison(this=left, expression=right)
+            case ra.Attribute() as attr:
+                return sql.EQ(
+                    this=self._transpile_attribute(attr), expression=sql.Boolean(this=True)
+                )
 
-    def _transpile_Division(self, div: Division) -> Expression:  # noqa: N802
+    def _transpile_Division(self, div: ra.Division) -> Expression:  # noqa: N802
         # Get tables with aliases
         dividend, dividend_alias = self._transpile_relation(div.dividend, 'dividend')
         dividend_sub, dividend_sub_alias = self._transpile_relation(div.dividend, 'dividend_sub')
@@ -127,7 +82,7 @@ class RAtoSQLTranspiler:
 
         # Create join conditions between the two dividend instances
         match_conditions = [
-            EQ(
+            sql.EQ(
                 this=column(attr, table=dividend_sub_alias),
                 expression=column(attr, table=dividend_alias),
             )
@@ -142,33 +97,33 @@ class RAtoSQLTranspiler:
         missing_divisors = divisor.except_(found_divisors)
 
         candidates = dividend.select(*output_attrs, append=False).distinct()
-        return candidates.where(not_(Exists(this=missing_divisors)))
+        return candidates.where(sql.not_(Exists(this=missing_divisors)))
 
-    def _transpile_attribute(self, attr: Attribute) -> Expression:
+    def _transpile_attribute(self, attr: ra.Attribute) -> Expression:
         return column(attr.name, table=attr.relation)
 
-    def _transpile_comparison_value(self, comparison: ComparisonValue) -> Expression:
-        if isinstance(comparison, Attribute):
+    def _transpile_comparison_value(self, comparison: ra.ComparisonValue) -> Expression:
+        if isinstance(comparison, ra.Attribute):
             return self._transpile_attribute(comparison)
         elif isinstance(comparison, bool):
-            return Boolean(this=comparison)
+            return sql.Boolean(this=comparison)
         elif isinstance(comparison, str):
-            return Literal.string(comparison)
+            return sql.Literal.string(comparison)
         else:
-            return Literal.number(comparison)
+            return sql.Literal.number(comparison)
 
-    def _transpile_SetOperation(self, op: SetOperation) -> SQLQuery:  # noqa: N802
+    def _transpile_SetOperation(self, op: ra.SetOperation) -> SQLQuery:  # noqa: N802
         left = self.transpile(op.left)
         right = self.transpile(op.right)
 
         match op.operator:
-            case SetOperator.UNION:
+            case ra.SetOperator.UNION:
                 return left.union(right)
-            case SetOperator.INTERSECT:
+            case ra.SetOperator.INTERSECT:
                 return left.intersect(right)
-            case SetOperator.DIFFERENCE:
+            case ra.SetOperator.DIFFERENCE:
                 return left.except_(right)
-            case SetOperator.CARTESIAN:
+            case ra.SetOperator.CARTESIAN:
                 left = self._transpile_select(op.left)
                 if isinstance(op.right, Relation):
                     # op.right is a base table
@@ -177,11 +132,11 @@ class RAtoSQLTranspiler:
                     # right is a derived relation
                     return left.join(right, join_type='CROSS', join_alias='r')
 
-    def _transpile_Join(self, join: Join) -> Select:  # noqa: N802
+    def _transpile_Join(self, join: ra.Join) -> Select:  # noqa: N802
         left, left_alias = self._transpile_relation(join.left, alias='l')
 
         match join.operator:
-            case JoinOperator.NATURAL:
+            case ra.JoinOperator.NATURAL:
                 if isinstance(join.right, Relation):
                     # join.right is a base table
                     return left.join(join.right.name, join_type='NATURAL')
@@ -190,14 +145,14 @@ class RAtoSQLTranspiler:
                     right = self.transpile(join.right)
                     return left.join(right, join_type='NATURAL', join_alias='r')
 
-            case JoinOperator.SEMI | JoinOperator.ANTI:
+            case ra.JoinOperator.SEMI | ra.JoinOperator.ANTI:
                 right, right_alias = self._transpile_relation(join.right, 'r')
                 common = self._common_attrs(join.left, join.right)
 
                 condition: Expression = Exists(
                     this=right.where(
                         *[
-                            EQ(
+                            sql.EQ(
                                 this=column(name, table=left_alias),
                                 expression=column(name, table=right_alias),
                             )
@@ -206,12 +161,12 @@ class RAtoSQLTranspiler:
                     )
                 )
 
-                if join.operator == JoinOperator.ANTI:
-                    condition = not_(condition)
+                if join.operator == ra.JoinOperator.ANTI:
+                    condition = sql.not_(condition)
 
                 return left.where(condition)
 
-    def _transpile_ThetaJoin(self, join: ThetaJoin) -> Select:  # noqa: N802
+    def _transpile_ThetaJoin(self, join: ra.ThetaJoin) -> Select:  # noqa: N802
         left, left_alias = self._transpile_relation(join.left, 'l')
 
         # rename the attributes in the left relation to use the alias
@@ -221,7 +176,7 @@ class RAtoSQLTranspiler:
             if table:
                 renamings[table] = left_alias
 
-        right: ExpOrStr
+        right: sql.ExpOrStr
         if isinstance(join.right, Relation):
             # right is a base table
             right = join.right.name
@@ -241,7 +196,7 @@ class RAtoSQLTranspiler:
         condition = self._transpile_condition(renamed_condition)
         return left.join(right, join_alias=right_alias, on=condition)
 
-    def _transpile_GroupedAggregation(self, agg: GroupedAggregation) -> Select:  # noqa: N802
+    def _transpile_GroupedAggregation(self, agg: ra.GroupedAggregation) -> Select:  # noqa: N802
         query = self._transpile_select(agg.subquery)
 
         if query.args.get('group'):
@@ -255,14 +210,14 @@ class RAtoSQLTranspiler:
             .group_by(*attrs)
         )
 
-    def _transpile_aggregation(self, agg: Aggregation) -> ExpOrStr:
+    def _transpile_aggregation(self, agg: ra.Aggregation) -> sql.ExpOrStr:
         return f'{agg.aggregation_function}({agg.input}) AS {agg.output}'
 
-    def _transpile_TopN(self, top_n: TopN) -> Select:  # noqa: N802
+    def _transpile_TopN(self, top_n: ra.TopN) -> Select:  # noqa: N802
         query = self._transpile_select(top_n.subquery)
         return query.limit(top_n.limit).order_by(self._transpile_attribute(top_n.attribute).desc())
 
-    def _transpile_Rename(self, rename: Rename) -> Select:  # noqa: N802
+    def _transpile_Rename(self, rename: ra.Rename) -> Select:  # noqa: N802
         query = self._transpile_select(rename.subquery)
         return subquery(query, rename.alias).select('*')
 
@@ -271,7 +226,7 @@ class RAtoSQLTranspiler:
         if isinstance(relation, Relation):
             # relation is a base table
             return select, relation.name
-        elif isinstance(relation, Rename):
+        elif isinstance(relation, ra.Rename):
             return select, relation.alias
         else:
             # relation is a derived relation; therefore, it needs to be aliased
