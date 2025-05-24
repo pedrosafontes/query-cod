@@ -67,6 +67,18 @@ tests = ["cloudpickle", "hypothesis", "mypy (>=1.11.1)", "pympler", "pytest (>=4
 tests-mypy = ["mypy (>=1.11.1)", "pytest-mypy-plugins"]
 
 [[package]]
+name = "bidict"
+version = "0.23.1"
+description = "The bidirectional mapping library for Python."
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "bidict-0.23.1-py3-none-any.whl", hash = "sha256:5dae8d4d79b552a71cbabc7deb25dfe8ce710b17ff41711e13010ead2abfc3e5"},
+    {file = "bidict-0.23.1.tar.gz", hash = "sha256:03069d763bc387bbd20e7d49914e75fc4132a41937fa3405417e1a5a2d006d71"},
+]
+
+[[package]]
 name = "billiard"
 version = "4.2.1"
 description = "Python multiprocessing fork with improvements and bugfixes"
@@ -2695,4 +2707,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "766e2367aa47635a95dfb853936b41f9f73e0cf69326d0190ae51ff3e06573b6"
+content-hash = "3a5ae2ebae10df5a1734dcf1eb06e4749686a33cacd988dd6fb145381e0663c4"
