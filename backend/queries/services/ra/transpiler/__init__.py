@@ -10,7 +10,7 @@ from queries.services.types import (
     ra_to_sql_bin_bool_ops,
     ra_to_sql_comparisons,
 )
-from sqlglot.expressions import Expression, Select, select, subquery, column, Exists
+from sqlglot.expressions import Exists, Expression, Select, column, select, subquery
 
 from ..parser.ast import RAQuery, Relation
 from ..shared.inference import SchemaInferrer
