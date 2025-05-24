@@ -1,15 +1,10 @@
 import pytest
 from queries.services.ra.parser import parse_ra
 from queries.services.ra.parser.ast import (
-    Attribute,
-    Comparison,
-    ComparisonOperator,
-    Join,
-    JoinOperator,
-    Projection,
+    EQ,
     RAQuery,
     Relation,
-    Selection,
+    attribute,
 )
 from queries.services.ra.parser.errors import (
     MissingCommaError,
@@ -20,38 +15,20 @@ from queries.services.ra.parser.errors import (
 @pytest.mark.parametrize(
     'query, expected',
     [
-        (
-            '\\pi_{Sailor.sname} Sailor',
-            Projection([Attribute('sname', relation='Sailor')], Relation('Sailor')),
-        ),
+        ('\\pi_{Sailor.sname} Sailor', Relation('Sailor').project(['Sailor.sname'])),
         (
             '\\pi_{Boat.bid, Sailor.sid, Sailor.sname} (Boat \\Join Sailor)',
-            Projection(
-                [
-                    Attribute('bid', relation='Boat'),
-                    Attribute('sid', relation='Sailor'),
-                    Attribute('sname', relation='Sailor'),
-                ],
-                Join(JoinOperator.NATURAL, Relation('Boat'), Relation('Sailor')),
-            ),
+            Relation('Boat')
+            .natural_join('Sailor')
+            .project(['Boat.bid', 'Sailor.sid', 'Sailor.sname']),
         ),
         (
             '\\pi_{a,b,c} R',
-            Projection([Attribute('a'), Attribute('b'), Attribute('c')], Relation('R')),
+            Relation('R').project(['a', 'b', 'c']),
         ),
         (
             "\\pi_{sname} (\\sigma_{color = \\text{'red'}} Boat)",
-            Projection(
-                attributes=[Attribute('sname')],
-                subquery=Selection(
-                    condition=Comparison(
-                        operator=ComparisonOperator.EQUAL,
-                        left=Attribute('color'),
-                        right='red',
-                    ),
-                    subquery=Relation('Boat'),
-                ),
-            ),
+            Relation('Boat').select(EQ(attribute('color'), 'red')).project(['sname']),
         ),
     ],
 )

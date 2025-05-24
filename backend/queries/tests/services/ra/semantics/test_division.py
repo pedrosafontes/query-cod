@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 import pytest
-from queries.services.ra.parser.ast import Division, RAQuery, Relation
+from queries.services.ra.parser.ast import RAQuery, Relation
 from queries.services.ra.semantics.errors import (
     DivisionAttributeTypeMismatchError,
     DivisionSchemaCompatibilityError,
@@ -21,18 +21,12 @@ def test_valid_division(query: RAQuery, assert_valid: Callable[[RAQuery], None])
     [
         # Right schema attributes must be subset of left
         (
-            Division(
-                dividend=Relation('R'),
-                divisor=Relation('S'),
-            ),
+            Relation('R').divide('S'),
             DivisionSchemaCompatibilityError,
         ),
         # Attribute types must match
         (
-            Division(
-                dividend=Relation('R'),
-                divisor=Relation('V'),
-            ),
+            Relation('R').divide('V'),
             DivisionAttributeTypeMismatchError,
         ),
     ],

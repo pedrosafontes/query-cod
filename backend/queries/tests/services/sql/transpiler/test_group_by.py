@@ -20,26 +20,26 @@ from queries.services.ra.parser.ast import (
                 group_by=[],
                 aggregations=[
                     Aggregation(
-                        input=Attribute(name='id'),
+                        input=Attribute('id'),
                         aggregation_function=AggregationFunction.COUNT,
                         output='num_employees',
                     ),
                 ],
-                subquery=Relation(name='employee'),
+                subquery=Relation('employee'),
             ),
         ),
         (
             'SELECT dept_id, COUNT(id) AS num_employees FROM employee GROUP BY dept_id',
             GroupedAggregation(
-                group_by=[Attribute(name='dept_id')],
+                group_by=[Attribute('dept_id')],
                 aggregations=[
                     Aggregation(
-                        input=Attribute(name='id'),
+                        input=Attribute('id'),
                         aggregation_function=AggregationFunction.COUNT,
                         output='num_employees',
                     ),
                 ],
-                subquery=Relation(name='employee'),
+                subquery=Relation('employee'),
             ),
         ),
         (
@@ -48,13 +48,13 @@ from queries.services.ra.parser.ast import (
             FROM employee GROUP BY dept_id
             """,
             GroupedAggregation(
-                group_by=[Attribute(name='dept_id')],
+                group_by=[Attribute('dept_id')],
                 aggregations=[
                     Aggregation(Attribute('age'), AggregationFunction.AVG, 'avg_age'),
                     Aggregation(Attribute('age'), AggregationFunction.MIN, 'min_age'),
                     Aggregation(Attribute('age'), AggregationFunction.MAX, 'max_age'),
                 ],
-                subquery=Relation(name='employee'),
+                subquery=Relation('employee'),
             ),
         ),
         (
@@ -63,12 +63,12 @@ from queries.services.ra.parser.ast import (
                 group_by=[],
                 aggregations=[
                     Aggregation(
-                        input=Attribute(name='age'),
+                        input=Attribute('age'),
                         aggregation_function=AggregationFunction.AVG,
                         output='avg_age',
                     ),
                 ],
-                subquery=Relation(name='employee'),
+                subquery=Relation('employee'),
             ),
         ),
     ],

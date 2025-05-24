@@ -2,15 +2,12 @@ from collections.abc import Callable
 
 import pytest
 from queries.services.ra.parser.ast import (
+    GT,
     Aggregation,
     AggregationFunction,
-    Attribute,
-    Comparison,
-    ComparisonOperator,
-    GroupedAggregation,
     RAQuery,
     Relation,
-    Selection,
+    attribute,
 )
 
 
@@ -19,44 +16,28 @@ from queries.services.ra.parser.ast import (
     [
         (
             'SELECT COUNT(id) AS num_employees FROM employee HAVING COUNT(id) > 10',
-            Selection(
-                condition=Comparison(
-                    left=Attribute(name='num_employees'),
-                    operator=ComparisonOperator.GREATER_THAN,
-                    right=10,
-                ),
-                subquery=GroupedAggregation(
-                    group_by=[],
-                    aggregations=[
-                        Aggregation(
-                            input=Attribute(name='id'),
-                            aggregation_function=AggregationFunction.COUNT,
-                            output='num_employees',
-                        ),
-                    ],
-                    subquery=Relation(name='employee'),
-                ),
+            Relation('employee')
+            .grouped_aggregation(
+                group_by=[],
+                aggregations=[
+                    Aggregation(attribute('id'), AggregationFunction.COUNT, 'num_employees'),
+                ],
+            )
+            .select(
+                GT(attribute('num_employees'), 10),
             ),
         ),
         (
             'SELECT dept_id, COUNT(id) AS num_employees FROM employee GROUP BY dept_id HAVING COUNT(id) > 10',
-            Selection(
-                condition=Comparison(
-                    left=Attribute(name='num_employees'),
-                    operator=ComparisonOperator.GREATER_THAN,
-                    right=10,
-                ),
-                subquery=GroupedAggregation(
-                    group_by=[Attribute(name='dept_id')],
-                    aggregations=[
-                        Aggregation(
-                            input=Attribute(name='id'),
-                            aggregation_function=AggregationFunction.COUNT,
-                            output='num_employees',
-                        ),
-                    ],
-                    subquery=Relation(name='employee'),
-                ),
+            Relation('employee')
+            .grouped_aggregation(
+                group_by=[attribute('dept_id')],
+                aggregations=[
+                    Aggregation(attribute('id'), AggregationFunction.COUNT, 'num_employees'),
+                ],
+            )
+            .select(
+                GT(attribute('num_employees'), 10),
             ),
         ),
     ],

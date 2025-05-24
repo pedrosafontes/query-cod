@@ -4,10 +4,10 @@ import pytest
 from queries.services.ra.parser.ast import (
     Aggregation,
     AggregationFunction,
-    Attribute,
     GroupedAggregation,
     RAQuery,
     Relation,
+    attribute,
 )
 
 
@@ -20,40 +20,40 @@ from queries.services.ra.parser.ast import (
                 group_by=[],
                 aggregations=[
                     Aggregation(
-                        input=Attribute(name='id'),
-                        aggregation_function=AggregationFunction.COUNT,
-                        output='num_employees',
+                        attribute('id'),
+                        AggregationFunction.COUNT,
+                        'num_employees',
                     ),
                 ],
-                subquery=Relation(name='employee'),
+                subquery=Relation('employee'),
             ),
             'SELECT COUNT(id) AS num_employees FROM employee',
         ),
         # Group by dept_id, count per department
         (
             GroupedAggregation(
-                group_by=[Attribute(name='dept_id')],
+                group_by=[attribute('dept_id')],
                 aggregations=[
                     Aggregation(
-                        input=Attribute(name='id'),
-                        aggregation_function=AggregationFunction.COUNT,
-                        output='num_employees',
+                        attribute('id'),
+                        AggregationFunction.COUNT,
+                        'num_employees',
                     ),
                 ],
-                subquery=Relation(name='employee'),
+                subquery=Relation('employee'),
             ),
             'SELECT dept_id, COUNT(id) AS num_employees FROM employee GROUP BY dept_id',
         ),
         # Group by dept_id, compute multiple aggregations
         (
             GroupedAggregation(
-                group_by=[Attribute(name='dept_id')],
+                group_by=[attribute('dept_id')],
                 aggregations=[
-                    Aggregation(Attribute('age'), AggregationFunction.AVG, 'avg_age'),
-                    Aggregation(Attribute('age'), AggregationFunction.MIN, 'min_age'),
-                    Aggregation(Attribute('age'), AggregationFunction.MAX, 'max_age'),
+                    Aggregation(attribute('age'), AggregationFunction.AVG, 'avg_age'),
+                    Aggregation(attribute('age'), AggregationFunction.MIN, 'min_age'),
+                    Aggregation(attribute('age'), AggregationFunction.MAX, 'max_age'),
                 ],
-                subquery=Relation(name='employee'),
+                subquery=Relation('employee'),
             ),
             (
                 'SELECT dept_id, AVG(age) AS avg_age, MIN(age) AS min_age, MAX(age) AS max_age '
@@ -65,9 +65,9 @@ from queries.services.ra.parser.ast import (
             GroupedAggregation(
                 group_by=[],
                 aggregations=[
-                    Aggregation(Attribute('age'), AggregationFunction.AVG, 'avg_age'),
+                    Aggregation(attribute('age'), AggregationFunction.AVG, 'avg_age'),
                 ],
-                subquery=Relation(name='employee'),
+                subquery=Relation('employee'),
             ),
             'SELECT AVG(age) AS avg_age FROM employee',
         ),

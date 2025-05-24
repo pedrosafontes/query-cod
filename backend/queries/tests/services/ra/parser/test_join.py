@@ -1,16 +1,14 @@
 import pytest
 from queries.services.ra.parser import parse_ra
 from queries.services.ra.parser.ast import (
-    Attribute,
-    BinaryBooleanExpression,
-    BinaryBooleanOperator,
-    Comparison,
-    ComparisonOperator,
+    EQ,
+    GT,
+    And,
     Join,
     JoinOperator,
     RAQuery,
     Relation,
-    ThetaJoin,
+    attribute,
 )
 from queries.services.ra.parser.errors import (
     InvalidThetaJoinConditionError,
@@ -22,39 +20,22 @@ from queries.services.ra.parser.errors import (
 @pytest.mark.parametrize(
     'query, expected',
     [
-        ('R \\Join S', Join(JoinOperator.NATURAL, Relation('R'), Relation('S'))),
-        ('R \\ltimes S', Join(JoinOperator.SEMI, Relation('R'), Relation('S'))),
+        ('R \\Join S', Relation('R').natural_join('S')),
+        ('R \\ltimes S', Relation('R').semi_join('S')),
         (
             'R \\overset{a = b}{\\bowtie} S',
-            ThetaJoin(
-                Relation('R'),
-                Relation('S'),
-                Comparison(ComparisonOperator.EQUAL, Attribute('a'), Attribute('b')),
-            ),
+            Relation('R').theta_join('S', EQ(attribute('a'), attribute('b'))),
         ),
         (
             'R \\overset{a > b \\land c = d}{\\bowtie} S',
-            ThetaJoin(
-                Relation('R'),
-                Relation('S'),
-                BinaryBooleanExpression(
-                    BinaryBooleanOperator.AND,
-                    Comparison(ComparisonOperator.GREATER_THAN, Attribute('a'), Attribute('b')),
-                    Comparison(ComparisonOperator.EQUAL, Attribute('c'), Attribute('d')),
-                ),
+            Relation('R').theta_join(
+                'S',
+                And(GT(attribute('a'), attribute('b')), EQ(attribute('c'), attribute('d'))),
             ),
         ),
         (
             'R \\Join (S \\Join T)',
-            Join(
-                operator=JoinOperator.NATURAL,
-                left=Relation('R'),
-                right=Join(
-                    operator=JoinOperator.NATURAL,
-                    left=Relation('S'),
-                    right=Relation('T'),
-                ),
-            ),
+            Relation('R').natural_join(Relation('S').natural_join('T')),
         ),
         (
             'R \\Join S \\Join T',

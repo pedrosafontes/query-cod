@@ -1,17 +1,13 @@
 import pytest
 from queries.services.ra.parser import parse_ra
 from queries.services.ra.parser.ast import (
+    EQ,
+    GT,
     Aggregation,
     AggregationFunction,
-    Attribute,
-    Comparison,
-    ComparisonOperator,
-    GroupedAggregation,
-    Projection,
     RAQuery,
     Relation,
-    Selection,
-    ThetaJoin,
+    attribute,
 )
 
 
@@ -20,64 +16,36 @@ from queries.services.ra.parser.ast import (
     [
         (
             '\\pi_{name, title} (Employee \\overset{Employee.deptno = Department.deptno}{\\bowtie} Department)',
-            Projection(
-                attributes=[Attribute('name'), Attribute('title')],
-                subquery=ThetaJoin(
-                    left=Relation('Employee'),
-                    right=Relation('Department'),
-                    condition=Comparison(
-                        operator=ComparisonOperator.EQUAL,
-                        left=Attribute('deptno', relation='Employee'),
-                        right=Attribute('deptno', relation='Department'),
-                    ),
-                ),
-            ),
+            Relation('Employee')
+            .theta_join(
+                'Department', EQ(attribute('Employee.deptno'), attribute('Department.deptno'))
+            )
+            .project(['name', 'title']),
         ),
         (
             "\\Gamma_{((deptno),((salary,avg,\\text{avg_sal})))} (\\pi_{deptno, salary} (\\sigma_{location = \\text{'HQ'}} Employee))",
-            GroupedAggregation(
-                group_by=[Attribute('deptno')],
-                aggregations=[
+            Relation('Employee')
+            .select(EQ(attribute('location'), 'HQ'))
+            .project(['deptno', 'salary'])
+            .grouped_aggregation(
+                ['deptno'],
+                [
                     Aggregation(
-                        input=Attribute('salary'),
+                        input=attribute('salary'),
                         aggregation_function=AggregationFunction.AVG,
                         output='avg_sal',
                     )
                 ],
-                subquery=Projection(
-                    attributes=[Attribute('deptno'), Attribute('salary')],
-                    subquery=Selection(
-                        condition=Comparison(
-                            operator=ComparisonOperator.EQUAL,
-                            left=Attribute('location'),
-                            right='HQ',
-                        ),
-                        subquery=Relation('Employee'),
-                    ),
-                ),
             ),
         ),
         (
             '\\pi_{name, \\text{dept_name}} (Employee \\overset{Employee.deptno = Department.deptno}{\\bowtie} (\\sigma_{budget > 100000} Department))',
-            Projection(
-                attributes=[Attribute('name'), Attribute('dept_name')],
-                subquery=ThetaJoin(
-                    left=Relation('Employee'),
-                    right=Selection(
-                        condition=Comparison(
-                            operator=ComparisonOperator.GREATER_THAN,
-                            left=Attribute('budget'),
-                            right=100000,
-                        ),
-                        subquery=Relation('Department'),
-                    ),
-                    condition=Comparison(
-                        operator=ComparisonOperator.EQUAL,
-                        left=Attribute('deptno', relation='Employee'),
-                        right=Attribute('deptno', relation='Department'),
-                    ),
-                ),
-            ),
+            Relation('Employee')
+            .theta_join(
+                Relation('Department').select(GT(attribute('budget'), 100000)),
+                EQ(attribute('Employee.deptno'), attribute('Department.deptno')),
+            )
+            .project(['name', 'dept_name']),
         ),
     ],
 )

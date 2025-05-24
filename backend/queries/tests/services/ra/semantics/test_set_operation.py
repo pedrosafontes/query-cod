@@ -1,17 +1,17 @@
 from collections.abc import Callable
 
 import pytest
-from queries.services.ra.parser.ast import RAQuery, Relation, SetOperation, SetOperator
+from queries.services.ra.parser.ast import RAQuery, Relation
 from queries.services.ra.semantics.errors import UnionCompatibilityError
 
 
 @pytest.mark.parametrize(
     'query',
     [
-        SetOperation(SetOperator.CARTESIAN, Relation('R'), Relation('S')),
-        SetOperation(SetOperator.UNION, Relation('R'), Relation('U')),
-        SetOperation(SetOperator.INTERSECT, Relation('R'), Relation('U')),
-        SetOperation(SetOperator.DIFFERENCE, Relation('R'), Relation('U')),
+        Relation('R').cartesian('S'),
+        Relation('R').union('U'),
+        Relation('R').intersect('U'),
+        Relation('R').difference('U'),
     ],
 )
 def test_valid_set_operation(query: RAQuery, assert_valid: Callable[[RAQuery], None]) -> None:
@@ -22,15 +22,15 @@ def test_valid_set_operation(query: RAQuery, assert_valid: Callable[[RAQuery], N
     'query, expected_exception',
     [
         (
-            SetOperation(SetOperator.UNION, Relation('R'), Relation('T')),
+            Relation('R').union('T'),
             UnionCompatibilityError,
         ),
         (
-            SetOperation(SetOperator.INTERSECT, Relation('R'), Relation('T')),
+            Relation('R').intersect('T'),
             UnionCompatibilityError,
         ),
         (
-            SetOperation(SetOperator.DIFFERENCE, Relation('R'), Relation('T')),
+            Relation('R').difference('T'),
             UnionCompatibilityError,
         ),
     ],

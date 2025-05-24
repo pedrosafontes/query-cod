@@ -1,13 +1,10 @@
 import pytest
 from queries.services.ra.parser import parse_ra
 from queries.services.ra.parser.ast import (
-    Attribute,
-    Comparison,
-    ComparisonOperator,
+    EQ,
     RAQuery,
     Relation,
-    Selection,
-    TopN,
+    attribute,
 )
 from queries.services.ra.parser.errors import (
     InvalidTopNLimitError,
@@ -20,22 +17,13 @@ from queries.services.ra.parser.errors import (
     [
         (
             '\\operatorname{T}_{(5,score)} R',
-            TopN(limit=5, attribute=Attribute('score'), subquery=Relation('R')),
+            Relation('R').top_n(5, 'score'),
         ),
         (
             "\\operatorname{T}_{(10,price)} (\\sigma_{category = \\text{'electronics'}} Products)",
-            TopN(
-                limit=10,
-                attribute=Attribute('price'),
-                subquery=Selection(
-                    condition=Comparison(
-                        operator=ComparisonOperator.EQUAL,
-                        left=Attribute('category'),
-                        right='electronics',
-                    ),
-                    subquery=Relation('Products'),
-                ),
-            ),
+            Relation('Products')
+            .select(EQ(attribute('category'), 'electronics'))
+            .top_n(10, 'price'),
         ),
     ],
 )

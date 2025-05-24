@@ -2,23 +2,16 @@ from collections.abc import Callable
 
 import pytest
 from queries.services.ra.parser.ast import (
+    EQ,
+    GT,
     Aggregation,
     AggregationFunction,
-    Attribute,
-    BinaryBooleanExpression,
-    BinaryBooleanOperator,
-    Comparison,
-    ComparisonOperator,
-    GroupedAggregation,
-    Join,
-    JoinOperator,
-    NotExpression,
-    Projection,
+    And,
+    Not,
+    Or,
     RAQuery,
     Relation,
-    Selection,
-    ThetaJoin,
-    TopN,
+    attribute,
 )
 
 
@@ -27,21 +20,10 @@ from queries.services.ra.parser.ast import (
     [
         # Selection + Join + Projection
         (
-            Projection(
-                attributes=[Attribute(name='name')],
-                subquery=Selection(
-                    condition=Comparison(
-                        ComparisonOperator.EQUAL,
-                        Attribute(name='dept_name'),
-                        'Engineering',
-                    ),
-                    subquery=Join(
-                        operator=JoinOperator.NATURAL,
-                        left=Relation('employee'),
-                        right=Relation('department'),
-                    ),
-                ),
-            ),
+            Relation('employee')
+            .natural_join('department')
+            .select(EQ(attribute('dept_name'), 'Engineering'))
+            .project(['name']),
             """
             SELECT DISTINCT name
             FROM employee
@@ -51,20 +33,12 @@ from queries.services.ra.parser.ast import (
         ),
         # Grouped Aggregation + Selection
         (
-            Selection(
-                condition=Comparison(
-                    ComparisonOperator.GREATER_THAN,
-                    Attribute(name='avg_age'),
-                    30,
-                ),
-                subquery=GroupedAggregation(
-                    group_by=[Attribute('dept_id')],
-                    aggregations=[
-                        Aggregation(Attribute('age'), AggregationFunction.AVG, 'avg_age'),
-                    ],
-                    subquery=Relation('employee'),
-                ),
-            ),
+            Relation('employee')
+            .grouped_aggregation(
+                ['dept_id'],
+                [Aggregation(attribute('age'), AggregationFunction.AVG, 'avg_age')],
+            )
+            .select(GT(attribute('avg_age'), 30)),
             """
             SELECT dept_id, AVG(age) AS avg_age
             FROM employee
@@ -74,15 +48,7 @@ from queries.services.ra.parser.ast import (
         ),
         # TopN + Join
         (
-            TopN(
-                limit=2,
-                attribute=Attribute('age'),
-                subquery=Join(
-                    operator=JoinOperator.NATURAL,
-                    left=Relation('employee'),
-                    right=Relation('department'),
-                ),
-            ),
+            Relation('employee').natural_join('department').top_n(2, 'age'),
             """
             SELECT DISTINCT *
             FROM employee NATURAL JOIN department
@@ -92,26 +58,16 @@ from queries.services.ra.parser.ast import (
         ),
         # Nested TopN + Selection + Theta Join
         (
-            TopN(
-                limit=1,
-                attribute=Attribute(name='age'),
-                subquery=Selection(
-                    condition=Comparison(
-                        ComparisonOperator.EQUAL,
-                        Attribute(name='dept_name', relation='department'),
-                        'HR',
-                    ),
-                    subquery=ThetaJoin(
-                        left=Relation('employee'),
-                        right=Relation('department'),
-                        condition=Comparison(
-                            ComparisonOperator.EQUAL,
-                            Attribute(name='dept_id', relation='employee'),
-                            Attribute(name='dept_id', relation='department'),
-                        ),
-                    ),
+            Relation('employee')
+            .theta_join(
+                'department',
+                condition=EQ(
+                    attribute('employee.dept_id'),
+                    attribute('department.dept_id'),
                 ),
-            ),
+            )
+            .select(EQ(attribute('department.dept_name'), 'HR'))
+            .top_n(1, 'age'),
             """
             SELECT DISTINCT * FROM employee
             CROSS JOIN department
@@ -122,31 +78,16 @@ from queries.services.ra.parser.ast import (
         ),
         # Deeply nested binary expression in Selection
         (
-            Selection(
-                condition=BinaryBooleanExpression(
-                    BinaryBooleanOperator.AND,
-                    left=BinaryBooleanExpression(
-                        BinaryBooleanOperator.OR,
-                        Comparison(
-                            ComparisonOperator.EQUAL,
-                            Attribute('age'),
-                            25,
-                        ),
-                        Comparison(
-                            ComparisonOperator.EQUAL,
-                            Attribute('age'),
-                            30,
-                        ),
+            Relation('employee').select(
+                And(
+                    Or(
+                        EQ(attribute('age'), 25),
+                        EQ(attribute('age'), 30),
                     ),
-                    right=NotExpression(
-                        Comparison(
-                            ComparisonOperator.EQUAL,
-                            Attribute('name'),
-                            'Carol',
-                        )
+                    Not(
+                        EQ(attribute('name'), 'Carol'),
                     ),
-                ),
-                subquery=Relation('employee'),
+                )
             ),
             """
             SELECT DISTINCT * FROM employee

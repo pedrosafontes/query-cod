@@ -2,14 +2,10 @@ from collections.abc import Callable
 
 import pytest
 from queries.services.ra.parser.ast import (
-    Attribute,
-    Comparison,
-    ComparisonOperator,
-    Join,
-    JoinOperator,
+    EQ,
     RAQuery,
     Relation,
-    ThetaJoin,
+    attribute,
 )
 from queries.services.ra.semantics.errors import (
     AmbiguousAttributeReferenceError,
@@ -22,15 +18,10 @@ from queries.services.ra.semantics.errors import (
 @pytest.mark.parametrize(
     'query',
     [
-        Join(JoinOperator.NATURAL, Relation('R'), Relation('S')),
-        ThetaJoin(
-            Relation('Employee'),
-            Relation('Department'),
-            Comparison(
-                ComparisonOperator.EQUAL,
-                Attribute('department', 'Employee'),
-                Attribute('name', 'Department'),
-            ),
+        Relation('R').natural_join('S'),
+        Relation('Employee').theta_join(
+            'Department',
+            EQ(attribute('Employee.department'), attribute('Department.name')),
         ),
     ],
 )
@@ -42,30 +33,27 @@ def test_valid_join(query: RAQuery, assert_valid: Callable[[RAQuery], None]) -> 
     'query, expected_exception',
     [
         (
-            Join(JoinOperator.NATURAL, Relation('R'), Relation('X')),
+            Relation('R').natural_join('X'),
             RelationNotFoundError,
         ),
         (
-            ThetaJoin(
-                Relation('R'),
+            Relation('R').theta_join(
                 Relation('S'),
-                Comparison(ComparisonOperator.EQUAL, Attribute('A'), Attribute('G')),
+                EQ(attribute('A'), attribute('G')),
             ),
             AttributeNotFoundError,
         ),
         (
-            ThetaJoin(
-                Relation('R'),
+            Relation('R').theta_join(
                 Relation('S'),
-                Comparison(ComparisonOperator.EQUAL, Attribute('B'), Attribute('D')),
+                EQ(attribute('B'), attribute('D')),
             ),
             TypeMismatchError,
         ),
         (
-            ThetaJoin(
-                Relation('R'),
+            Relation('R').theta_join(
                 Relation('T'),
-                Comparison(ComparisonOperator.EQUAL, Attribute('A'), Attribute('B')),
+                EQ(attribute('A'), attribute('B')),
             ),
             AmbiguousAttributeReferenceError,
         ),

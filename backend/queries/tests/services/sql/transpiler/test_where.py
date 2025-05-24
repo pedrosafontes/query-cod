@@ -2,15 +2,16 @@ from collections.abc import Callable
 
 import pytest
 from queries.services.ra.parser.ast import (
-    Attribute,
-    BinaryBooleanExpression,
-    BinaryBooleanOperator,
-    Comparison,
-    ComparisonOperator,
-    NotExpression,
+    EQ,
+    GT,
+    GTE,
+    LTE,
+    And,
+    Not,
+    Or,
     RAQuery,
     Relation,
-    Selection,
+    attribute,
 )
 
 
@@ -19,110 +20,51 @@ from queries.services.ra.parser.ast import (
     [
         (
             'SELECT * FROM employee WHERE age > 30',
-            Selection(
-                condition=Comparison(
-                    operator=ComparisonOperator.GREATER_THAN,
-                    left=Attribute(name='age'),
-                    right=30,
-                ),
-                subquery=Relation(name='employee'),
-            ),
+            Relation('employee').select(GT(attribute('age'), 30)),
         ),
         (
             "SELECT * FROM department WHERE dept_name = 'Engineering'",
-            Selection(
-                condition=Comparison(
-                    operator=ComparisonOperator.EQUAL,
-                    left=Attribute(name='dept_name'),
-                    right='Engineering',
-                ),
-                subquery=Relation(name='department'),
-            ),
+            Relation('department').select(EQ(attribute('dept_name'), 'Engineering')),
         ),
         (
             'SELECT * FROM employee WHERE age >= 30 AND age <= 40',
-            Selection(
-                condition=BinaryBooleanExpression(
-                    operator=BinaryBooleanOperator.AND,
-                    left=Comparison(
-                        operator=ComparisonOperator.GREATER_THAN_EQUAL,
-                        left=Attribute(name='age'),
-                        right=30,
-                    ),
-                    right=Comparison(
-                        operator=ComparisonOperator.LESS_THAN_EQUAL,
-                        left=Attribute(name='age'),
-                        right=40,
-                    ),
-                ),
-                subquery=Relation(name='employee'),
+            Relation('employee').select(
+                And(
+                    GTE(attribute('age'), 30),
+                    LTE(attribute('age'), 40),
+                )
             ),
         ),
         (
             "SELECT * FROM employee WHERE name = 'Alice' OR name = 'Carol'",
-            Selection(
-                condition=BinaryBooleanExpression(
-                    operator=BinaryBooleanOperator.OR,
-                    left=Comparison(
-                        operator=ComparisonOperator.EQUAL,
-                        left=Attribute(name='name'),
-                        right='Alice',
-                    ),
-                    right=Comparison(
-                        operator=ComparisonOperator.EQUAL,
-                        left=Attribute(name='name'),
-                        right='Carol',
-                    ),
-                ),
-                subquery=Relation(name='employee'),
+            Relation('employee').select(
+                Or(
+                    EQ(attribute('name'), 'Alice'),
+                    EQ(attribute('name'), 'Carol'),
+                )
             ),
         ),
         (
             "SELECT DISTINCT * FROM employee WHERE NOT (name = 'Bob')",
-            Selection(
-                condition=NotExpression(
-                    expression=Comparison(
-                        operator=ComparisonOperator.EQUAL,
-                        left=Attribute(name='name'),
-                        right='Bob',
-                    )
-                ),
-                subquery=Relation(name='employee'),
+            Relation('employee').select(
+                Not(EQ(attribute('name'), 'Bob')),
             ),
         ),
         (
             "SELECT DISTINCT * FROM employee WHERE (dept_id = 1 AND age > 30) OR name = 'Bob'",
-            Selection(
-                condition=BinaryBooleanExpression(
-                    operator=BinaryBooleanOperator.OR,
-                    left=BinaryBooleanExpression(
-                        operator=BinaryBooleanOperator.AND,
-                        left=Comparison(
-                            operator=ComparisonOperator.EQUAL,
-                            left=Attribute(name='dept_id'),
-                            right=1,
-                        ),
-                        right=Comparison(
-                            operator=ComparisonOperator.GREATER_THAN,
-                            left=Attribute(name='age'),
-                            right=30,
-                        ),
+            Relation('employee').select(
+                Or(
+                    And(
+                        EQ(attribute('dept_id'), 1),
+                        GT(attribute('age'), 30),
                     ),
-                    right=Comparison(
-                        operator=ComparisonOperator.EQUAL,
-                        left=Attribute(name='name'),
-                        right='Bob',
-                    ),
-                ),
-                subquery=Relation(name='employee'),
+                    EQ(attribute('name'), 'Bob'),
+                )
             ),
         ),
         (
             'SELECT DISTINCT * FROM employee WHERE senior = TRUE',
-            Selection(
-                condition=Attribute(name='senior'),
-                subquery=Relation(name='employee'),
-            ),
+            Relation('employee').select(attribute('senior')),
         ),
     ],
 )

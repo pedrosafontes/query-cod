@@ -2,14 +2,10 @@ from collections.abc import Callable
 
 import pytest
 from queries.services.ra.parser.ast import (
-    Attribute,
-    Comparison,
-    ComparisonOperator,
-    Join,
-    JoinOperator,
+    GT,
     RAQuery,
     Relation,
-    ThetaJoin,
+    attribute,
 )
 
 
@@ -18,11 +14,7 @@ from queries.services.ra.parser.ast import (
     [
         (
             'SELECT * FROM employee NATURAL JOIN department',
-            Join(
-                operator=JoinOperator.NATURAL,
-                left=Relation(name='employee'),
-                right=Relation(name='department'),
-            ),
+            Relation('employee').natural_join('department'),
         ),
         (
             """
@@ -30,14 +22,9 @@ from queries.services.ra.parser.ast import (
             CROSS JOIN department
             WHERE employee.age > 30
             """,
-            ThetaJoin(
-                left=Relation(name='employee'),
-                right=Relation(name='department'),
-                condition=Comparison(
-                    operator=ComparisonOperator.GREATER_THAN,
-                    left=Attribute(name='age', relation='employee'),
-                    right=30,
-                ),
+            Relation('employee').theta_join(
+                'department',
+                condition=GT(attribute('employee.age'), 30),
             ),
         ),
         (
@@ -46,15 +33,7 @@ from queries.services.ra.parser.ast import (
                 SELECT * FROM employee NATURAL JOIN department
             ) AS sub NATURAL JOIN employee
             """,
-            Join(
-                operator=JoinOperator.NATURAL,
-                left=Join(
-                    operator=JoinOperator.NATURAL,
-                    left=Relation(name='employee'),
-                    right=Relation(name='department'),
-                ),
-                right=Relation(name='employee'),
-            ),
+            Relation('employee').natural_join('department').rename('sub').natural_join('employee'),
         ),
     ],
 )

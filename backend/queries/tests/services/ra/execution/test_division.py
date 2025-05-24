@@ -2,9 +2,6 @@ from collections.abc import Callable
 
 import pytest
 from queries.services.ra.parser.ast import (
-    Attribute,
-    Division,
-    Projection,
     RAQuery,
     Relation,
 )
@@ -15,19 +12,9 @@ from queries.services.ra.parser.ast import (
     [
         # Employees who have rotated through all departments
         (
-            Division(
-                dividend=Projection(
-                    attributes=[
-                        Attribute(name='employee_id'),
-                        Attribute(name='dept_id'),
-                    ],
-                    subquery=Relation('rotation'),
-                ),
-                divisor=Projection(
-                    attributes=[Attribute(name='dept_id')],
-                    subquery=Relation('department'),
-                ),
-            ),
+            Relation('rotation')
+            .project(['employee_id', 'dept_id'])
+            .divide(Relation('department').project(['dept_id'])),
             """
             SELECT DISTINCT employee_id
             FROM rotation

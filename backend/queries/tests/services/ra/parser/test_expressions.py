@@ -1,30 +1,33 @@
 import pytest
 from queries.services.ra.parser import parse_ra
 from queries.services.ra.parser.ast import (
-    Attribute,
+    EQ,
+    GT,
+    GTE,
+    LT,
+    LTE,
+    NEQ,
     Comparison,
-    ComparisonOperator,
     Relation,
-    Selection,
+    attribute,
 )
 
 
 @pytest.mark.parametrize(
     'op_str, expected_op',
     [
-        ('=', ComparisonOperator.EQUAL),
-        ('\\neq', ComparisonOperator.NOT_EQUAL),
-        ('<', ComparisonOperator.LESS_THAN),
-        ('\\lt', ComparisonOperator.LESS_THAN),
-        ('\\leq', ComparisonOperator.LESS_THAN_EQUAL),
-        ('>', ComparisonOperator.GREATER_THAN),
-        ('\\gt', ComparisonOperator.GREATER_THAN),
-        ('\\geq', ComparisonOperator.GREATER_THAN_EQUAL),
+        ('=', EQ),
+        ('\\neq', NEQ),
+        ('<', LT),
+        ('\\lt', LT),
+        ('\\leq', LTE),
+        ('>', GT),
+        ('\\gt', GT),
+        ('\\geq', GTE),
     ],
 )
-def test_comparison_operators(op_str: str, expected_op: ComparisonOperator) -> None:
+def test_comparison_operators(op_str: str, expected_op: type[Comparison]) -> None:
     # Use selection as a wrapper to test comparison expressions
-    assert parse_ra(f'\\sigma_{{a {op_str} 5}} R') == Selection(
-        condition=Comparison(expected_op, Attribute('a'), 5),
-        subquery=Relation('R'),
+    assert parse_ra(f'\\sigma_{{a {op_str} 5}} R') == Relation('R').select(
+        expected_op(attribute('a'), 5)
     )

@@ -2,13 +2,10 @@ from collections.abc import Callable
 
 import pytest
 from queries.services.ra.parser.ast import (
-    Attribute,
-    Comparison,
-    ComparisonOperator,
+    EQ,
     RAQuery,
     Relation,
-    Selection,
-    TopN,
+    attribute,
 )
 
 
@@ -17,36 +14,17 @@ from queries.services.ra.parser.ast import (
     [
         # Top 2 oldest employees
         (
-            TopN(
-                limit=2,
-                attribute=Attribute(name='age'),
-                subquery=Relation(name='employee'),
-            ),
+            Relation('employee').top_n(2, 'age'),
             'SELECT DISTINCT * FROM employee ORDER BY age DESC LIMIT 2',
         ),
         # Top 10 departments by name
         (
-            TopN(
-                limit=10,
-                attribute=Attribute(name='dept_name'),
-                subquery=Relation(name='department'),
-            ),
+            Relation('department').top_n(10, 'dept_name'),
             'SELECT DISTINCT * FROM department ORDER BY dept_name DESC LIMIT 10',
         ),
-        # 4. Top 2 oldest employees in dept 1
+        # Top 2 oldest employees in dept 1
         (
-            TopN(
-                limit=2,
-                attribute=Attribute(name='age'),
-                subquery=Selection(
-                    condition=Comparison(
-                        operator=ComparisonOperator.EQUAL,
-                        left=Attribute(name='dept_id'),
-                        right=1,
-                    ),
-                    subquery=Relation(name='employee'),
-                ),
-            ),
+            Relation('employee').select(EQ(attribute('dept_id'), 1)).top_n(2, 'age'),
             'SELECT DISTINCT * FROM (SELECT * FROM employee WHERE dept_id = 1) ORDER BY age DESC LIMIT 2',
         ),
     ],
