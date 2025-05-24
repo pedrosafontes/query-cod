@@ -36,13 +36,12 @@ selection: _SIGMA _subscript{bool_expr} unary_op
           | comparison
           | attribute
 
-comparison: value comparator value
-comparator: "=" -> eq
-          | "\\neq" -> neq
-          | ("<" | "\\lt") -> lt
-          | "\\leq" -> leq
-          | (">" | "\\gt") -> gt
-          | "\\geq" -> geq
+comparison: value "=" value -> eq
+          | value "\\neq" value -> neq
+          | value ("<" | "\\lt") value -> lt
+          | value "\\leq" value -> leq
+          | value (">" | "\\gt") value -> gt
+          | value "\\geq" value -> geq
 
 ?value: SIGNED_FLOAT  -> float
       | SIGNED_INT -> int

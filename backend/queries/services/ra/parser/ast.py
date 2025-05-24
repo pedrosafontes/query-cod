@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from enum import Enum
@@ -26,42 +28,38 @@ class Attribute(ASTNode):
         return self.name
 
 
-class BinaryBooleanOperator(Enum):
-    AND = 'AND'
-    OR = 'OR'
-
-    def __str__(self) -> str:
-        return self.value
-
-
 @dataclass
 class BinaryBooleanExpression:
-    operator: BinaryBooleanOperator
-    left: 'BooleanExpression'
-    right: 'BooleanExpression'
+    left: BooleanExpression
+    right: BooleanExpression
+
+    @property
+    def operator(self) -> str:
+        raise NotImplementedError('Subclasses must implement the operator property')
 
     def __str__(self) -> str:
         return f'({self.left} {self.operator} {self.right})'
 
 
 @dataclass
-class NotExpression:
-    expression: 'BooleanExpression'
+class And(BinaryBooleanExpression):
+    @property
+    def operator(self) -> str:
+        return 'and'
+
+
+class Or(BinaryBooleanExpression):
+    @property
+    def operator(self) -> str:
+        return 'or'
+
+
+@dataclass
+class Not:
+    expression: BooleanExpression
 
     def __str__(self) -> str:
         return f'(NOT {self.expression})'
-
-
-class ComparisonOperator(Enum):
-    EQUAL = '='
-    NOT_EQUAL = '<>'
-    GREATER_THAN = '>'
-    GREATER_THAN_EQUAL = '>='
-    LESS_THAN = '<'
-    LESS_THAN_EQUAL = '<='
-
-    def __str__(self) -> str:
-        return self.value
 
 
 ComparisonValue = Attribute | str | int | float | bool
@@ -69,15 +67,60 @@ ComparisonValue = Attribute | str | int | float | bool
 
 @dataclass
 class Comparison(ASTNode):
-    operator: ComparisonOperator
     left: ComparisonValue
     right: ComparisonValue
+
+    @property
+    def operator(self) -> str:
+        raise NotImplementedError('Subclasses must implement the operator property')
 
     def __str__(self) -> str:
         return f'{self.left} {self.operator} {self.right}'
 
 
-BooleanExpression = BinaryBooleanExpression | NotExpression | Comparison | Attribute
+@dataclass
+class EQ(Comparison):
+    @property
+    def operator(self) -> str:
+        return '='
+
+
+@dataclass
+class NEQ(Comparison):
+    @property
+    def operator(self) -> str:
+        return '<>'
+
+
+@dataclass
+class GT(Comparison):
+    @property
+    def operator(self) -> str:
+        return '>'
+
+
+@dataclass
+class GTE(Comparison):
+    @property
+    def operator(self) -> str:
+        return '>='
+
+
+@dataclass
+class LT(Comparison):
+    @property
+    def operator(self) -> str:
+        return '<'
+
+
+@dataclass
+class LTE(Comparison):
+    @property
+    def operator(self) -> str:
+        return '<='
+
+
+BooleanExpression = BinaryBooleanExpression | Not | Comparison | Attribute
 
 
 class AggregationFunction(Enum):
@@ -103,14 +146,18 @@ class Aggregation:
 
 def attribute(attr: str | Attribute) -> Attribute:
     if isinstance(attr, str):
-        return Attribute(name=attr)
+        if '.' in attr:
+            relation, name = attr.split('.', 1)
+            return Attribute(name=name, relation=relation)
+        else:
+            return Attribute(name=attr)
     return attr
 
 
 class RAQuery(ASTNode):
     def project(
         self, attributes: Sequence[str | Attribute], append: bool = False, optimise: bool = True
-    ) -> 'Projection':
+    ) -> Projection:
         projections: list[Attribute] = [attribute(attr) for attr in attributes]
 
         if append and optimise and isinstance(self, Projection):
@@ -121,46 +168,52 @@ class RAQuery(ASTNode):
             self.subquery if optimise and isinstance(self, Projection) else self,
         )
 
-    def select(self, condition: BooleanExpression) -> 'Selection':
+    def select(self, condition: BooleanExpression) -> Selection:
         return Selection(condition, self)
 
-    def union(self, other: 'RAQuery') -> 'SetOperation':
-        return SetOperation(SetOperator.UNION, self, other)
+    def union(self, other: RAQuery | str) -> SetOperation:
+        return SetOperation(SetOperator.UNION, self, query(other))
 
-    def intersect(self, other: 'RAQuery') -> 'SetOperation':
-        return SetOperation(SetOperator.INTERSECT, self, other)
+    def intersect(self, other: RAQuery | str) -> SetOperation:
+        return SetOperation(SetOperator.INTERSECT, self, query(other))
 
-    def difference(self, other: 'RAQuery') -> 'SetOperation':
-        return SetOperation(SetOperator.DIFFERENCE, self, other)
+    def difference(self, other: RAQuery | str) -> SetOperation:
+        return SetOperation(SetOperator.DIFFERENCE, self, query(other))
 
-    def cartesian(self, other: 'RAQuery') -> 'SetOperation':
-        return SetOperation(SetOperator.CARTESIAN, self, other)
+    def cartesian(self, other: RAQuery | str) -> SetOperation:
+        return SetOperation(SetOperator.CARTESIAN, self, query(other))
 
-    def natural_join(self, other: 'RAQuery') -> 'Join':
-        return Join(JoinOperator.NATURAL, self, other)
+    def natural_join(self, other: RAQuery | str) -> Join:
+        return Join(JoinOperator.NATURAL, self, query(other))
 
-    def semi_join(self, other: 'RAQuery') -> 'Join':
-        return Join(JoinOperator.SEMI, self, other)
+    def semi_join(self, other: RAQuery | str) -> Join:
+        return Join(JoinOperator.SEMI, self, query(other))
 
-    def anti_join(self, other: 'RAQuery') -> 'Join':
-        return Join(JoinOperator.ANTI, self, other)
+    def anti_join(self, other: RAQuery | str) -> Join:
+        return Join(JoinOperator.ANTI, self, query(other))
 
-    def theta_join(self, other: 'RAQuery', condition: BooleanExpression) -> 'ThetaJoin':
-        return ThetaJoin(self, other, condition)
+    def theta_join(self, other: RAQuery | str, condition: BooleanExpression) -> ThetaJoin:
+        return ThetaJoin(self, query(other), condition)
 
-    def divide(self, other: 'RAQuery') -> 'Division':
-        return Division(self, other)
+    def divide(self, other: RAQuery | str) -> Division:
+        return Division(self, query(other))
 
-    def rename(self, alias: str) -> 'Rename':
+    def rename(self, alias: str) -> Rename:
         return Rename(alias, self)
 
     def grouped_aggregation(
         self, group_by: Sequence[str | Attribute], aggregations: list[Aggregation]
-    ) -> 'GroupedAggregation':
+    ) -> GroupedAggregation:
         return GroupedAggregation([attribute(attr) for attr in group_by], aggregations, self)
 
-    def top_n(self, limit: int, attr: str | Attribute) -> 'TopN':
+    def top_n(self, limit: int, attr: str | Attribute) -> TopN:
         return TopN(limit, attribute(attr), self)
+
+
+def query(relation: RAQuery | str) -> RAQuery:
+    if isinstance(relation, str):
+        return Relation(name=relation)
+    return relation
 
 
 def cartesian(relations: list[RAQuery]) -> RAQuery:

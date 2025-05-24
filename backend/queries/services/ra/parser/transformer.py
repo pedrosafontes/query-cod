@@ -3,19 +3,24 @@ from typing import Any, cast
 from lark import Token, Transformer, Tree
 
 from .ast import (
+    EQ,
+    GT,
+    GTE,
+    LT,
+    LTE,
+    NEQ,
     Aggregation,
     AggregationFunction,
+    And,
     Attribute,
     BinaryBooleanExpression,
-    BinaryBooleanOperator,
     BooleanExpression,
-    Comparison,
-    ComparisonOperator,
     ComparisonValue,
     Division,
     GroupedAggregation,
     Join,
-    NotExpression,
+    Not,
+    Or,
     Projection,
     RAQuery,
     Relation,
@@ -126,38 +131,31 @@ class RATransformer(Transformer[Relation, RAQuery]):
         return dividend.divide(divisor)
 
     def and_(self, args: tuple[BooleanExpression, BooleanExpression]) -> BinaryBooleanExpression:
-        left, right = args
-        return BinaryBooleanExpression(operator=BinaryBooleanOperator.AND, left=left, right=right)
+        return And(*args)
 
     def or_(self, args: tuple[BooleanExpression, BooleanExpression]) -> BinaryBooleanExpression:
-        left, right = args
-        return BinaryBooleanExpression(operator=BinaryBooleanOperator.OR, left=left, right=right)
+        return Or(*args)
 
-    def not_(self, args: tuple[BooleanExpression]) -> NotExpression:
-        return NotExpression(expression=args[0])
+    def not_(self, args: tuple[BooleanExpression]) -> Not:
+        return Not(*args)
 
-    def comparison(
-        self, args: tuple[ComparisonValue, ComparisonOperator, ComparisonValue]
-    ) -> Comparison:
-        return Comparison(left=args[0], operator=args[1], right=args[2])
+    def eq(self, args: tuple[ComparisonValue, ComparisonValue]) -> EQ:
+        return EQ(*args)
 
-    def eq(self, _: tuple[()]) -> ComparisonOperator:
-        return ComparisonOperator.EQUAL
+    def neq(self, args: tuple[ComparisonValue, ComparisonValue]) -> NEQ:
+        return NEQ(*args)
 
-    def neq(self, _: tuple[()]) -> ComparisonOperator:
-        return ComparisonOperator.NOT_EQUAL
+    def lt(self, args: tuple[ComparisonValue, ComparisonValue]) -> LT:
+        return LT(*args)
 
-    def lt(self, _: tuple[()]) -> ComparisonOperator:
-        return ComparisonOperator.LESS_THAN
+    def leq(self, args: tuple[ComparisonValue, ComparisonValue]) -> LTE:
+        return LTE(*args)
 
-    def leq(self, _: tuple[()]) -> ComparisonOperator:
-        return ComparisonOperator.LESS_THAN_EQUAL
+    def gt(self, args: tuple[ComparisonValue, ComparisonValue]) -> GT:
+        return GT(*args)
 
-    def gt(self, _: tuple[()]) -> ComparisonOperator:
-        return ComparisonOperator.GREATER_THAN
-
-    def geq(self, _: tuple[()]) -> ComparisonOperator:
-        return ComparisonOperator.GREATER_THAN_EQUAL
+    def geq(self, args: tuple[ComparisonValue, ComparisonValue]) -> GTE:
+        return GTE(*args)
 
     def int(self, args: list[Token]) -> int:
         return int(args[0])
