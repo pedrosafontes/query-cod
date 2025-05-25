@@ -66,6 +66,9 @@ class RASemanticAnalyzer:
         input_ = self._schema_inferrer.infer(sel.subquery)
         self._validate_condition(sel.condition, [input_])
 
+    def _validate_Rename(self, rename: Projection) -> None:  # noqa: N802
+        self._validate(rename.subquery)
+
     def _validate_SetOperation(self, op: SetOperation) -> None:  # noqa: N802
         self._validate(op.left)
         self._validate(op.right)
