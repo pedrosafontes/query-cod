@@ -246,7 +246,8 @@ export const joinOperators: RAKeyboardItem[] = [
     details: {
       displayExpr: "R \\ \\overline{\\Join} \\ S",
       name: "Anti Join",
-      description: "Returns rows from the left relation without matches in the right.",
+      description:
+        "Returns rows from the left relation without matches in the right.",
       args: [
         { name: "R", description: "left relation" },
         { name: "S", description: "right relation" },
