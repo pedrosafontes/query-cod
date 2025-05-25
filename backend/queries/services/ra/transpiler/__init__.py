@@ -218,7 +218,7 @@ class RAtoSQLTranspiler:
         return query.limit(top_n.limit).order_by(self._transpile_attribute(top_n.attribute).desc())
 
     def _transpile_Rename(self, rename: ra.Rename) -> Select:  # noqa: N802
-        query = self._transpile_select(rename.subquery)
+        query = self.transpile(rename.subquery)
         return subquery(query, rename.alias).select('*')
 
     def _transpile_relation(self, relation: RAQuery, alias: str) -> tuple[Select, str]:
