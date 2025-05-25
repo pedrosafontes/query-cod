@@ -16,6 +16,7 @@
          | selection
          | grouped_aggregation
          | topn
+         | rename
          | subquery
 
 ?subquery: relation
@@ -24,6 +25,8 @@
 projection: _PI _subscript{nonempty_list{attribute}} unary_op
 
 selection: _SIGMA _subscript{bool_expr} unary_op
+
+rename: _RHO _subscript{_identifier} unary_op
 
 ?bool_expr: and_expr
           | bool_expr "\\lor" and_expr -> or_
@@ -72,6 +75,7 @@ placeholder: "\\placeholder" "{" CNAME? "}"
 
 _PI: "\\pi"
 _SIGMA: "\\sigma"
+_RHO: "\\rho"
 _GAMMA: "\\Gamma"
 _TOPN: "\\operatorname{T}"
 _UNION: "\\cup"

@@ -65,6 +65,10 @@ class RATransformer(Transformer[Relation, RAQuery]):
         condition, query = args
         return query.select(condition)
 
+    def rename(self, args: tuple[str, RAQuery]) -> RAQuery:
+        alias, query = args
+        return query.rename(alias)
+
     def grouped_aggregation(
         self, args: tuple[list[Attribute], list[Aggregation], RAQuery]
     ) -> GroupedAggregation:

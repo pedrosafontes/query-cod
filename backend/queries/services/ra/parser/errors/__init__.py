@@ -13,6 +13,7 @@ from .grouped_aggregation import (
 )
 from .join import InvalidThetaJoinConditionError, MissingThetaJoinConditionError
 from .projection import MissingProjectionAttributesError
+from .rename import MissingRenameAliasError
 from .selection import InvalidSelectionConditionError, MissingSelectionConditionError
 from .top_n import InvalidTopNLimitError, InvalidTopNOrderByError
 
@@ -26,6 +27,7 @@ __all__ = [
     'MissingProjectionAttributesError',
     'MissingSelectionConditionError',
     'InvalidSelectionConditionError',
+    'MissingRenameAliasError',
     'MissingThetaJoinConditionError',
     'InvalidThetaJoinConditionError',
     'MissingGroupingAggregationsError',
