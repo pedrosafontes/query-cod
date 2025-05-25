@@ -22,7 +22,7 @@ class WhereTranspiler:
         self.parameters: list[Attribute] = []
 
     def transpile(self, join_query: RAQuery) -> RAQuery:
-        assert self.scope.where
+        assert self.scope.where  # noqa: S101
 
         subquery_free, exists, not_exists = self._split_condition(self.scope.where.this)
 
@@ -49,7 +49,7 @@ class WhereTranspiler:
         result = self._perform_decorrelation(natural_join, result, transpiled_exists)
         result = self._perform_decorrelation(anti_join, result, transpiled_not_exists)
 
-        assert result
+        assert result  # noqa: S101
 
         if subquery_free:
             result = result.select(self.expr_transpiler.transpile(subquery_free))

@@ -151,6 +151,8 @@ class TablesScope:
                 attributes=self.get_schema()[name_or_alias],
             )
         else:
+            assert self.select_scope.from_ is not None  # noqa: S101
+
             query = select('*').from_(self.select_scope.from_.this)
             query.set('joins', self.select_scope.joins)
             return Source(
