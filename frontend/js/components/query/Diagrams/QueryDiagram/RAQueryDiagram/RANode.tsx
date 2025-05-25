@@ -119,8 +119,13 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
       }
       case "Join": {
         const { operator } = props as RAJoinNode;
+        const operatorLatex = {
+          "NATURAL": `\\Join`,
+          "SEMI": `\\ltimes`,
+          "ANTI": `\\overline{\\Join}`,
+        }
         return {
-          latex: operator === "SEMI" ? `\\ltimes` : `\\Join`,
+          latex: operatorLatex[operator as keyof typeof operatorLatex],
           borderClass: "border-pink-300",
           bgClass: "bg-pink-50",
         };
