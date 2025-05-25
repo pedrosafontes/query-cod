@@ -2,19 +2,17 @@ from collections.abc import Callable
 
 import pytest
 from queries.services.ra.parser.ast import (
-    Attribute,
-    Comparison,
-    ComparisonOperator,
+    GT,
     RAQuery,
     Relation,
-    Selection,
+    attribute,
 )
 
 
 @pytest.mark.parametrize(
     'query',
     [
-        Selection(Comparison(ComparisonOperator.GREATER_THAN, Attribute('A'), 10), Relation('R')),
+        Relation('R').select(GT(attribute('A'), 10)),
     ],
 )
 def test_valid_selection(query: RAQuery, assert_valid: Callable[[RAQuery], None]) -> None:

@@ -2,14 +2,11 @@ from collections.abc import Callable
 
 import pytest
 from queries.services.ra.parser.ast import (
-    Attribute,
-    Comparison,
-    ComparisonOperator,
-    Join,
-    JoinOperator,
+    EQ,
+    GT,
     RAQuery,
     Relation,
-    ThetaJoin,
+    attribute,
 )
 
 
@@ -18,20 +15,12 @@ from queries.services.ra.parser.ast import (
     [
         # Natural join
         (
-            Join(
-                operator=JoinOperator.NATURAL,
-                left=Relation('employee'),
-                right=Relation('department'),
-            ),
+            Relation('employee').natural_join('department'),
             """SELECT DISTINCT * FROM employee NATURAL JOIN department""",
         ),
         # Semi-join
         (
-            Join(
-                operator=JoinOperator.SEMI,
-                left=Relation('employee'),
-                right=Relation('department'),
-            ),
+            Relation('employee').semi_join('department'),
             """
             SELECT DISTINCT * FROM employee WHERE EXISTS (
                 SELECT DISTINCT * FROM department
@@ -41,14 +30,8 @@ from queries.services.ra.parser.ast import (
         ),
         # Theta join
         (
-            ThetaJoin(
-                left=Relation('employee'),
-                right=Relation('department'),
-                condition=Comparison(
-                    operator=ComparisonOperator.GREATER_THAN,
-                    left=Attribute(name='age', relation='employee'),
-                    right=30,
-                ),
+            Relation('employee').theta_join(
+                'department', condition=GT(attribute('employee.age'), 30)
             ),
             """
             SELECT DISTINCT * FROM employee
@@ -58,14 +41,9 @@ from queries.services.ra.parser.ast import (
         ),
         # Theta join
         (
-            ThetaJoin(
-                left=Relation('employee'),
-                right=Relation('department'),
-                condition=Comparison(
-                    operator=ComparisonOperator.EQUAL,
-                    left=Attribute(name='dept_id', relation='employee'),
-                    right=Attribute(name='dept_id', relation='department'),
-                ),
+            Relation('employee').theta_join(
+                'department',
+                condition=EQ(attribute('employee.dept_id'), attribute('department.dept_id')),
             ),
             """
             SELECT DISTINCT * FROM employee
@@ -75,15 +53,7 @@ from queries.services.ra.parser.ast import (
         ),
         # Nested
         (
-            Join(
-                operator=JoinOperator.NATURAL,
-                left=Join(
-                    operator=JoinOperator.NATURAL,
-                    left=Relation('employee'),
-                    right=Relation('department'),
-                ),
-                right=Relation('employee'),
-            ),
+            Relation('employee').natural_join('department').natural_join('employee'),
             """
             SELECT DISTINCT * FROM (
                 SELECT DISTINCT * FROM employee NATURAL JOIN department

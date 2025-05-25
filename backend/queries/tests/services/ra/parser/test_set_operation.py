@@ -1,12 +1,8 @@
 import pytest
 from queries.services.ra.parser import parse_ra
 from queries.services.ra.parser.ast import (
-    Attribute,
-    Projection,
     RAQuery,
     Relation,
-    SetOperation,
-    SetOperator,
 )
 from queries.services.ra.parser.errors import (
     MissingOperandError,
@@ -16,29 +12,17 @@ from queries.services.ra.parser.errors import (
 @pytest.mark.parametrize(
     'query, expected',
     [
-        ('R \\cup S', SetOperation(SetOperator.UNION, Relation('R'), Relation('S'))),
-        ('R - S', SetOperation(SetOperator.DIFFERENCE, Relation('R'), Relation('S'))),
-        ('R \\cap S', SetOperation(SetOperator.INTERSECT, Relation('R'), Relation('S'))),
-        ('R \\times S', SetOperation(SetOperator.CARTESIAN, Relation('R'), Relation('S'))),
+        ('R \\cup S', Relation('R').union('S')),
+        ('R - S', Relation('R').difference('S')),
+        ('R \\cap S', Relation('R').intersect('S')),
+        ('R \\times S', Relation('R').cartesian('S')),
         (
             'R \\cup (S - T)',
-            SetOperation(
-                operator=SetOperator.UNION,
-                left=Relation('R'),
-                right=SetOperation(
-                    operator=SetOperator.DIFFERENCE,
-                    left=Relation('S'),
-                    right=Relation('T'),
-                ),
-            ),
+            Relation('R').union(Relation('S').difference('T')),
         ),
         (
             '\\pi_{A} R - \\pi_{A} S',
-            SetOperation(
-                SetOperator.DIFFERENCE,
-                Projection([Attribute('A')], Relation('R')),
-                Projection([Attribute('A')], Relation('S')),
-            ),
+            Relation('R').project(['A']).difference(Relation('S').project(['A'])),
         ),
     ],
 )

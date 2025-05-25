@@ -3,6 +3,7 @@ from queries.types import QueryError
 from sqlglot.expressions import From, Join, Select, SetOperation, Subquery, Table, select
 
 from ..semantics import validate_sql_semantics
+from ..types import SQLTable
 from .types import (
     AliasNode,
     GroupByNode,
@@ -92,7 +93,7 @@ class SQLTreeBuilder:
             return None, partial_query
 
     def _build_table(
-        self, table: Table | Subquery, partial_query: Select | None = None
+        self, table: SQLTable, partial_query: Select | None = None
     ) -> tuple[SQLTree, Select]:
         if partial_query is None:
             partial_query = select('*')

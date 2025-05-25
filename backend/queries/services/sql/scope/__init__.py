@@ -1,8 +1,4 @@
-from .query import SelectScope, SetOperationScope, SQLScope
+from .query import DerivedTableScope, SelectScope, SetOperationScope, SQLScope
 
 
-__all__ = [
-    'SQLScope',
-    'SelectScope',
-    'SetOperationScope',
-]
+__all__ = ['SQLScope', 'SelectScope', 'SetOperationScope', 'DerivedTableScope']

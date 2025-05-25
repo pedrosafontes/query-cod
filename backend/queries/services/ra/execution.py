@@ -4,7 +4,7 @@ from databases.services.schema import get_schema
 from databases.types import QueryResult
 from queries.services.types import to_relational_schema
 
-from ..parser.ast import RAQuery
+from .parser.ast import RAQuery
 from .transpiler import RAtoSQLTranspiler
 
 

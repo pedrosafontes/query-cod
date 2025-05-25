@@ -1,6 +1,7 @@
 from sqlglot.expressions import Subquery, Table
 
 from ..scope import SelectScope
+from ..types import SQLTable
 from .errors import (
     DuplicateAliasError,
     MissingDerivedColumnAliasError,
@@ -13,7 +14,7 @@ class TableValidator:
     def __init__(self, scope: SelectScope) -> None:
         self.scope = scope
 
-    def validate(self, table: Table | Subquery) -> None:
+    def validate(self, table: SQLTable) -> None:
         match table:
             case Table():
                 return self._validate_table(table)
@@ -33,7 +34,7 @@ class TableValidator:
             raise MissingDerivedTableAliasError(subquery)
 
         # Validate the subquery
-        subquery_scope = self.scope.derived_table_scopes[subquery.this]
+        subquery_scope = self.scope.tables.derived_table_scopes[subquery.alias_or_name]
         QueryValidator.validate(subquery_scope)
 
         # Derived columns must have a unique alias

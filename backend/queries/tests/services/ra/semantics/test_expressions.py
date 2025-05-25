@@ -2,15 +2,14 @@ from collections.abc import Callable
 
 import pytest
 from queries.services.ra.parser.ast import (
-    Attribute,
-    BinaryBooleanExpression,
-    BinaryBooleanOperator,
-    Comparison,
-    ComparisonOperator,
-    NotExpression,
+    EQ,
+    GT,
+    LT,
+    And,
+    Not,
     RAQuery,
     Relation,
-    Selection,
+    attribute,
 )
 from queries.services.ra.semantics.errors import AttributeNotFoundError, TypeMismatchError
 
@@ -29,58 +28,31 @@ def test_valid_relation(query: RAQuery, assert_valid: Callable[[RAQuery], None])
     'query, expected_exception',
     [
         (
-            Selection(
-                Comparison(ComparisonOperator.GREATER_THAN, Attribute('Z'), 10),
-                Relation('R'),
-            ),
+            Relation('R').select(GT(attribute('Z'), 10)),
             AttributeNotFoundError,
         ),
         (
-            Selection(Comparison(ComparisonOperator.EQUAL, Attribute('B'), 10), Relation('R')),
+            Relation('R').select(EQ(attribute('B'), 10)),
             TypeMismatchError,
         ),
         # AND between non-booleans
         (
-            Selection(
-                BinaryBooleanExpression(
-                    BinaryBooleanOperator.AND,
-                    Attribute('A'),
-                    Attribute('B'),
-                ),
-                Relation('R'),
-            ),
+            Relation('R').select(And(attribute('A'), attribute('B'))),
             TypeMismatchError,
         ),
         # Logical NOT on a VARCHAR: ¬B
         (
-            Selection(
-                NotExpression(Attribute('B')),
-                Relation('R'),
-            ),
+            Relation('R').select(Not(attribute('B'))),
             TypeMismatchError,
         ),
         # Comparison between TEXT and FLOAT: B < C
         (
-            Selection(
-                Comparison(
-                    ComparisonOperator.LESS_THAN,
-                    Attribute('B'),
-                    Attribute('C'),
-                ),
-                Relation('R'),
-            ),
+            Relation('R').select(LT(attribute('B'), attribute('C'))),
             TypeMismatchError,
         ),
         # Comparison between INTEGER and TEXT: A = B
         (
-            Selection(
-                Comparison(
-                    ComparisonOperator.EQUAL,
-                    Attribute('A'),
-                    Attribute('B'),
-                ),
-                Relation('R'),
-            ),
+            Relation('R').select(EQ(attribute('A'), attribute('B'))),
             TypeMismatchError,
         ),
     ],

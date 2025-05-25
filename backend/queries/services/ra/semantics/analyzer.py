@@ -12,7 +12,7 @@ from ..parser.ast import (
     Division,
     GroupedAggregation,
     Join,
-    NotExpression,
+    Not,
     Projection,
     RAQuery,
     Relation,
@@ -149,7 +149,7 @@ class RASemanticAnalyzer:
             case BinaryBooleanExpression(left=left, right=right):
                 self._validate_condition(left, inputs)
                 self._validate_condition(right, inputs)
-            case NotExpression(expression=inner):
+            case Not(expression=inner):
                 self._validate_condition(inner, inputs)
 
     def _validate_comparison(self, cond: Comparison, inputs: list[RelationOutput]) -> None:

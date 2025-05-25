@@ -2,12 +2,8 @@ from collections.abc import Callable
 
 import pytest
 from queries.services.ra.parser.ast import (
-    Attribute,
-    Projection,
     RAQuery,
     Relation,
-    SetOperation,
-    SetOperator,
 )
 
 
@@ -16,90 +12,46 @@ from queries.services.ra.parser.ast import (
     [
         # Union
         (
-            SetOperation(
-                operator=SetOperator.UNION,
-                left=Relation(name='department'),
-                right=Relation(name='department'),
-            ),
+            Relation('department').union('department'),
             'SELECT DISTINCT * FROM department UNION SELECT DISTINCT * FROM department',
         ),
         # Difference
         (
-            SetOperation(
-                operator=SetOperator.DIFFERENCE,
-                left=Relation(name='employee'),
-                right=Relation(name='employee'),
-            ),
+            Relation('employee').difference('employee'),
             'SELECT DISTINCT * FROM employee EXCEPT SELECT DISTINCT * FROM employee',
         ),
         # Intersect
         (
-            SetOperation(
-                operator=SetOperator.INTERSECT,
-                left=Relation(name='department'),
-                right=Relation(name='department'),
-            ),
+            Relation('department').intersect('department'),
             'SELECT DISTINCT * FROM department INTERSECT SELECT DISTINCT * FROM department',
         ),
         # Cartesian product
         (
-            SetOperation(
-                operator=SetOperator.CARTESIAN,
-                left=Relation(name='department'),
-                right=Relation(name='employee'),
-            ),
+            Relation('department').cartesian('employee'),
             'SELECT DISTINCT * FROM department CROSS JOIN employee',
         ),
         # Chained operations
         (
-            SetOperation(
-                operator=SetOperator.UNION,
-                left=Relation(name='department'),
-                right=SetOperation(
-                    operator=SetOperator.DIFFERENCE,
-                    left=Relation(name='department'),
-                    right=Relation(name='department'),
-                ),
-            ),
+            Relation('department').difference('department').union('department'),
             'SELECT DISTINCT * FROM department UNION (SELECT DISTINCT * FROM department EXCEPT SELECT DISTINCT * FROM department)',
         ),
         # Union after projection
         (
-            SetOperation(
-                operator=SetOperator.UNION,
-                left=Projection(
-                    attributes=[Attribute(name='dept_name')],
-                    subquery=Relation(name='department'),
-                ),
-                right=Projection(
-                    attributes=[Attribute(name='name')],
-                    subquery=Relation(name='employee'),
-                ),
-            ),
+            Relation('department')
+            .project(['dept_name'])
+            .union(Relation('employee').project(['name'])),
             'SELECT DISTINCT dept_name FROM department UNION SELECT DISTINCT name FROM employee',
         ),
         # Difference on projection
         (
-            SetOperation(
-                operator=SetOperator.DIFFERENCE,
-                left=Projection(
-                    attributes=[Attribute(name='dept_name')],
-                    subquery=Relation(name='department'),
-                ),
-                right=Projection(
-                    attributes=[Attribute(name='name')],
-                    subquery=Relation(name='employee'),
-                ),
-            ),
+            Relation('department')
+            .project(['dept_name'])
+            .difference(Relation('employee').project(['name'])),
             'SELECT DISTINCT dept_name FROM department EXCEPT SELECT DISTINCT name FROM employee',
         ),
         # Cartesian product
         (
-            SetOperation(
-                operator=SetOperator.CARTESIAN,
-                left=Relation(name='employee'),
-                right=Relation(name='department'),
-            ),
+            Relation('employee').cartesian('department'),
             'SELECT DISTINCT * FROM employee CROSS JOIN department',
         ),
     ],

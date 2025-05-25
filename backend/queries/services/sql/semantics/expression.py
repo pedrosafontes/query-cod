@@ -108,7 +108,7 @@ class ExpressionValidator:
                 raise NonScalarExpressionError(expr)
 
     def _validate_column(self, column: exp.Column, context: ValidationContext) -> None:
-        if self.scope.tables.resolve_column(column) is None:
+        if not self.scope.tables.can_resolve(column):
             raise ColumnNotFoundError.from_column(column)
 
         if (
@@ -134,6 +134,9 @@ class ExpressionValidator:
 
         # Validate the subquery
         scope = self.scope.subquery_scopes[select]
+        if not isinstance(scope, SelectScope):
+            raise NonScalarExpressionError(subquery)
+
         QueryValidator.validate(scope)
 
         # Check if the subquery returns a scalar: a single column and a single row
@@ -143,7 +146,7 @@ class ExpressionValidator:
         [expr] = scope.projections.expressions
 
         inner: Expression = expr.unalias()  # type: ignore[no-untyped-call]
-        if not is_aggregate(inner) or select.args.get('group'):
+        if not is_aggregate(inner) or scope.is_grouped:
             raise NonScalarExpressionError(subquery)
 
         return self._type_inferrer.infer(inner)

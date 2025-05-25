@@ -2,15 +2,10 @@ from collections.abc import Callable
 
 import pytest
 from queries.services.ra.parser.ast import (
-    Attribute,
-    Comparison,
-    ComparisonOperator,
-    Projection,
+    GT,
     RAQuery,
     Relation,
-    Selection,
-    SetOperation,
-    SetOperator,
+    attribute,
 )
 from queries.services.ra.semantics.errors import (
     AmbiguousAttributeReferenceError,
@@ -21,14 +16,8 @@ from queries.services.ra.semantics.errors import (
 @pytest.mark.parametrize(
     'query',
     [
-        Projection([Attribute('A'), Attribute('B')], Relation('R')),
-        Projection(
-            [Attribute('A'), Attribute('B')],
-            Selection(
-                Comparison(ComparisonOperator.GREATER_THAN, Attribute('C'), 5.0),
-                Relation('R'),
-            ),
-        ),
+        Relation('R').project(['A', 'B']),
+        Relation('R').select(GT(attribute('C'), 5.0)).project(['A', 'B']),
     ],
 )
 def test_valid_projection(query: RAQuery, assert_valid: Callable[[RAQuery], None]) -> None:
@@ -38,16 +27,9 @@ def test_valid_projection(query: RAQuery, assert_valid: Callable[[RAQuery], None
 @pytest.mark.parametrize(
     'query, expected_exception',
     [
-        (Projection([Attribute('Z')], Relation('R')), AttributeNotFoundError),
+        (Relation('R').project(['Z']), AttributeNotFoundError),
         (
-            Projection(
-                [Attribute('A')],
-                SetOperation(
-                    SetOperator.CARTESIAN,
-                    Relation('R'),
-                    Relation('T'),
-                ),
-            ),
+            Relation('R').cartesian('T').project(['A']),
             AmbiguousAttributeReferenceError,
         ),
     ],

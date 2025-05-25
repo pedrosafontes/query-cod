@@ -3,9 +3,7 @@ from typing import cast
 from queries.services.types import Attributes, RelationalSchema, SQLQuery, flatten
 from sqlglot.expressions import (
     Expression,
-    From,
     Identifier,
-    Join,
     Select,
     SetOperation,
     Subquery,
@@ -13,7 +11,8 @@ from sqlglot.expressions import (
 )
 
 from ..inference import TypeInferrer
-from .query import SelectScope, SetOperationScope, SQLScope
+from ..types import SQLTable
+from .query import DerivedTableScope, SelectScope, SetOperationScope, SQLScope
 
 
 def build_scope(
@@ -24,8 +23,17 @@ def build_scope(
             return _build_select_scope(query, schema, parent)
         case _ if isinstance(query, SetOperation):
             return _build_set_operation_scope(query, schema, parent)
+        case Subquery():
+            return _build_derived_table_scope(query, schema, parent)
         case _:
             raise NotImplementedError(f'Unsupported query type: {type(query)}')
+
+
+def _build_derived_table_scope(
+    subquery: Subquery, schema: RelationalSchema, parent: SQLScope | None = None
+) -> DerivedTableScope:
+    child = build_scope(subquery.this, schema, parent)
+    return DerivedTableScope(subquery, schema, child)
 
 
 def _build_set_operation_scope(
@@ -33,7 +41,7 @@ def _build_set_operation_scope(
 ) -> SetOperationScope:
     left = build_scope(query.left, schema, parent)
     right = build_scope(query.right, schema, parent)
-    scope = SetOperationScope(query, left, right)
+    scope = SetOperationScope(query, schema, left, right)
     return scope
 
 
@@ -49,30 +57,25 @@ def _build_select_scope(
 
 
 def _process_from(scope: SelectScope) -> None:
-    from_clause: From | None = scope.query.args.get('from')
-    if from_clause:
-        _process_table(scope, from_clause.this)
+    if scope.from_:
+        _process_table(scope, scope.from_.this)
 
 
 def _process_where(scope: SelectScope) -> None:
-    where: Expression | None = scope.query.args.get('where')
-    if where:
-        for query in where.find_all(Subquery, Select):
+    if scope.where:
+        for query in scope.where.find_all(Subquery, Select):
             if isinstance(query, Subquery):
                 query = query.this
             scope.subquery_scopes[query] = build_scope(query, scope.db_schema, scope)
 
 
 def _process_joins(scope: SelectScope) -> None:
-    joins: list[Join] = scope.query.args.get('joins', [])
-
-    for join in joins:
-        left_schema = scope.tables.get_schema()
-        scope.join_schemas[join] = left_schema
+    for join in scope.joins:
+        left_cols = scope.tables.get_all_columns()
+        scope.joined_left_cols[join] = left_cols
 
         table = join.this
 
-        left_cols = flatten(left_schema)
         right_cols = _process_table(scope, table)
 
         kind = join.method or join.kind
@@ -87,7 +90,7 @@ def _process_joins(scope: SelectScope) -> None:
 
 
 def _process_select(scope: SelectScope) -> None:
-    for expr in cast(list[Expression], scope.query.expressions):
+    for expr in cast(list[Expression], scope.select.expressions):
         if expr.is_star:
             for col in scope.expand_star(expr) or []:
                 scope.projections.add(col, TypeInferrer(scope).infer(col))
@@ -95,17 +98,16 @@ def _process_select(scope: SelectScope) -> None:
             scope.projections.add(expr, TypeInferrer(scope).infer(expr))
 
 
-def _process_table(scope: SelectScope, table: Table | Subquery) -> Attributes:
+def _process_table(scope: SelectScope, table: SQLTable) -> Attributes:
     match table:
         case Table():
             attributes = scope.db_schema.get(table.name, {}).copy()
 
         case Subquery():
-            query = table.this
-            child = build_scope(query, scope.db_schema, scope)
-            scope.derived_table_scopes[query] = child
+            derived_table_scope = _build_derived_table_scope(table, scope.db_schema, scope)
+            scope.tables.derived_table_scopes[table.alias_or_name] = derived_table_scope
 
-            attributes = flatten(child.projections.schema)
+            attributes = flatten(derived_table_scope.projections.schema)
 
     scope.tables.add(table, attributes)
 

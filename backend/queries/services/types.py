@@ -1,5 +1,8 @@
 from collections import defaultdict
 
+import queries.services.ra.parser.ast as ra
+import sqlglot.expressions as sql
+from bidict import bidict
 from databases.types import Columns, Schema
 from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import DataType as SQLGlotDataType
@@ -98,3 +101,26 @@ def to_sqlglot_schema(schema: RelationalSchema) -> dict[str, dict[str, SQLGlotDa
 
 SQLQuery = Query
 QueryAST = RAQuery | Query
+
+ra_to_sql_bin_bool_ops = {
+    ra.And: sql.and_,
+    ra.Or: sql.or_,
+}
+
+sql_to_ra_bin_bool_ops = {
+    sql.And: ra.And,
+    sql.Or: ra.Or,
+}
+
+ra_to_sql_comparisons: bidict[type[ra.Comparison], type[sql.Expression]] = bidict(
+    {
+        ra.EQ: sql.EQ,
+        ra.NEQ: sql.NEQ,
+        ra.GT: sql.GT,
+        ra.LT: sql.LT,
+        ra.GTE: sql.GTE,
+        ra.LTE: sql.LTE,
+    }
+)
+
+sql_to_ra_comparisons = ra_to_sql_comparisons.inverse

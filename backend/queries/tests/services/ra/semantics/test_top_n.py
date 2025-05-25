@@ -1,14 +1,14 @@
 from collections.abc import Callable
 
 import pytest
-from queries.services.ra.parser.ast import Attribute, RAQuery, Relation, TopN
+from queries.services.ra.parser.ast import RAQuery, Relation
 from queries.services.ra.semantics.errors import AttributeNotFoundError
 
 
 @pytest.mark.parametrize(
     'query',
     [
-        TopN(10, Attribute('A'), Relation('R')),
+        Relation('R').top_n(10, 'A'),
     ],
 )
 def test_valid_top_n(query: RAQuery, assert_valid: Callable[[RAQuery], None]) -> None:
@@ -18,7 +18,7 @@ def test_valid_top_n(query: RAQuery, assert_valid: Callable[[RAQuery], None]) ->
 @pytest.mark.parametrize(
     'query, expected_exception',
     [
-        (TopN(10, Attribute('Z'), Relation('R')), AttributeNotFoundError),
+        (Relation('R').top_n(10, 'Z'), AttributeNotFoundError),
     ],
 )
 def test_invalid_top_n(

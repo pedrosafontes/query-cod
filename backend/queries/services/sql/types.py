@@ -1,3 +1,5 @@
+from typing import get_args
+
 from sqlglot.expressions import (
     EQ,
     GT,
@@ -25,8 +27,10 @@ from sqlglot.expressions import (
     Or,
     StrPosition,
     Sub,
+    Subquery,
     Substring,
     Sum,
+    Table,
     Trim,
     Upper,
 )
@@ -37,4 +41,6 @@ StringOperation = Lower | Upper | Trim | Length | Substring | DPipe | StrPositio
 Comparison = EQ | NEQ | GT | GTE | LT | LTE
 BooleanExpression = And | Or | Not
 AggregateFunction = Count | Sum | Avg | Min | Max
+aggregate_functions = get_args(AggregateFunction)
 Predicate = Exists | Between | Like | Is | In
+SQLTable = Table | Subquery

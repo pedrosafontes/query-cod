@@ -1,4 +1,4 @@
-from queries.services.types import Attributes, flatten
+from queries.services.types import Attributes
 from sqlglot.expressions import Identifier, Join
 
 from ..scope import SelectScope
@@ -25,12 +25,8 @@ class JoinValidator:
         table = join.this
         self.table_validator.validate(table)
 
-        left_schema = self.scope.join_schemas[join]
-        left_cols = flatten(left_schema)
-
-        right_schema = self.scope.tables.get_table_schema(table.alias_or_name)
-        assert right_schema is not None  # noqa: S101
-        right_cols = flatten(right_schema)
+        left_cols = self.scope.joined_left_cols[join]
+        right_cols = self.scope.tables.get_columns(table.alias_or_name)
 
         kind = join.method or join.kind
         using: list[Identifier] | None = join.args.get('using')

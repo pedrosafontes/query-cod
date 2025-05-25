@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 import pytest
-from queries.services.ra.parser.ast import Attribute, Projection, RAQuery, Relation
+from queries.services.ra.parser.ast import RAQuery, Relation
 
 
 @pytest.mark.parametrize(
@@ -9,40 +9,22 @@ from queries.services.ra.parser.ast import Attribute, Projection, RAQuery, Relat
     [
         # Qualified
         (
-            Projection(
-                attributes=[Attribute(name='dept_name', relation='department')],
-                subquery=Relation(name='department'),
-            ),
+            Relation('department').project(['department.dept_name']),
             'SELECT DISTINCT dept_name FROM department',
         ),
         # Unqualified
         (
-            Projection(
-                attributes=[Attribute(name='dept_name')],
-                subquery=Relation(name='department'),
-            ),
-            'SELECT DISTINCT dept_name FROM department',
+            Relation('department').project(['dept_name']),
+            'SELECT DISTINCT department.dept_name FROM department',
         ),
         # Multiple attributes
         (
-            Projection(
-                attributes=[
-                    Attribute(name='dept_id'),
-                    Attribute(name='dept_name'),
-                ],
-                subquery=Relation(name='department'),
-            ),
+            Relation('department').project(['dept_id', 'dept_name']),
             'SELECT DISTINCT dept_id, dept_name FROM department',
         ),
         # Duplicate attributes
         (
-            Projection(
-                attributes=[
-                    Attribute(name='name'),
-                    Attribute(name='name'),
-                ],
-                subquery=Relation(name='employee'),
-            ),
+            Relation('employee').project(['name']),
             'SELECT DISTINCT name, name FROM employee',
         ),
     ],

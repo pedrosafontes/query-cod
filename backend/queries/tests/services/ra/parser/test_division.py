@@ -1,9 +1,6 @@
 import pytest
 from queries.services.ra.parser import parse_ra
 from queries.services.ra.parser.ast import (
-    Attribute,
-    Division,
-    Projection,
     RAQuery,
     Relation,
 )
@@ -17,18 +14,9 @@ from queries.services.ra.parser.errors import (
     [
         (
             '(\\pi_{x,y} R) \\div (\\pi_{y} S)',
-            Division(
-                dividend=Projection([Attribute('x'), Attribute('y')], Relation('R')),
-                divisor=Projection([Attribute('y')], Relation('S')),
-            ),
+            Relation('R').project(['x', 'y']).divide(Relation('S').project(['y'])),
         ),
-        (
-            'R \\div S',
-            Division(
-                dividend=Relation('R'),
-                divisor=Relation('S'),
-            ),
-        ),
+        ('R \\div S', Relation('R').divide('S')),
     ],
 )
 def test_valid_division(query: str, expected: RAQuery) -> None:
