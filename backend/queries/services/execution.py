@@ -9,7 +9,7 @@ from .types import QueryAST, SQLQuery
 
 
 def execute_query(query: Query) -> QueryResult | None:
-    if not (query.is_executable and query.ast):
+    if not (query.is_valid and query.ast):
         return None
 
     return _execute(query.ast, query.project.database)
