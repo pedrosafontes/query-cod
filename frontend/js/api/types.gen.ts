@@ -232,6 +232,7 @@ export type RATree =
   | RelationNode
   | ProjectionNode
   | SelectionNode
+  | RenameNode
   | DivisionNode
   | SetOperationNode
   | RAJoinNode
@@ -243,6 +244,7 @@ export type RATree =
  * * `Relation` - Relation
  * * `Projection` - Projection
  * * `Selection` - Selection
+ * * `Rename` - Rename
  * * `Division` - Division
  * * `SetOperation` - SetOperation
  * * `Join` - Join
@@ -254,6 +256,7 @@ export type RaNodeTypeEnum =
   | "Relation"
   | "Projection"
   | "Selection"
+  | "Rename"
   | "Division"
   | "SetOperation"
   | "Join"
@@ -267,6 +270,14 @@ export type RelationNode = {
   readonly ra_node_type: RaNodeTypeEnum;
   validation_errors: Array<QueryError>;
   name: string;
+};
+
+export type RenameNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  alias: string;
 };
 
 export type SQLJoinNode = {

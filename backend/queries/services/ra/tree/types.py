@@ -27,6 +27,11 @@ class SelectionNode(RATree):
 
 
 @dataclass
+class RenameNode(RATree):
+    alias: str
+
+
+@dataclass
 class DivisionNode(RATree):
     pass
 

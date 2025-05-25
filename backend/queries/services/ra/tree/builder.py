@@ -7,6 +7,7 @@ from queries.services.ra.parser.ast import (
     Projection,
     RAQuery,
     Relation,
+    Rename,
     Selection,
     SetOperation,
     ThetaJoin,
@@ -28,6 +29,7 @@ from .types import (
     ProjectionNode,
     RATree,
     RelationNode,
+    RenameNode,
     SelectionNode,
     SetOperationNode,
     ThetaJoinNode,
@@ -81,6 +83,15 @@ class RATreeBuilder:
             validation_errors=errors,
             condition=convert_condition(sel.condition),
             children=[self._build(sel.subquery)],
+        )
+
+    def _build_Rename(self, rename: Rename) -> RenameNode:  # noqa: N802
+        query_id, errors = self._add_subquery(rename)
+        return RenameNode(
+            id=query_id,
+            validation_errors=errors,
+            alias=convert_text(rename.alias),
+            children=[self._build(rename.subquery)],
         )
 
     def _build_Division(self, div: Division) -> RATree:  # noqa: N802

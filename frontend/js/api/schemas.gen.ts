@@ -812,6 +812,9 @@ export const $RATree = {
       $ref: "#/components/schemas/SelectionNode",
     },
     {
+      $ref: "#/components/schemas/RenameNode",
+    },
+    {
       $ref: "#/components/schemas/DivisionNode",
     },
     {
@@ -837,6 +840,7 @@ export const $RaNodeTypeEnum = {
     "Relation",
     "Projection",
     "Selection",
+    "Rename",
     "Division",
     "SetOperation",
     "Join",
@@ -848,6 +852,7 @@ export const $RaNodeTypeEnum = {
   description: `* \`Relation\` - Relation
 * \`Projection\` - Projection
 * \`Selection\` - Selection
+* \`Rename\` - Rename
 * \`Division\` - Division
 * \`SetOperation\` - SetOperation
 * \`Join\` - Join
@@ -888,6 +893,40 @@ export const $RelationNode = {
     },
   },
   required: ["children", "id", "name", "ra_node_type", "validation_errors"],
+} as const;
+
+export const $RenameNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/RATree",
+      },
+      readOnly: true,
+    },
+    ra_node_type: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/RaNodeTypeEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
+    alias: {
+      type: "string",
+    },
+  },
+  required: ["alias", "children", "id", "ra_node_type", "validation_errors"],
 } as const;
 
 export const $SQLJoinNode = {

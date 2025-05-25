@@ -1462,6 +1462,7 @@ components:
       - $ref: '#/components/schemas/RelationNode'
       - $ref: '#/components/schemas/ProjectionNode'
       - $ref: '#/components/schemas/SelectionNode'
+      - $ref: '#/components/schemas/RenameNode'
       - $ref: '#/components/schemas/DivisionNode'
       - $ref: '#/components/schemas/SetOperationNode'
       - $ref: '#/components/schemas/RAJoinNode'
@@ -1473,6 +1474,7 @@ components:
       - Relation
       - Projection
       - Selection
+      - Rename
       - Division
       - SetOperation
       - Join
@@ -1484,6 +1486,7 @@ components:
         * `Relation` - Relation
         * `Projection` - Projection
         * `Selection` - Selection
+        * `Rename` - Rename
         * `Division` - Division
         * `SetOperation` - SetOperation
         * `Join` - Join
@@ -1514,6 +1517,32 @@ components:
       - children
       - id
       - name
+      - ra_node_type
+      - validation_errors
+    RenameNode:
+      type: object
+      properties:
+        id:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/RATree'
+          readOnly: true
+        ra_node_type:
+          allOf:
+          - $ref: '#/components/schemas/RaNodeTypeEnum'
+          readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+        alias:
+          type: string
+      required:
+      - alias
+      - children
+      - id
       - ra_node_type
       - validation_errors
     SQLJoinNode:
