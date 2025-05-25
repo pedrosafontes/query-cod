@@ -9,6 +9,7 @@ import {
   RAJoinNode,
   RATree,
   RelationNode,
+  RenameNode,
   SelectionNode,
   SetOperationNode,
   ThetaJoinNode,
@@ -71,6 +72,14 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
           borderClass: "border-orange-300",
           bgClass: "bg-orange-50",
         };
+      }
+      case "Rename": {
+        const { alias } = props as RenameNode;
+        return {
+          latex: `\\rho_{${alias}}`,
+          borderClass: "border-gray-300",
+          bgClass: "bg-gray-50",
+        }
       }
       case "Division": {
         return {
