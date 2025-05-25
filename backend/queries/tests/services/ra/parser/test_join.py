@@ -52,7 +52,7 @@ from queries.services.ra.parser.errors import (
         (
             'R \\overline{\\Join} S',
             Relation('R').anti_join('S'),
-        )
+        ),
     ],
 )
 def test_valid_join(query: str, expected: RAQuery) -> None:
