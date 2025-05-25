@@ -60,12 +60,7 @@ class WhereTranspiler:
         self, condition: Expression
     ) -> tuple[Expression | None, list[Exists], list[Exists]]:
         # Assume one top-level AND
-        def extract_predicates(expr: Expression) -> list[Expression]:
-            if isinstance(expr, And):
-                return extract_predicates(expr.left) + extract_predicates(expr.right)
-            return [expr]
-
-        predicates = extract_predicates(condition)
+        predicates = list(condition.flatten()) if isinstance(condition, And) else [condition]
 
         exists = [p for p in predicates if isinstance(p, Exists)]
         not_exists = [
