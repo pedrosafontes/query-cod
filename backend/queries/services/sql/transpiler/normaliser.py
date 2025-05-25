@@ -28,7 +28,6 @@ class SQLQueryNormaliser:
 
     @staticmethod
     def _normalise_subqueries(query: SQLQuery) -> SQLQuery:
-        @staticmethod
         def transform_node(node: Expression) -> Expression:
             match node:
                 case In():
@@ -58,9 +57,9 @@ class SQLQueryNormaliser:
     @staticmethod
     def _transform_comparison(comp: Comparison) -> Expression:
         left = comp.left
-        right = comp.right
+        subquery = comp.right.this
 
-        match right:
+        match comp.right:
             case All():
                 inverse: dict[type[Comparison], type[Comparison]] = {
                     exp.GT: exp.LTE,
@@ -73,18 +72,18 @@ class SQLQueryNormaliser:
 
                 return not_(
                     SQLQueryNormaliser._transform_subquery(
-                        left=left, subquery=right.this, comp=inverse[type(comp)]
+                        left=left, subquery=subquery, comp=inverse[type(comp)]
                     )
                 )
 
             case Any():
                 return SQLQueryNormaliser._transform_subquery(
-                    left=left, subquery=right.this, comp=type(comp)
+                    left=left, subquery=subquery, comp=type(comp)
                 )
 
             case Subquery():
                 return SQLQueryNormaliser._transform_subquery(
-                    left=left, subquery=right.this, comp=type(comp)
+                    left=left, subquery=subquery, comp=type(comp)
                 )
 
             case _:
@@ -92,14 +91,31 @@ class SQLQueryNormaliser:
 
     @staticmethod
     def _transform_subquery(subquery: SQLQuery, left: Expression, comp: type[Comparison]) -> Exists:
-        [column] = subquery.expressions
+        def find_column(query: SQLQuery | Subquery) -> Expression:  # type: ignore[return]
+            match query:
+                case Select():
+                    [column] = query.expressions
+                    return cast(Expression, column)
 
-        condition = comp(this=left, expression=column)
+                case query if isinstance(query, SetOperation):
+                    return find_column(query.left)
 
-        if isinstance(subquery, SetOperation):
-            select_ = select('*').from_(subquery.subquery('sub'))
-        elif isinstance(subquery, Select):
-            select_ = subquery
+                case Subquery():
+                    return find_column(query.this)
+
+        def to_select(subquery: SQLQuery | Subquery) -> Select:  # type: ignore[return]
+            match subquery:
+                case Select():
+                    return subquery
+
+                case subquery if isinstance(subquery, SetOperation):
+                    return select('*').from_(subquery.subquery('sub'))
+
+                case Subquery():
+                    return to_select(subquery.this)
+
+        select_ = to_select(subquery)
+        condition = comp(this=left, expression=find_column(subquery))
 
         if select_.args.get('group'):
             select_ = select_.having(condition)
