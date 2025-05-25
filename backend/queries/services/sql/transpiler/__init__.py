@@ -11,6 +11,6 @@ class SQLtoRATranspiler:
         self.schema = schema
 
     def transpile(self, query: SQLQuery) -> RAQuery:
-        SQLQueryNormaliser.normalise(query)
-        scope = build_scope(query, self.schema)
+        normalised = SQLQueryNormaliser.normalise(query)
+        scope = build_scope(normalised, self.schema)
         return QueryTranspiler.transpile(scope)

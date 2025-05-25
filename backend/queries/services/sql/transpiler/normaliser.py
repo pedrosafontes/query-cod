@@ -8,28 +8,28 @@ from sqlglot.expressions import (
     Exists,
     Expression,
     In,
+    Or,
     Select,
     SetOperation,
     Subquery,
     not_,
     select,
+    union,
 )
+from sqlglot.optimizer.normalize import normalize
 
 from ..types import Comparison
 
 
 class SQLQueryNormaliser:
     @staticmethod
-    def normalise(query: SQLQuery) -> None:
-        if isinstance(query, Select) and query.find(Select):
-            SQLQueryNormaliser._normalise_subqueries(query)
-            # SQLQueryNormaliser._convert_to_dnf_union(query)
-        elif isinstance(query, SetOperation):
-            SQLQueryNormaliser.normalise(query.left)
-            SQLQueryNormaliser.normalise(query.right)
+    def normalise(query: SQLQuery) -> SQLQuery:
+        transformed = SQLQueryNormaliser.normalise_subqueries(query)
+        transformed = SQLQueryNormaliser.normalise_conditions(transformed)
+        return transformed
 
     @staticmethod
-    def _normalise_subqueries(query: SQLQuery) -> None:
+    def normalise_subqueries(query: SQLQuery) -> SQLQuery:
         def transform_node(node: Expression) -> Expression:
             match node:
                 case In():
@@ -41,7 +41,7 @@ class SQLQueryNormaliser:
                 case _:
                     return node
 
-        query.transform(transform_node, copy=False)
+        return cast(SQLQuery, query.transform(transform_node))
 
     @staticmethod
     def _transform_in(in_: In) -> In | Exists:
@@ -125,3 +125,32 @@ class SQLQueryNormaliser:
             select_ = select_.where(condition)
 
         return Exists(this=select_)
+
+    @staticmethod
+    def normalise_conditions(query: SQLQuery) -> SQLQuery:
+        def transform_select(node: Expression) -> Expression:
+            if isinstance(node, Select):
+                where: Expression | None = node.args.get('where')
+                if where and where.find(Select):
+                    return SQLQueryNormaliser.convert_to_dnf_union(node)
+            return node
+
+        return cast(SQLQuery, query.transform(transform_select))
+
+    @staticmethod
+    def convert_to_dnf_union(select: Select) -> SQLQuery:
+        conjunctions = SQLQueryNormaliser._extract_dnf_conjunctions(select.args['where'].this)
+        if len(conjunctions) > 1:
+            return union(*[select.where(conjunction, append=False) for conjunction in conjunctions])
+        else:
+            return select
+
+    @staticmethod
+    def _extract_dnf_conjunctions(where: Expression) -> list[Expression]:
+        dnf = normalize(where, dnf=True)
+
+        if isinstance(dnf, Or):
+            return list(dnf.flatten())  # type: ignore[no-untyped-call]
+        else:
+            # The expression is a single conjunction
+            return [dnf]

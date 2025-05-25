@@ -126,7 +126,55 @@ def test_subquery_normalisation(
     test_query = parse_sql(query)
     expected_query = parse_sql(expected)
 
-    SQLQueryNormaliser.normalise(test_query)
-    print(test_query.sql(pretty=True))
+    normalised_query = SQLQueryNormaliser.normalise_subqueries(test_query)
+    print(normalised_query.sql(pretty=True))
 
-    assert test_query == expected_query
+    assert normalised_query == expected_query
+
+
+@pytest.mark.parametrize(
+    'query,expected',
+    [
+        # Unaltered when there are no subqueries
+        (
+            """
+            SELECT *
+            FROM R
+            WHERE A OR B
+            """,
+            """
+            SELECT *
+            FROM R
+            WHERE A OR B
+            """,
+        ),
+        (
+            """
+            SELECT *
+            FROM R
+            WHERE A > (SELECT C FROM S)
+            OR B < (SELECT D FROM S)
+            """,
+            """
+            SELECT *
+            FROM R
+            WHERE A > (SELECT C FROM S)
+            UNION
+            SELECT *
+            FROM R
+            WHERE B < (SELECT D FROM S)
+            """,
+        ),
+    ],
+)
+def test_condition_normalisation(
+    query: str,
+    expected: str,
+) -> None:
+    test_query = parse_sql(query)
+    expected_query = parse_sql(expected)
+
+    normalised_query = SQLQueryNormaliser.normalise_conditions(test_query)
+    print(normalised_query.sql(pretty=True))
+
+    assert normalised_query == expected_query
