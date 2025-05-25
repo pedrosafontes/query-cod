@@ -60,7 +60,7 @@ class WhereTranspiler:
         self, condition: Expression
     ) -> tuple[Expression | None, list[Exists], list[Exists]]:
         # Assume one top-level AND
-        predicates = list(condition.flatten()) if isinstance(condition, And) else [condition]
+        predicates = list(condition.flatten()) if isinstance(condition, And) else [condition]  # type: ignore[no-untyped-call]
 
         exists = [p for p in predicates if isinstance(p, Exists)]
         not_exists = [
