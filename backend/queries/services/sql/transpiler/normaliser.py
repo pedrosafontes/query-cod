@@ -20,14 +20,16 @@ from ..types import Comparison
 
 class SQLQueryNormaliser:
     @staticmethod
-    def normalise(query: SQLQuery) -> SQLQuery:
-        transformed = SQLQueryNormaliser._normalise_subqueries(query)
-        # transformed = SQLQueryNormaliser._convert_to_dnf_union(transformed)
-
-        return transformed
+    def normalise(query: SQLQuery) -> None:
+        if isinstance(query, Select) and query.find(Select):
+            SQLQueryNormaliser._normalise_subqueries(query)
+            # SQLQueryNormaliser._convert_to_dnf_union(query)
+        elif isinstance(query, SetOperation):
+            SQLQueryNormaliser.normalise(query.left)
+            SQLQueryNormaliser.normalise(query.right)
 
     @staticmethod
-    def _normalise_subqueries(query: SQLQuery) -> SQLQuery:
+    def _normalise_subqueries(query: SQLQuery) -> None:
         def transform_node(node: Expression) -> Expression:
             match node:
                 case In():
@@ -39,7 +41,7 @@ class SQLQueryNormaliser:
                 case _:
                     return node
 
-        return cast(SQLQuery, query.transform(transform_node))
+        query.transform(transform_node, copy=False)
 
     @staticmethod
     def _transform_in(in_: In) -> In | Exists:

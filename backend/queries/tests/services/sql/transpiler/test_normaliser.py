@@ -123,9 +123,10 @@ def test_subquery_normalisation(
     query: str,
     expected: str,
 ) -> None:
-    parsed_query = parse_sql(query)
+    test_query = parse_sql(query)
     expected_query = parse_sql(expected)
-    normalised_query = SQLQueryNormaliser().normalise(parsed_query)
-    print(normalised_query.sql(pretty=True))
 
-    assert normalised_query == expected_query
+    SQLQueryNormaliser.normalise(test_query)
+    print(test_query.sql(pretty=True))
+
+    assert test_query == expected_query
