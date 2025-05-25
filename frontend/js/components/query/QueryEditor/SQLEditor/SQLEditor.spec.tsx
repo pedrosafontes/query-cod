@@ -44,7 +44,7 @@ describe("SQLEditor", () => {
   const mockQuery: Query = {
     id: 1,
     name: "Test Query",
-    sql_text: "SELECT * FROM users",
+    text: "SELECT * FROM users",
     language: "sql",
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
@@ -73,7 +73,7 @@ describe("SQLEditor", () => {
     render(<SQLEditor query={mockQuery} setQuery={mockSetQuery} />);
 
     expect(useAutosave).toHaveBeenCalledWith({
-      data: mockQuery.sql_text,
+      data: mockQuery.text,
       onSave: expect.any(Function),
     });
   });
@@ -89,7 +89,7 @@ describe("SQLEditor", () => {
   test("handles queries with no SQL text", () => {
     const emptyQuery = {
       ...mockQuery,
-      sql_text: undefined,
+      text: undefined,
     };
 
     render(<SQLEditor query={emptyQuery} setQuery={mockSetQuery} />);

@@ -22,7 +22,7 @@ describe("QueryEditor", () => {
   const mockSQLQuery: Query = {
     id: 1,
     name: "Test Query",
-    sql_text: "SELECT * FROM users",
+    text: "SELECT * FROM users",
     language: "sql",
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
@@ -32,7 +32,7 @@ describe("QueryEditor", () => {
   const mockRAQuery: Query = {
     ...mockSQLQuery,
     language: "ra",
-    ra_text: "\\project_{name}Employee",
+    text: "\\project_{name}Employee",
   };
 
   beforeEach(() => {

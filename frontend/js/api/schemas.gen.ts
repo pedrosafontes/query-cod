@@ -468,10 +468,7 @@ export const $PatchedQuery = {
       type: "string",
       maxLength: 255,
     },
-    sql_text: {
-      type: "string",
-    },
-    ra_text: {
+    text: {
       type: "string",
     },
     language: {
@@ -634,10 +631,7 @@ export const $Query = {
       type: "string",
       maxLength: 255,
     },
-    sql_text: {
-      type: "string",
-    },
-    ra_text: {
+    text: {
       type: "string",
     },
     language: {

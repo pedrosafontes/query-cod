@@ -1219,9 +1219,7 @@ components:
         name:
           type: string
           maxLength: 255
-        sql_text:
-          type: string
-        ra_text:
+        text:
           type: string
         language:
           $ref: '#/components/schemas/LanguageEnum'
@@ -1335,9 +1333,7 @@ components:
         name:
           type: string
           maxLength: 255
-        sql_text:
-          type: string
-        ra_text:
+        text:
           type: string
         language:
           $ref: '#/components/schemas/LanguageEnum'

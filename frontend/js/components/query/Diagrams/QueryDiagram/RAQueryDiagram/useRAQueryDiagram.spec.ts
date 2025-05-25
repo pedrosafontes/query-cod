@@ -43,7 +43,7 @@ describe("useRAQueryDiagram", () => {
   const mockQuery: Query = {
     id: 1,
     name: "Test Query",
-    sql_text: "SELECT * FROM users",
+    text: "SELECT * FROM users",
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
     validation_errors: [],

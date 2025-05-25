@@ -19,8 +19,7 @@ class Query(IndexedTimeStampedModel):
         RA = 'ra', 'Relational Algebra'
 
     name = models.CharField(max_length=255)
-    sql_text = models.TextField(blank=True, default='')
-    ra_text = models.TextField(blank=True, default='')
+    text = models.TextField(blank=True, default='')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='queries')
     language = models.CharField(
         max_length=16,

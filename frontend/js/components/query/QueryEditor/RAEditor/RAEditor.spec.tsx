@@ -34,7 +34,7 @@ describe("RAEditor", () => {
   const mockQuery: Query = {
     id: 1,
     name: "Test Query",
-    ra_text: "\\pi_{name}(Person)",
+    text: "\\pi_{name}(Person)",
     language: "ra",
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
@@ -58,14 +58,14 @@ describe("RAEditor", () => {
 
     const mathField = container.querySelector("math-field");
     expect(mathField).toBeInTheDocument();
-    expect(mathField).toHaveTextContent(mockQuery.ra_text as string);
+    expect(mathField).toHaveTextContent(mockQuery.text as string);
   });
 
   test("calls useAutosave with correct initial data", () => {
     render(<RAEditor query={mockQuery} setQuery={mockSetQuery} />);
 
     expect(useAutosave).toHaveBeenCalledWith({
-      data: mockQuery.ra_text,
+      data: mockQuery.text,
       onSave: expect.any(Function),
     });
   });

@@ -136,8 +136,7 @@ export type PatchedProject = {
 export type PatchedQuery = {
   readonly id?: number;
   name?: string;
-  sql_text?: string;
-  ra_text?: string;
+  text?: string;
   language?: LanguageEnum;
   readonly created?: string;
   readonly modified?: string;
@@ -173,8 +172,7 @@ export type ProjectionNode = {
 export type Query = {
   readonly id: number;
   name: string;
-  sql_text?: string;
-  ra_text?: string;
+  text?: string;
   language?: LanguageEnum;
   readonly created: string;
   readonly modified: string;
