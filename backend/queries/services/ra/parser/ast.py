@@ -198,8 +198,8 @@ class RAQuery(ASTNode):
     def divide(self, other: RAQuery | str) -> Division:
         return Division(self, query(other))
 
-    def rename(self, alias: str) -> Rename:
-        return Rename(alias, self)
+    def rename(self, alias: str, optimise: bool = True) -> Rename:
+        return Rename(alias, self.subquery if optimise and isinstance(self, Rename) else self)
 
     def grouped_aggregation(
         self, group_by: Sequence[str | Attribute], aggregations: list[Aggregation]
