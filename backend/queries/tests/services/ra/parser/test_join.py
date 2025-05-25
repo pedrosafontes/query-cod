@@ -49,6 +49,10 @@ from queries.services.ra.parser.errors import (
                 right=Relation('T'),
             ),  # assumes left-associative
         ),
+        (
+            'R \\overline{\\Join} S',
+            Relation('R').anti_join('S'),
+        )
     ],
 )
 def test_valid_join(query: str, expected: RAQuery) -> None:
@@ -62,6 +66,8 @@ def test_valid_join(query: str, expected: RAQuery) -> None:
         ('R \\overset{a =}{\\bowtie} S', InvalidThetaJoinConditionError),
         ('R \\overset{= b}{\\bowtie} S', InvalidThetaJoinConditionError),
         ('\\Join S', MissingOperandError),
+        ('R \\Join', MissingOperandError),
+        ('R \\overline{\\Join}', MissingOperandError),
     ],
 )
 def test_invalid_join(query: str, expected_error: type) -> None:

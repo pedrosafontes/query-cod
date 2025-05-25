@@ -69,6 +69,8 @@ def parse_ra(ra_text: str) -> RAQuery:
                     'R -',
                     '- S',
                     '\\Join S',
+                    'R \\Join',
+                    'R \\overline{\\Join}',
                     'R \\div',
                     '\\ltimes S',
                 ],
