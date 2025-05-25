@@ -11,6 +11,7 @@ from ..parser.ast import (
     Projection,
     RAQuery,
     Relation,
+    Rename,
     Selection,
     SetOperation,
     SetOperator,
@@ -53,7 +54,7 @@ class SchemaInferrer:
     def _infer_Selection(self, sel: Selection) -> RelationOutput:  # noqa: N802
         return self.infer(sel.subquery)
 
-    def _infer_Rename(self, rename: Projection) -> RelationOutput:  # noqa: N802
+    def _infer_Rename(self, rename: Rename) -> RelationOutput:  # noqa: N802
         return self.infer(rename.subquery)
 
     def _infer_SetOperation(self, op: SetOperation) -> RelationOutput:  # noqa: N802
