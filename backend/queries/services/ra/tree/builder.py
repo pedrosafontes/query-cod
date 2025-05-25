@@ -16,12 +16,11 @@ from queries.services.ra.parser.ast import (
 from queries.services.types import RelationalSchema
 from queries.types import QueryError
 
-from ..semantics import validate_ra_semantics
-from .latex_utils import (
-    convert_attribute,
-    convert_condition,
-    convert_text,
+from ..latex.converter import RALatexConverter
+from ..latex.utils import (
+    text,
 )
+from ..semantics import validate_ra_semantics
 from .types import (
     DivisionNode,
     GroupedAggregationNode,
@@ -63,11 +62,11 @@ class RATreeBuilder:
     def _build_Relation(self, rel: Relation) -> RATree:  # noqa: N802
         query_id, errors = self._add_subquery(rel)
         return RelationNode(
-            id=query_id, validation_errors=errors, name=convert_text(rel.name), children=None
+            id=query_id, validation_errors=errors, name=text(rel.name), children=None
         )
 
     def _build_Projection(self, proj: Projection) -> ProjectionNode:  # noqa: N802
-        attributes = [convert_attribute(attr) for attr in proj.attributes]
+        attributes = [RALatexConverter.convert_attribute(attr) for attr in proj.attributes]
         query_id, errors = self._add_subquery(proj)
         return ProjectionNode(
             id=query_id,
@@ -81,7 +80,7 @@ class RATreeBuilder:
         return SelectionNode(
             id=query_id,
             validation_errors=errors,
-            condition=convert_condition(sel.condition),
+            condition=RALatexConverter.convert_condition(sel.condition),
             children=[self._build(sel.subquery)],
         )
 
@@ -90,7 +89,7 @@ class RATreeBuilder:
         return RenameNode(
             id=query_id,
             validation_errors=errors,
-            alias=convert_text(rename.alias),
+            alias=text(rename.alias),
             children=[self._build(rename.subquery)],
         )
 
@@ -125,17 +124,17 @@ class RATreeBuilder:
         return ThetaJoinNode(
             id=query_id,
             validation_errors=errors,
-            condition=convert_condition(join.condition),
+            condition=RALatexConverter.convert_condition(join.condition),
             children=[self._build(join.left), self._build(join.right)],
         )
 
     def _build_GroupedAggregation(self, agg: GroupedAggregation) -> GroupedAggregationNode:  # noqa: N802
-        group_by = [convert_attribute(attr) for attr in agg.group_by]
+        group_by = [RALatexConverter.convert_attribute(attr) for attr in agg.group_by]
         aggregations = [
             (
-                convert_attribute(a.input),
+                RALatexConverter.convert_attribute(a.input),
                 a.aggregation_function.value.lower(),
-                convert_text(a.output),
+                text(a.output),
             )
             for a in agg.aggregations
         ]
@@ -155,6 +154,6 @@ class RATreeBuilder:
             id=query_id,
             validation_errors=errors,
             limit=top_n.limit,
-            attribute=convert_attribute(top_n.attribute),
+            attribute=RALatexConverter.convert_attribute(top_n.attribute),
             children=[self._build(top_n.subquery)],
         )
