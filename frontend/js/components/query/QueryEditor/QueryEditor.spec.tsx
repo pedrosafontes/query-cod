@@ -47,7 +47,7 @@ describe("QueryEditor", () => {
     expect(SQLEditor).toHaveBeenCalledWith(
       expect.objectContaining({
         query: mockSQLQuery,
-        setQuery: mockSetQuery,
+        updateText: expect.any(Function),
       }),
       expect.anything(),
     );
@@ -61,7 +61,7 @@ describe("QueryEditor", () => {
     expect(RAEditor).toHaveBeenCalledWith(
       expect.objectContaining({
         query: mockRAQuery,
-        setQuery: mockSetQuery,
+        updateText: expect.any(Function),
       }),
       expect.anything(),
     );

@@ -51,7 +51,7 @@ describe("SQLEditor", () => {
     validation_errors: [],
   };
 
-  const mockSetQuery = jest.fn();
+  const mockUpdateText = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -62,7 +62,7 @@ describe("SQLEditor", () => {
   });
 
   test("renders the editor with initial SQL text", () => {
-    render(<SQLEditor query={mockQuery} setQuery={mockSetQuery} />);
+    render(<SQLEditor query={mockQuery} updateText={mockUpdateText} />);
 
     const editor = screen.getByTestId("monaco-editor");
     expect(editor).toBeInTheDocument();
@@ -70,7 +70,7 @@ describe("SQLEditor", () => {
   });
 
   test("calls useAutosave with correct parameters", () => {
-    render(<SQLEditor query={mockQuery} setQuery={mockSetQuery} />);
+    render(<SQLEditor query={mockQuery} updateText={mockUpdateText} />);
 
     expect(useAutosave).toHaveBeenCalledWith({
       data: mockQuery.text,
@@ -81,7 +81,7 @@ describe("SQLEditor", () => {
   test("displays autosave status", () => {
     (useAutosave as jest.Mock).mockReturnValue("saving");
 
-    render(<SQLEditor query={mockQuery} setQuery={mockSetQuery} />);
+    render(<SQLEditor query={mockQuery} updateText={mockUpdateText} />);
 
     expect(screen.getByText(/saving/i)).toBeInTheDocument();
   });
@@ -92,7 +92,7 @@ describe("SQLEditor", () => {
       text: undefined,
     };
 
-    render(<SQLEditor query={emptyQuery} setQuery={mockSetQuery} />);
+    render(<SQLEditor query={emptyQuery} updateText={mockUpdateText} />);
 
     const editor = screen.getByTestId("monaco-editor");
     expect(editor).toHaveValue("");
@@ -107,7 +107,7 @@ describe("SQLEditor", () => {
       ],
     };
 
-    render(<SQLEditor query={mockErrorQuery} setQuery={mockSetQuery} />);
+    render(<SQLEditor query={mockErrorQuery} updateText={mockUpdateText} />);
 
     expect(screen.getByText("General error 1")).toBeInTheDocument();
     expect(screen.getByText("General error 2")).toBeInTheDocument();
@@ -124,7 +124,7 @@ describe("SQLEditor", () => {
       ],
     };
 
-    render(<SQLEditor query={mockErrorQuery} setQuery={mockSetQuery} />);
+    render(<SQLEditor query={mockErrorQuery} updateText={mockUpdateText} />);
 
     expect(screen.queryByText("Error with position")).not.toBeInTheDocument();
   });
