@@ -1,25 +1,18 @@
 from collections.abc import Callable
 
+from ..parser import ast as ra
 from ..parser.ast import (
-    EQ,
-    GT,
-    GTE,
-    LT,
-    LTE,
-    NEQ,
-    And,
     Attribute,
     BinaryBooleanExpression,
     BinaryOperation,
     BooleanExpression,
+    BooleanOperation,
     Comparison,
     ComparisonValue,
     Division,
     GroupedAggregation,
     Join,
     JoinOperator,
-    Not,
-    Or,
     Projection,
     RAQuery,
     Relation,
@@ -42,11 +35,13 @@ class RALatexConverter:
             RALatexConverter, f'_convert_{type(query).__name__}'
         )
         if isinstance(query, UnaryOperation):
-            return method(query) + RALatexConverter._convert_unary_operand(query.subquery)
+            return method(query) + '\n' + RALatexConverter._convert_unary_operand(query.subquery)
         elif isinstance(query, BinaryOperation):
             return (
                 RALatexConverter._convert_binary_operand(query.left)
+                + '\n'
                 + method(query)
+                + '\n'
                 + RALatexConverter._convert_binary_operand(query.right)
             )
         else:
@@ -55,17 +50,19 @@ class RALatexConverter:
 
     @staticmethod
     def _convert_unary_operand(subquery: RAQuery) -> str:
+        latex_query = RALatexConverter.convert(subquery)
         if isinstance(subquery, Relation | UnaryOperation):
-            return RALatexConverter.convert(subquery)
+            return latex_query
         else:
-            return paren(RALatexConverter.convert(subquery))
+            return paren(latex_query)
 
     @staticmethod
     def _convert_binary_operand(subquery: RAQuery) -> str:
+        latex_query = RALatexConverter.convert(subquery)
         if isinstance(subquery, Relation):
-            return RALatexConverter.convert(subquery)
+            return latex_query
         else:
-            return paren(RALatexConverter.convert(subquery))
+            return paren(latex_query)
 
     @staticmethod
     def _convert_Relation(rel: Relation) -> str:  # noqa: N802
@@ -112,7 +109,7 @@ class RALatexConverter:
         return overset(condition, latex.BOWTIE)
 
     @staticmethod
-    def _convert_Division(div: Division) -> str:  # noqa: N802
+    def _convert_Division(_: Division) -> str:  # noqa: N802
         return latex.DIV
 
     @staticmethod
@@ -149,26 +146,46 @@ class RALatexConverter:
             return text(attr.name)
 
     @staticmethod
-    def convert_condition(condition: BooleanExpression) -> str:
+    def convert_condition(expr: BooleanExpression, parent_prec: int = 0) -> str:
+        latex_expr = RALatexConverter._convert_condition(expr)
+        if isinstance(expr, BooleanOperation) and expr.precedence < parent_prec:
+            return paren(latex_expr)
+        else:
+            return latex_expr
+
+    @staticmethod
+    def _convert_condition(condition: BooleanExpression) -> str:
         match condition:
             case BinaryBooleanExpression():
                 bool_exprs = {
-                    And: latex.AND,
-                    Or: latex.OR,
+                    ra.And: latex.AND,
+                    ra.Or: latex.OR,
                 }
-                return f'({RALatexConverter.convert_condition(condition.left)} {bool_exprs[type(condition)]} {RALatexConverter.convert_condition(condition.right)})'
-            case Not():
-                return f'{latex.NOT} ({RALatexConverter.convert_condition(condition.expression)})'
+                return (
+                    RALatexConverter.convert_condition(condition.left, condition.precedence)
+                    + '\n'
+                    + bool_exprs[type(condition)]
+                    + '\n'
+                    + RALatexConverter.convert_condition(condition.right, condition.precedence)
+                )
+            case ra.Not():
+                return latex.NOT + RALatexConverter.convert_condition(
+                    condition.expression, condition.precedence
+                )
             case Comparison() as comp:
                 comps = {
-                    EQ: '=',
-                    NEQ: latex.NEQ,
-                    GT: '>',
-                    LT: '<',
-                    GTE: latex.GEQ,
-                    LTE: latex.LEQ,
+                    ra.EQ: '=',
+                    ra.NEQ: latex.NEQ,
+                    ra.GT: '>',
+                    ra.LT: '<',
+                    ra.GTE: latex.GEQ,
+                    ra.LTE: latex.LEQ,
                 }
-                return f'({RALatexConverter._convert_value(comp.left)} {comps[type(comp)]} {RALatexConverter._convert_value(comp.right)})'
+                return (
+                    RALatexConverter._convert_value(comp.left)
+                    + comps[type(comp)]
+                    + RALatexConverter._convert_value(comp.right)
+                )
             case Attribute() as attr:
                 return RALatexConverter.convert_attribute(attr)
             case _:

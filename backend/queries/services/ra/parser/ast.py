@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import TypedDict
+from typing import ClassVar, TypedDict
 
 
 class NodePosition(TypedDict):
@@ -29,7 +29,20 @@ class Attribute(ASTNode):
 
 
 @dataclass
-class BinaryBooleanExpression:
+class BooleanOperation(ASTNode):
+    _PRECEDENCE: ClassVar[dict[str, int]] = {
+        'Or': 1,
+        'And': 2,
+        'Not': 3,
+    }
+
+    @property
+    def precedence(self) -> int:
+        return self._PRECEDENCE[type(self).__name__]
+
+
+@dataclass
+class BinaryBooleanExpression(BooleanOperation):
     left: BooleanExpression
     right: BooleanExpression
 
@@ -55,11 +68,11 @@ class Or(BinaryBooleanExpression):
 
 
 @dataclass
-class Not:
+class Not(BooleanOperation):
     expression: BooleanExpression
 
     def __str__(self) -> str:
-        return f'(NOT {self.expression})'
+        return f'(not {self.expression})'
 
 
 ComparisonValue = Attribute | str | int | float | bool
@@ -120,7 +133,7 @@ class LTE(Comparison):
         return '<='
 
 
-BooleanExpression = BinaryBooleanExpression | Not | Comparison | Attribute
+BooleanExpression = BooleanOperation | Comparison | Attribute
 
 
 class AggregationFunction(Enum):

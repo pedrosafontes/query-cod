@@ -53,7 +53,7 @@ class RAtoSQLTranspiler:
         idents = condition.find_all(sql.Identifier)
         return any([ident.this == expr.alias for ident in idents for expr in exprs])
 
-    def _transpile_condition(self, cond: ra.BooleanExpression) -> Expression:
+    def _transpile_condition(self, cond: ra.BooleanExpression) -> Expression:  # type: ignore[return]
         match cond:
             case ra.BinaryBooleanExpression():
                 left = self._transpile_condition(cond.left)
