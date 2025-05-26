@@ -1,4 +1,5 @@
 from collections import defaultdict
+from functools import singledispatchmethod
 
 from queries.services.types import Attributes, RelationalSchema, flatten, merge_common_column
 from ra_sql_visualisation.types import DataType
@@ -31,17 +32,22 @@ class SchemaInferrer:
     def infer(self, query: RAQuery) -> RelationOutput:
         key = id(query)
         if key not in self._cache:
-            method = getattr(self, f'_infer_{type(query).__name__}')
-            self._cache[key] = method(query)
+            self._cache[key] = self._infer(query)
         return self._cache[key]
 
-    def _infer_Relation(self, rel: Relation) -> RelationOutput:  # noqa: N802
+    @singledispatchmethod
+    def _infer(self, query: RAQuery) -> RelationOutput:
+        raise NotImplementedError(f'No inference method for {type(query).__name__}')
+
+    @_infer.register
+    def _(self, rel: Relation) -> RelationOutput:
         attributes = self.schema[rel.name]
         return RelationOutput(
             {rel.name: attributes}, [TypedAttribute(attr, t) for attr, t in attributes.items()]
         )
 
-    def _infer_Projection(self, proj: Projection) -> RelationOutput:  # noqa: N802
+    @_infer.register
+    def _(self, proj: Projection) -> RelationOutput:
         input_ = self.infer(proj.subquery)
         output_schema: RelationalSchema = defaultdict(Attributes)
         output_attrs = []
@@ -51,13 +57,16 @@ class SchemaInferrer:
             output_attrs.append(TypedAttribute(attr.name, t))
         return RelationOutput(output_schema, output_attrs)
 
-    def _infer_Selection(self, sel: Selection) -> RelationOutput:  # noqa: N802
+    @_infer.register
+    def _(self, sel: Selection) -> RelationOutput:
         return self.infer(sel.subquery)
 
-    def _infer_Rename(self, rename: Rename) -> RelationOutput:  # noqa: N802
+    @_infer.register
+    def _(self, rename: Rename) -> RelationOutput:
         return self.infer(rename.subquery)
 
-    def _infer_SetOperation(self, op: SetOperation) -> RelationOutput:  # noqa: N802
+    @_infer.register
+    def _(self, op: SetOperation) -> RelationOutput:
         left = self.infer(op.left)
         right = self.infer(op.right)
 
@@ -70,7 +79,8 @@ class SchemaInferrer:
             flat_schema: RelationalSchema = {None: flatten(left.schema)}
             return RelationOutput(flat_schema, left.attrs)
 
-    def _infer_Join(self, join: Join) -> RelationOutput:  # noqa: N802
+    @_infer.register
+    def _(self, join: Join) -> RelationOutput:
         left = self.infer(join.left)
         right = self.infer(join.right)
         merged_schema = merge_schemas(left.schema, right.schema)
@@ -90,12 +100,14 @@ class SchemaInferrer:
         right_unique = [a for a in right.attrs if a.name not in shared_names]
         return RelationOutput(merged_schema, left_unique + shared_attrs + right_unique)
 
-    def _infer_ThetaJoin(self, join: ThetaJoin) -> RelationOutput:  # noqa: N802
+    @_infer.register
+    def _(self, join: ThetaJoin) -> RelationOutput:
         left = self.infer(join.left)
         right = self.infer(join.right)
         return RelationOutput(merge_schemas(left.schema, right.schema), left.attrs + right.attrs)
 
-    def _infer_Division(self, div: Division) -> RelationOutput:  # noqa: N802
+    @_infer.register
+    def _(self, div: Division) -> RelationOutput:
         dividend = self.infer(div.dividend)
         divisor = self.infer(div.divisor)
 
@@ -107,7 +119,8 @@ class SchemaInferrer:
         }
         return RelationOutput(output_schema, output_attrs)
 
-    def _infer_GroupedAggregation(self, agg: GroupedAggregation) -> RelationOutput:  # noqa: N802
+    @_infer.register
+    def _(self, agg: GroupedAggregation) -> RelationOutput:
         input_ = self.infer(agg.subquery)
         output_schema: RelationalSchema = defaultdict(Attributes)
         output_attrs = []
@@ -125,5 +138,6 @@ class SchemaInferrer:
 
         return RelationOutput(output_schema, output_attrs)
 
-    def _infer_TopN(self, top: TopN) -> RelationOutput:  # noqa: N802
+    @_infer.register
+    def _(self, top: TopN) -> RelationOutput:
         return self.infer(top.subquery)
