@@ -69,6 +69,8 @@ import type {
   QueriesExecutionsCreateResponse,
   QueriesSubqueriesExecutionsCreateData,
   QueriesSubqueriesExecutionsCreateResponse,
+  QueriesTranspileCreateData,
+  QueriesTranspileCreateResponse,
   QueriesTreeRetrieveData,
   QueriesTreeRetrieveResponse,
 } from "./types.gen";
@@ -683,6 +685,24 @@ export class QueriesService {
       path: {
         id: data.id,
         subquery_id: data.subqueryId,
+      },
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this query.
+   * @returns Query
+   * @throws ApiError
+   */
+  public static queriesTranspileCreate(
+    data: QueriesTranspileCreateData,
+  ): CancelablePromise<QueriesTranspileCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/queries/{id}/transpile/",
+      path: {
+        id: data.id,
       },
     });
   }

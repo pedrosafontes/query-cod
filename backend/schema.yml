@@ -839,6 +839,27 @@ paths:
               schema:
                 $ref: '#/components/schemas/QueryExecution'
           description: ''
+  /api/queries/{id}/transpile/:
+    post:
+      operationId: queries_transpile_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this query.
+        required: true
+      tags:
+      - queries
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Query'
+          description: ''
   /api/queries/{id}/tree/:
     get:
       operationId: queries_tree_retrieve

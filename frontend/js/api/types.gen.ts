@@ -670,6 +670,15 @@ export type QueriesSubqueriesExecutionsCreateData = {
 
 export type QueriesSubqueriesExecutionsCreateResponse = QueryExecution;
 
+export type QueriesTranspileCreateData = {
+  /**
+   * A unique integer value identifying this query.
+   */
+  id: number;
+};
+
+export type QueriesTranspileCreateResponse = Query;
+
 export type QueriesTreeRetrieveData = {
   /**
    * A unique integer value identifying this query.
@@ -939,6 +948,14 @@ export type $OpenApiTs = {
       req: QueriesSubqueriesExecutionsCreateData;
       res: {
         200: QueryExecution;
+      };
+    };
+  };
+  "/api/queries/{id}/transpile/": {
+    post: {
+      req: QueriesTranspileCreateData;
+      res: {
+        200: Query;
       };
     };
   };
