@@ -22,7 +22,7 @@ describe("QueryEditor", () => {
   const mockSQLQuery: Query = {
     id: 1,
     name: "Test Query",
-    sql_text: "SELECT * FROM users",
+    text: "SELECT * FROM users",
     language: "sql",
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
@@ -32,7 +32,7 @@ describe("QueryEditor", () => {
   const mockRAQuery: Query = {
     ...mockSQLQuery,
     language: "ra",
-    ra_text: "\\project_{name}Employee",
+    text: "\\project_{name}Employee",
   };
 
   beforeEach(() => {
@@ -47,7 +47,7 @@ describe("QueryEditor", () => {
     expect(SQLEditor).toHaveBeenCalledWith(
       expect.objectContaining({
         query: mockSQLQuery,
-        setQuery: mockSetQuery,
+        updateText: expect.any(Function),
       }),
       expect.anything(),
     );
@@ -61,7 +61,7 @@ describe("QueryEditor", () => {
     expect(RAEditor).toHaveBeenCalledWith(
       expect.objectContaining({
         query: mockRAQuery,
-        setQuery: mockSetQuery,
+        updateText: expect.any(Function),
       }),
       expect.anything(),
     );

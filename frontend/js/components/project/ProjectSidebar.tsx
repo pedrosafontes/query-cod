@@ -20,23 +20,17 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { type Project } from "api";
 import { cn } from "lib/utils";
 
-import {
-  ProjectsService,
-  QueriesService,
-  Query,
-  type Project,
-} from "../../api";
-import { useErrorToast } from "../../hooks/useErrorToast";
-
+import CreateQueryButton from "./CreateQueryButton";
 import QueryMenuItem from "./QueryMenuItem";
 
 type ProjectSidebarProps = {
   project: Project;
   currentQueryId?: number;
   setCurrentQueryId: (id: number | undefined) => void;
-  onSuccess: () => void;
+  onSuccess: () => Promise<void>;
 };
 
 const ProjectSidebar = ({
@@ -51,63 +45,24 @@ const ProjectSidebar = ({
 
   const navigate = useNavigate();
 
-  const toast = useErrorToast();
-
   useEffect(() => {
     if (!currentQueryId && queries.length > 0) {
       setCurrentQueryId(queries[0].id);
     }
   }, [queries, currentQueryId, setCurrentQueryId]);
 
-  const createQuery = async (): Promise<void> => {
-    try {
-      const newQuery = await ProjectsService.projectsQueriesCreate({
-        projectPk: project.id,
-        requestBody: {
-          name: "Untitled",
-        } as Query,
-      });
-      setOpen(true);
-      onSuccess();
-      setCurrentQueryId(newQuery.id);
-      setCreatingQueryId(newQuery.id);
-    } catch (error) {
-      toast({
-        title: "Error creating query",
-      });
+  const onDeleteQuery = async (id: number): Promise<void> => {
+    await onSuccess();
+    if (currentQueryId === id) {
+      setCurrentQueryId(undefined);
     }
   };
 
-  const renameQuery = async (id: number, name: string): Promise<void> => {
-    try {
-      await QueriesService.queriesPartialUpdate({
-        id,
-        requestBody: {
-          name,
-        },
-      });
-      onSuccess();
-    } catch (error) {
-      toast({
-        title: "Error renaming query",
-      });
-    }
-  };
-
-  const deleteQuery = async (id: number): Promise<void> => {
-    try {
-      await QueriesService.queriesDestroy({
-        id,
-      });
-      await onSuccess();
-      if (currentQueryId === id) {
-        setCurrentQueryId(undefined);
-      }
-    } catch (error) {
-      toast({
-        title: "Error deleting query",
-      });
-    }
+  const onCreateQuery = async (id: number): Promise<void> => {
+    setOpen(true);
+    await onSuccess();
+    setCurrentQueryId(id);
+    setCreatingQueryId(id);
   };
 
   const { open, toggleSidebar, setOpen } = useSidebar();
@@ -147,29 +102,33 @@ const ProjectSidebar = ({
           <SidebarGroup>
             <SidebarGroupLabel className="flex items-center justify-between">
               <span>Queries</span>
-              <Button
-                aria-label="Create Query"
-                className="justify-end"
-                size="icon"
-                variant="link"
-                onClick={createQuery}
+              <CreateQueryButton
+                projectId={project.id}
+                onSuccess={onCreateQuery}
               >
-                <FilePlus />
-              </Button>
+                <Button
+                  aria-label="Create Query"
+                  className="justify-end"
+                  size="icon"
+                  variant="link"
+                >
+                  <FilePlus />
+                </Button>
+              </CreateQueryButton>
             </SidebarGroupLabel>
 
             <SidebarGroupContent>
               <SidebarMenu>
-                {queries.map(({ id, name }) => (
+                {queries.map((query) => (
                   <QueryMenuItem
-                    key={id}
-                    isActive={currentQueryId === id}
-                    isCreating={creatingQueryId === id}
-                    name={name}
+                    key={query.id}
+                    isActive={currentQueryId === query.id}
+                    isCreating={creatingQueryId === query.id}
+                    query={query}
                     onCreationEnd={() => setCreatingQueryId(null)}
-                    onDelete={() => deleteQuery(id)}
-                    onRename={(name: string) => renameQuery(id, name)}
-                    onSelect={() => setCurrentQueryId(id)}
+                    onDelete={onDeleteQuery}
+                    onRename={onSuccess}
+                    onSelect={() => setCurrentQueryId(query.id)}
                   />
                 ))}
                 {queries.length === 0 && (
@@ -189,9 +148,14 @@ const ProjectSidebar = ({
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
-                  <SidebarMenuButton onClick={createQuery}>
-                    <FilePlus />
-                  </SidebarMenuButton>
+                  <CreateQueryButton
+                    projectId={project.id}
+                    onSuccess={onCreateQuery}
+                  >
+                    <SidebarMenuButton>
+                      <FilePlus />
+                    </SidebarMenuButton>
+                  </CreateQueryButton>
                 </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroupContent>

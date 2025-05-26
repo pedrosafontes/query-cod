@@ -1,5 +1,5 @@
 import pytest
-from queries.services.ra.parser.ast import (
+from queries.services.ra.ast import (
     EQ,
     And,
     RAQuery,
@@ -9,51 +9,8 @@ from queries.services.ra.parser.ast import (
 from queries.services.sql.parser import parse_sql
 from queries.services.sql.transpiler import SQLtoRATranspiler
 from queries.services.types import RelationalSchema
-from ra_sql_visualisation.types import DataType
 
-
-movies_schema = {
-    'Movie': {
-        'title': DataType.VARCHAR,
-        'year': DataType.INTEGER,
-        'length': DataType.INTEGER,
-        'genre': DataType.VARCHAR,
-        'studioName': DataType.VARCHAR,
-        'producerC#': DataType.INTEGER,
-    },
-    'MovieStar': {
-        'name': DataType.VARCHAR,
-        'address': DataType.VARCHAR,
-        'gender': DataType.CHAR,
-        'birthdate': DataType.DATE,
-    },
-    'StarsIn': {
-        'movieTitle': DataType.VARCHAR,
-        'movieYear': DataType.INTEGER,
-        'starName': DataType.VARCHAR,
-    },
-    'MovieExec': {
-        'name': DataType.VARCHAR,
-        'address': DataType.VARCHAR,
-        'CERT#': DataType.INTEGER,
-        'netWorth': DataType.INTEGER,
-    },
-    'Studio': {
-        'name': DataType.VARCHAR,
-        'address': DataType.VARCHAR,
-        'presC#': DataType.INTEGER,
-    },
-}
-
-schema = {
-    'R': {
-        'A': DataType.INTEGER,
-        'B': DataType.INTEGER,
-    },
-    'S': {
-        'C': DataType.INTEGER,
-    },
-}
+from .schemas import movies_schema, schema
 
 
 @pytest.mark.parametrize(

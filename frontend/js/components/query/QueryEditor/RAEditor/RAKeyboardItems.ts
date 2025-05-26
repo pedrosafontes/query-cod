@@ -112,6 +112,19 @@ export const unaryOperators: RAKeyboardItem[] = [
       example: "\\sigma_{age > 30}(Employee)",
     },
   },
+  {
+    label: "\\rho",
+    expr: "\\rho_{\\placeholder{alias}}(#0)",
+    details: {
+      displayExpr: "\\rho_{\\text{alias}}(R)",
+      name: "Rename",
+      description: "Renames a relation.",
+      args: [
+        { name: "\\text{alias}", description: "new name for the relation" },
+        { name: "R", description: "input relation" },
+      ],
+    },
+  },
 ];
 
 export const binaryOperators: RAKeyboardItem[] = [
@@ -225,6 +238,20 @@ export const joinOperators: RAKeyboardItem[] = [
         { name: "S", description: "right relation" },
       ],
       example: "R \\overset{id = deptId}{\\bowtie} S",
+    },
+  },
+  {
+    label: "\\overline{\\Join}",
+    expr: "(#@)\\overline{\\Join}(\\placeholder{rrel})",
+    details: {
+      displayExpr: "R \\ \\overline{\\Join} \\ S",
+      name: "Anti Join",
+      description:
+        "Returns rows from the left relation without matches in the right.",
+      args: [
+        { name: "R", description: "left relation" },
+        { name: "S", description: "right relation" },
+      ],
     },
   },
 ];

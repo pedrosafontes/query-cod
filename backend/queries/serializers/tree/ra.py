@@ -10,6 +10,7 @@ from queries.services.ra.tree.types import (
     ProjectionNode,
     RATree,
     RelationNode,
+    RenameNode,
     SelectionNode,
     SetOperationNode,
     ThetaJoinNode,
@@ -24,6 +25,7 @@ class RANodeType(str, Enum):
     RELATION = 'Relation'
     PROJECTION = 'Projection'
     SELECTION = 'Selection'
+    RENAME = 'Rename'
     DIVISION = 'Division'
     SET_OPERATION = 'SetOperation'
     JOIN = 'Join'
@@ -53,6 +55,7 @@ class RATreeNodeSerializer(serializers.Serializer[RATree]):
                 lazy_serializer('RelationNodeSerializer'),
                 lazy_serializer('ProjectionNodeSerializer'),
                 lazy_serializer('SelectionNodeSerializer'),
+                lazy_serializer('RenameNodeSerializer'),
                 lazy_serializer('DivisionNodeSerializer'),
                 lazy_serializer('SetOperationNodeSerializer'),
                 lazy_serializer('JoinNodeSerializer'),
@@ -78,6 +81,10 @@ class ProjectionNodeSerializer(RATreeNodeSerializer):
 
 class SelectionNodeSerializer(RATreeNodeSerializer):
     condition = serializers.CharField()
+
+
+class RenameNodeSerializer(RATreeNodeSerializer):
+    alias = serializers.CharField()
 
 
 class DivisionNodeSerializer(RATreeNodeSerializer):
@@ -117,6 +124,8 @@ class RATreeSerializer(serializers.Serializer[RATree]):
                 return ProjectionNodeSerializer(obj).data
             case SelectionNode():
                 return SelectionNodeSerializer(obj).data
+            case RenameNode():
+                return RenameNodeSerializer(obj).data
             case DivisionNode():
                 return DivisionNodeSerializer(obj).data
             case SetOperationNode():
@@ -139,6 +148,7 @@ RATreeField = PolymorphicProxySerializer(
         RelationNodeSerializer,
         ProjectionNodeSerializer,
         SelectionNodeSerializer,
+        RenameNodeSerializer,
         DivisionNodeSerializer,
         SetOperationNodeSerializer,
         RAJoinNodeSerializer,

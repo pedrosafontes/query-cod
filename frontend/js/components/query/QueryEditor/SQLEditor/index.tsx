@@ -3,7 +3,7 @@ import partition from "lodash/partition";
 import { editor } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
-import { QueriesService, Query } from "api";
+import { Query } from "api";
 import { useAutosave } from "hooks/useAutosave";
 
 import AutosaveStatus from "../AutosaveStatus";
@@ -12,13 +12,13 @@ import ErrorAlert from "../ErrorAlert";
 
 type SQLEditorProps = {
   query: Query;
-  setQuery: (query: Query) => void;
+  updateText: (text: string) => Promise<void>;
 };
 
-const SQLEditor = ({ query, setQuery }: SQLEditorProps) => {
+const SQLEditor = ({ query, updateText }: SQLEditorProps) => {
   const monacoRef = useRef<Monaco | null>(null);
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const [value, setValue] = useState<string | undefined>(query.sql_text);
+  const [value, setValue] = useState<string | undefined>(query.text);
   const [editorErrors, generalErrors] = partition(
     query.validation_errors,
     (e) => e.position,
@@ -51,15 +51,7 @@ const SQLEditor = ({ query, setQuery }: SQLEditorProps) => {
     updateErrorMarkers();
   }, [generalErrors]);
 
-  const updateSqlText = async (value: string) => {
-    const result = await QueriesService.queriesPartialUpdate({
-      id: query.id,
-      requestBody: { sql_text: value },
-    });
-    setQuery(result);
-  };
-
-  const status = useAutosave({ data: value, onSave: updateSqlText });
+  const status = useAutosave({ data: value, onSave: updateText });
 
   return (
     <>

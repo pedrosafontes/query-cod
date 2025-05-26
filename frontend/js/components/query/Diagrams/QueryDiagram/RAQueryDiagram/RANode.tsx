@@ -9,6 +9,7 @@ import {
   RAJoinNode,
   RATree,
   RelationNode,
+  RenameNode,
   SelectionNode,
   SetOperationNode,
   ThetaJoinNode,
@@ -72,6 +73,14 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
           bgClass: "bg-orange-50",
         };
       }
+      case "Rename": {
+        const { alias } = props as RenameNode;
+        return {
+          latex: `\\rho_{${alias}}`,
+          borderClass: "border-gray-300",
+          bgClass: "bg-gray-50",
+        };
+      }
       case "Division": {
         return {
           latex: `\\div`,
@@ -110,8 +119,13 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
       }
       case "Join": {
         const { operator } = props as RAJoinNode;
+        const operatorLatex = {
+          NATURAL: `\\Join`,
+          SEMI: `\\ltimes`,
+          ANTI: `\\overline{\\Join}`,
+        };
         return {
-          latex: operator === "SEMI" ? `\\ltimes` : `\\Join`,
+          latex: operatorLatex[operator as keyof typeof operatorLatex],
           borderClass: "border-pink-300",
           bgClass: "bg-pink-50",
         };

@@ -3,7 +3,7 @@ from queries.types import QueryError
 
 from ..scope.builder import build_scope
 from .errors.base import SQLSemanticError
-from .query import QueryValidator
+from .query import validate_query
 
 
 def validate_sql_semantics(query: SQLQuery, schema: RelationalSchema) -> list[QueryError]:
@@ -26,4 +26,4 @@ class SQLSemanticAnalyzer:
 
     def validate(self, query: SQLQuery) -> None:
         scope = build_scope(query, self.schema)
-        QueryValidator.validate(scope)
+        validate_query(scope)

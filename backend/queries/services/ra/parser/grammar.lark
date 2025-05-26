@@ -10,12 +10,14 @@
      | join _NATURAL_JOIN unary_op  -> natural_join
      | join _theta_join_op unary_op -> theta_join
      | join _SEMIJOIN unary_op      -> semi_join
+     | join _ANTIJOIN unary_op      -> anti_join
      | join _DIV unary_op           -> division
 
 ?unary_op: projection
          | selection
          | grouped_aggregation
          | topn
+         | rename
          | subquery
 
 ?subquery: relation
@@ -24,6 +26,8 @@
 projection: _PI _subscript{nonempty_list{attribute}} unary_op
 
 selection: _SIGMA _subscript{bool_expr} unary_op
+
+rename: _RHO _subscript{_identifier} unary_op
 
 ?bool_expr: and_expr
           | bool_expr "\\lor" and_expr -> or_
@@ -72,6 +76,7 @@ placeholder: "\\placeholder" "{" CNAME? "}"
 
 _PI: "\\pi"
 _SIGMA: "\\sigma"
+_RHO: "\\rho"
 _GAMMA: "\\Gamma"
 _TOPN: "\\operatorname{T}"
 _UNION: "\\cup"
@@ -80,6 +85,7 @@ _INTERSECT: "\\cap"
 _CARTESIAN: "\\times"
 _NATURAL_JOIN: "\\Join"
 _SEMIJOIN: "\\ltimes"
+_ANTIJOIN: "\\overline{\\Join}"
 _DIV: "\\div"
 
 nonempty_list{item}: _nonempty_list_helper{item} -> item_list

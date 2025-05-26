@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from databases.types import QueryResult
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from projects.models import Project
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -15,6 +15,7 @@ from .serializers import QuerySerializer
 from .serializers.execution import QueryExecutionSerializer
 from .serializers.tree import QueryTreeSerializer
 from .services.execution import execute_query, execute_subquery
+from .services.transpiler import transpile_query
 
 
 @extend_schema(
@@ -90,3 +91,26 @@ class QueryViewSet(
         query = self.get_object()
         serializer = QueryTreeSerializer(query)
         return Response(serializer.data)
+
+    @extend_schema(
+        request=None,
+        responses=QuerySerializer,
+    )
+    @action(detail=True, methods=['post'], url_path='transpile')
+    def transpile(self, request: Request, pk: str) -> Response:
+        query = self.get_object()
+        try:
+            transpiled_text = transpile_query(query)
+        except:  # noqa: E722
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        transpiled_query = Query.objects.create(
+            name=query.name,
+            text=transpiled_text,
+            project=query.project,
+            language=Query.QueryLanguage.RA
+            if query.language == Query.QueryLanguage.SQL
+            else Query.QueryLanguage.SQL,
+        )
+
+        return Response(QuerySerializer(transpiled_query).data)

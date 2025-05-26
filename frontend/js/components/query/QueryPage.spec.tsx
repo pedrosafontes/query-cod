@@ -43,7 +43,7 @@ describe("QueryPage", () => {
   const mockQuery: Query = {
     id: 1,
     name: "Test Query",
-    sql_text: "SELECT * FROM users",
+    text: "SELECT * FROM users",
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
     validation_errors: [],
@@ -60,10 +60,16 @@ describe("QueryPage", () => {
     },
   };
 
+  const mockSetQueryId = jest.fn();
+
   const renderComponent = () =>
     render(
       <TooltipProvider>
-        <QueryPage databaseId={0} queryId={mockQuery.id} />
+        <QueryPage
+          databaseId={0}
+          queryId={mockQuery.id}
+          setQueryId={mockSetQueryId}
+        />
       </TooltipProvider>,
     );
 
@@ -117,25 +123,6 @@ describe("QueryPage", () => {
         expect.anything(),
       );
     });
-  });
-
-  test("disables execute button while loading", async () => {
-    (QueriesService.queriesExecutionsCreate as jest.Mock).mockImplementation(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(() => resolve(mockExecutionResult), 100),
-        ),
-    );
-
-    await act(async () => {
-      renderComponent();
-    });
-
-    const executeButton = screen.getByRole("button", { name: /execute/i });
-    fireEvent.click(executeButton);
-
-    expect(executeButton).toBeDisabled();
-    await waitFor(() => expect(executeButton).not.toBeDisabled());
   });
 
   test("handles execution error and shows toast", async () => {

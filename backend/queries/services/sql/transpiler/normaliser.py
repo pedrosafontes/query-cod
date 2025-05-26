@@ -1,10 +1,11 @@
 from typing import cast
 
-from queries.services.types import SQLQuery
+from queries.services.types import RelationalSchema, SQLQuery
 from sqlglot import exp
 from sqlglot.expressions import (
     All,
     Any,
+    Column,
     Exists,
     Expression,
     In,
@@ -12,145 +13,187 @@ from sqlglot.expressions import (
     Select,
     SetOperation,
     Subquery,
+    Table,
+    column,
     not_,
-    select,
     union,
 )
 from sqlglot.optimizer.normalize import normalize
 
+from ..scope.builder import build_scope
+from ..scope.query import SQLScope
 from ..types import Comparison
 
 
-class SQLQueryNormaliser:
-    @staticmethod
-    def normalise(query: SQLQuery) -> SQLQuery:
-        transformed = SQLQueryNormaliser.normalise_subqueries(query)
-        transformed = SQLQueryNormaliser.normalise_conditions(transformed)
-        return transformed
+def normalise(query: SQLQuery, schema: RelationalSchema) -> SQLQuery:
+    transformed = alias_tables(query)
+    transformed = normalise_subqueries(transformed, schema)
+    transformed = normalise_conditions(transformed)
+    return transformed
 
-    @staticmethod
-    def normalise_subqueries(query: SQLQuery) -> SQLQuery:
-        def transform_node(node: Expression) -> Expression:
-            match node:
-                case In():
-                    return SQLQueryNormaliser._transform_in(node)
 
-                case comp if isinstance(comp, Comparison):
-                    return SQLQueryNormaliser._transform_comparison(comp)
+def alias_tables(query: SQLQuery) -> SQLQuery:
+    table_counters: dict[str, int] = {}
 
-                case _:
-                    return node
+    # Initialize counters
+    for table in query.find_all(Table, Subquery):
+        table_counters[table.alias_or_name] = 0
 
-        return cast(SQLQuery, query.transform(transform_node))
+    def update_column_references(select: Select, name: str, alias: str) -> None:
+        for col in select.find_all(Column):
+            if col.table == name:
+                col.replace(column(col=col.name, table=alias))
 
-    @staticmethod
-    def _transform_in(in_: In) -> In | Exists:
-        left = in_.this
+    def get_unique_alias(name: str) -> str:
+        while (alias := f'{name}{table_counters[name] - 1}') in table_counters:
+            table_counters[name] += 1
+        return alias
 
-        if not (subquery := in_.args.get('query')):
-            return in_  # Not a subquery, leave as is
+    def assign_aliases(node: Expression) -> Expression:
+        if isinstance(node, Table):
+            name = node.alias_or_name
+            table_counters[name] += 1
 
-        if isinstance(subquery, Subquery):
-            # Unwrap the subquery
-            subquery = subquery.this
+            if table_counters[name] == 1:
+                return node
 
-        return SQLQueryNormaliser._transform_subquery(subquery=subquery, left=left, comp=exp.EQ)
+            alias = get_unique_alias(name)
+            update_column_references(cast(Select, node.parent_select), name, alias)
 
-    @staticmethod
-    def _transform_comparison(comp: Comparison) -> Expression:
-        left = comp.left
-        subquery = comp.right.this
+            return node.as_(alias)
 
-        match comp.right:
-            case All():
-                inverse: dict[type[Comparison], type[Comparison]] = {
-                    exp.GT: exp.LTE,
-                    exp.GTE: exp.LT,
-                    exp.LT: exp.GTE,
-                    exp.LTE: exp.GT,
-                    exp.EQ: exp.NEQ,
-                    exp.NEQ: exp.EQ,
-                }
+        return node
 
-                return not_(
-                    SQLQueryNormaliser._transform_subquery(
-                        left=left, subquery=subquery, comp=inverse[type(comp)]
-                    )
-                )
+    return cast(SQLQuery, query.transform(assign_aliases))
 
-            case Any():
-                return SQLQueryNormaliser._transform_subquery(
-                    left=left, subquery=subquery, comp=type(comp)
-                )
 
-            case Subquery():
-                return SQLQueryNormaliser._transform_subquery(
-                    left=left, subquery=subquery, comp=type(comp)
-                )
+def normalise_subqueries(query: SQLQuery, schema: RelationalSchema) -> SQLQuery:
+    scope = build_scope(query, schema)
+
+    def transform_node(node: Expression) -> Expression:
+        match node:
+            case In():
+                return _transform_in(node, scope)
+
+            case comp if isinstance(comp, Comparison):
+                return _transform_comparison(comp, scope)
 
             case _:
-                return comp  # Not a subquery, leave as is
+                return node
 
-    @staticmethod
-    def _transform_subquery(subquery: SQLQuery, left: Expression, comp: type[Comparison]) -> Exists:
-        def find_column(query: SQLQuery | Subquery) -> Expression:  # type: ignore[return]
-            match query:
-                case Select():
-                    [column] = query.expressions
-                    return cast(Expression, column)
+    return cast(SQLQuery, query.transform(transform_node))
 
-                case query if isinstance(query, SetOperation):
-                    return find_column(query.left)
 
-                case Subquery():
-                    return find_column(query.this)
+def _transform_in(in_: In, scope: SQLScope) -> In | Exists:
+    left = in_.this
 
-        def to_select(subquery: SQLQuery | Subquery) -> Select:  # type: ignore[return]
-            match subquery:
-                case Select():
-                    return subquery
+    if not (subquery := in_.args.get('query')):
+        return in_  # Not a subquery, leave as is
 
-                case subquery if isinstance(subquery, SetOperation):
-                    return select('*').from_(subquery.subquery('sub'))
+    if isinstance(subquery, Subquery):
+        # Unwrap the subquery
+        subquery = subquery.this
 
-                case Subquery():
-                    return to_select(subquery.this)
+    return _transform_subquery(subquery=subquery, left=left, comp=exp.EQ, scope=scope)
 
-        select_ = to_select(subquery)
-        condition = comp(this=left, expression=find_column(subquery))
 
-        if select_.args.get('group'):
-            select_ = select_.having(condition)
-        else:
-            select_ = select_.where(condition)
+def _transform_comparison(comp: Comparison, scope: SQLScope) -> Expression:
+    left = comp.left
+    subquery = comp.right.this
 
-        return Exists(this=select_)
+    match comp.right:
+        case All():
+            inverse: dict[type[Comparison], type[Comparison]] = {
+                exp.GT: exp.LTE,
+                exp.GTE: exp.LT,
+                exp.LT: exp.GTE,
+                exp.LTE: exp.GT,
+                exp.EQ: exp.NEQ,
+                exp.NEQ: exp.EQ,
+            }
 
-    @staticmethod
-    def normalise_conditions(query: SQLQuery) -> SQLQuery:
-        def transform_select(node: Expression) -> Expression:
-            if isinstance(node, Select):
-                where: Expression | None = node.args.get('where')
-                if where and where.find(Select):
-                    return SQLQueryNormaliser.convert_to_dnf_union(node)
-            return node
+            return not_(
+                _transform_subquery(
+                    left=left, subquery=subquery, comp=inverse[type(comp)], scope=scope
+                )
+            )
 
-        return cast(SQLQuery, query.transform(transform_select))
+        case Any():
+            return _transform_subquery(left=left, subquery=subquery, comp=type(comp), scope=scope)
 
-    @staticmethod
-    def convert_to_dnf_union(select: Select) -> SQLQuery:
-        conjunctions = SQLQueryNormaliser._extract_dnf_conjunctions(select.args['where'].this)
-        if len(conjunctions) > 1:
-            return union(*[select.where(conjunction, append=False) for conjunction in conjunctions])
-        else:
-            return select
+        case Subquery():
+            return _transform_subquery(left=left, subquery=subquery, comp=type(comp), scope=scope)
 
-    @staticmethod
-    def _extract_dnf_conjunctions(where: Expression) -> list[Expression]:
-        dnf = normalize(where, dnf=True)
+        case _:
+            return comp  # Not a subquery, leave as is
 
-        if isinstance(dnf, Or):
-            return list(dnf.flatten())  # type: ignore[no-untyped-call]
-        else:
-            # The expression is a single conjunction
-            return [dnf]
+
+def _transform_subquery(
+    subquery: SQLQuery | Subquery, left: Expression, comp: type[Comparison], scope: SQLScope
+) -> Exists:
+    def to_select(subquery: SQLQuery | Subquery) -> Select:  # type: ignore[return]
+        match subquery:
+            case Select():
+                return subquery
+
+            case Subquery():
+                return to_select(subquery.this)
+
+            case subquery if isinstance(subquery, SetOperation):
+                raise NotImplementedError('Set operations are not supported')
+
+    select_ = to_select(subquery)
+    qualified = cast(Select, qualify(select_, scope))
+    condition = comp(this=qualify(left, scope), expression=qualified.expressions[0])
+
+    if qualified.args.get('group'):
+        qualified = qualified.having(condition)
+    else:
+        qualified = qualified.where(condition)
+
+    return Exists(this=qualified)
+
+
+def qualify(expr: Expression, parent_scope: SQLScope) -> Expression:
+    scope = parent_scope.find(expr)
+
+    if not scope:
+        raise ValueError('Expression scope not found in the provided SQL scope.')
+
+    def qualify_column(expr: Expression) -> Expression:
+        if isinstance(expr, Column):
+            source = scope.tables.find_column_source(expr)
+            assert source  # noqa: S101
+            return column(col=expr.name, table=source.name)
+        return expr
+
+    return expr.transform(qualify_column)
+
+
+def normalise_conditions(query: SQLQuery) -> SQLQuery:
+    def transform_select(node: Expression) -> Expression:
+        if isinstance(node, Select):
+            where: Expression | None = node.args.get('where')
+            if where and where.find(Select):
+                return convert_to_dnf_union(node)
+        return node
+
+    return cast(SQLQuery, query.transform(transform_select))
+
+
+def convert_to_dnf_union(select: Select) -> SQLQuery:
+    conjunctions = _extract_dnf_conjunctions(select.args['where'].this)
+    if len(conjunctions) > 1:
+        return union(*[select.where(conjunction, append=False) for conjunction in conjunctions])
+    else:
+        return select
+
+
+def _extract_dnf_conjunctions(where: Expression) -> list[Expression]:
+    dnf = normalize(where, dnf=True)
+
+    if isinstance(dnf, Or):
+        return list(dnf.flatten())  # type: ignore[no-untyped-call]
+    else:
+        # The expression is a single conjunction
+        return [dnf]

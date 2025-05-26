@@ -1,27 +1,6 @@
-from queries.serializers import QuerySerializer
 from queries.serializers.execution import (
     QueryExecutionSerializer,
 )
-
-
-def test_query_serializer_allows_blank_sql_text() -> None:
-    data = {
-        'name': 'Example Query',
-        'sql_text': '',
-    }
-    serializer = QuerySerializer(data=data)
-    serializer.is_valid(raise_exception=True)
-    assert serializer.validated_data['sql_text'] == ''
-
-
-def test_query_serializer_allows_blank_ra_text() -> None:
-    data = {
-        'name': 'Example Query',
-        'ra_text': '',
-    }
-    serializer = QuerySerializer(data=data)
-    serializer.is_valid(raise_exception=True)
-    assert serializer.validated_data['ra_text'] == ''
 
 
 def test_query_execution_serializer_valid_data() -> None:

@@ -9,8 +9,8 @@ def validate_query(query: Query) -> tuple[QueryAST | None, list[QueryError]]:
     db = query.project.database.connection_info
     match query.language:
         case Query.QueryLanguage.SQL:
-            return validate_sql(query.sql_text, db)
+            return validate_sql(query.text, db)
         case Query.QueryLanguage.RA:
-            return validate_ra(query.ra_text, db)
+            return validate_ra(query.text, db)
         case _:
             raise ValueError(f'Unsupported query language: {query.language}')

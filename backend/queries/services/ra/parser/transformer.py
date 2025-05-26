@@ -2,7 +2,7 @@ from typing import Any, cast
 
 from lark import Token, Transformer, Tree
 
-from .ast import (
+from ..ast import (
     EQ,
     GT,
     GTE,
@@ -65,6 +65,10 @@ class RATransformer(Transformer[Relation, RAQuery]):
         condition, query = args
         return query.select(condition)
 
+    def rename(self, args: tuple[str, RAQuery]) -> RAQuery:
+        alias, query = args
+        return query.rename(alias)
+
     def grouped_aggregation(
         self, args: tuple[list[Attribute], list[Aggregation], RAQuery]
     ) -> GroupedAggregation:
@@ -121,6 +125,10 @@ class RATransformer(Transformer[Relation, RAQuery]):
     def semi_join(self, args: tuple[RAQuery, RAQuery]) -> Join:
         left, right = args
         return left.semi_join(right)
+
+    def anti_join(self, args: tuple[RAQuery, RAQuery]) -> Join:
+        left, right = args
+        return left.anti_join(right)
 
     def theta_join(self, args: tuple[RAQuery, BooleanExpression, RAQuery]) -> ThetaJoin:
         left, condition, right = args

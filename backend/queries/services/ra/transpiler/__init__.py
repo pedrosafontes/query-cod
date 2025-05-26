@@ -1,7 +1,7 @@
-from collections.abc import Callable
+from functools import singledispatchmethod
 from typing import cast
 
-import queries.services.ra.parser.ast as ra
+import queries.services.ra.ast as ra
 import sqlglot.expressions as sql
 from queries.services.sql.types import aggregate_functions
 from queries.services.types import (
@@ -10,10 +10,10 @@ from queries.services.types import (
     ra_to_sql_bin_bool_ops,
     ra_to_sql_comparisons,
 )
-from sqlglot.expressions import Exists, Expression, Select, column, select, subquery
+from sqlglot.expressions import Exists, Expression, Select, column, select, subquery, table_
 
-from ..parser.ast import RAQuery, Relation
-from ..shared.inference import SchemaInferrer
+from ..ast import RAQuery, Relation
+from ..scope.schema import SchemaInferrer
 from .renamer import RAExpressionRenamer
 
 
@@ -22,14 +22,16 @@ class RAtoSQLTranspiler:
         self._schema_inferrer = SchemaInferrer(schema)
         self._distinct = distinct
 
+    @singledispatchmethod
     def transpile(self, query: RAQuery) -> SQLQuery:
-        method: Callable[[RAQuery], Select] = getattr(self, f'_transpile_{type(query).__name__}')
-        return method(query)
+        raise NotImplementedError(f'No transpiler for {type(query).__name__}')
 
-    def _transpile_Relation(self, rel: ra.Relation) -> Select:  # noqa: N802
-        return select('*').from_(rel.name).distinct(distinct=self._distinct)
+    @transpile.register
+    def _(self, rel: ra.Relation, alias: str | None = None) -> Select:
+        return select('*').from_(table_(rel.name, alias=alias)).distinct(distinct=self._distinct)
 
-    def _transpile_Projection(self, proj: ra.Projection) -> Select:  # noqa: N802
+    @transpile.register
+    def _(self, proj: ra.Projection) -> Select:
         query = self._transpile_select(proj.subquery)
 
         if any(
@@ -41,7 +43,8 @@ class RAtoSQLTranspiler:
             *[self._transpile_attribute(attr) for attr in proj.attributes], append=False
         )
 
-    def _transpile_Selection(self, selection: ra.Selection) -> Select:  # noqa: N802
+    @transpile.register
+    def _(self, selection: ra.Selection) -> Select:
         query = self._transpile_select(selection.subquery)
         condition = self._transpile_condition(selection.condition)
         if query.args.get('group') or self._refers_to(condition, query.expressions):
@@ -53,7 +56,7 @@ class RAtoSQLTranspiler:
         idents = condition.find_all(sql.Identifier)
         return any([ident.this == expr.alias for ident in idents for expr in exprs])
 
-    def _transpile_condition(self, cond: ra.BooleanExpression) -> Expression:
+    def _transpile_condition(self, cond: ra.BooleanExpression) -> Expression:  # type: ignore[return]
         match cond:
             case ra.BinaryBooleanExpression():
                 left = self._transpile_condition(cond.left)
@@ -72,7 +75,8 @@ class RAtoSQLTranspiler:
                     this=self._transpile_attribute(attr), expression=sql.Boolean(this=True)
                 )
 
-    def _transpile_Division(self, div: ra.Division) -> Expression:  # noqa: N802
+    @transpile.register
+    def _(self, div: ra.Division) -> Select:
         # Get tables with aliases
         dividend, dividend_alias = self._transpile_relation(div.dividend, 'dividend')
         dividend_sub, dividend_sub_alias = self._transpile_relation(div.dividend, 'dividend_sub')
@@ -112,7 +116,8 @@ class RAtoSQLTranspiler:
         else:
             return sql.Literal.number(comparison)
 
-    def _transpile_SetOperation(self, op: ra.SetOperation) -> SQLQuery:  # noqa: N802
+    @transpile.register
+    def _(self, op: ra.SetOperation) -> SQLQuery:
         left = self.transpile(op.left)
         right = self.transpile(op.right)
 
@@ -132,7 +137,8 @@ class RAtoSQLTranspiler:
                     # right is a derived relation
                     return left.join(right, join_type='CROSS', join_alias='r')
 
-    def _transpile_Join(self, join: ra.Join) -> Select:  # noqa: N802
+    @transpile.register
+    def _(self, join: ra.Join) -> Select:
         left, left_alias = self._transpile_relation(join.left, alias='l')
 
         match join.operator:
@@ -166,7 +172,8 @@ class RAtoSQLTranspiler:
 
                 return left.where(condition)
 
-    def _transpile_ThetaJoin(self, join: ra.ThetaJoin) -> Select:  # noqa: N802
+    @transpile.register
+    def _(self, join: ra.ThetaJoin) -> Select:
         left, left_alias = self._transpile_relation(join.left, 'l')
 
         # rename the attributes in the left relation to use the alias
@@ -196,7 +203,8 @@ class RAtoSQLTranspiler:
         condition = self._transpile_condition(renamed_condition)
         return left.join(right, join_alias=right_alias, on=condition)
 
-    def _transpile_GroupedAggregation(self, agg: ra.GroupedAggregation) -> Select:  # noqa: N802
+    @transpile.register
+    def _(self, agg: ra.GroupedAggregation) -> Select:
         query = self._transpile_select(agg.subquery)
 
         if query.args.get('group'):
@@ -213,13 +221,21 @@ class RAtoSQLTranspiler:
     def _transpile_aggregation(self, agg: ra.Aggregation) -> sql.ExpOrStr:
         return f'{agg.aggregation_function}({agg.input}) AS {agg.output}'
 
-    def _transpile_TopN(self, top_n: ra.TopN) -> Select:  # noqa: N802
+    @transpile.register
+    def _(self, top_n: ra.TopN) -> Select:
         query = self._transpile_select(top_n.subquery)
         return query.limit(top_n.limit).order_by(self._transpile_attribute(top_n.attribute).desc())
 
-    def _transpile_Rename(self, rename: ra.Rename) -> Select:  # noqa: N802
-        query = self._transpile_select(rename.subquery)
-        return subquery(query, rename.alias).select('*')
+    @transpile.register
+    def _(self, rename: ra.Rename) -> Select:
+        match rename.subquery:
+            case ra.Relation() as relation:
+                # rename is a base table
+                return cast(Select, self.transpile(relation, alias=rename.alias))
+            case _:
+                # rename is a derived relation
+                query = self.transpile(rename.subquery)
+                return subquery(query, rename.alias).select('*')
 
     def _transpile_relation(self, relation: RAQuery, alias: str) -> tuple[Select, str]:
         select = self._transpile_select(relation)

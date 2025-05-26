@@ -1,4 +1,4 @@
-from queries.services.ra.parser.ast import RAQuery, Relation
+from queries.services.ra.ast import RAQuery, Relation
 from sqlglot.expressions import Subquery, Table
 
 from ..scope.query import SQLScope
@@ -10,7 +10,7 @@ class TableTranspiler:
         self.scope = scope
 
     def transpile(self, table: SQLTable) -> RAQuery:
-        from .query import QueryTranspiler
+        from .query import transpile_query
 
         relation: RAQuery
         match table:
@@ -19,7 +19,7 @@ class TableTranspiler:
 
             case Subquery() as subquery:
                 derived_table_scope = self.scope.tables.derived_table_scopes[subquery.alias_or_name]
-                relation = QueryTranspiler.transpile(derived_table_scope.child)
+                relation = transpile_query(derived_table_scope.child)
 
         if table.alias:
             relation = relation.rename(table.alias)

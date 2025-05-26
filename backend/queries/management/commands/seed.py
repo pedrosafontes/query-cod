@@ -244,12 +244,11 @@ class Command(BaseCommand):
         def seed_queries(
             queries: list[tuple[str, str]], project: Project, language: Query.QueryLanguage
         ) -> None:
-            for name, q in queries:
+            for name, query_text in queries:
                 Query.objects.create(
                     name=name,
                     language=language,
-                    sql_text=q if language == Query.QueryLanguage.SQL else '',
-                    ra_text=q if language == Query.QueryLanguage.RA else '',
+                    text=query_text,
                     project=project,
                     created=now_time,
                     modified=now_time,

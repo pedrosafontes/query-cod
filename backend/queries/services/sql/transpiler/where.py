@@ -1,6 +1,6 @@
 from collections.abc import Callable
 
-from queries.services.ra.parser.ast import (
+from queries.services.ra.ast import (
     Attribute,
     RAQuery,
     anti_join,
@@ -74,13 +74,13 @@ class WhereTranspiler:
         return subquery_free, exists, not_exists
 
     def _transpile_exists(self, exists: Exists) -> tuple[RAQuery, list[RAQuery], list[Attribute]]:
-        from .query import QueryTranspiler
+        from .query import transpile_query
 
         subquery = exists.this
         scope = self.scope.subquery_scopes[subquery]
         context_relations, parameters = ContextRelationInferrer(scope).infer(subquery)
 
-        return QueryTranspiler.transpile(scope), context_relations, parameters
+        return transpile_query(scope), context_relations, parameters
 
     def _all_context_relations(
         self, transpiled_exists: list[tuple[RAQuery, list[RAQuery], list[Attribute]]]

@@ -1,4 +1,4 @@
-from queries.services.ra.parser.ast import (
+from queries.services.ra.ast import (
     Attribute,
     BinaryBooleanExpression,
     BooleanExpression,

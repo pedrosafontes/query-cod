@@ -1,15 +1,13 @@
 from ..scope import DerivedTableScope, SelectScope, SetOperationScope, SQLScope
-from .select import SelectValidator
-from .set_operation import SetOperationValidator
+from .select import validate_select
+from .set_operation import validate_set_operation
 
 
-class QueryValidator:
-    @staticmethod
-    def validate(scope: SQLScope) -> None:
-        match scope:
-            case SelectScope():
-                SelectValidator.validate(scope)
-            case SetOperationScope():
-                SetOperationValidator.validate(scope)
-            case DerivedTableScope():
-                QueryValidator.validate(scope.child)
+def validate_query(scope: SQLScope) -> None:
+    match scope:
+        case SelectScope():
+            validate_select(scope)
+        case SetOperationScope():
+            validate_set_operation(scope)
+        case DerivedTableScope():
+            validate_query(scope.child)

@@ -1,7 +1,7 @@
 from queries.services.types import RelationalSchema
 from queries.types import QueryError
 
-from ..parser.ast import RAQuery
+from ..ast import RAQuery
 from .analyzer import RASemanticAnalyzer
 from .errors.base import RASemanticError
 

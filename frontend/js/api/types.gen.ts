@@ -136,8 +136,7 @@ export type PatchedProject = {
 export type PatchedQuery = {
   readonly id?: number;
   name?: string;
-  sql_text?: string;
-  ra_text?: string;
+  text?: string;
   language?: LanguageEnum;
   readonly created?: string;
   readonly modified?: string;
@@ -173,8 +172,7 @@ export type ProjectionNode = {
 export type Query = {
   readonly id: number;
   name: string;
-  sql_text?: string;
-  ra_text?: string;
+  text?: string;
   language?: LanguageEnum;
   readonly created: string;
   readonly modified: string;
@@ -213,6 +211,7 @@ export type QueryResultData = {
 export type QuerySummary = {
   readonly id: number;
   name: string;
+  language?: LanguageEnum;
 };
 
 export type QueryTree = {
@@ -232,6 +231,7 @@ export type RATree =
   | RelationNode
   | ProjectionNode
   | SelectionNode
+  | RenameNode
   | DivisionNode
   | SetOperationNode
   | RAJoinNode
@@ -243,6 +243,7 @@ export type RATree =
  * * `Relation` - Relation
  * * `Projection` - Projection
  * * `Selection` - Selection
+ * * `Rename` - Rename
  * * `Division` - Division
  * * `SetOperation` - SetOperation
  * * `Join` - Join
@@ -254,6 +255,7 @@ export type RaNodeTypeEnum =
   | "Relation"
   | "Projection"
   | "Selection"
+  | "Rename"
   | "Division"
   | "SetOperation"
   | "Join"
@@ -267,6 +269,14 @@ export type RelationNode = {
   readonly ra_node_type: RaNodeTypeEnum;
   validation_errors: Array<QueryError>;
   name: string;
+};
+
+export type RenameNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  alias: string;
 };
 
 export type SQLJoinNode = {
@@ -661,6 +671,15 @@ export type QueriesSubqueriesExecutionsCreateData = {
 
 export type QueriesSubqueriesExecutionsCreateResponse = QueryExecution;
 
+export type QueriesTranspileCreateData = {
+  /**
+   * A unique integer value identifying this query.
+   */
+  id: number;
+};
+
+export type QueriesTranspileCreateResponse = Query;
+
 export type QueriesTreeRetrieveData = {
   /**
    * A unique integer value identifying this query.
@@ -930,6 +949,14 @@ export type $OpenApiTs = {
       req: QueriesSubqueriesExecutionsCreateData;
       res: {
         200: QueryExecution;
+      };
+    };
+  };
+  "/api/queries/{id}/transpile/": {
+    post: {
+      req: QueriesTranspileCreateData;
+      res: {
+        200: Query;
       };
     };
   };

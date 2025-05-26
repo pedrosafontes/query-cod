@@ -19,8 +19,7 @@ class Query(IndexedTimeStampedModel):
         RA = 'ra', 'Relational Algebra'
 
     name = models.CharField(max_length=255)
-    sql_text = models.TextField(blank=True, default='')
-    ra_text = models.TextField(blank=True, default='')
+    text = models.TextField(blank=True, default='')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='queries')
     language = models.CharField(
         max_length=16,
@@ -35,7 +34,7 @@ class Query(IndexedTimeStampedModel):
         return validate_query(self)
 
     @property
-    def is_executable(self) -> bool:
+    def is_valid(self) -> bool:
         return self.ast is not None and not self.validation_errors
 
     @property

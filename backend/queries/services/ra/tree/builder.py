@@ -1,12 +1,13 @@
-from collections.abc import Callable
+from functools import singledispatchmethod
 
-from queries.services.ra.parser.ast import (
+from queries.services.ra.ast import (
     Division,
     GroupedAggregation,
     Join,
     Projection,
     RAQuery,
     Relation,
+    Rename,
     Selection,
     SetOperation,
     ThetaJoin,
@@ -15,12 +16,11 @@ from queries.services.ra.parser.ast import (
 from queries.services.types import RelationalSchema
 from queries.types import QueryError
 
-from ..semantics import validate_ra_semantics
-from .latex_utils import (
-    convert_attribute,
-    convert_condition,
-    convert_text,
+from ..latex import converter as latex_converter
+from ..latex.utils import (
+    text,
 )
+from ..semantics import validate_ra_semantics
 from .types import (
     DivisionNode,
     GroupedAggregationNode,
@@ -28,6 +28,7 @@ from .types import (
     ProjectionNode,
     RATree,
     RelationNode,
+    RenameNode,
     SelectionNode,
     SetOperationNode,
     ThetaJoinNode,
@@ -54,18 +55,20 @@ class RATreeBuilder:
         self._subqueries[query_id] = subquery
         return query_id, errors
 
+    @singledispatchmethod
     def _build(self, query: RAQuery) -> RATree:
-        method: Callable[[RAQuery], RATree] = getattr(self, f'_build_{type(query).__name__}')
-        return method(query)
+        raise NotImplementedError(f'No builder for {type(query).__name__}')
 
-    def _build_Relation(self, rel: Relation) -> RATree:  # noqa: N802
+    @_build.register
+    def _(self, rel: Relation) -> RATree:
         query_id, errors = self._add_subquery(rel)
         return RelationNode(
-            id=query_id, validation_errors=errors, name=convert_text(rel.name), children=None
+            id=query_id, validation_errors=errors, name=text(rel.name), children=None
         )
 
-    def _build_Projection(self, proj: Projection) -> ProjectionNode:  # noqa: N802
-        attributes = [convert_attribute(attr) for attr in proj.attributes]
+    @_build.register
+    def _(self, proj: Projection) -> ProjectionNode:
+        attributes = [latex_converter.convert_attribute(attr) for attr in proj.attributes]
         query_id, errors = self._add_subquery(proj)
         return ProjectionNode(
             id=query_id,
@@ -74,16 +77,28 @@ class RATreeBuilder:
             children=[self._build(proj.subquery)],
         )
 
-    def _build_Selection(self, sel: Selection) -> SelectionNode:  # noqa: N802
+    @_build.register
+    def _(self, sel: Selection) -> SelectionNode:
         query_id, errors = self._add_subquery(sel)
         return SelectionNode(
             id=query_id,
             validation_errors=errors,
-            condition=convert_condition(sel.condition),
+            condition=latex_converter.convert_condition(sel.condition),
             children=[self._build(sel.subquery)],
         )
 
-    def _build_Division(self, div: Division) -> RATree:  # noqa: N802
+    @_build.register
+    def _(self, rename: Rename) -> RenameNode:
+        query_id, errors = self._add_subquery(rename)
+        return RenameNode(
+            id=query_id,
+            validation_errors=errors,
+            alias=text(rename.alias),
+            children=[self._build(rename.subquery)],
+        )
+
+    @_build.register
+    def _(self, div: Division) -> RATree:
         query_id, errors = self._add_subquery(div)
         return DivisionNode(
             id=query_id,
@@ -91,7 +106,8 @@ class RATreeBuilder:
             children=[self._build(div.dividend), self._build(div.divisor)],
         )
 
-    def _build_SetOperation(self, set_op: SetOperation) -> SetOperationNode:  # noqa: N802
+    @_build.register
+    def _(self, set_op: SetOperation) -> SetOperationNode:
         query_id, errors = self._add_subquery(set_op)
         return SetOperationNode(
             id=query_id,
@@ -100,7 +116,8 @@ class RATreeBuilder:
             children=[self._build(set_op.left), self._build(set_op.right)],
         )
 
-    def _build_Join(self, join: Join) -> JoinNode:  # noqa: N802
+    @_build.register
+    def _(self, join: Join) -> JoinNode:
         query_id, errors = self._add_subquery(join)
         return JoinNode(
             id=query_id,
@@ -109,22 +126,24 @@ class RATreeBuilder:
             children=[self._build(join.left), self._build(join.right)],
         )
 
-    def _build_ThetaJoin(self, join: ThetaJoin) -> ThetaJoinNode:  # noqa: N802
+    @_build.register
+    def _(self, join: ThetaJoin) -> ThetaJoinNode:
         query_id, errors = self._add_subquery(join)
         return ThetaJoinNode(
             id=query_id,
             validation_errors=errors,
-            condition=convert_condition(join.condition),
+            condition=latex_converter.convert_condition(join.condition),
             children=[self._build(join.left), self._build(join.right)],
         )
 
-    def _build_GroupedAggregation(self, agg: GroupedAggregation) -> GroupedAggregationNode:  # noqa: N802
-        group_by = [convert_attribute(attr) for attr in agg.group_by]
+    @_build.register
+    def _(self, agg: GroupedAggregation) -> GroupedAggregationNode:
+        group_by = [latex_converter.convert_attribute(attr) for attr in agg.group_by]
         aggregations = [
             (
-                convert_attribute(a.input),
+                latex_converter.convert_attribute(a.input),
                 a.aggregation_function.value.lower(),
-                convert_text(a.output),
+                text(a.output),
             )
             for a in agg.aggregations
         ]
@@ -138,12 +157,13 @@ class RATreeBuilder:
             children=[self._build(agg.subquery)],
         )
 
-    def _build_TopN(self, top_n: TopN) -> TopNNode:  # noqa: N802
+    @_build.register
+    def _(self, top_n: TopN) -> TopNNode:
         query_id, errors = self._add_subquery(top_n)
         return TopNNode(
             id=query_id,
             validation_errors=errors,
             limit=top_n.limit,
-            attribute=convert_attribute(top_n.attribute),
+            attribute=latex_converter.convert_attribute(top_n.attribute),
             children=[self._build(top_n.subquery)],
         )

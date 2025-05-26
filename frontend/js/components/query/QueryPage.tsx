@@ -3,46 +3,34 @@ import { useEffect, useState } from "react";
 
 import { Spinner } from "@/components/ui/spinner";
 import { QueriesService, Query, QueryResultData } from "api";
-import { useErrorToast } from "hooks/useErrorToast";
 
 import Diagrams from "./Diagrams";
 import ExecuteQueryButton from "./ExecuteQueryButton";
 import QueryEditor from "./QueryEditor";
 import ErrorAlert from "./QueryEditor/ErrorAlert";
-import QueryLanguageTabs from "./QueryLanguageTabs";
 import QueryPanels from "./QueryPanels";
 import QueryResult from "./QueryResult";
+import TranspileQueryButton from "./TranspileQueryButton";
 
 export type QueryPageProps = {
   queryId: number;
+  setQueryId: (queryId: number) => void;
   databaseId: number;
+  onTranspile?: () => void;
 };
 
-const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
+const QueryPage = ({
+  queryId,
+  setQueryId,
+  databaseId,
+  onTranspile,
+}: QueryPageProps) => {
   const [query, setQuery] = useState<Query>();
   const [queryResult, setQueryResult] = useState<QueryResultData>();
-  const [isExecuting, setIsExecuting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingError, setLoadingError] = useState<Error | null>(null);
-  const toast = useErrorToast();
   const hasErrors = !!query && query.validation_errors.length > 0;
-
-  const handleExecuteQuery = async (): Promise<void> => {
-    setIsExecuting(true);
-    try {
-      const execution = await QueriesService.queriesExecutionsCreate({
-        id: queryId,
-      });
-
-      setQueryResult(execution.results);
-    } catch (err) {
-      toast({
-        title: "Error executing query",
-      });
-    } finally {
-      setIsExecuting(false);
-    }
-  };
+  const actionsDisabled = isLoading || !!loadingError;
 
   useEffect(() => {
     const fetchQuery = async () => {
@@ -70,7 +58,7 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
   const renderEditor = () => {
     if (isLoading) {
       return (
-        <div className="flex justify-center items-center gap-2 pt-4 text-muted-foreground animate-pulse">
+        <div className="flex justify-center items-end gap-2 pt-4 text-muted-foreground animate-pulse">
           <Spinner className="text-inherit" size="small" />
           <p>Loading query</p>
         </div>
@@ -95,17 +83,22 @@ const QueryPage = ({ queryId, databaseId }: QueryPageProps) => {
       left={
         <>
           <div className="flex justify-between items-center gap-2 mb-5 w-full">
-            <QueryLanguageTabs
-              query={query}
-              setIsLoading={setIsLoading}
-              setQuery={setQuery}
-            />
-            <ExecuteQueryButton
-              disabled={isExecuting || isLoading || !!loadingError || hasErrors}
-              handleExecuteQuery={handleExecuteQuery}
-              hasErrors={hasErrors}
-              loading={isExecuting}
-            />
+            <h1 className="truncate">{query && query.name}</h1>
+            <div className="flex gap-2">
+              <TranspileQueryButton
+                disabled={actionsDisabled}
+                hasErrors={hasErrors}
+                queryId={queryId}
+                setQueryId={setQueryId}
+                onSuccess={onTranspile}
+              />
+              <ExecuteQueryButton
+                disabled={actionsDisabled}
+                hasErrors={hasErrors}
+                queryId={queryId}
+                setQueryResult={setQueryResult}
+              />
+            </div>
           </div>
           {renderEditor()}
         </>

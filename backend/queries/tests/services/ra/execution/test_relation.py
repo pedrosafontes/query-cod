@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 import pytest
-from queries.services.ra.parser.ast import RAQuery, Relation
+from queries.services.ra.ast import RAQuery, Relation
 
 
 @pytest.mark.parametrize(

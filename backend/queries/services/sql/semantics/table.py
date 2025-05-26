@@ -27,7 +27,7 @@ class TableValidator:
             raise RelationNotFoundError(table)
 
     def _validate_derived_table(self, subquery: Subquery) -> None:
-        from .query import QueryValidator
+        from .query import validate_query
 
         # Derived tables must have an alias
         if not subquery.alias_or_name:
@@ -35,7 +35,7 @@ class TableValidator:
 
         # Validate the subquery
         subquery_scope = self.scope.tables.derived_table_scopes[subquery.alias_or_name]
-        QueryValidator.validate(subquery_scope)
+        validate_query(subquery_scope)
 
         # Derived columns must have a unique alias
         aliases = []

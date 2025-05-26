@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { QueriesService, Query } from "api";
+import { Query } from "api";
 import { useAutosave } from "hooks/useAutosave";
 
 import AutosaveStatus from "../AutosaveStatus";
@@ -17,13 +17,13 @@ import RAKeyboard from "./RAKeyboard";
 
 type RAEditorProps = {
   query: Query;
-  setQuery: (query: Query) => void;
+  updateText: (text: string) => Promise<void>;
 };
 
 type InputMode = "keyboard" | "code";
 
-const RAEditor = ({ query, setQuery }: RAEditorProps) => {
-  const [value, setValue] = useState<string | undefined>(query.ra_text);
+const RAEditor = ({ query, updateText }: RAEditorProps) => {
+  const [value, setValue] = useState<string | undefined>(query.text);
   const [mode, setMode] = useState<InputMode>("keyboard");
   const mf = useRef<MathfieldElement>(null);
 
@@ -44,15 +44,7 @@ const RAEditor = ({ query, setQuery }: RAEditorProps) => {
     MathfieldElement.soundsDirectory = null;
   }, []);
 
-  const updateRaText = async (value: string) => {
-    const result = await QueriesService.queriesPartialUpdate({
-      id: query.id,
-      requestBody: { ra_text: value },
-    });
-    setQuery(result);
-  };
-
-  const status = useAutosave({ data: value, onSave: updateRaText });
+  const status = useAutosave({ data: value, onSave: updateText });
 
   return (
     <>

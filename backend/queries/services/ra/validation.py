@@ -3,8 +3,8 @@ from databases.services.schema import get_schema
 from queries.types import QueryError
 
 from ..types import to_relational_schema
+from .ast import RAQuery
 from .parser import parse_ra
-from .parser.ast import RAQuery
 from .parser.errors import RASyntaxError
 from .semantics import validate_ra_semantics
 

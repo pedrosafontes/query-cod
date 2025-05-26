@@ -1,4 +1,4 @@
-import queries.services.ra.parser.ast as ra
+import queries.services.ra.ast as ra
 from queries.services.sql.scope.query import SelectScope
 from queries.services.types import sql_to_ra_bin_bool_ops, sql_to_ra_comparisons
 from sqlglot import Expression

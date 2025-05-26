@@ -36,6 +36,17 @@ class SQLScope:
     def projections(self) -> ProjectionsScope:
         raise NotImplementedError('Subclasses must implement this method')
 
+    def find(self, expr: Expression) -> SQLScope | None:
+        if isinstance(expr, SQLQuery):
+            query = expr
+        else:
+            query = cast(Select, expr.parent_select)
+
+        return self._find(query)
+
+    def _find(self, query: SQLQuery) -> SQLScope | None:
+        raise NotImplementedError('Subclasses must implement this method')
+
 
 class SelectScope(SQLScope):
     def __init__(self, select: Select, db_schema: RelationalSchema, parent: SQLScope | None):
@@ -104,6 +115,21 @@ class SelectScope(SQLScope):
 
         return [column(col, table) for table, cols in schema.items() for col in cols.keys()]
 
+    def _find(self, query: SQLQuery) -> SQLScope | None:
+        if query == self.query:
+            return self
+
+        scope: SQLScope
+        for scope in self.tables.derived_table_scopes.values():
+            if query_scope := scope._find(query):
+                return query_scope
+
+        for scope in self.subquery_scopes.values():
+            if query_scope := scope._find(query):
+                return query_scope
+
+        return None
+
 
 class SetOperationScope(SQLScope):
     def __init__(
@@ -130,6 +156,11 @@ class SetOperationScope(SQLScope):
     def projections(self) -> ProjectionsScope:
         return self.left.projections
 
+    def _find(self, query: SQLQuery) -> SQLScope | None:
+        if query == self.query:
+            return self
+        return self.left._find(query) or self.right._find(query)
+
 
 class DerivedTableScope(SQLScope):
     def __init__(self, subquery: Subquery, db_schema: RelationalSchema, child: SQLScope):
@@ -148,3 +179,6 @@ class DerivedTableScope(SQLScope):
     @property
     def projections(self) -> ProjectionsScope:
         return self.child.projections
+
+    def _find(self, query: SQLQuery) -> SQLScope | None:
+        return self.child._find(query)

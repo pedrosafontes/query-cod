@@ -12,8 +12,7 @@ class QuerySerializer(serializers.ModelSerializer[Query]):
         fields = [  # noqa: RUF012
             'id',
             'name',
-            'sql_text',
-            'ra_text',
+            'text',
             'language',
             'created',
             'modified',
@@ -27,4 +26,5 @@ class QuerySummarySerializer(serializers.ModelSerializer[Query]):
         fields = [  # noqa: RUF012
             'id',
             'name',
+            'language',
         ]

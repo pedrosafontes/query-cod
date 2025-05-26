@@ -3,7 +3,7 @@ from typing import cast
 
 from lark import Lark, Tree, UnexpectedInput
 
-from .ast import RAQuery, Relation
+from ..ast import RAQuery, Relation
 from .errors import (
     InvalidAggregationFunctionError,
     InvalidAggregationInputError,
@@ -18,6 +18,7 @@ from .errors import (
     MissingGroupingAggregationsError,
     MissingOperandError,
     MissingProjectionAttributesError,
+    MissingRenameAliasError,
     MissingSelectionConditionError,
     MissingThetaJoinConditionError,
     RASyntaxError,
@@ -68,6 +69,8 @@ def parse_ra(ra_text: str) -> RAQuery:
                     'R -',
                     '- S',
                     '\\Join S',
+                    'R \\Join',
+                    'R \\overline{\\Join}',
                     'R \\div',
                     '\\ltimes S',
                 ],
@@ -86,6 +89,10 @@ def parse_ra(ra_text: str) -> RAQuery:
                 MissingSelectionConditionError: [
                     '\\sigma_{} R',
                     '\\sigma R',
+                ],
+                MissingRenameAliasError: [
+                    '\\rho_{} R',
+                    '\\rho R',
                 ],
                 InvalidSelectionConditionError: [
                     '\\sigma_{a >} R',

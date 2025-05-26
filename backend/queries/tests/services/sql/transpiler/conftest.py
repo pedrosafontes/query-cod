@@ -2,7 +2,7 @@ from collections.abc import Callable
 from typing import Any
 
 import pytest
-from queries.services.ra.parser.ast import RAQuery
+from queries.services.ra.ast import RAQuery
 from queries.services.ra.transpiler import RAtoSQLTranspiler
 from queries.services.sql.parser import parse_sql
 from queries.services.sql.transpiler import SQLtoRATranspiler
