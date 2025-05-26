@@ -60,10 +60,16 @@ describe("QueryPage", () => {
     },
   };
 
+  const mockSetQueryId = jest.fn();
+
   const renderComponent = () =>
     render(
       <TooltipProvider>
-        <QueryPage databaseId={0} queryId={mockQuery.id} />
+        <QueryPage
+          databaseId={0}
+          queryId={mockQuery.id}
+          setQueryId={mockSetQueryId}
+        />
       </TooltipProvider>,
     );
 
