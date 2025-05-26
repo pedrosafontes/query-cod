@@ -3,7 +3,7 @@ from typing import cast
 from databases.services.schema import get_schema
 from queries.models import Query
 
-from .ra.parser.ast import RAQuery
+from .ra.ast import RAQuery
 from .ra.transpiler import RAtoSQLTranspiler
 from .sql.transpiler import SQLtoRATranspiler
 from .types import SQLQuery, to_relational_schema

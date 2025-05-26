@@ -2,7 +2,7 @@ from typing import Any, cast
 
 from lark import Token, Transformer, Tree
 
-from .ast import (
+from ..ast import (
     EQ,
     GT,
     GTE,

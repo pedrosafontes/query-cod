@@ -1,4 +1,4 @@
-from queries.services.ra.parser.ast import AggregationFunction
+from queries.services.ra.ast import AggregationFunction
 from ra_sql_visualisation.types import DataType
 
 

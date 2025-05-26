@@ -3,7 +3,7 @@ from typing import cast
 
 from lark import Lark, Tree, UnexpectedInput
 
-from .ast import RAQuery, Relation
+from ..ast import RAQuery, Relation
 from .errors import (
     InvalidAggregationFunctionError,
     InvalidAggregationInputError,

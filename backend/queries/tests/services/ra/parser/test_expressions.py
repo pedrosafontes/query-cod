@@ -1,6 +1,5 @@
 import pytest
-from queries.services.ra.parser import parse_ra
-from queries.services.ra.parser.ast import (
+from queries.services.ra.ast import (
     EQ,
     GT,
     GTE,
@@ -11,6 +10,7 @@ from queries.services.ra.parser.ast import (
     Relation,
     attribute,
 )
+from queries.services.ra.parser import parse_ra
 
 
 @pytest.mark.parametrize(

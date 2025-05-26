@@ -3,7 +3,7 @@ from collections import defaultdict
 from queries.services.types import Attributes, RelationalSchema, flatten, merge_common_column
 from ra_sql_visualisation.types import DataType
 
-from ..parser.ast import (
+from ..ast import (
     Attribute,
     Division,
     GroupedAggregation,

@@ -1,4 +1,4 @@
-from queries.services.ra.parser.ast import Attribute, RAQuery
+from queries.services.ra.ast import Attribute, RAQuery
 from queries.services.sql.scope.query import SQLScope
 from queries.services.sql.scope.tables import Source
 from sqlglot.expressions import Column, Expression, Table

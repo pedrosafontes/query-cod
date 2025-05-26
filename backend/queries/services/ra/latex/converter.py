@@ -1,7 +1,7 @@
 from functools import singledispatch
 
-from ..parser import ast as ra
-from ..parser.ast import (
+from .. import ast as ra
+from ..ast import (
     Attribute,
     BinaryBooleanExpression,
     BinaryOperation,

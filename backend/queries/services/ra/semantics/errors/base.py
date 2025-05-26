@@ -1,7 +1,7 @@
 from abc import ABC
 from dataclasses import dataclass
 
-from queries.services.ra.parser.ast import ASTNode
+from queries.services.ra.ast import ASTNode
 from queries.types import ErrorPosition
 
 

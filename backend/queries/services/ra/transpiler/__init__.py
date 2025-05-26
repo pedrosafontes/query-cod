@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from typing import cast
 
-import queries.services.ra.parser.ast as ra
+import queries.services.ra.ast as ra
 import sqlglot.expressions as sql
 from queries.services.sql.types import aggregate_functions
 from queries.services.types import (
@@ -12,7 +12,7 @@ from queries.services.types import (
 )
 from sqlglot.expressions import Exists, Expression, Select, column, select, subquery, table_
 
-from ..parser.ast import RAQuery, Relation
+from ..ast import RAQuery, Relation
 from ..shared.inference import SchemaInferrer
 from .renamer import RAExpressionRenamer
 

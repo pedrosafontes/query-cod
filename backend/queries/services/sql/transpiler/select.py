@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 
-from queries.services.ra.parser.ast import (
+from queries.services.ra.ast import (
     Attribute,
     RAQuery,
 )

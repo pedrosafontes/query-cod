@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 import pytest
-from queries.services.ra.parser.ast import (
+from queries.services.ra.ast import (
     EQ,
     GT,
     RAQuery,

@@ -2,8 +2,8 @@ from databases.models.database import Database
 from databases.types import QueryResult
 from queries.models import Query
 
+from .ra.ast import RAQuery
 from .ra.execution import execute_ra
-from .ra.parser.ast import RAQuery
 from .sql.execution import execute_sql
 from .types import QueryAST, SQLQuery
 

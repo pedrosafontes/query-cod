@@ -1,5 +1,5 @@
 import pytest
-from queries.services.ra.parser.ast import (
+from queries.services.ra.ast import (
     EQ,
     And,
     RAQuery,

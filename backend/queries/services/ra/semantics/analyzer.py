@@ -3,7 +3,7 @@ from collections.abc import Callable
 from queries.services.types import RelationalSchema, flatten
 from ra_sql_visualisation.types import DataType
 
-from ..parser.ast import (
+from ..ast import (
     ASTNode,
     Attribute,
     BinaryBooleanExpression,

@@ -1,9 +1,9 @@
 import pytest
-from queries.services.ra.parser import parse_ra
-from queries.services.ra.parser.ast import (
+from queries.services.ra.ast import (
     RAQuery,
     Relation,
 )
+from queries.services.ra.parser import parse_ra
 from queries.services.ra.parser.errors import (
     MissingRenameAliasError,
 )

@@ -1,170 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from collections.abc import Sequence
+from dataclasses import dataclass
 from enum import Enum
-from typing import ClassVar, TypedDict
 
-
-class NodePosition(TypedDict):
-    line: int
-    start_col: int
-    end_col: int
-
-
-@dataclass(kw_only=True)
-class ASTNode:
-    position: NodePosition | None = field(default=None, compare=False)
-
-
-@dataclass
-class Attribute(ASTNode):
-    name: str
-    relation: str | None = None
-
-    def __str__(self) -> str:
-        if self.relation:
-            return f'{self.relation}.{self.name}'
-        return self.name
-
-
-@dataclass
-class BooleanOperation(ASTNode):
-    _PRECEDENCE: ClassVar[dict[str, int]] = {
-        'Or': 1,
-        'And': 2,
-        'Not': 3,
-    }
-
-    @property
-    def precedence(self) -> int:
-        return self._PRECEDENCE[type(self).__name__]
-
-
-@dataclass
-class BinaryBooleanExpression(BooleanOperation):
-    left: BooleanExpression
-    right: BooleanExpression
-
-    @property
-    def operator(self) -> str:
-        raise NotImplementedError('Subclasses must implement the operator property')
-
-    def __str__(self) -> str:
-        return f'({self.left} {self.operator} {self.right})'
-
-
-@dataclass
-class And(BinaryBooleanExpression):
-    @property
-    def operator(self) -> str:
-        return 'and'
-
-
-class Or(BinaryBooleanExpression):
-    @property
-    def operator(self) -> str:
-        return 'or'
-
-
-@dataclass
-class Not(BooleanOperation):
-    expression: BooleanExpression
-
-    def __str__(self) -> str:
-        return f'(not {self.expression})'
-
-
-ComparisonValue = Attribute | str | int | float | bool
-
-
-@dataclass
-class Comparison(ASTNode):
-    left: ComparisonValue
-    right: ComparisonValue
-
-    @property
-    def operator(self) -> str:
-        raise NotImplementedError('Subclasses must implement the operator property')
-
-    def __str__(self) -> str:
-        return f'{self.left} {self.operator} {self.right}'
-
-
-@dataclass
-class EQ(Comparison):
-    @property
-    def operator(self) -> str:
-        return '='
-
-
-@dataclass
-class NEQ(Comparison):
-    @property
-    def operator(self) -> str:
-        return '<>'
-
-
-@dataclass
-class GT(Comparison):
-    @property
-    def operator(self) -> str:
-        return '>'
-
-
-@dataclass
-class GTE(Comparison):
-    @property
-    def operator(self) -> str:
-        return '>='
-
-
-@dataclass
-class LT(Comparison):
-    @property
-    def operator(self) -> str:
-        return '<'
-
-
-@dataclass
-class LTE(Comparison):
-    @property
-    def operator(self) -> str:
-        return '<='
-
-
-BooleanExpression = BooleanOperation | Comparison | Attribute
-
-
-class AggregationFunction(Enum):
-    COUNT = 'count'
-    SUM = 'sum'
-    AVG = 'avg'
-    MIN = 'min'
-    MAX = 'max'
-
-    def __str__(self) -> str:
-        return self.value
-
-
-@dataclass
-class Aggregation:
-    input: Attribute
-    aggregation_function: AggregationFunction
-    output: str
-
-    def __str__(self) -> str:
-        return f'({self.input}, {self.aggregation_function}, {self.output})'
-
-
-def attribute(attr: str | Attribute) -> Attribute:
-    if isinstance(attr, str):
-        if '.' in attr:
-            relation, name = attr.split('.', 1)
-            return Attribute(name=name, relation=relation)
-        else:
-            return Attribute(name=attr)
-    return attr
+from .attribute import Attribute
+from .base import ASTNode
+from .boolean import BooleanExpression
+from .factory import attribute, query
 
 
 class RAQuery(ASTNode):
@@ -226,45 +69,6 @@ class RAQuery(ASTNode):
         from ..latex.converter import convert
 
         return convert(self)
-
-
-def query(relation: RAQuery | str) -> RAQuery:
-    if isinstance(relation, str):
-        return Relation(name=relation)
-    return relation
-
-
-def cartesian(relations: list[RAQuery]) -> RAQuery:
-    return _combine_relations(relations, lambda left, right: left.cartesian(right))
-
-
-def natural_join(relations: list[RAQuery]) -> RAQuery:
-    return _combine_relations(relations, lambda left, right: left.natural_join(right))
-
-
-def anti_join(relations: list[RAQuery]) -> RAQuery:
-    return _combine_relations(relations, lambda left, right: left.anti_join(right))
-
-
-def _combine_relations(
-    relations: list[RAQuery], operator: Callable[[RAQuery, RAQuery], RAQuery]
-) -> RAQuery:
-    if not relations:
-        raise ValueError('No relations provided for combination')
-    if len(relations) == 1:
-        return relations[0]
-    result = relations[0]
-    for relation in relations[1:]:
-        result = operator(result, relation)
-    return result
-
-
-def unnest_cartesian_operands(query: RAQuery) -> list[RAQuery]:
-    match query:
-        case SetOperation(operator=SetOperator.CARTESIAN):
-            return unnest_cartesian_operands(query.left) + unnest_cartesian_operands(query.right)
-        case _:
-            return [query]
 
 
 @dataclass
@@ -357,6 +161,27 @@ class Selection(UnaryOperation):
 
     def __str__(self) -> str:
         return f'SELECT ({self.condition}) (\n{indent(str(self.subquery))}\n)'
+
+
+class AggregationFunction(Enum):
+    COUNT = 'count'
+    SUM = 'sum'
+    AVG = 'avg'
+    MIN = 'min'
+    MAX = 'max'
+
+    def __str__(self) -> str:
+        return self.value
+
+
+@dataclass
+class Aggregation:
+    input: Attribute
+    aggregation_function: AggregationFunction
+    output: str
+
+    def __str__(self) -> str:
+        return f'({self.input}, {self.aggregation_function}, {self.output})'
 
 
 @dataclass

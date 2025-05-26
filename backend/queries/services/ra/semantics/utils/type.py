@@ -1,4 +1,4 @@
-from queries.services.ra.parser.ast import ComparisonValue
+from queries.services.ra.ast import ComparisonValue
 from ra_sql_visualisation.types import DataType
 
 

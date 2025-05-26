@@ -1,9 +1,9 @@
-from queries.services.ra.parser.ast import (
+from queries.services.ra.ast import (
     Attribute,
     RAQuery,
     cartesian,
 )
-from queries.services.ra.parser.ast import (
+from queries.services.ra.ast import (
     SetOperation as RASetOperation,
 )
 from queries.services.sql.transpiler.context import ContextRelationInferrer

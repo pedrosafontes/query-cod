@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-import queries.services.ra.parser.ast as ra
+import queries.services.ra.ast as ra
 import sqlglot.expressions as sql
 from bidict import bidict
 from databases.types import Columns, Schema
@@ -8,7 +8,7 @@ from ra_sql_visualisation.types import DataType
 from sqlglot.expressions import DataType as SQLGlotDataType
 from sqlglot.expressions import Query
 
-from .ra.parser.ast import RAQuery
+from .ra.ast import RAQuery
 
 
 RelationName = str

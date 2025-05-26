@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from queries.services.ra.parser.ast import Attribute
+from queries.services.ra.ast import Attribute
 
 from .base import RASemanticError
 

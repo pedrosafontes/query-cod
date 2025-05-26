@@ -3,7 +3,7 @@ from collections.abc import Mapping
 from databases.models.database_connection_info import DatabaseConnectionInfo
 from databases.services.schema import get_schema
 
-from .ra.parser.ast import RAQuery
+from .ra.ast import RAQuery
 from .ra.tree.builder import RATreeBuilder
 from .ra.tree.types import RATree
 from .sql.tree.builder import SQLTreeBuilder

@@ -1,4 +1,4 @@
-from queries.services.ra.parser.ast import RAQuery
+from queries.services.ra.ast import RAQuery
 from queries.services.types import RelationalSchema, SQLQuery
 
 from ..scope.builder import build_scope

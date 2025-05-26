@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from queries.services.ra.parser.ast import Aggregation, Attribute, RAQuery
+from queries.services.ra.ast import Aggregation, Attribute, RAQuery
 from sqlglot.expressions import Column
 
 from ..scope.query import SelectScope
