@@ -91,8 +91,8 @@ def _(rename: Rename) -> str:
 def _(set_op: SetOperation) -> str:
     operators: dict[SetOperator, str] = {
         SetOperator.UNION: latex.CUP,
-        SetOperator.DIFFERENCE: latex.CAP,
         SetOperator.DIFFERENCE: '-',
+        SetOperator.INTERSECT: latex.CAP,
         SetOperator.CARTESIAN: latex.TIMES,
     }
     return operators[set_op.operator]
