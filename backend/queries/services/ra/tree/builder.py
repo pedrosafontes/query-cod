@@ -16,7 +16,7 @@ from queries.services.ra.parser.ast import (
 from queries.services.types import RelationalSchema
 from queries.types import QueryError
 
-from ..latex.converter import RALatexConverter
+from ..latex import converter as latex_converter
 from ..latex.utils import (
     text,
 )
@@ -66,7 +66,7 @@ class RATreeBuilder:
         )
 
     def _build_Projection(self, proj: Projection) -> ProjectionNode:  # noqa: N802
-        attributes = [RALatexConverter.convert_attribute(attr) for attr in proj.attributes]
+        attributes = [latex_converter.convert_attribute(attr) for attr in proj.attributes]
         query_id, errors = self._add_subquery(proj)
         return ProjectionNode(
             id=query_id,
@@ -80,7 +80,7 @@ class RATreeBuilder:
         return SelectionNode(
             id=query_id,
             validation_errors=errors,
-            condition=RALatexConverter.convert_condition(sel.condition),
+            condition=latex_converter.convert_condition(sel.condition),
             children=[self._build(sel.subquery)],
         )
 
@@ -124,15 +124,15 @@ class RATreeBuilder:
         return ThetaJoinNode(
             id=query_id,
             validation_errors=errors,
-            condition=RALatexConverter.convert_condition(join.condition),
+            condition=latex_converter.convert_condition(join.condition),
             children=[self._build(join.left), self._build(join.right)],
         )
 
     def _build_GroupedAggregation(self, agg: GroupedAggregation) -> GroupedAggregationNode:  # noqa: N802
-        group_by = [RALatexConverter.convert_attribute(attr) for attr in agg.group_by]
+        group_by = [latex_converter.convert_attribute(attr) for attr in agg.group_by]
         aggregations = [
             (
-                RALatexConverter.convert_attribute(a.input),
+                latex_converter.convert_attribute(a.input),
                 a.aggregation_function.value.lower(),
                 text(a.output),
             )
@@ -154,6 +154,6 @@ class RATreeBuilder:
             id=query_id,
             validation_errors=errors,
             limit=top_n.limit,
-            attribute=RALatexConverter.convert_attribute(top_n.attribute),
+            attribute=latex_converter.convert_attribute(top_n.attribute),
             children=[self._build(top_n.subquery)],
         )

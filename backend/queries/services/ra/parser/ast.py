@@ -223,9 +223,9 @@ class RAQuery(ASTNode):
         return TopN(self, limit, attribute(attr))
 
     def latex(self) -> str:
-        from ..latex.converter import RALatexConverter
+        from ..latex.converter import convert
 
-        return RALatexConverter.convert(self)
+        return convert(self)
 
 
 def query(relation: RAQuery | str) -> RAQuery:
