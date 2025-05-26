@@ -26,4 +26,5 @@ class QuerySummarySerializer(serializers.ModelSerializer[Query]):
         fields = [  # noqa: RUF012
             'id',
             'name',
+            'language',
         ]

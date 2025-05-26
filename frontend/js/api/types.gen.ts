@@ -211,6 +211,7 @@ export type QueryResultData = {
 export type QuerySummary = {
   readonly id: number;
   name: string;
+  language?: LanguageEnum;
 };
 
 export type QueryTree = {

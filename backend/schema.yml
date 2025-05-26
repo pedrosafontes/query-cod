@@ -1431,6 +1431,8 @@ components:
         name:
           type: string
           maxLength: 255
+        language:
+          $ref: '#/components/schemas/LanguageEnum'
       required:
       - id
       - name

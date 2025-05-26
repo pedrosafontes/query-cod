@@ -733,6 +733,9 @@ export const $QuerySummary = {
       type: "string",
       maxLength: 255,
     },
+    language: {
+      $ref: "#/components/schemas/LanguageEnum",
+    },
   },
   required: ["id", "name"],
 } as const;
