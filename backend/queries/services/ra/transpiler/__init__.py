@@ -10,7 +10,7 @@ from queries.services.types import (
     ra_to_sql_bin_bool_ops,
     ra_to_sql_comparisons,
 )
-from sqlglot.expressions import Exists, Expression, Select, column, select, subquery
+from sqlglot.expressions import Exists, Expression, Select, column, select, subquery, table_
 
 from ..parser.ast import RAQuery, Relation
 from ..shared.inference import SchemaInferrer
@@ -26,8 +26,8 @@ class RAtoSQLTranspiler:
         method: Callable[[RAQuery], Select] = getattr(self, f'_transpile_{type(query).__name__}')
         return method(query)
 
-    def _transpile_Relation(self, rel: ra.Relation) -> Select:  # noqa: N802
-        return select('*').from_(rel.name).distinct(distinct=self._distinct)
+    def _transpile_Relation(self, rel: ra.Relation, alias: str | None = None) -> Select:  # noqa: N802
+        return select('*').from_(table_(rel.name, alias=alias)).distinct(distinct=self._distinct)
 
     def _transpile_Projection(self, proj: ra.Projection) -> Select:  # noqa: N802
         query = self._transpile_select(proj.subquery)
@@ -218,8 +218,14 @@ class RAtoSQLTranspiler:
         return query.limit(top_n.limit).order_by(self._transpile_attribute(top_n.attribute).desc())
 
     def _transpile_Rename(self, rename: ra.Rename) -> Select:  # noqa: N802
-        query = self.transpile(rename.subquery)
-        return subquery(query, rename.alias).select('*')
+        match rename.subquery:
+            case ra.Relation() as relation:
+                # rename is a base table
+                return self._transpile_Relation(relation, alias=rename.alias)
+            case _:
+                # rename is a derived relation
+                query = self.transpile(rename.subquery)
+                return subquery(query, rename.alias).select('*')
 
     def _transpile_relation(self, relation: RAQuery, alias: str) -> tuple[Select, str]:
         select = self._transpile_select(relation)
