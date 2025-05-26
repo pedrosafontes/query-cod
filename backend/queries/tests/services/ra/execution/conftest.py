@@ -5,7 +5,7 @@ import pytest
 from queries.services.ra.ast import RAQuery
 from queries.services.ra.transpiler import RAtoSQLTranspiler
 from queries.services.types import RelationalSchema, to_sqlglot_schema
-from ra_sql_visualisation.types import DataType
+from query_cod.types import DataType
 from sqlglot.executor import execute
 from sqlglot.executor.table import Table
 

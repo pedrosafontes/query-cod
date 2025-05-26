@@ -16,7 +16,7 @@ backend_format:
 
 # Commands for Docker version
 docker_setup:
-	docker volume create ra_sql_visualisation_dbdata
+	docker volume create query_cod_dbdata
 	docker compose build --no-cache backend
 	docker compose run --rm --remove-orphans backend python manage.py spectacular --color --file schema.yml
 	docker compose run --remove-orphans frontend npm install

@@ -63,7 +63,7 @@ MIDDLEWARE = [
     'django_guid.middleware.guid_middleware',
 ]
 
-ROOT_URLCONF = 'ra_sql_visualisation.urls'
+ROOT_URLCONF = 'query_cod.urls'
 
 TEMPLATES = [
     {
@@ -91,7 +91,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'ra_sql_visualisation.wsgi.application'
+WSGI_APPLICATION = 'query_cod.wsgi.application'
 
 AUTH_PASSWORD_VALIDATORS = [
     {

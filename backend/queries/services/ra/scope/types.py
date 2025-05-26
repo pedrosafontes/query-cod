@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from queries.services.ra.ast import Attribute
 from queries.services.types import RelationalSchema, RelationName
-from ra_sql_visualisation.types import DataType
+from query_cod.types import DataType
 
 
 @dataclass

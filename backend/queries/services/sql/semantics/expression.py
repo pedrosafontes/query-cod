@@ -1,7 +1,7 @@
 from collections.abc import Callable
 
 from queries.services.types import SQLQuery
-from ra_sql_visualisation.types import DataType
+from query_cod.types import DataType
 from sqlglot import Expression
 from sqlglot import expressions as exp
 

@@ -11,7 +11,7 @@ from queries.services.types import (
     flatten,
     merge_common_column,
 )
-from ra_sql_visualisation.types import DataType
+from query_cod.types import DataType
 from sqlglot.expressions import Column, Table, select, table_
 
 from ..semantics.errors import (

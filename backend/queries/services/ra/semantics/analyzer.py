@@ -1,7 +1,7 @@
 from functools import singledispatchmethod
 
 from queries.services.types import RelationalSchema, flatten
-from ra_sql_visualisation.types import DataType
+from query_cod.types import DataType
 
 from ..ast import (
     ASTNode,

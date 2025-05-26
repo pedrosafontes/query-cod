@@ -33,7 +33,7 @@ npm-debug.log
 *.map
 
 # General
-/ra_sql_visualisation-venv/
+/query_cod-venv/
 /venv/
 /env/
 /output/

@@ -8,7 +8,7 @@ permissions:
 
 jobs:
   build:
-    name: Build ra_sql_visualisation
+    name: Build query_cod
     strategy:
       matrix:
         python: [3.12]
@@ -69,7 +69,7 @@ jobs:
       - name: Linting
         run: poetry run ruff check ./backend/
         env:
-          DJANGO_SETTINGS_MODULE: "ra_sql_visualisation.settings.local_base"
+          DJANGO_SETTINGS_MODULE: "query_cod.settings.local_base"
           SECRET_KEY: ${{ steps.secret_id_generator.outputs.SECRET_KEY }}
           DATABASE_URL: "sqlite:///"
           ALLOWED_HOSTS: ".example.org"
@@ -81,7 +81,7 @@ jobs:
           SKIP: ruff,eslint,missing-migrations,backend-schema
       - run: poetry run python manage.py makemigrations --check --dry-run
         env:
-          DJANGO_SETTINGS_MODULE: "ra_sql_visualisation.settings.production"
+          DJANGO_SETTINGS_MODULE: "query_cod.settings.production"
           SECRET_KEY: ${{ steps.secret_id_generator.outputs.SECRET_KEY }}
           DATABASE_URL: "sqlite:///"
           ALLOWED_HOSTS: ".example.org"
@@ -91,7 +91,7 @@ jobs:
         working-directory: backend
       - run: poetry run python manage.py check --deploy
         env:
-          DJANGO_SETTINGS_MODULE: "ra_sql_visualisation.settings.production"
+          DJANGO_SETTINGS_MODULE: "query_cod.settings.production"
           SECRET_KEY: ${{ steps.secret_id_generator.outputs.SECRET_KEY }}
           DATABASE_URL: "sqlite:///"
           ALLOWED_HOSTS: ".example.org"

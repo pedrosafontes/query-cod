@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ra_sql_visualisation"
+name = "query_cod"
 version = "0.1.0"
 description = "Django 5, React, Bootstrap 5 with Python 3 and webpack project boilerplate"
 authors = ["Vinta Software <contact@vinta.com.br>"]
@@ -188,4 +188,4 @@ module = "django_js_reverse.*"
 ignore_missing_imports = true
 
 [tool.django-stubs]
-django_settings_module = "ra_sql_visualisation.settings"
+django_settings_module = "query_cod.settings"

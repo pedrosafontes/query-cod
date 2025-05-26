@@ -4,7 +4,7 @@ import queries.services.ra.ast as ra
 import sqlglot.expressions as sql
 from bidict import bidict
 from databases.types import Columns, Schema
-from ra_sql_visualisation.types import DataType
+from query_cod.types import DataType
 from sqlglot.expressions import DataType as SQLGlotDataType
 from sqlglot.expressions import Query
 
