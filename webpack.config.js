@@ -41,8 +41,9 @@ module.exports = (env, argv) => {
             loader: "swc-loader",
             options: {
               jsc: {
-                parser: { syntax: "ecmascript" },
-                target: "es2022"
+                parser: {
+                  syntax: "ecmascript"
+                },
               }
             }
           }
