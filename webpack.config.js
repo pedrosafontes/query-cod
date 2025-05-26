@@ -35,6 +35,19 @@ module.exports = (env, argv) => {
     module: {
       rules: [
         {
+          test: /\.(js|mjs)$/,
+          include: /node_modules\/(property-information|hast.*|unist.*|rehype.*|remark.*)/,
+          use: {
+            loader: "swc-loader",
+            options: {
+              jsc: {
+                parser: { syntax: "ecmascript" },
+                target: "es2022"
+              }
+            }
+          }
+        },
+        {
           test: /\.(js|mjs|jsx|ts|tsx)$/,
           use: {
             loader: "swc-loader",
