@@ -1,7 +1,7 @@
 from abc import ABC
 from dataclasses import dataclass
 
-from ra_sql_visualisation.types import DataType
+from query_cod.types import DataType
 
 from . import SQLSemanticError
 

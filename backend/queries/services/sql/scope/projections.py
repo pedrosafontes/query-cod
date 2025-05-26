@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 
 from queries.services.types import RelationalSchema, flatten
-from ra_sql_visualisation.types import DataType
+from query_cod.types import DataType
 from sqlglot.expressions import Expression
 
 

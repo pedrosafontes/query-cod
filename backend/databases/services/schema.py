@@ -2,7 +2,7 @@ from typing import Any
 
 from databases.models.database_connection_info import DatabaseConnectionInfo
 from databases.types import ForeignKey, Schema
-from ra_sql_visualisation.types import DataType
+from query_cod.types import DataType
 from sqlalchemy import (
     CHAR,
     DOUBLE_PRECISION,

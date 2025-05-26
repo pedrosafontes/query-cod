@@ -2,7 +2,7 @@ import pytest
 from queries.services.sql.parser import parse_sql
 from queries.services.sql.semantics import SQLSemanticAnalyzer
 from queries.services.types import RelationalSchema
-from ra_sql_visualisation.types import DataType
+from query_cod.types import DataType
 
 
 @pytest.fixture

@@ -1,6 +1,6 @@
 from typing import Any, TypedDict
 
-from ra_sql_visualisation.types import DataType
+from query_cod.types import DataType
 
 
 class QueryResult(TypedDict):

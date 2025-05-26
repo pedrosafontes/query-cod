@@ -1,4 +1,4 @@
-from ra_sql_visualisation.types import DataType
+from query_cod.types import DataType
 
 from .ast import AggregationFunction, ComparisonValue
 

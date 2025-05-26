@@ -1,7 +1,7 @@
 import re
 from typing import cast
 
-from ra_sql_visualisation.types import DataType
+from query_cod.types import DataType
 from sqlglot.expressions import (
     Alias,
     Boolean,

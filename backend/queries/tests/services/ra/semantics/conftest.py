@@ -4,7 +4,7 @@ import pytest
 from queries.services.ra.ast import RAQuery
 from queries.services.ra.semantics.analyzer import RASemanticAnalyzer
 from queries.services.types import RelationalSchema
-from ra_sql_visualisation.types import DataType
+from query_cod.types import DataType
 
 
 @pytest.fixture

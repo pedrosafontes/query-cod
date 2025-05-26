@@ -13,9 +13,9 @@ if __name__ == '__main__':
         if settings_module:
             print(
                 "Ignoring config('DJANGO_SETTINGS_MODULE') because it's test. "
-                "Using 'ra_sql_visualisation.settings.test'"
+                "Using 'query_cod.settings.test'"
             )
-        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ra_sql_visualisation.settings.test')
+        os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'query_cod.settings.test')
     else:
         if settings_module is None:
             print(

@@ -1,8 +1,8 @@
 {
-  "name": "ra_sql_visualisation-frontend",
+  "name": "query_cod-frontend",
   "version": "0.0.1",
   "private": true,
-  "description": "ra_sql_visualisation frontend.",
+  "description": "query_cod frontend.",
   "engines": {
     "node": ">=20 <21"
   },
