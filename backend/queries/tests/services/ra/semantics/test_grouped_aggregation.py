@@ -34,17 +34,17 @@ def test_valid_grouped_aggregation(query: RAQuery, assert_valid: Callable[[RAQue
     [
         (
             GroupedAggregation(
-                [Attribute('Z')],
-                [Aggregation(Attribute('A'), AggregationFunction.SUM, 'X')],
-                Relation('R'),
+                group_by=[Attribute('Z')],
+                aggregations=[Aggregation(Attribute('A'), AggregationFunction.SUM, 'X')],
+                subquery=Relation('R'),
             ),
             AttributeNotFoundError,
         ),
         (
             GroupedAggregation(
-                [Attribute('A')],
-                [Aggregation(Attribute('Z'), AggregationFunction.SUM, 'X')],
-                Relation('R'),
+                group_by=[Attribute('A')],
+                aggregations=[Aggregation(Attribute('Z'), AggregationFunction.SUM, 'X')],
+                subquery=Relation('R'),
             ),
             AttributeNotFoundError,
         ),

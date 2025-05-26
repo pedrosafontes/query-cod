@@ -164,33 +164,33 @@ class RAQuery(ASTNode):
             projections = projections + self.attributes
 
         return Projection(
-            projections,
             self.subquery if optimise and isinstance(self, Projection) else self,
+            projections,
         )
 
     def select(self, condition: BooleanExpression) -> Selection:
-        return Selection(condition, self)
+        return Selection(self, condition)
 
     def union(self, other: RAQuery | str) -> SetOperation:
-        return SetOperation(SetOperator.UNION, self, query(other))
+        return SetOperation(self, query(other), SetOperator.UNION)
 
     def intersect(self, other: RAQuery | str) -> SetOperation:
-        return SetOperation(SetOperator.INTERSECT, self, query(other))
+        return SetOperation(self, query(other), SetOperator.INTERSECT)
 
     def difference(self, other: RAQuery | str) -> SetOperation:
-        return SetOperation(SetOperator.DIFFERENCE, self, query(other))
+        return SetOperation(self, query(other), SetOperator.DIFFERENCE)
 
     def cartesian(self, other: RAQuery | str) -> SetOperation:
-        return SetOperation(SetOperator.CARTESIAN, self, query(other))
+        return SetOperation(self, query(other), SetOperator.CARTESIAN)
 
     def natural_join(self, other: RAQuery | str) -> Join:
-        return Join(JoinOperator.NATURAL, self, query(other))
+        return Join(self, query(other), JoinOperator.NATURAL)
 
     def semi_join(self, other: RAQuery | str) -> Join:
-        return Join(JoinOperator.SEMI, self, query(other))
+        return Join(self, query(other), JoinOperator.SEMI)
 
     def anti_join(self, other: RAQuery | str) -> Join:
-        return Join(JoinOperator.ANTI, self, query(other))
+        return Join(self, query(other), JoinOperator.ANTI)
 
     def theta_join(self, other: RAQuery | str, condition: BooleanExpression) -> ThetaJoin:
         return ThetaJoin(self, query(other), condition)
@@ -199,15 +199,15 @@ class RAQuery(ASTNode):
         return Division(self, query(other))
 
     def rename(self, alias: str, optimise: bool = True) -> Rename:
-        return Rename(alias, self.subquery if optimise and isinstance(self, Rename) else self)
+        return Rename(self.subquery if optimise and isinstance(self, Rename) else self, alias)
 
     def grouped_aggregation(
         self, group_by: Sequence[str | Attribute], aggregations: list[Aggregation]
     ) -> GroupedAggregation:
-        return GroupedAggregation([attribute(attr) for attr in group_by], aggregations, self)
+        return GroupedAggregation(self, [attribute(attr) for attr in group_by], aggregations)
 
     def top_n(self, limit: int, attr: str | Attribute) -> TopN:
-        return TopN(limit, attribute(attr), self)
+        return TopN(self, limit, attribute(attr))
 
     def latex(self) -> str:
         from ..latex.converter import RALatexConverter
@@ -262,6 +262,17 @@ class Relation(RAQuery):
         return self.name
 
 
+@dataclass
+class UnaryOperation(RAQuery):
+    subquery: RAQuery
+
+
+@dataclass
+class BinaryOperation(RAQuery):
+    left: RAQuery
+    right: RAQuery
+
+
 class SetOperator(Enum):
     UNION = 'UNION'
     INTERSECT = 'INTERSECT'
@@ -273,10 +284,8 @@ class SetOperator(Enum):
 
 
 @dataclass
-class SetOperation(RAQuery):
+class SetOperation(BinaryOperation):
     operator: SetOperator
-    left: RAQuery
-    right: RAQuery
 
     def __str__(self) -> str:
         return f'({self.left}\n{self.operator}\n{self.right})'
@@ -292,28 +301,29 @@ class JoinOperator(Enum):
 
 
 @dataclass
-class Join(RAQuery):
+class Join(BinaryOperation):
     operator: JoinOperator
-    left: RAQuery
-    right: RAQuery
 
     def __str__(self) -> str:
         return f'({self.left}\n{self.operator}\n{self.right})'
 
 
 @dataclass
-class Division(RAQuery):
-    dividend: RAQuery
-    divisor: RAQuery
+class Division(BinaryOperation):
+    @property
+    def dividend(self) -> RAQuery:
+        return self.left
+
+    @property
+    def divisor(self) -> RAQuery:
+        return self.right
 
     def __str__(self) -> str:
         return f'({self.dividend} / {self.divisor})'
 
 
 @dataclass
-class ThetaJoin(RAQuery):
-    left: RAQuery
-    right: RAQuery
+class ThetaJoin(BinaryOperation):
     condition: BooleanExpression
 
     def __str__(self) -> str:
@@ -321,28 +331,25 @@ class ThetaJoin(RAQuery):
 
 
 @dataclass
-class Projection(RAQuery):
+class Projection(UnaryOperation):
     attributes: list[Attribute]
-    subquery: RAQuery
 
     def __str__(self) -> str:
         return f'PROJECT ({", ".join(str(attr) for attr in self.attributes)}) (\n{indent(str(self.subquery))}\n)'
 
 
 @dataclass
-class Selection(RAQuery):
+class Selection(UnaryOperation):
     condition: BooleanExpression
-    subquery: RAQuery
 
     def __str__(self) -> str:
         return f'SELECT ({self.condition}) (\n{indent(str(self.subquery))}\n)'
 
 
 @dataclass
-class GroupedAggregation(RAQuery):
+class GroupedAggregation(UnaryOperation):
     group_by: list[Attribute]
     aggregations: list[Aggregation]
-    subquery: RAQuery
 
     def __str__(self) -> str:
         group_by = ', '.join(str(attr) for attr in self.group_by)
@@ -351,19 +358,17 @@ class GroupedAggregation(RAQuery):
 
 
 @dataclass
-class TopN(RAQuery):
+class TopN(UnaryOperation):
     limit: int
     attribute: Attribute
-    subquery: RAQuery
 
     def __str__(self) -> str:
         return f'T ({self.limit}, {self.attribute}) (\n{indent(str(self.subquery))}\n)'
 
 
 @dataclass
-class Rename(RAQuery):
+class Rename(UnaryOperation):
     alias: str
-    subquery: RAQuery
 
     def __str__(self) -> str:
         return f'RENAME ({self.alias}) {self.subquery}'
