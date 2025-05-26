@@ -1,4 +1,3 @@
-
 from functools import singledispatch
 
 from ..parser import ast as ra

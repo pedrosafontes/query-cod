@@ -45,7 +45,7 @@ class ExpressionValidator:
         expr: Expression,
         context: ValidationContext | None = None,
     ) -> None:
-        from .query import QueryValidator
+        from .query import validate_query
 
         if context is None:
             # Create a new context if not provided
@@ -84,7 +84,7 @@ class ExpressionValidator:
 
             case exp.Exists():
                 scope = self.scope.subquery_scopes[expr.this]
-                QueryValidator.validate(scope)
+                validate_query(scope)
 
             case exp.Between():
                 self._validate_between(expr, context)
@@ -128,7 +128,7 @@ class ExpressionValidator:
             raise UngroupedColumnError(column, [column.name])
 
     def _validate_scalar_subquery(self, subquery: exp.Subquery) -> DataType:
-        from .query import QueryValidator
+        from .query import validate_query
 
         select = subquery.this
 
@@ -137,7 +137,7 @@ class ExpressionValidator:
         if not isinstance(scope, SelectScope):
             raise NonScalarExpressionError(subquery)
 
-        QueryValidator.validate(scope)
+        validate_query(scope)
 
         # Check if the subquery returns a scalar: a single column and a single row
         if len(scope.projections.expressions) != 1:
@@ -261,10 +261,10 @@ class ExpressionValidator:
                 assert_comparable(lt, rt, pred)
 
     def _validate_quantified_predicate_query(self, query: SQLQuery) -> DataType:
-        from .query import QueryValidator
+        from .query import validate_query
 
         scope = self.scope.subquery_scopes[query]
-        QueryValidator.validate(scope)
+        validate_query(scope)
 
         result = scope.projections
         if len(result.expressions) != 1:
