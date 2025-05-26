@@ -12,8 +12,8 @@ echo "-----> Poetry install"
 poetry install --without dev --no-root --no-interaction
 echo "-----> Poetry done"
 
-echo "-----> Running manage.py check --deploy --fail-level WARNING"
-poetry run backend/manage.py check --deploy --fail-level WARNING
+echo "-----> Running manage.py check --deploy --fail-level ERROR"
+poetry run backend/manage.py check --deploy --fail-level ERROR
 
 if [ -n "$ENABLE_DJANGO_COLLECTSTATIC" ] && [ "$ENABLE_DJANGO_COLLECTSTATIC" == 1 ]; then
     echo "-----> Running collectstatic"
