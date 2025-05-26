@@ -7,6 +7,7 @@ from ..parser.ast import (
     ASTNode,
     Attribute,
     BinaryBooleanExpression,
+    BinaryOperation,
     BooleanExpression,
     Comparison,
     Division,
@@ -21,6 +22,7 @@ from ..parser.ast import (
     SetOperator,
     ThetaJoin,
     TopN,
+    UnaryOperation,
 )
 from ..shared.inference import SchemaInferrer
 from ..shared.types import Match, RelationOutput
@@ -48,6 +50,11 @@ class RASemanticAnalyzer:
         self._validate(query)
 
     def _validate(self, query: RAQuery) -> None:
+        if isinstance(query, UnaryOperation):
+            self._validate(query.subquery)
+        elif isinstance(query, BinaryOperation):
+            self._validate(query.left)
+            self._validate(query.right)
         method: Callable[[RAQuery], None] = getattr(self, f'_validate_{type(query).__name__}')
         return method(query)
 
@@ -56,22 +63,18 @@ class RASemanticAnalyzer:
             raise RelationNotFoundError(rel, rel.name)
 
     def _validate_Projection(self, proj: Projection) -> None:  # noqa: N802
-        self._validate(proj.subquery)
         input_ = self._schema_inferrer.infer(proj.subquery)
         for attr in proj.attributes:
             self._validate_attribute(attr, [input_])
 
     def _validate_Selection(self, sel: Selection) -> None:  # noqa: N802
-        self._validate(sel.subquery)
         input_ = self._schema_inferrer.infer(sel.subquery)
         self._validate_condition(sel.condition, [input_])
 
     def _validate_Rename(self, rename: Projection) -> None:  # noqa: N802
-        self._validate(rename.subquery)
+        pass
 
     def _validate_SetOperation(self, op: SetOperation) -> None:  # noqa: N802
-        self._validate(op.left)
-        self._validate(op.right)
         left = self._schema_inferrer.infer(op.left)
         right = self._schema_inferrer.infer(op.right)
         if op.operator != SetOperator.CARTESIAN:
@@ -81,8 +84,6 @@ class RASemanticAnalyzer:
                 raise UnionCompatibilityError(op, op.operator, left.attrs, right.attrs)
 
     def _validate_Join(self, join: Join) -> None:  # noqa: N802
-        self._validate(join.left)
-        self._validate(join.right)
         left = self._schema_inferrer.infer(join.left)
         right = self._schema_inferrer.infer(join.right)
 
@@ -97,15 +98,11 @@ class RASemanticAnalyzer:
                 raise JoinAttributeTypeMismatchError(join, name, left_type, right_type)
 
     def _validate_ThetaJoin(self, join: ThetaJoin) -> None:  # noqa: N802
-        self._validate(join.left)
-        self._validate(join.right)
         left = self._schema_inferrer.infer(join.left)
         right = self._schema_inferrer.infer(join.right)
         self._validate_condition(join.condition, [left, right])
 
     def _validate_Division(self, div: Division) -> None:  # noqa: N802
-        self._validate(div.dividend)
-        self._validate(div.divisor)
         dividend = self._schema_inferrer.infer(div.dividend)
         divisor = self._schema_inferrer.infer(div.divisor)
 
@@ -119,7 +116,6 @@ class RASemanticAnalyzer:
                 raise DivisionAttributeTypeMismatchError(div, name, dividend_attrs[name], t)
 
     def _validate_GroupedAggregation(self, agg: GroupedAggregation) -> None:  # noqa: N802
-        self._validate(agg.subquery)
         input_ = self._schema_inferrer.infer(agg.subquery)
 
         for attr in agg.group_by:
@@ -137,7 +133,6 @@ class RASemanticAnalyzer:
                 )
 
     def _validate_TopN(self, top: TopN) -> None:  # noqa: N802
-        self._validate(top.subquery)
         input_ = self._schema_inferrer.infer(top.subquery)
         self._validate_attribute(top.attribute, [input_])
 
