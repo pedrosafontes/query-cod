@@ -1,4 +1,3 @@
-from queries.serializers import QuerySerializer
 from queries.serializers.execution import (
     QueryExecutionSerializer,
 )
