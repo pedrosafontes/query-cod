@@ -36,7 +36,7 @@ type ProjectSidebarProps = {
   project: Project;
   currentQueryId?: number;
   setCurrentQueryId: (id: number | undefined) => void;
-  onSuccess: () => void;
+  onSuccess: () => Promise<void>;
 };
 
 const ProjectSidebar = ({
@@ -68,7 +68,7 @@ const ProjectSidebar = ({
         } as Query,
       });
       setOpen(true);
-      onSuccess();
+      await onSuccess();
       setCurrentQueryId(newQuery.id);
       setCreatingQueryId(newQuery.id);
     } catch (error) {
@@ -86,7 +86,7 @@ const ProjectSidebar = ({
           name,
         },
       });
-      onSuccess();
+      await onSuccess();
     } catch (error) {
       toast({
         title: "Error renaming query",
