@@ -2,7 +2,7 @@ from abc import ABC
 from dataclasses import dataclass
 
 from queries.services.ra.ast import AggregationFunction, SetOperator
-from queries.services.ra.shared.types import TypedAttribute
+from queries.services.ra.scope.types import TypedAttribute
 from queries.services.types import Attributes
 from ra_sql_visualisation.types import DataType
 

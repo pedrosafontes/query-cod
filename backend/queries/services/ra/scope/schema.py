@@ -18,9 +18,9 @@ from ..ast import (
     ThetaJoin,
     TopN,
 )
+from ..inference import type_of_function
 from .types import RelationOutput, TypedAttribute
-from .utils.schema import merge_schemas
-from .utils.type import type_of_function
+from .utils import merge_schemas
 
 
 class SchemaInferrer:

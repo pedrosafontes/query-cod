@@ -13,7 +13,7 @@ from queries.services.types import (
 from sqlglot.expressions import Exists, Expression, Select, column, select, subquery, table_
 
 from ..ast import RAQuery, Relation
-from ..shared.inference import SchemaInferrer
+from ..scope.schema import SchemaInferrer
 from .renamer import RAExpressionRenamer
 
 
