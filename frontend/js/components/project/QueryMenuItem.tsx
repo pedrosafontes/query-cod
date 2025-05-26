@@ -1,4 +1,4 @@
-import { Ellipsis, Pencil, Trash } from "lucide-react";
+import { Ellipsis, Pencil, SquareCode, SquarePi, Trash } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import * as React from "react";
 
@@ -11,20 +11,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
+import { QueriesService, QuerySummary } from "api";
+import { useErrorToast } from "hooks/useErrorToast";
 import { cn } from "lib/utils";
 
 interface QueryMenuItemProps {
-  name: string;
+  query: QuerySummary;
   isActive: boolean;
   onSelect: () => void;
-  onRename: (newName: string) => void;
-  onDelete: () => void;
+  onRename: () => Promise<void>;
+  onDelete: (id: number) => void;
   isCreating?: boolean;
   onCreationEnd?: () => void;
 }
 
 const QueryMenuItem = ({
-  name,
+  query: { id, name, language },
   isActive,
   onSelect,
   onRename,
@@ -48,10 +50,41 @@ const QueryMenuItem = ({
     }
   }, [editing]);
 
+  const toast = useErrorToast();
+
+  const renameQuery = async (name: string): Promise<void> => {
+    try {
+      await QueriesService.queriesPartialUpdate({
+        id,
+        requestBody: {
+          name,
+        },
+      });
+      await onRename();
+    } catch (error) {
+      toast({
+        title: "Error renaming query",
+      });
+    }
+  };
+
+  const deleteQuery = async (): Promise<void> => {
+    try {
+      await QueriesService.queriesDestroy({
+        id,
+      });
+      await onDelete(id);
+    } catch (error) {
+      toast({
+        title: "Error deleting query",
+      });
+    }
+  };
+
   const handleRename = () => {
     const trimmedValue = inputValue.trim();
     if (trimmedValue && trimmedValue !== name) {
-      onRename(trimmedValue);
+      renameQuery(trimmedValue);
     } else {
       setInputValue(name); // Reset to original name if empty or unchanged
     }
@@ -68,6 +101,13 @@ const QueryMenuItem = ({
       endEditing();
     }
   };
+
+  let LangageIcon;
+  if (language === "ra") {
+    LangageIcon = SquarePi;
+  } else {
+    LangageIcon = SquareCode;
+  }
 
   return (
     <SidebarMenuItem className={cn(editing && "py-1")}>
@@ -87,7 +127,10 @@ const QueryMenuItem = ({
           onClick={onSelect}
           onDoubleClick={() => setManuallyEditing(true)}
         >
-          <span className="truncate">{name}</span>
+          <LangageIcon className="size-4 shrink-0 text-muted-foreground" />
+          <span className="truncate text-clip grow [background-image:linear-gradient(to_right,_black_90%,_transparent_100%)] bg-clip-text text-transparent">
+            {name}
+          </span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <div
@@ -111,7 +154,7 @@ const QueryMenuItem = ({
               <DropdownMenuItem
                 aria-label="Delete Query"
                 className="text-destructive"
-                onClick={onDelete}
+                onClick={deleteQuery}
               >
                 <Trash />
                 Delete
