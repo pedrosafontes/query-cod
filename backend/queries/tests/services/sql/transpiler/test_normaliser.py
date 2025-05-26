@@ -1,6 +1,10 @@
 import pytest
 from queries.services.sql.parser import parse_sql
-from queries.services.sql.transpiler.normaliser import SQLQueryNormaliser
+from queries.services.sql.transpiler.normaliser import (
+    alias_tables,
+    normalise_conditions,
+    normalise_subqueries,
+)
 from queries.services.types import RelationalSchema
 
 from .schemas import movies_schema, schema
@@ -111,7 +115,7 @@ def test_subquery_normalisation(
     test_query = parse_sql(query)
     expected_query = parse_sql(expected)
 
-    normalised_query = SQLQueryNormaliser.normalise_subqueries(test_query, schema)
+    normalised_query = normalise_subqueries(test_query, schema)
     print(normalised_query.sql(pretty=True))
 
     assert normalised_query == expected_query
@@ -159,7 +163,7 @@ def test_condition_normalisation(
     test_query = parse_sql(query)
     expected_query = parse_sql(expected)
 
-    normalised_query = SQLQueryNormaliser.normalise_conditions(test_query)
+    normalised_query = normalise_conditions(test_query)
     print(normalised_query.sql(pretty=True))
 
     assert normalised_query == expected_query
@@ -193,7 +197,7 @@ def test_table_aliasing(
     test_query = parse_sql(query)
     expected_query = parse_sql(expected)
 
-    normalised_query = SQLQueryNormaliser.alias_tables(test_query)
+    normalised_query = alias_tables(test_query)
     print(normalised_query.sql(pretty=True))
 
     assert normalised_query.sql() == expected_query.sql()
