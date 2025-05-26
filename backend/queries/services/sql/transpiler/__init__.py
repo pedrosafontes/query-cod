@@ -3,7 +3,7 @@ from queries.services.types import RelationalSchema, SQLQuery
 
 from ..scope.builder import build_scope
 from .normaliser import SQLQueryNormaliser
-from .query import QueryTranspiler
+from .query import transpile_query
 
 
 class SQLtoRATranspiler:
@@ -13,4 +13,4 @@ class SQLtoRATranspiler:
     def transpile(self, query: SQLQuery) -> RAQuery:
         normalised = SQLQueryNormaliser.normalise(query, self.schema)
         scope = build_scope(normalised, self.schema)
-        return QueryTranspiler.transpile(scope)
+        return transpile_query(scope)

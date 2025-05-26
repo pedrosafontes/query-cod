@@ -27,10 +27,10 @@ class ContextRelationInferrer:
         return relations, parameters
 
     def _transpile_source(self, source: Source) -> RAQuery:
-        from .query import QueryTranspiler
+        from .query import transpile_query
 
         match source.table:
             case Table():
                 return TableTranspiler(self.scope).transpile(source.table)
             case SQLScope():
-                return QueryTranspiler.transpile(source.table)
+                return transpile_query(source.table)
