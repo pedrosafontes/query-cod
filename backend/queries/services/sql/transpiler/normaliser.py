@@ -1,10 +1,11 @@
 from typing import cast
 
-from queries.services.types import SQLQuery
+from queries.services.types import RelationalSchema, SQLQuery
 from sqlglot import exp
 from sqlglot.expressions import (
     All,
     Any,
+    Column,
     Exists,
     Expression,
     In,
@@ -12,31 +13,72 @@ from sqlglot.expressions import (
     Select,
     SetOperation,
     Subquery,
+    Table,
+    column,
     not_,
-    select,
     union,
 )
 from sqlglot.optimizer.normalize import normalize
 
+from ..scope.builder import build_scope
+from ..scope.query import SQLScope
 from ..types import Comparison
 
 
 class SQLQueryNormaliser:
     @staticmethod
-    def normalise(query: SQLQuery) -> SQLQuery:
-        transformed = SQLQueryNormaliser.normalise_subqueries(query)
+    def normalise(query: SQLQuery, schema: RelationalSchema) -> SQLQuery:
+        transformed = SQLQueryNormaliser.alias_tables(query)
+        transformed = SQLQueryNormaliser.normalise_subqueries(transformed, schema)
         transformed = SQLQueryNormaliser.normalise_conditions(transformed)
         return transformed
 
     @staticmethod
-    def normalise_subqueries(query: SQLQuery) -> SQLQuery:
+    def alias_tables(query: SQLQuery) -> SQLQuery:
+        table_counters: dict[str, int] = {}
+
+        # Initialize counters
+        for table in query.find_all(Table, Subquery):
+            table_counters[table.alias_or_name] = 0
+
+        def update_column_references(select: Select, name: str, alias: str) -> None:
+            for col in select.find_all(Column):
+                if col.table == name:
+                    col.replace(column(col=col.name, table=alias))
+
+        def get_unique_alias(name: str) -> str:
+            while (alias := f'{name}{table_counters[name] - 1}') in table_counters:
+                table_counters[name] += 1
+            return alias
+
+        def assign_aliases(node: Expression) -> Expression:
+            if isinstance(node, Table):
+                name = node.alias_or_name
+                table_counters[name] += 1
+
+                if table_counters[name] == 1:
+                    return node
+
+                alias = get_unique_alias(name)
+                update_column_references(cast(Select, node.parent_select), name, alias)
+
+                return node.as_(alias)
+
+            return node
+
+        return cast(SQLQuery, query.transform(assign_aliases))
+
+    @staticmethod
+    def normalise_subqueries(query: SQLQuery, schema: RelationalSchema) -> SQLQuery:
+        scope = build_scope(query, schema)
+
         def transform_node(node: Expression) -> Expression:
             match node:
                 case In():
-                    return SQLQueryNormaliser._transform_in(node)
+                    return SQLQueryNormaliser._transform_in(node, scope)
 
                 case comp if isinstance(comp, Comparison):
-                    return SQLQueryNormaliser._transform_comparison(comp)
+                    return SQLQueryNormaliser._transform_comparison(comp, scope)
 
                 case _:
                     return node
@@ -44,7 +86,7 @@ class SQLQueryNormaliser:
         return cast(SQLQuery, query.transform(transform_node))
 
     @staticmethod
-    def _transform_in(in_: In) -> In | Exists:
+    def _transform_in(in_: In, scope: SQLScope) -> In | Exists:
         left = in_.this
 
         if not (subquery := in_.args.get('query')):
@@ -54,10 +96,12 @@ class SQLQueryNormaliser:
             # Unwrap the subquery
             subquery = subquery.this
 
-        return SQLQueryNormaliser._transform_subquery(subquery=subquery, left=left, comp=exp.EQ)
+        return SQLQueryNormaliser._transform_subquery(
+            subquery=subquery, left=left, comp=exp.EQ, scope=scope
+        )
 
     @staticmethod
-    def _transform_comparison(comp: Comparison) -> Expression:
+    def _transform_comparison(comp: Comparison, scope: SQLScope) -> Expression:
         left = comp.left
         subquery = comp.right.this
 
@@ -74,57 +118,66 @@ class SQLQueryNormaliser:
 
                 return not_(
                     SQLQueryNormaliser._transform_subquery(
-                        left=left, subquery=subquery, comp=inverse[type(comp)]
+                        left=left, subquery=subquery, comp=inverse[type(comp)], scope=scope
                     )
                 )
 
             case Any():
                 return SQLQueryNormaliser._transform_subquery(
-                    left=left, subquery=subquery, comp=type(comp)
+                    left=left, subquery=subquery, comp=type(comp), scope=scope
                 )
 
             case Subquery():
                 return SQLQueryNormaliser._transform_subquery(
-                    left=left, subquery=subquery, comp=type(comp)
+                    left=left, subquery=subquery, comp=type(comp), scope=scope
                 )
 
             case _:
                 return comp  # Not a subquery, leave as is
 
     @staticmethod
-    def _transform_subquery(subquery: SQLQuery, left: Expression, comp: type[Comparison]) -> Exists:
-        def find_column(query: SQLQuery | Subquery) -> Expression:  # type: ignore[return]
-            match query:
-                case Select():
-                    [column] = query.expressions
-                    return cast(Expression, column)
-
-                case query if isinstance(query, SetOperation):
-                    return find_column(query.left)
-
-                case Subquery():
-                    return find_column(query.this)
-
+    def _transform_subquery(
+        subquery: SQLQuery | Subquery, left: Expression, comp: type[Comparison], scope: SQLScope
+    ) -> Exists:
         def to_select(subquery: SQLQuery | Subquery) -> Select:  # type: ignore[return]
             match subquery:
                 case Select():
                     return subquery
 
-                case subquery if isinstance(subquery, SetOperation):
-                    return select('*').from_(subquery.subquery('sub'))
-
                 case Subquery():
                     return to_select(subquery.this)
 
+                case subquery if isinstance(subquery, SetOperation):
+                    raise NotImplementedError('Set operations are not supported')
+
         select_ = to_select(subquery)
-        condition = comp(this=left, expression=find_column(subquery))
+        qualified = cast(Select, SQLQueryNormaliser.qualify(select_, scope))
+        condition = comp(
+            this=SQLQueryNormaliser.qualify(left, scope), expression=qualified.expressions[0]
+        )
 
-        if select_.args.get('group'):
-            select_ = select_.having(condition)
+        if qualified.args.get('group'):
+            qualified = qualified.having(condition)
         else:
-            select_ = select_.where(condition)
+            qualified = qualified.where(condition)
 
-        return Exists(this=select_)
+        return Exists(this=qualified)
+
+    @staticmethod
+    def qualify(expr: Expression, parent_scope: SQLScope) -> Expression:
+        scope = parent_scope.find(expr)
+
+        if not scope:
+            raise ValueError('Expression scope not found in the provided SQL scope.')
+
+        def qualify_column(expr: Expression) -> Expression:
+            if isinstance(expr, Column):
+                source = scope.tables.find_column_source(expr)
+                assert source  # noqa: S101
+                return column(col=expr.name, table=source.name)
+            return expr
+
+        return expr.transform(qualify_column)
 
     @staticmethod
     def normalise_conditions(query: SQLQuery) -> SQLQuery:
