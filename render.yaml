@@ -1,5 +1,6 @@
 databases:
   - name: query_cod-postgres
+    region: frankfurt
     databaseName: query_cod
     plan: free
     user: query_cod
@@ -7,12 +8,14 @@ databases:
 services:
   - type: redis
     name: query_cod-redis
+    region: frankfurt
     plan: free
     ipAllowList: [] # only allow internal connections
 
   - type: web
     name: query_cod
-    plan: free
+    region: frankfurt
+    plan: starter
     runtime: python
     buildCommand: "./render_build.sh"
     startCommand: "poetry run gunicorn query_cod.wsgi:application --chdir backend --limit-request-line 8188 --log-file -"
