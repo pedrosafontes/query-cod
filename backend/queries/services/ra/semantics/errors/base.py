@@ -10,10 +10,6 @@ class RASemanticError(Exception, ABC):
     source: ASTNode
 
     @property
-    def position(self) -> ErrorPosition | None:
-        return self.source.position
-
-    @property
     def title(self) -> str:
         raise NotImplementedError('Subclasses must have a title')
 

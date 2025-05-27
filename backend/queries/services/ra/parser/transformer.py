@@ -33,14 +33,7 @@ from ..ast import (
 
 class RATransformer(Transformer[Relation, RAQuery]):
     def _transform_tree(self, tree: Tree[Relation]) -> RAQuery:
-        node = super()._transform_tree(tree)  # type: ignore[no-untyped-call]
-        if isinstance(node, RAQuery):
-            node.position = {
-                'line': tree.meta.line,
-                'start_col': tree.meta.column,
-                'end_col': tree.meta.end_column,
-            }
-        return cast(RAQuery, node)
+        return cast(RAQuery, super()._transform_tree(tree))  # type: ignore[no-untyped-call]
 
     def relation(self, args: list[str]) -> Relation:
         return Relation(name=self._identifier(args[0]))

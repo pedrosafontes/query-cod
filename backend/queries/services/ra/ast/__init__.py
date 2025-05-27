@@ -1,7 +1,6 @@
 from .attribute import Attribute
 from .base import (
     ASTNode,
-    NodePosition,
 )
 from .boolean import (
     EQ,
@@ -52,7 +51,6 @@ from .query import (
 __all__ = [
     'ASTNode',
     'RAQuery',
-    'NodePosition',
     'indent',
     'Attribute',
     'Aggregation',

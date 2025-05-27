@@ -13,8 +13,6 @@ def validate_ra_semantics(query: RAQuery, schema: RelationalSchema) -> list[Quer
         semantic_error: QueryError = {'title': e.title}
         if e.description:
             semantic_error['description'] = e.description
-        if e.position:
-            semantic_error['position'] = e.position
         if e.hint:
             semantic_error['hint'] = e.hint
         return [semantic_error]
