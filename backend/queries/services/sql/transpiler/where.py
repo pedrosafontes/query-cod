@@ -37,13 +37,15 @@ class WhereTranspiler:
         transpiled_exists = [self._transpile_exists(expr) for expr in exists]
         exists_context_relations = self._all_context_relations(transpiled_exists)
 
-        from_and_context = [
-            relation
-            for relation in unnest_cartesian_operands(join_query)
-            + context_relations
-            + not_exists_context_relations
-            if relation not in exists_context_relations
-        ]
+        from_and_context = unnest_cartesian_operands(join_query) + context_relations
+
+        for relation in not_exists_context_relations:
+            if relation not in from_and_context:
+                from_and_context.append(relation)
+
+        for relation in exists_context_relations:
+            if relation in from_and_context:
+                from_and_context.remove(relation)
 
         result = cartesian(from_and_context) if from_and_context else None
         result = self._perform_decorrelation(natural_join, result, transpiled_exists)
