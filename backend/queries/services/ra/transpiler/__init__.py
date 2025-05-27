@@ -79,7 +79,7 @@ class RAtoSQLTranspiler:
     def _(self, div: ra.Division) -> Select:
         # Get tables with aliases
         dividend, dividend_alias = self._transpile_relation(div.dividend, 'dividend')
-        dividend_sub, dividend_sub_alias = self._transpile_relation(div.dividend, 'dividend_sub')
+        dividend_sub, dividend_sub_alias = self._transpile_relation(div.dividend, 'missing_divisor')
 
         output_attrs = [a.name for a in self._schema_inferrer.infer(div).attrs]
         divisor_attrs = [a.name for a in self._schema_inferrer.infer(div.divisor).attrs]
