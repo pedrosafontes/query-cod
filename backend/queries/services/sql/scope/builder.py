@@ -63,7 +63,7 @@ def _process_from(scope: SelectScope) -> None:
 
 def _process_where(scope: SelectScope) -> None:
     if scope.where:
-        for query in scope.where.find_all(Subquery, Select):
+        for query in scope.where.find_all(Subquery, SQLQuery):
             if isinstance(query, Subquery):
                 query = query.this
             scope.subquery_scopes[query] = build_scope(query, scope.db_schema, scope)
