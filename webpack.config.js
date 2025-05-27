@@ -35,44 +35,10 @@ module.exports = (env, argv) => {
     module: {
       rules: [
         {
-          test: /\.(js|mjs)$/,
-          include: /node_modules\/(property-information|hast.*|unist.*|rehype.*|remark.*)/,
-          use: {
-            loader: "swc-loader",
-            options: {
-              jsc: {
-                parser: {
-                  syntax: "ecmascript"
-                },
-              }
-            }
-          }
-        },
-        {
           test: /\.(js|mjs|jsx|ts|tsx)$/,
-          exclude: /node_modules/,
           use: {
             loader: "swc-loader",
-            options: {
-              jsc: {
-                parser: {
-                  syntax: "typescript",
-                  tsx: true,
-                  decorators: true,
-                },
-                transform: {
-                  react: {
-                    runtime: "automatic",
-                    development: isDev,
-                    refresh: isDev,
-                  }
-                },
-                target: "es2022"
-              },
-              sourceMaps: true,
-              minify: !isDev
-            }
-          }
+          },
         },
         {
           test: /\.css$/,
