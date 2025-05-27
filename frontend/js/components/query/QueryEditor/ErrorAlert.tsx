@@ -1,6 +1,5 @@
 import { AlertCircle, Info } from "lucide-react";
-import Markdown from "react-markdown";
-import rehypeRaw from "rehype-raw";
+import Markdown from "marked-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "lib/utils";
@@ -32,7 +31,7 @@ const ErrorAlert = ({
       )}
       {description && (
         <AlertDescription className="text-sm text-muted-foreground">
-          <Markdown rehypePlugins={[rehypeRaw]}>{description}</Markdown>
+          <Markdown>{description}</Markdown>
         </AlertDescription>
       )}
       {hint && (
@@ -41,7 +40,7 @@ const ErrorAlert = ({
             <Info className="h-3 w-3 inline-block mr-1" />
             Hint
           </h3>
-          <Markdown rehypePlugins={[rehypeRaw]}>{hint}</Markdown>
+          <Markdown>{hint}</Markdown>
         </div>
       )}
     </Alert>

@@ -8,9 +8,6 @@ import { useAutosave } from "hooks/useAutosave";
 
 import SQLEditor from ".";
 
-jest.mock("react-markdown");
-jest.mock("rehype-raw");
-
 // Mock MonacoEditor
 jest.mock("@monaco-editor/react", () => ({
   __esModule: true,
