@@ -15,20 +15,20 @@ from queries.services.ra.parser.errors import (
 @pytest.mark.parametrize(
     'query, expected',
     [
-        ('\\pi_{Sailor.sname} Sailor', Relation('Sailor').project(['Sailor.sname'])),
+        ('\\pi_{Sailor.sname} Sailor', Relation('Sailor').project('Sailor.sname')),
         (
             '\\pi_{Boat.bid, Sailor.sid, Sailor.sname} (Boat \\Join Sailor)',
             Relation('Boat')
             .natural_join('Sailor')
-            .project(['Boat.bid', 'Sailor.sid', 'Sailor.sname']),
+            .project('Boat.bid', 'Sailor.sid', 'Sailor.sname'),
         ),
         (
             '\\pi_{a,b,c} R',
-            Relation('R').project(['a', 'b', 'c']),
+            Relation('R').project('a', 'b', 'c'),
         ),
         (
             "\\pi_{sname} (\\sigma_{color = \\text{'red'}} Boat)",
-            Relation('Boat').select(EQ(attribute('color'), 'red')).project(['sname']),
+            Relation('Boat').select(EQ(attribute('color'), 'red')).project('sname'),
         ),
     ],
 )

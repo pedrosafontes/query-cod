@@ -14,7 +14,7 @@ from queries.services.ra.parser.errors import (
     [
         (
             '(\\pi_{x,y} R) \\div (\\pi_{y} S)',
-            Relation('R').project(['x', 'y']).divide(Relation('S').project(['y'])),
+            Relation('R').project('x', 'y').divide(Relation('S').project('y')),
         ),
         ('R \\div S', Relation('R').divide('S')),
     ],

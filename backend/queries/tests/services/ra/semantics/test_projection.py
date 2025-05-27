@@ -16,8 +16,8 @@ from queries.services.ra.semantics.errors import (
 @pytest.mark.parametrize(
     'query',
     [
-        Relation('R').project(['A', 'B']),
-        Relation('R').select(GT(attribute('C'), 5.0)).project(['A', 'B']),
+        Relation('R').project('A', 'B'),
+        Relation('R').select(GT(attribute('C'), 5.0)).project('A', 'B'),
     ],
 )
 def test_valid_projection(query: RAQuery, assert_valid: Callable[[RAQuery], None]) -> None:
@@ -27,9 +27,9 @@ def test_valid_projection(query: RAQuery, assert_valid: Callable[[RAQuery], None
 @pytest.mark.parametrize(
     'query, expected_exception',
     [
-        (Relation('R').project(['Z']), AttributeNotFoundError),
+        (Relation('R').project('Z'), AttributeNotFoundError),
         (
-            Relation('R').cartesian('T').project(['A']),
+            Relation('R').cartesian('T').project('A'),
             AmbiguousAttributeReferenceError,
         ),
     ],

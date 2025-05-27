@@ -13,8 +13,8 @@ from queries.services.ra.ast import (
         # Employees who have rotated through all departments
         (
             Relation('rotation')
-            .project(['employee_id', 'dept_id'])
-            .divide(Relation('department').project(['dept_id'])),
+            .project('employee_id', 'dept_id')
+            .divide(Relation('department').project('dept_id')),
             """
             SELECT DISTINCT employee_id
             FROM rotation

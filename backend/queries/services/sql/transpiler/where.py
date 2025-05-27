@@ -98,6 +98,6 @@ class WhereTranspiler:
         transpiled_exists: list[tuple[RAQuery, list[RAQuery], list[Attribute]]],
     ) -> RAQuery | None:
         relations = ([left] if left else []) + [
-            subquery.project(parameters) for subquery, _, parameters in transpiled_exists
+            subquery.project(*parameters) for subquery, _, parameters in transpiled_exists
         ]
         return join(relations) if relations else None

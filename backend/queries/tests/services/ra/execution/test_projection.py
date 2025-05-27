@@ -9,22 +9,22 @@ from queries.services.ra.ast import RAQuery, Relation
     [
         # Qualified
         (
-            Relation('department').project(['department.dept_name']),
+            Relation('department').project('department.dept_name'),
             'SELECT DISTINCT dept_name FROM department',
         ),
         # Unqualified
         (
-            Relation('department').project(['dept_name']),
+            Relation('department').project('dept_name'),
             'SELECT DISTINCT department.dept_name FROM department',
         ),
         # Multiple attributes
         (
-            Relation('department').project(['dept_id', 'dept_name']),
+            Relation('department').project('dept_id', 'dept_name'),
             'SELECT DISTINCT dept_id, dept_name FROM department',
         ),
         # Duplicate attributes
         (
-            Relation('employee').project(['name']),
+            Relation('employee').project('name'),
             'SELECT DISTINCT name, name FROM employee',
         ),
     ],

@@ -22,7 +22,7 @@ from queries.services.ra.parser.errors import (
         ),
         (
             '\\pi_{A} R - \\pi_{A} S',
-            Relation('R').project(['A']).difference(Relation('S').project(['A'])),
+            Relation('R').project('A').difference(Relation('S').project('A')),
         ),
     ],
 )

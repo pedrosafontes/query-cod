@@ -16,7 +16,7 @@ from queries.services.types import RelationalSchema
     [
         Relation('Employee')
         .select(And(EQ(attribute('department'), 'IT'), GT(attribute('salary'), 50000)))
-        .project(['name', 'salary']),
+        .project('name', 'salary'),
     ],
 )
 def test_valid_complex_queries(query: RAQuery, schema: RelationalSchema) -> None:

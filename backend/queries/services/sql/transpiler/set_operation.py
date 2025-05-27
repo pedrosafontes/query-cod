@@ -20,10 +20,10 @@ def transpile_set_operation(scope: SetOperationScope) -> RASetOperation:
 
     if parameters:
         left = cartesian([left, *(r_context_relations - l_context_relations)]).project(
-            parameters, append=True
+            *parameters, append=True
         )
         right = cartesian([right, *(l_context_relations - r_context_relations)]).project(
-            parameters, append=True
+            *parameters, append=True
         )
 
     match scope.set_operation:

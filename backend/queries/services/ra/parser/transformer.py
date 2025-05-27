@@ -59,7 +59,7 @@ class RATransformer(Transformer[Relation, RAQuery]):
 
     def projection(self, args: tuple[list[Attribute], RAQuery]) -> Projection:
         attrs, query = args
-        return query.project(attrs, optimise=False)
+        return query.project(*attrs, optimise=False)
 
     def selection(self, args: tuple[BooleanExpression, RAQuery]) -> Selection:
         condition, query = args

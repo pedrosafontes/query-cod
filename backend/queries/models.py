@@ -14,7 +14,7 @@ from .types import QueryError
 
 
 class Query(IndexedTimeStampedModel):
-    class QueryLanguage(models.TextChoices):
+    class Language(models.TextChoices):
         SQL = 'sql', 'SQL'
         RA = 'ra', 'Relational Algebra'
 
@@ -23,8 +23,8 @@ class Query(IndexedTimeStampedModel):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='queries')
     language = models.CharField(
         max_length=16,
-        choices=QueryLanguage,
-        default=QueryLanguage.SQL,
+        choices=Language,
+        default=Language.SQL,
     )
 
     @cached_property
@@ -67,14 +67,14 @@ class Query(IndexedTimeStampedModel):
 
     @property
     def sql_tree(self) -> SQLTree | None:
-        if self._tree and self.language == self.QueryLanguage.SQL:
+        if self._tree and self.language == self.Language.SQL:
             return cast(SQLTree, self._tree)
         else:
             return None
 
     @property
     def ra_tree(self) -> RATree | None:
-        if self._tree and self.language == self.QueryLanguage.RA:
+        if self._tree and self.language == self.Language.RA:
             return cast(RATree, self._tree)
         else:
             return None
