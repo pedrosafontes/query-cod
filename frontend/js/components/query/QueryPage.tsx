@@ -13,7 +13,7 @@ import QueryResult from "./QueryResult";
 import TranspileQueryButton from "./TranspileQueryButton";
 
 export type QueryPageProps = {
-  queryId: number;
+  queryId?: number;
   setQueryId: (queryId: number) => void;
   databaseId: number;
   onTranspile?: () => void;
@@ -34,6 +34,12 @@ const QueryPage = ({
 
   useEffect(() => {
     const fetchQuery = async () => {
+      if (!queryId) {
+        setQuery(undefined);
+        setQueryResult(undefined);
+        return;
+      }
+
       setIsLoading(true);
       setQuery(undefined);
       setQueryResult(undefined);
@@ -81,27 +87,29 @@ const QueryPage = ({
   return (
     <QueryPanels
       left={
-        <>
-          <div className="flex justify-between items-center gap-2 mb-5 w-full">
-            <h1 className="truncate">{query && query.name}</h1>
-            <div className="flex gap-2">
-              <TranspileQueryButton
-                disabled={actionsDisabled}
-                hasErrors={hasErrors}
-                queryId={queryId}
-                setQueryId={setQueryId}
-                onSuccess={onTranspile}
-              />
-              <ExecuteQueryButton
-                disabled={actionsDisabled}
-                hasErrors={hasErrors}
-                queryId={queryId}
-                setQueryResult={setQueryResult}
-              />
+        queryId && (
+          <>
+            <div className="flex justify-between items-center gap-2 mb-5 w-full px-3">
+              <h1 className="truncate">{query && query.name}</h1>
+              <div className="flex gap-2">
+                <TranspileQueryButton
+                  disabled={actionsDisabled}
+                  hasErrors={hasErrors}
+                  queryId={queryId}
+                  setQueryId={setQueryId}
+                  onSuccess={onTranspile}
+                />
+                <ExecuteQueryButton
+                  disabled={actionsDisabled}
+                  hasErrors={hasErrors}
+                  queryId={queryId}
+                  setQueryResult={setQueryResult}
+                />
+              </div>
             </div>
-          </div>
-          {renderEditor()}
-        </>
+            {renderEditor()}
+          </>
+        )
       }
       right={
         <ReactFlowProvider>

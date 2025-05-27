@@ -47,7 +47,7 @@ const ProjectPage = () => {
         />
       )}
       <SidebarInset className="h-screen overflow-auto">
-        {project && currentQueryId && (
+        {project && (
           <QueryPage
             databaseId={project.database.id}
             queryId={currentQueryId}

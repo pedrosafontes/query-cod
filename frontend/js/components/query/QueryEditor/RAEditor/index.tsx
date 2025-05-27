@@ -47,7 +47,7 @@ const RAEditor = ({ query, updateText }: RAEditorProps) => {
   const status = useAutosave({ data: value, onSave: updateText });
 
   return (
-    <>
+    <div className="px-3 h-full">
       <math-field
         ref={mf}
         onInput={() => {
@@ -106,7 +106,7 @@ const RAEditor = ({ query, updateText }: RAEditorProps) => {
           title={error.title}
         />
       ))}
-    </>
+    </div>
   );
 };
 

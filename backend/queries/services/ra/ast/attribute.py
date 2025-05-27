@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from .base import ASTNode
 
 
-@dataclass
+@dataclass(frozen=True)
 class Attribute(ASTNode):
     name: str
     relation: str | None = None

@@ -3,6 +3,11 @@ import partition from "lodash/partition";
 import { editor } from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
 import { Query } from "api";
 import { useAutosave } from "hooks/useAutosave";
 
@@ -54,36 +59,40 @@ const SQLEditor = ({ query, updateText }: SQLEditorProps) => {
   const status = useAutosave({ data: value, onSave: updateText });
 
   return (
-    <>
-      <CodeEditor
-        className="max-h-[400px] -mx-3 border-b"
-        language="sql"
-        options={{
-          lineNumbers: "on",
-        }}
-        value={value}
-        onChange={setValue}
-        onMount={(editor, monaco) => {
-          editorRef.current = editor;
-          monacoRef.current = monaco;
-          updateErrorMarkers();
-        }}
-      />
-      <div className="flex justify-end text-xs mt-2">
-        <AutosaveStatus status={status} />
-      </div>
+    <ResizablePanelGroup direction="vertical">
+      <ResizablePanel defaultSize={80} minSize={50}>
+        <CodeEditor
+          language="sql"
+          options={{
+            lineNumbers: "on",
+          }}
+          value={value}
+          onChange={setValue}
+          onMount={(editor, monaco) => {
+            editorRef.current = editor;
+            monacoRef.current = monaco;
+            updateErrorMarkers();
+          }}
+        />
+      </ResizablePanel>
+      <ResizableHandle />
+      <ResizablePanel className="px-3">
+        <div className="flex justify-end text-xs mt-2">
+          <AutosaveStatus status={status} />
+        </div>
 
-      {generalErrors.length > 0 &&
-        generalErrors.map((error) => (
-          <ErrorAlert
-            key={error.title + error.description}
-            className="mt-4"
-            description={error.description}
-            hint={error.hint}
-            title={error.title}
-          />
-        ))}
-    </>
+        {generalErrors.length > 0 &&
+          generalErrors.map((error) => (
+            <ErrorAlert
+              key={error.title + error.description}
+              className="mt-4"
+              description={error.description}
+              hint={error.hint}
+              title={error.title}
+            />
+          ))}
+      </ResizablePanel>
+    </ResizablePanelGroup>
   );
 };
 

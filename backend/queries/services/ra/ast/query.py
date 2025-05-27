@@ -71,7 +71,7 @@ class RAQuery(ASTNode):
         return convert(self)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Relation(RAQuery):
     name: str
 
@@ -79,12 +79,12 @@ class Relation(RAQuery):
         return self.name
 
 
-@dataclass
+@dataclass(frozen=True)
 class UnaryOperation(RAQuery):
     subquery: RAQuery
 
 
-@dataclass
+@dataclass(frozen=True)
 class BinaryOperation(RAQuery):
     left: RAQuery
     right: RAQuery
@@ -100,7 +100,7 @@ class SetOperator(Enum):
         return self.value
 
 
-@dataclass
+@dataclass(frozen=True)
 class SetOperation(BinaryOperation):
     operator: SetOperator
 
@@ -117,7 +117,7 @@ class JoinOperator(Enum):
         return f'{self.value} JOIN'
 
 
-@dataclass
+@dataclass(frozen=True)
 class Join(BinaryOperation):
     operator: JoinOperator
 
@@ -125,7 +125,7 @@ class Join(BinaryOperation):
         return f'({self.left}\n{self.operator}\n{self.right})'
 
 
-@dataclass
+@dataclass(frozen=True)
 class Division(BinaryOperation):
     @property
     def dividend(self) -> RAQuery:
@@ -139,7 +139,7 @@ class Division(BinaryOperation):
         return f'({self.dividend} / {self.divisor})'
 
 
-@dataclass
+@dataclass(frozen=True)
 class ThetaJoin(BinaryOperation):
     condition: BooleanExpression
 
@@ -147,7 +147,7 @@ class ThetaJoin(BinaryOperation):
         return f'({self.left} JOIN {self.right} ON {self.condition})'
 
 
-@dataclass
+@dataclass(frozen=True)
 class Projection(UnaryOperation):
     attributes: list[Attribute]
 
@@ -155,7 +155,7 @@ class Projection(UnaryOperation):
         return f'PROJECT ({", ".join(str(attr) for attr in self.attributes)}) (\n{indent(str(self.subquery))}\n)'
 
 
-@dataclass
+@dataclass(frozen=True)
 class Selection(UnaryOperation):
     condition: BooleanExpression
 
@@ -174,7 +174,7 @@ class AggregationFunction(Enum):
         return self.value
 
 
-@dataclass
+@dataclass(frozen=True)
 class Aggregation:
     input: Attribute
     aggregation_function: AggregationFunction
@@ -184,7 +184,7 @@ class Aggregation:
         return f'({self.input}, {self.aggregation_function}, {self.output})'
 
 
-@dataclass
+@dataclass(frozen=True)
 class GroupedAggregation(UnaryOperation):
     group_by: list[Attribute]
     aggregations: list[Aggregation]
@@ -195,7 +195,7 @@ class GroupedAggregation(UnaryOperation):
         return f'GROUP (({group_by}), ({aggregations})) (\n{indent(str(self.subquery))}\n)'
 
 
-@dataclass
+@dataclass(frozen=True)
 class TopN(UnaryOperation):
     limit: int
     attribute: Attribute
@@ -204,7 +204,7 @@ class TopN(UnaryOperation):
         return f'T ({self.limit}, {self.attribute}) (\n{indent(str(self.subquery))}\n)'
 
 
-@dataclass
+@dataclass(frozen=True)
 class Rename(UnaryOperation):
     alias: str
 
