@@ -49,8 +49,8 @@ from queries.services.ra.parser import parse_ra
             '\\pi_{A,B} R \\cup \\pi_{C,D} S',
             SetOperation(
                 operator=SetOperator.UNION,
-                left=Relation('R').project(['A', 'B']),
-                right=Relation('S').project(['C', 'D']),
+                left=Relation('R').project('A', 'B'),
+                right=Relation('S').project('C', 'D'),
             ),
         ),
         # Test division with other operators
@@ -102,7 +102,7 @@ from queries.services.ra.parser import parse_ra
                 'S',
                 EQ(attribute('C'), attribute('D')),
             )
-            .project(['A', 'B']),
+            .project('A', 'B'),
         ),
     ],
 )

@@ -20,13 +20,13 @@ from queries.services.ra.parser import parse_ra
             .theta_join(
                 'Department', EQ(attribute('Employee.deptno'), attribute('Department.deptno'))
             )
-            .project(['name', 'title']),
+            .project('name', 'title'),
         ),
         (
             "\\Gamma_{((deptno),((salary,avg,\\text{avg_sal})))} (\\pi_{deptno, salary} (\\sigma_{location = \\text{'HQ'}} Employee))",
             Relation('Employee')
             .select(EQ(attribute('location'), 'HQ'))
-            .project(['deptno', 'salary'])
+            .project('deptno', 'salary')
             .grouped_aggregation(
                 ['deptno'],
                 [
@@ -45,7 +45,7 @@ from queries.services.ra.parser import parse_ra
                 Relation('Department').select(GT(attribute('budget'), 100000)),
                 EQ(attribute('Employee.deptno'), attribute('Department.deptno')),
             )
-            .project(['name', 'dept_name']),
+            .project('name', 'dept_name'),
         ),
     ],
 )

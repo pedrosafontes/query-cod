@@ -37,16 +37,14 @@ from queries.services.ra.ast import (
         ),
         # Union after projection
         (
-            Relation('department')
-            .project(['dept_name'])
-            .union(Relation('employee').project(['name'])),
+            Relation('department').project('dept_name').union(Relation('employee').project('name')),
             'SELECT DISTINCT dept_name FROM department UNION SELECT DISTINCT name FROM employee',
         ),
         # Difference on projection
         (
             Relation('department')
-            .project(['dept_name'])
-            .difference(Relation('employee').project(['name'])),
+            .project('dept_name')
+            .difference(Relation('employee').project('name')),
             'SELECT DISTINCT dept_name FROM department EXCEPT SELECT DISTINCT name FROM employee',
         ),
         # Cartesian product

@@ -23,7 +23,7 @@ from queries.services.ra.ast import (
             Relation('employee')
             .natural_join('department')
             .select(EQ(attribute('dept_name'), 'Engineering'))
-            .project(['name']),
+            .project('name'),
             """
             SELECT DISTINCT name
             FROM employee

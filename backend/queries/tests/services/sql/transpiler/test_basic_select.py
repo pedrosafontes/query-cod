@@ -7,14 +7,14 @@ from queries.services.ra.ast import RAQuery, Relation
 @pytest.mark.parametrize(
     'sql_text,expected_ra',
     [
-        ('SELECT dept_name FROM department', Relation('department').project(['dept_name'])),
+        ('SELECT dept_name FROM department', Relation('department').project('dept_name')),
         (
             'SELECT department.dept_name FROM department',
-            Relation('department').project(['department.dept_name']),
+            Relation('department').project('department.dept_name'),
         ),
         (
             'SELECT dept_id, dept_name FROM department',
-            Relation('department').project(['dept_id', 'dept_name']),
+            Relation('department').project('dept_id', 'dept_name'),
         ),
         (
             'SELECT * FROM department',

@@ -12,7 +12,7 @@ from .factory import attribute, query
 
 class RAQuery(ASTNode):
     def project(
-        self, attributes: Sequence[str | Attribute], append: bool = False, optimise: bool = True
+        self, *attributes: str | Attribute, append: bool = False, optimise: bool = True
     ) -> Projection:
         projections: list[Attribute] = [attribute(attr) for attr in attributes]
 

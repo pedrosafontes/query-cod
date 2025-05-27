@@ -85,4 +85,4 @@ def _transpile_projection(
                     attributes.append(Attribute(name=aggregates[inner]))
             case _:
                 raise NotImplementedError(f'Unsupported projection expression: {type(expr)}')
-    return subquery.project(attributes)
+    return subquery.project(*attributes)

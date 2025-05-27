@@ -32,7 +32,7 @@ from .schemas import movies_schema, schema
                     EQ(attribute('name'), attribute('starName')),
                 )
             )
-            .project(['movieTitle']),
+            .project('movieTitle'),
             movies_schema,
         ),
         (
@@ -58,10 +58,10 @@ from .schemas import movies_schema, schema
                         EQ(attribute('R3.B'), attribute('S.C')),
                     )
                 )
-                .project(['R2.A', 'R2.B', 'S.C'])
+                .project('R2.A', 'R2.B', 'S.C')
             )
             .select(EQ(attribute('R2.A'), attribute('R1.B')))
-            .project(['R1.A', 'R1.B']),
+            .project('R1.A', 'R1.B'),
             schema,
         ),
     ],
