@@ -18,7 +18,7 @@ class JoinTranspiler:
     def transpile(self, join: SQLJoin, left: RAQuery) -> RAQuery:
         right = self.table_transpiler.transpile(join.this)
 
-        kind = join.method or join.args.get('kind', 'INNER')
+        kind = join.method or join.args.get('kind')
         using = join.args.get('using')
         condition: Expression | None = join.args.get('on')
 
