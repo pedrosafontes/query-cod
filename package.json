@@ -120,8 +120,5 @@
     "webpack-cli": "~5.1.4",
     "webpack-dev-server": "~5.0.4",
     "whatwg-fetch": "~3.6.20"
-  },
-  "overrides": {
-    "property-information": "6.0.0"
   }
 }
