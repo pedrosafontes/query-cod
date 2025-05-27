@@ -49,7 +49,7 @@ const QueryPanels = ({
           defaultSize={size}
           minSize={size}
         >
-          <div className="py-5 h-full">{left}</div>
+          <div className="py-5 h-full overflow-auto">{left}</div>
         </ResizablePanel>
       );
     }
