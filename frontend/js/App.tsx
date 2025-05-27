@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/react";
 import cookie from "cookie";
-import { BrowserRouter, Routes, Route } from "react-router";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router";
 
 import { Toaster } from "@/components/ui/toaster";
 
@@ -27,6 +27,7 @@ const App = () => (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
           <Route element={<AuthRoute />}>
             <Route element={<LoginPage />} path="/login" />
             <Route element={<SignupPage />} path="/signup" />
