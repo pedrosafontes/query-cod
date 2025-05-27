@@ -83,7 +83,7 @@ const ProjectsPage = () => {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 h-screen overflow-auto">
       <div className="flex justify-between items-end mb-4">
         <h1 className="text-xl font-semibold">Projects</h1>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
