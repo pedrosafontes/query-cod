@@ -7,6 +7,7 @@ app_name = 'common'
 # Routes supported by the React frontend
 react_view = views.IndexView.as_view()
 urlpatterns = [
+    path('', react_view, name='index'),
     path('login/', react_view, name='login'),
     path('signup/', react_view, name='signup'),
     path('projects/', react_view, name='project-list'),
