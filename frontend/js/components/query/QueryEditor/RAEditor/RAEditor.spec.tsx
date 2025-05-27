@@ -7,9 +7,6 @@ import { useAutosave } from "hooks/useAutosave";
 
 import RAEditor from ".";
 
-jest.mock("react-markdown");
-jest.mock("rehype-raw");
-
 jest.mock("mathlive");
 
 jest.mock("hooks/useAutosave", () => ({

@@ -43,7 +43,7 @@ class UnionCompatibilityError(RATypeError):
     def description(self) -> str:
         left_attrs = f'({', '.join(attr.name for attr in self.left_attrs)})'
         right_attrs = f'({', '.join(attr.name for attr in self.right_attrs)})'
-        return f'**Left schema**: {left_attrs}<br>**Right schema**: {right_attrs}'
+        return f'**Left schema**: {left_attrs}  \n**Right schema**: {right_attrs}'
 
     @property
     def hint(self) -> str:
@@ -97,7 +97,7 @@ class DivisionSchemaCompatibilityError(RATypeError):
     def description(self) -> str:
         dividend_attrs = f'({', '.join(attr for attr in self.dividend_attrs.keys())})'
         divisor_attrs = f'({', '.join(attr for attr in self.divisor_attrs.keys())})'
-        return f'**Dividend schema**: {dividend_attrs}<br>**Divisor schema**: {divisor_attrs}'
+        return f'**Dividend schema**: {dividend_attrs}  \n**Divisor schema**: {divisor_attrs}'
 
 
 @dataclass
