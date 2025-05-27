@@ -65,15 +65,13 @@ class WhereTranspiler:
         predicates = list(condition.flatten()) if isinstance(condition, And) else [condition]  # type: ignore[no-untyped-call]
 
         exists = [p for p in predicates if isinstance(p, Exists)]
-        not_exists = [
-            p.this for p in predicates if isinstance(p, Not) and isinstance(p.this, Exists)
-        ]
+        not_exists = [p for p in predicates if isinstance(p, Not) and isinstance(p.this, Exists)]
         other = [p for p in predicates if p not in exists and p not in not_exists]
 
         # Combine subquery-free predicates into a single AND expression
         subquery_free = and_(*other) if other else None
 
-        return subquery_free, exists, not_exists
+        return subquery_free, exists, [not_.this for not_ in not_exists]
 
     def _transpile_exists(self, exists: Exists) -> tuple[RAQuery, list[RAQuery], list[Attribute]]:
         from .query import transpile_query
