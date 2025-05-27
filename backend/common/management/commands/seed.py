@@ -89,9 +89,7 @@ class Command(BaseCommand):
                 language=Query.Language.RA,
             )
 
-        def seed_sql_queries(
-            queries: list[tuple[str, str]], project: Project
-        ) -> None:
+        def seed_sql_queries(queries: list[tuple[str, str]], project: Project) -> None:
             seed_queries(
                 [(name, textwrap.dedent(query_text).strip()) for name, query_text in queries],
                 project,
@@ -219,7 +217,7 @@ class Command(BaseCommand):
             user=user,
         )
 
-        ra_lecture_queries = [
+        ra_lecture_queries: list[tuple[str, RAQuery | str]] = [
             ('Project', query('account').project('no', 'type')),
             ('Select', query('account').select(ra.GT(attribute('rate'), 0))),
             (
@@ -461,7 +459,7 @@ class Command(BaseCommand):
 
         ra_valid = Project.objects.create(name='Valid RA', database=database, user=user)
 
-        valid_ra_queries = [
+        valid_ra_queries: list[tuple[str, RAQuery | str]] = [
             (
                 'Theta-Join',
                 query('invoice_line').theta_join(
@@ -482,7 +480,7 @@ class Command(BaseCommand):
 
         ra_syntax = Project.objects.create(name='RA Syntax Errors', database=database, user=user)
 
-        ra_syntax_errors = [
+        ra_syntax_errors: list[tuple[str, RAQuery | str]] = [
             ('Missing projection attributes', '\\pi \\text{customer}'),
             (
                 'Missing right-hand operand in comparison',
@@ -508,7 +506,7 @@ class Command(BaseCommand):
             name='RA Semantic Errors', database=database, user=user
         )
 
-        ra_semantic_errors = [
+        ra_semantic_errors: list[tuple[str, RAQuery | str]] = [
             ('Non-existent relation', query('unknown').project('artist_id')),
             (
                 'Attribute not found in selection',
