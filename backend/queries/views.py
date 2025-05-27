@@ -108,9 +108,9 @@ class QueryViewSet(
             name=query.name,
             text=transpiled_text,
             project=query.project,
-            language=Query.QueryLanguage.RA
-            if query.language == Query.QueryLanguage.SQL
-            else Query.QueryLanguage.SQL,
+            language=Query.Language.RA
+            if query.language == Query.Language.SQL
+            else Query.Language.SQL,
         )
 
         return Response(QuerySerializer(transpiled_query).data)

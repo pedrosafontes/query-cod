@@ -15,8 +15,8 @@ def transpile_query(query: Query) -> str | None:  # type: ignore[return]
 
     schema = to_relational_schema(get_schema(query.project.database.connection_info))
     match query.language:
-        case Query.QueryLanguage.SQL:
+        case Query.Language.SQL:
             return SQLtoRATranspiler(schema).transpile(cast(SQLQuery, query.ast)).latex()
 
-        case Query.QueryLanguage.RA:
+        case Query.Language.RA:
             return RAtoSQLTranspiler(schema).transpile(cast(RAQuery, query.ast)).sql(pretty=True)
