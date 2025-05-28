@@ -1,5 +1,4 @@
-from databases.models.database_connection_info import DatabaseConnectionInfo
-from databases.services.schema import get_schema
+from databases.models import Database
 from queries.types import QueryError
 
 from ..types import to_relational_schema
@@ -9,9 +8,7 @@ from .parser.errors import RASyntaxError
 from .semantics import validate_ra_semantics
 
 
-def validate_ra(
-    query_text: str, db: DatabaseConnectionInfo
-) -> tuple[RAQuery | None, list[QueryError]]:
+def validate_ra(query_text: str, db: Database) -> tuple[RAQuery | None, list[QueryError]]:
     if not query_text.strip():
         return None, []
 
@@ -23,5 +20,5 @@ def validate_ra(
             syntax_error['description'] = e.description
         return None, [syntax_error]
 
-    schema = to_relational_schema(get_schema(db))
+    schema = to_relational_schema(db.schema)
     return query, validate_ra_semantics(query, schema)

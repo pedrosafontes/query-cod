@@ -32,7 +32,7 @@ class OrderByValidator:
         # Check if the position is within the valid range
         pos = int(literal.this)
         if not (1 <= pos <= self.max_position):
-            raise OrderByPositionError(literal, 1, self.max_position)
+            raise OrderByPositionError(literal, self.max_position)
 
     def _validate_expression(self, expr: Expression) -> None:
         if expr in self.scope.projections or expr in self.scope.group_by:

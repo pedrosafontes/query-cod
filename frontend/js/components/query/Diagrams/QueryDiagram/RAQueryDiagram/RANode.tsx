@@ -123,6 +123,9 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
           NATURAL: `\\Join`,
           SEMI: `\\ltimes`,
           ANTI: `\\overline{\\Join}`,
+          LEFT: `⟕`,
+          RIGHT: `⟖`,
+          "FULL OUTER": `⟗`,
         };
         return {
           latex: operatorLatex[operator as keyof typeof operatorLatex],

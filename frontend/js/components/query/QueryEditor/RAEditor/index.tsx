@@ -32,14 +32,17 @@ const RAEditor = ({ query, updateText }: RAEditorProps) => {
     if (!el) return;
 
     // Customize Mathfield behavior
-    el.inlineShortcuts = {
-      project: "\\pi_{\\placeholder{attr}}\\placeholder{rel}",
-      select: "\\sigma_{\\placeholder{condition}}\\placeholder{rel}",
-      union: "#@\\cup\\placeholder{rrel}",
-      intersect: "#@\\cap\\placeholder{rrel}",
-    };
-
     el.smartMode = true;
+
+    // Ensure commas are only inserted in math mode
+    const handleBeforeInput = (ev: InputEvent) => {
+      if (ev.data === ',' && el.mode === 'text') {
+        ev.preventDefault();
+        el.executeCommand(['switchMode', 'math']);
+        el.executeCommand(['insert', ',']);
+      }
+    };
+    el.addEventListener('beforeinput', handleBeforeInput);
 
     MathfieldElement.soundsDirectory = null;
   }, []);
@@ -91,11 +94,18 @@ const RAEditor = ({ query, updateText }: RAEditorProps) => {
         />
       )}
 
-      <p className="mt-2 text-xs text-muted-foreground">
-        <span className="font-semibold">Hint</span>: Insert identifiers
-        containing underscores in the LaTex editor inside the{" "}
-        <span className="font-mono">text</span> tag.
-      </p>
+      <div className="mt-2 text-xs text-muted-foreground">
+        <h4 className="font-semibold mb-1">Tips</h4>
+        <ul className="list-disc pl-4">
+          <li>
+            Insert identifiers containing underscores in the LaTex editor inside the <span className="font-mono">text</span> tag.
+          </li>
+          <li>
+            For multi-line support, wrap the entire expression in a <span className="font-mono">displaylines</span> tag.
+          </li>
+        </ul>
+      </div>
+
       {query.validation_errors.map((error) => (
         <ErrorAlert
           key={error.title + error.description}

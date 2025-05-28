@@ -1,7 +1,6 @@
 from collections.abc import Mapping
 
-from databases.models.database_connection_info import DatabaseConnectionInfo
-from databases.services.schema import get_schema
+from databases.models import Database
 
 from .ra.ast import RAQuery
 from .ra.tree.builder import RATreeBuilder
@@ -15,10 +14,8 @@ QueryTree = RATree | SQLTree
 Subqueries = Mapping[int, QueryAST]
 
 
-def build_query_tree(
-    ast: QueryAST, db: DatabaseConnectionInfo
-) -> tuple[QueryTree | None, Subqueries]:
-    schema = to_relational_schema(get_schema(db))
+def build_query_tree(ast: QueryAST, db: Database) -> tuple[QueryTree | None, Subqueries]:
+    schema = to_relational_schema(db.schema)
     match ast:
         case RAQuery():
             return RATreeBuilder(schema).build(ast)

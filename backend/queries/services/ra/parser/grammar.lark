@@ -1,4 +1,5 @@
 ?query: set_op
+      | _multiline{set_op}
 
 ?set_op: join
        | set_op _UNION join     -> union
@@ -10,6 +11,9 @@
      | join _NATURAL_JOIN unary_op  -> natural_join
      | join _theta_join_op unary_op -> theta_join
      | join _SEMIJOIN unary_op      -> semi_join
+     | join _LEFT_JOIN unary_op     -> left_join
+     | join _RIGHT_JOIN unary_op    -> right_join
+     | join _OUTER_JOIN unary_op    -> outer_join
      | join _ANTIJOIN unary_op      -> anti_join
      | join _DIV unary_op           -> division
 
@@ -86,6 +90,9 @@ _CARTESIAN: "\\times"
 _NATURAL_JOIN: "\\Join"
 _SEMIJOIN: "\\ltimes"
 _ANTIJOIN: "\\overline{\\Join}"
+_LEFT_JOIN: "⟕"
+_RIGHT_JOIN: "⟖"
+_OUTER_JOIN: "⟗"
 _DIV: "\\div"
 
 nonempty_list{item}: _nonempty_list_helper{item} -> item_list
@@ -96,12 +103,14 @@ _nonempty_list_helper{item}: item ("," item)*
 _subscript{content}: "_" "{" content "}"
 _overset{superscript, operator}: "\\overset" "{" superscript "}" "{" operator "}"
 _text{content}: "\\text" "{" content "}"
+_multiline{content}: "\\displaylines" "{" content "}"
 
 IDENT: /[a-zA-Z_][a-zA-Z0-9_\\]*/
 _LPAREN: ("\\left")? "("
 _RPAREN: ("\\right")? ")"
 
 ESCAPED_STRING: "'" _STRING_ESC_INNER "'"
+NEWLINE: "\\\\"
 
 %import common.CNAME
 %import common.INT
@@ -110,3 +119,4 @@ ESCAPED_STRING: "'" _STRING_ESC_INNER "'"
 %import common._STRING_ESC_INNER
 %import common.WS
 %ignore WS
+%ignore NEWLINE

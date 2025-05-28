@@ -104,6 +104,9 @@ def _(join: Join) -> str:
         JoinOperator.NATURAL: latex.JOIN,
         JoinOperator.SEMI: latex.LTIMES,
         JoinOperator.ANTI: latex.ANTIJOIN,
+        JoinOperator.LEFT: latex.LEFTJOIN,
+        JoinOperator.RIGHT: latex.RIGHTJOIN,
+        JoinOperator.OUTER: latex.OUTERJOIN,
     }
     return operators[join.operator]
 

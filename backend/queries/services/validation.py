@@ -6,11 +6,10 @@ from .types import QueryAST
 
 
 def validate_query(query: Query) -> tuple[QueryAST | None, list[QueryError]]:
-    db = query.project.database.connection_info
     match query.language:
         case Query.Language.SQL:
-            return validate_sql(query.text, db)
+            return validate_sql(query.text, query.project.database)
         case Query.Language.RA:
-            return validate_ra(query.text, db)
+            return validate_ra(query.text, query.project.database)
         case _:
             raise ValueError(f'Unsupported query language: {query.language}')

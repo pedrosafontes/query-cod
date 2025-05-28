@@ -20,12 +20,11 @@ class OrderByError(QueryStructureError, ABC):
 
 @dataclass
 class OrderByPositionError(OrderByError):
-    order_by_pos: int
     max_position: int
 
     @property
     def title(self) -> str:
-        return f'ORDER BY position {self.order_by_pos} is invalid'
+        return f"ORDER BY position '{self.source.this}' is invalid"
 
     @property
     def description(self) -> str:
