@@ -27,7 +27,7 @@ const App = () => (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route element={<Navigate replace to="/login" />} path="/" />
           <Route element={<AuthRoute />}>
             <Route element={<LoginPage />} path="/login" />
             <Route element={<SignupPage />} path="/signup" />
