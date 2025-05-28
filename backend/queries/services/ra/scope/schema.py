@@ -63,7 +63,9 @@ class SchemaInferrer:
 
     @_infer.register
     def _(self, rename: Rename) -> RelationOutput:
-        return self.infer(rename.subquery)
+        input_ = self.infer(rename.subquery)
+        renamed_schema = {rename.alias: flatten(input_.schema)}
+        return RelationOutput(renamed_schema, input_.attrs)
 
     @_infer.register
     def _(self, op: SetOperation) -> RelationOutput:
