@@ -91,11 +91,18 @@ const RAEditor = ({ query, updateText }: RAEditorProps) => {
         />
       )}
 
-      <p className="mt-2 text-xs text-muted-foreground">
-        <span className="font-semibold">Hint</span>: Insert identifiers
-        containing underscores in the LaTex editor inside the{" "}
-        <span className="font-mono">text</span> tag.
-      </p>
+      <div className="mt-2 text-xs text-muted-foreground">
+        <h4 className="font-semibold mb-1">Tips</h4>
+        <ul className="list-disc pl-4">
+          <li>
+            Insert identifiers containing underscores in the LaTex editor inside the <span className="font-mono">text</span> tag.
+          </li>
+          <li>
+            For multi-line support, wrap the entire expression in a <span className="font-mono">displaylines</span> tag.
+          </li>
+        </ul>
+      </div>
+
       {query.validation_errors.map((error) => (
         <ErrorAlert
           key={error.title + error.description}
