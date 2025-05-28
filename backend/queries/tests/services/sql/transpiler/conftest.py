@@ -64,9 +64,9 @@ def assert_equivalent(
     def _assert_equivalent(sql_text: str, expected_ra: RAQuery) -> None:
         ra = SQLtoRATranspiler(schema).transpile(parse_sql(sql_text))
         print(ra)
-        sql = RAtoSQLTranspiler(schema, distinct=False).transpile(ra)
+        sql = RAtoSQLTranspiler(schema, bag=True).transpile(ra)
         print(sql.sql())
-        expected_sql = RAtoSQLTranspiler(schema, distinct=False).transpile(expected_ra)
+        expected_sql = RAtoSQLTranspiler(schema, bag=True).transpile(expected_ra)
         assert _tables_equal(
             execute(sql, tables=data, schema=sqlglot_schema),
             execute(expected_sql, tables=data, schema=sqlglot_schema),
