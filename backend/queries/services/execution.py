@@ -23,6 +23,6 @@ def execute_subquery(query: Query, subquery_id: int) -> QueryResult | None:
 def _execute(ast: QueryAST, database: Database) -> QueryResult:
     match ast:
         case sql_query if isinstance(sql_query, SQLQuery):
-            return execute_sql(sql_query, database.connection_info)
+            return execute_sql(sql_query, database)
         case RAQuery():
-            return execute_ra(ast, database.connection_info)
+            return execute_ra(ast, database)

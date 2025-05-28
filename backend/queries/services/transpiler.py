@@ -1,6 +1,5 @@
 from typing import cast
 
-from databases.services.schema import get_schema
 from queries.models import Query
 
 from .ra.ast import RAQuery
@@ -13,7 +12,7 @@ def transpile_query(query: Query) -> str | None:  # type: ignore[return]
     if not query.is_valid:
         return None
 
-    schema = to_relational_schema(get_schema(query.project.database.connection_info))
+    schema = to_relational_schema(query.project.database.schema)
     match query.language:
         case Query.Language.SQL:
             return SQLtoRATranspiler(schema).transpile(cast(SQLQuery, query.ast)).latex()

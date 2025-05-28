@@ -25,6 +25,14 @@ DATABASES = {
     'default': config('DATABASE_URL', cast=db_url),
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'query_cod_cache',
+        'TIMEOUT': 28800,  # 8 hours
+    }
+}
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
