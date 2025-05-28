@@ -28,6 +28,12 @@ const SQLEditor = ({ query, updateText }: SQLEditorProps) => {
     query.validation_errors,
     (e) => e.position,
   );
+  const hasGeneralErrors = generalErrors.length > 0;
+
+  const MIN_PCT_HEIGHT = 50;
+  const DEFAULT_PCT_HEIGHT = 80;
+
+  const height = hasGeneralErrors ? MIN_PCT_HEIGHT : DEFAULT_PCT_HEIGHT;
 
   const updateErrorMarkers = () => {
     if (!monacoRef.current || !editorRef.current) return;
@@ -54,13 +60,13 @@ const SQLEditor = ({ query, updateText }: SQLEditorProps) => {
 
   useEffect(() => {
     updateErrorMarkers();
-  }, [generalErrors]);
+  }, [editorErrors]);
 
   const status = useAutosave({ data: value, onSave: updateText });
 
   return (
     <ResizablePanelGroup direction="vertical">
-      <ResizablePanel defaultSize={80} minSize={50}>
+      <ResizablePanel defaultSize={height} minSize={MIN_PCT_HEIGHT}>
         <CodeEditor
           language="sql"
           options={{
@@ -81,16 +87,15 @@ const SQLEditor = ({ query, updateText }: SQLEditorProps) => {
           <AutosaveStatus status={status} />
         </div>
 
-        {generalErrors.length > 0 &&
-          generalErrors.map((error) => (
-            <ErrorAlert
-              key={error.title + error.description}
-              className="mt-4"
-              description={error.description}
-              hint={error.hint}
-              title={error.title}
-            />
-          ))}
+        {generalErrors.map((error) => (
+          <ErrorAlert
+            key={error.title + error.description}
+            className="mt-4"
+            description={error.description}
+            hint={error.hint}
+            title={error.title}
+          />
+        ))}
       </ResizablePanel>
     </ResizablePanelGroup>
   );

@@ -44,12 +44,13 @@ const QueryPanels = ({
     if (left) {
       return (
         <ResizablePanel
+          className="py-5"
           collapsedSize={0}
           collapsible
           defaultSize={size}
           minSize={size}
         >
-          <div className="py-5 h-full overflow-auto">{left}</div>
+          {left}
         </ResizablePanel>
       );
     }
