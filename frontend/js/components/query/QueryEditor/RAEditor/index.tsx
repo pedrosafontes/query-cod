@@ -32,13 +32,6 @@ const RAEditor = ({ query, updateText }: RAEditorProps) => {
     if (!el) return;
 
     // Customize Mathfield behavior
-    el.inlineShortcuts = {
-      project: "\\pi_{\\placeholder{attr}}\\placeholder{rel}",
-      select: "\\sigma_{\\placeholder{condition}}\\placeholder{rel}",
-      union: "#@\\cup\\placeholder{rrel}",
-      intersect: "#@\\cap\\placeholder{rrel}",
-    };
-
     el.smartMode = true;
 
     MathfieldElement.soundsDirectory = null;
