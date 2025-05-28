@@ -71,9 +71,9 @@ const ProjectActions = ({ project, onSuccess }: ProjectActionsProps) => {
 
       <Button
         aria-label="Open Project"
+        className="border"
         size="sm"
         variant="secondary"
-        className="border"
         onClick={() => navigate(`/projects/${project.id}`)}
       >
         <ArrowRight />

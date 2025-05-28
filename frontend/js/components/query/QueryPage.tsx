@@ -88,7 +88,7 @@ const QueryPage = ({
     <QueryPanels
       left={
         queryId && (
-          <>
+          <div className="flex flex-col h-full">
             <div className="flex justify-between items-center gap-2 mb-5 w-full px-3">
               <h1 className="truncate">{query && query.name}</h1>
               <div className="flex gap-2">
@@ -108,7 +108,7 @@ const QueryPage = ({
               </div>
             </div>
             {renderEditor()}
-          </>
+          </div>
         )
       }
       right={

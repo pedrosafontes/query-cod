@@ -47,7 +47,7 @@ const RAEditor = ({ query, updateText }: RAEditorProps) => {
   const status = useAutosave({ data: value, onSave: updateText });
 
   return (
-    <div className="px-3 h-full">
+    <div className="px-3 shrink overflow-auto">
       <math-field
         ref={mf}
         onInput={() => {
@@ -96,7 +96,6 @@ const RAEditor = ({ query, updateText }: RAEditorProps) => {
         containing underscores in the LaTex editor inside the{" "}
         <span className="font-mono">text</span> tag.
       </p>
-
       {query.validation_errors.map((error) => (
         <ErrorAlert
           key={error.title + error.description}
