@@ -123,6 +123,18 @@ class RATransformer(Transformer[Relation, RAQuery]):
         left, right = args
         return left.anti_join(right)
 
+    def left_join(self, args: tuple[RAQuery, RAQuery]) -> Join:
+        left, right = args
+        return left.left_join(right)
+
+    def right_join(self, args: tuple[RAQuery, RAQuery]) -> Join:
+        left, right = args
+        return left.right_join(right)
+
+    def outer_join(self, args: tuple[RAQuery, RAQuery]) -> Join:
+        left, right = args
+        return left.outer_join(right)
+
     def theta_join(self, args: tuple[RAQuery, BooleanExpression, RAQuery]) -> ThetaJoin:
         left, condition, right = args
         return left.theta_join(right, condition)

@@ -48,6 +48,15 @@ class RAQuery(ASTNode):
     def anti_join(self, other: RAQuery | str) -> Join:
         return Join(self, query(other), JoinOperator.ANTI)
 
+    def left_join(self, other: RAQuery | str) -> Join:
+        return Join(self, query(other), JoinOperator.LEFT)
+
+    def right_join(self, other: RAQuery | str) -> Join:
+        return Join(self, query(other), JoinOperator.RIGHT)
+
+    def outer_join(self, other: RAQuery | str) -> Join:
+        return Join(self, query(other), JoinOperator.OUTER)
+
     def theta_join(self, other: RAQuery | str, condition: BooleanExpression) -> ThetaJoin:
         return ThetaJoin(self, query(other), condition)
 
@@ -112,6 +121,9 @@ class JoinOperator(Enum):
     NATURAL = 'NATURAL'
     SEMI = 'SEMI'
     ANTI = 'ANTI'
+    LEFT = 'LEFT'
+    RIGHT = 'RIGHT'
+    OUTER = 'FULL OUTER'
 
     def __str__(self) -> str:
         return f'{self.value} JOIN'
