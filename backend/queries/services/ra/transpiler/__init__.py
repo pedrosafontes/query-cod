@@ -148,15 +148,6 @@ class RAtoSQLTranspiler:
         left, left_alias = self._transpile_relation(join.left, alias='l')
 
         match join.operator:
-            case ra.JoinOperator.NATURAL:
-                if isinstance(join.right, Relation):
-                    # join.right is a base table
-                    return left.join(join.right.name, join_type='NATURAL')
-                else:
-                    # right is a derived relation
-                    right = self._transpile(join.right)
-                    return left.join(right, join_type='NATURAL', join_alias='r')
-
             case ra.JoinOperator.SEMI | ra.JoinOperator.ANTI:
                 right, right_alias = self._transpile_relation(join.right, 'r')
                 common = self._common_attrs(join.left, join.right)
@@ -177,6 +168,20 @@ class RAtoSQLTranspiler:
                     condition = sql.not_(condition)
 
                 return left.where(condition)
+            case _:
+                using = []
+                if join.operator != ra.JoinOperator.NATURAL:
+                    using = self._common_attrs(join.left, join.right)
+
+                if isinstance(join.right, Relation):
+                    # join.right is a base table
+                    return left.join(join.right.name, join_type=join.operator.value, using=using)
+                else:
+                    # right is a derived relation
+                    right_query = self._transpile(join.right)
+                    return left.join(
+                        right_query, join_type=join.operator.value, join_alias='r', using=using
+                    )
 
     @_transpile.register
     def _(self, join: ra.ThetaJoin) -> Select:
