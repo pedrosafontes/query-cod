@@ -34,6 +34,16 @@ const RAEditor = ({ query, updateText }: RAEditorProps) => {
     // Customize Mathfield behavior
     el.smartMode = true;
 
+    // Ensure commas are only inserted in math mode
+    const handleBeforeInput = (ev: InputEvent) => {
+      if (ev.data === ',' && el.mode === 'text') {
+        ev.preventDefault();
+        el.executeCommand(['switchMode', 'math']);
+        el.executeCommand(['insert', ',']);
+      }
+    };
+    el.addEventListener('beforeinput', handleBeforeInput);
+
     MathfieldElement.soundsDirectory = null;
   }, []);
 
