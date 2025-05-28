@@ -325,20 +325,20 @@ class Command(BaseCommand):
 
         seed_sql_queries(valid_sql_queries, sql_valid)
 
-        sql_syntax = Project.objects.create(name='SQL Syntax Errors', database=database, user=user)
+        # sql_syntax = Project.objects.create(name='SQL Syntax Errors', database=database, user=user)
 
-        sql_syntax_errors = [
-            ('Unterminated string literal', "SELECT * FROM track WHERE composer = 'Mozart"),
-            (
-                'Missing closing parenthesis in subquery',
-                'SELECT * FROM track WHERE unit_price > (SELECT AVG(unit_price) FROM track',
-            ),
-            ('ORDER BY with no column', 'SELECT * FROM track ORDER BY'),
-            ('Misspelled SELECT', 'SELEC name FROM track'),
-            ('Unbalanced parentheses', 'SELECT * FROM invoice WHERE (total > 20'),
-        ]
+        # sql_syntax_errors = [
+        #     ('Unterminated string literal', "SELECT * FROM track WHERE composer = 'Mozart"),
+        #     (
+        #         'Missing closing parenthesis in subquery',
+        #         'SELECT * FROM track WHERE unit_price > (SELECT AVG(unit_price) FROM track',
+        #     ),
+        #     ('ORDER BY with no column', 'SELECT * FROM track ORDER BY'),
+        #     ('Misspelled SELECT', 'SELEC name FROM track'),
+        #     ('Unbalanced parentheses', 'SELECT * FROM invoice WHERE (total > 20'),
+        # ]
 
-        seed_sql_queries(sql_syntax_errors, sql_syntax)
+        # seed_sql_queries(sql_syntax_errors, sql_syntax)
 
         sql_semantic = Project.objects.create(
             name='SQL Semantic Errors', database=database, user=user
@@ -382,10 +382,10 @@ class Command(BaseCommand):
             (
                 'Ambiguous column reference',
                 """
-                SELECT name
-                FROM album
-                     JOIN artist
-                     ON album.artist_id = artist.artist_id
+                SELECT name, composer
+                FROM playlist
+                NATURAL JOIN playlist_track
+                JOIN track USING (track_id)
                 """,
             ),
             (
@@ -424,7 +424,7 @@ class Command(BaseCommand):
             (
                 'Out of range ORDER BY',
                 """
-                SELECT track.name
+                SELECT name, composer
                 FROM track
                 ORDER BY 3
                 """,
