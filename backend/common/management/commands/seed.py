@@ -6,6 +6,7 @@ from django.utils.timezone import now
 
 import queries.services.ra.ast as ra
 from databases.models import Database
+from exercises.models import Exercise
 from projects.models import Project, Query
 from queries.models import Language
 from queries.services.ra.ast import attribute
@@ -565,5 +566,42 @@ class Command(BaseCommand):
             ]
 
             seed_ra_queries(ra_semantic_errors, ra_semantic)
+
+        self.stdout.write('Creating exercises...')
+
+        Exercise.objects.create(
+            title='People born in the same place as their mother',
+            description='Write a query that returns the scheme ```(name, born_in)``` containing the name and place of birth of all people known to have been born in the same place as their mother.',
+            solution=query('person')
+            .cartesian(query('person').rename('mother'))
+            .select(
+                ra.And(
+                    ra.EQ(attribute('person.mother'), attribute('mother.name')),
+                    ra.EQ(attribute('person.born_in'), attribute('mother.born_in')),
+                )
+            )
+            .project('person.name', 'person.born_in')
+            .latex(),
+            language=Language.SQL,
+            difficulty=Exercise.Difficulty.MEDIUM,
+            database=Database.objects.get(name='Family History'),
+        )
+
+        Exercise.objects.create(
+            title='Parents',
+            description='Write a query that returns the scheme ```(name)``` containing names of all people known to be parents.',
+            solution=textwrap.dedent(
+                """
+                SELECT name
+                FROM person AS child
+                WHERE EXISTS (SELECT *
+                              FROM person
+                              WHERE child.name IN (mother,father))
+            """
+            ).strip(),
+            language=Language.RA,
+            difficulty=Exercise.Difficulty.EASY,
+            database=Database.objects.get(name='Family History'),
+        )
 
         self.stdout.write(self.style.SUCCESS('Seed completed.'))
