@@ -12,4 +12,5 @@ urlpatterns = [
     path('signup/', react_view, name='signup'),
     path('projects/', react_view, name='project-list'),
     path('projects/<int:project_id>/', react_view, name='project-detail'),
+    path('exercises/', react_view, name='exercise-list'),
 ]

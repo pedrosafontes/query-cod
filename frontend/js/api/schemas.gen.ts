@@ -130,6 +130,14 @@ export const $DatabaseSummary = {
   required: ["id", "name"],
 } as const;
 
+export const $DifficultyEnum = {
+  enum: ["easy", "medium", "hard"],
+  type: "string",
+  description: `* \`easy\` - Easy
+* \`medium\` - Medium
+* \`hard\` - Hard`,
+} as const;
+
 export const $DivisionNode = {
   type: "object",
   properties: {
@@ -175,6 +183,88 @@ export const $ErrorPosition = {
     },
   },
   required: ["end_col", "line", "start_col"],
+} as const;
+
+export const $Exercise = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    language: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/LanguageEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    title: {
+      type: "string",
+      maxLength: 255,
+    },
+    difficulty: {
+      $ref: "#/components/schemas/DifficultyEnum",
+    },
+    description: {
+      type: "string",
+    },
+    solution: {
+      type: "string",
+    },
+    database: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/Database",
+        },
+      ],
+      readOnly: true,
+    },
+  },
+  required: [
+    "database",
+    "description",
+    "difficulty",
+    "id",
+    "language",
+    "solution",
+    "title",
+  ],
+} as const;
+
+export const $ExerciseSummary = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    title: {
+      type: "string",
+      maxLength: 255,
+    },
+    difficulty: {
+      $ref: "#/components/schemas/DifficultyEnum",
+    },
+    language: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/LanguageEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    database: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/DatabaseSummary",
+        },
+      ],
+      readOnly: true,
+    },
+  },
+  required: ["database", "difficulty", "id", "language", "title"],
 } as const;
 
 export const $GroupByNode = {
@@ -310,8 +400,6 @@ export const $HavingNode = {
 export const $LanguageEnum = {
   enum: ["sql", "ra"],
   type: "string",
-  description: `* \`sql\` - SQL
-* \`ra\` - Relational Algebra`,
 } as const;
 
 export const $Login = {
@@ -472,7 +560,12 @@ export const $PatchedQuery = {
       type: "string",
     },
     language: {
-      $ref: "#/components/schemas/LanguageEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/LanguageEnum",
+        },
+      ],
+      readOnly: true,
     },
     created: {
       type: "string",
@@ -635,7 +728,12 @@ export const $Query = {
       type: "string",
     },
     language: {
-      $ref: "#/components/schemas/LanguageEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/LanguageEnum",
+        },
+      ],
+      readOnly: true,
     },
     created: {
       type: "string",
@@ -655,7 +753,14 @@ export const $Query = {
       readOnly: true,
     },
   },
-  required: ["created", "id", "modified", "name", "validation_errors"],
+  required: [
+    "created",
+    "id",
+    "language",
+    "modified",
+    "name",
+    "validation_errors",
+  ],
 } as const;
 
 export const $QueryError = {
@@ -734,10 +839,15 @@ export const $QuerySummary = {
       maxLength: 255,
     },
     language: {
-      $ref: "#/components/schemas/LanguageEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/LanguageEnum",
+        },
+      ],
+      readOnly: true,
     },
   },
-  required: ["id", "name"],
+  required: ["id", "language", "name"],
 } as const;
 
 export const $QueryTree = {

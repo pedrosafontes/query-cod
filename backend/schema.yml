@@ -518,6 +518,43 @@ paths:
               schema:
                 $ref: '#/components/schemas/Database'
           description: ''
+  /api/exercises/:
+    get:
+      operationId: exercises_list
+      tags:
+      - exercises
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExerciseSummary'
+          description: ''
+  /api/exercises/{id}/:
+    get:
+      operationId: exercises_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this exercise.
+        required: true
+      tags:
+      - exercises
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exercise'
+          description: ''
   /api/projects/:
     get:
       operationId: projects_list
@@ -991,6 +1028,16 @@ components:
       required:
       - id
       - name
+    DifficultyEnum:
+      enum:
+      - easy
+      - medium
+      - hard
+      type: string
+      description: |-
+        * `easy` - Easy
+        * `medium` - Medium
+        * `hard` - Hard
     DivisionNode:
       type: object
       properties:
@@ -1027,6 +1074,62 @@ components:
       - end_col
       - line
       - start_col
+    Exercise:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        difficulty:
+          $ref: '#/components/schemas/DifficultyEnum'
+        description:
+          type: string
+        solution:
+          type: string
+        database:
+          allOf:
+          - $ref: '#/components/schemas/Database'
+          readOnly: true
+      required:
+      - database
+      - description
+      - difficulty
+      - id
+      - language
+      - solution
+      - title
+    ExerciseSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        difficulty:
+          $ref: '#/components/schemas/DifficultyEnum'
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          readOnly: true
+        database:
+          allOf:
+          - $ref: '#/components/schemas/DatabaseSummary'
+          readOnly: true
+      required:
+      - database
+      - difficulty
+      - id
+      - language
+      - title
     GroupByNode:
       type: object
       properties:
@@ -1121,9 +1224,6 @@ components:
       - sql
       - ra
       type: string
-      description: |-
-        * `sql` - SQL
-        * `ra` - Relational Algebra
     Login:
       type: object
       properties:
@@ -1243,7 +1343,9 @@ components:
         text:
           type: string
         language:
-          $ref: '#/components/schemas/LanguageEnum'
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          readOnly: true
         created:
           type: string
           format: date-time
@@ -1357,7 +1459,9 @@ components:
         text:
           type: string
         language:
-          $ref: '#/components/schemas/LanguageEnum'
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          readOnly: true
         created:
           type: string
           format: date-time
@@ -1374,6 +1478,7 @@ components:
       required:
       - created
       - id
+      - language
       - modified
       - name
       - validation_errors
@@ -1432,9 +1537,12 @@ components:
           type: string
           maxLength: 255
         language:
-          $ref: '#/components/schemas/LanguageEnum'
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          readOnly: true
       required:
       - id
+      - language
       - name
     QueryTree:
       type: object

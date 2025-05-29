@@ -44,6 +44,9 @@ import type {
   DatabasesListResponse,
   DatabasesRetrieveData,
   DatabasesRetrieveResponse,
+  ExercisesListResponse,
+  ExercisesRetrieveData,
+  ExercisesRetrieveResponse,
   ProjectsListResponse,
   ProjectsCreateData,
   ProjectsCreateResponse,
@@ -436,6 +439,37 @@ export class DatabasesService {
     return __request(OpenAPI, {
       method: "GET",
       url: "/api/databases/{id}/",
+      path: {
+        id: data.id,
+      },
+    });
+  }
+}
+
+export class ExercisesService {
+  /**
+   * @returns ExerciseSummary
+   * @throws ApiError
+   */
+  public static exercisesList(): CancelablePromise<ExercisesListResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/exercises/",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this exercise.
+   * @returns Exercise
+   * @throws ApiError
+   */
+  public static exercisesRetrieve(
+    data: ExercisesRetrieveData,
+  ): CancelablePromise<ExercisesRetrieveResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/exercises/{id}/",
       path: {
         id: data.id,
       },

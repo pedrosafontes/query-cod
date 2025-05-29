@@ -52,6 +52,13 @@ export type DatabaseSummary = {
   name: string;
 };
 
+/**
+ * * `easy` - Easy
+ * * `medium` - Medium
+ * * `hard` - Hard
+ */
+export type DifficultyEnum = "easy" | "medium" | "hard";
+
 export type DivisionNode = {
   id: number;
   readonly children: Array<RATree>;
@@ -63,6 +70,24 @@ export type ErrorPosition = {
   line: number;
   start_col: number;
   end_col: number;
+};
+
+export type Exercise = {
+  readonly id: number;
+  readonly language: LanguageEnum;
+  title: string;
+  difficulty: DifficultyEnum;
+  description: string;
+  solution: string;
+  readonly database: Database;
+};
+
+export type ExerciseSummary = {
+  readonly id: number;
+  title: string;
+  difficulty: DifficultyEnum;
+  readonly language: LanguageEnum;
+  readonly database: DatabaseSummary;
 };
 
 export type GroupByNode = {
@@ -90,10 +115,6 @@ export type HavingNode = {
   condition: string;
 };
 
-/**
- * * `sql` - SQL
- * * `ra` - Relational Algebra
- */
 export type LanguageEnum = "sql" | "ra";
 
 export type Login = {
@@ -137,7 +158,7 @@ export type PatchedQuery = {
   readonly id?: number;
   name?: string;
   text?: string;
-  language?: LanguageEnum;
+  readonly language?: LanguageEnum;
   readonly created?: string;
   readonly modified?: string;
   readonly validation_errors?: Array<QueryError>;
@@ -173,7 +194,7 @@ export type Query = {
   readonly id: number;
   name: string;
   text?: string;
-  language?: LanguageEnum;
+  readonly language: LanguageEnum;
   readonly created: string;
   readonly modified: string;
   readonly validation_errors: Array<QueryError>;
@@ -211,7 +232,7 @@ export type QueryResultData = {
 export type QuerySummary = {
   readonly id: number;
   name: string;
-  language?: LanguageEnum;
+  readonly language: LanguageEnum;
 };
 
 export type QueryTree = {
@@ -558,6 +579,17 @@ export type DatabasesRetrieveData = {
 
 export type DatabasesRetrieveResponse = Database;
 
+export type ExercisesListResponse = Array<ExerciseSummary>;
+
+export type ExercisesRetrieveData = {
+  /**
+   * A unique integer value identifying this exercise.
+   */
+  id: number;
+};
+
+export type ExercisesRetrieveResponse = Exercise;
+
 export type ProjectsListResponse = Array<Project>;
 
 export type ProjectsCreateData = {
@@ -854,6 +886,21 @@ export type $OpenApiTs = {
       req: DatabasesRetrieveData;
       res: {
         200: Database;
+      };
+    };
+  };
+  "/api/exercises/": {
+    get: {
+      res: {
+        200: Array<ExerciseSummary>;
+      };
+    };
+  };
+  "/api/exercises/{id}/": {
+    get: {
+      req: ExercisesRetrieveData;
+      res: {
+        200: Exercise;
       };
     };
   };
