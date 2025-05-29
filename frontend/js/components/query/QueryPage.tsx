@@ -73,9 +73,9 @@ const QueryPage = ({
     if (loadingError) {
       return (
         <ErrorAlert
+          className="mx-3"
           description={loadingError.message}
           title="There was an error loading the query"
-          className="mx-3"
         />
       );
     }

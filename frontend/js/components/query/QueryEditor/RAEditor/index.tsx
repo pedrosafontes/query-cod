@@ -36,13 +36,13 @@ const RAEditor = ({ query, updateText }: RAEditorProps) => {
 
     // Ensure commas are only inserted in math mode
     const handleBeforeInput = (ev: InputEvent) => {
-      if (ev.data === ',' && el.mode === 'text') {
+      if (ev.data === "," && el.mode === "text") {
         ev.preventDefault();
-        el.executeCommand(['switchMode', 'math']);
-        el.executeCommand(['insert', ',']);
+        el.executeCommand(["switchMode", "math"]);
+        el.executeCommand(["insert", ","]);
       }
     };
-    el.addEventListener('beforeinput', handleBeforeInput);
+    el.addEventListener("beforeinput", handleBeforeInput);
 
     MathfieldElement.soundsDirectory = null;
   }, []);
@@ -98,10 +98,12 @@ const RAEditor = ({ query, updateText }: RAEditorProps) => {
         <h4 className="font-semibold mb-1">Tips</h4>
         <ul className="list-disc pl-4">
           <li>
-            Insert identifiers containing underscores in the LaTex editor inside the <span className="font-mono">text</span> tag.
+            Insert identifiers containing underscores in the LaTex editor inside
+            the <span className="font-mono">text</span> tag.
           </li>
           <li>
-            For multi-line support, wrap the entire expression in a <span className="font-mono">displaylines</span> tag.
+            For multi-line support, wrap the entire expression in a{" "}
+            <span className="font-mono">displaylines</span> tag.
           </li>
         </ul>
       </div>
