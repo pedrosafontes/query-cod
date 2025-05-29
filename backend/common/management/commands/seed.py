@@ -582,7 +582,7 @@ class Command(BaseCommand):
             )
             .project('person.name', 'person.born_in')
             .latex(),
-            language=Language.SQL,
+            language=Language.RA,
             difficulty=Exercise.Difficulty.MEDIUM,
             database=Database.objects.get(name='Family History'),
         )
@@ -599,7 +599,7 @@ class Command(BaseCommand):
                               WHERE child.name IN (mother,father))
             """
             ).strip(),
-            language=Language.RA,
+            language=Language.SQL,
             difficulty=Exercise.Difficulty.EASY,
             database=Database.objects.get(name='Family History'),
         )
