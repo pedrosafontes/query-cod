@@ -13,5 +13,8 @@ class Exercise(IndexedTimeStampedModel):
         db_column='language',
     )
     database = models.ForeignKey(Database, on_delete=models.CASCADE, related_name='exercises')
+    title = models.CharField(max_length=255)
     description = models.TextField()
     solution = models.TextField()
+
+    objects: models.Manager['Exercise']
