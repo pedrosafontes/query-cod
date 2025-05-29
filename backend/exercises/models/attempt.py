@@ -3,7 +3,7 @@ from typing import cast
 from django.db import models
 
 from databases.models.database import Database
-from queries.models import AbstractQuery
+from queries.models import AbstractQuery, Language
 from users.models import User
 
 from .exercise import Exercise
@@ -15,8 +15,8 @@ class Attempt(AbstractQuery):
     completed = models.BooleanField(default=False)
 
     @property
-    def language(self) -> AbstractQuery.Language:
-        return cast(AbstractQuery.Language, self.exercise.language)
+    def language(self) -> Language:
+        return cast(Language, self.exercise.language)
 
     @property
     def database(self) -> Database:

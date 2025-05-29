@@ -7,6 +7,7 @@ from django.utils.timezone import now
 import queries.services.ra.ast as ra
 from databases.models import Database
 from projects.models import Project, Query
+from queries.models import Language
 from queries.services.ra.ast import attribute
 from queries.services.ra.ast.factory import query
 from queries.services.ra.ast.query import Aggregation, RAQuery
@@ -75,7 +76,7 @@ class Command(BaseCommand):
         now_time = now()
 
         def seed_queries(
-            queries: list[tuple[str, str]], project: Project, language: Query.Language
+            queries: list[tuple[str, str]], project: Project, language: Language
         ) -> None:
             for name, query_text in queries:
                 Query.objects.create(
@@ -94,14 +95,14 @@ class Command(BaseCommand):
                     for name, query in queries
                 ],
                 project,
-                language=Query.Language.RA,
+                language=Language.RA,
             )
 
         def seed_sql_queries(queries: list[tuple[str, str]], project: Project) -> None:
             seed_queries(
                 [(name, textwrap.dedent(query_text).strip()) for name, query_text in queries],
                 project,
-                language=Query.Language.SQL,
+                language=Language.SQL,
             )
 
         for user in users:

@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from projects.models import Project
+from queries.models import Language
 from queries.serializers.execution import QueryExecutionSerializer
 from queries.services.execution import execute_query
 from queries.services.transpiler import transpile_query
@@ -74,9 +75,7 @@ class QueryViewSet(
             name=query.name,
             text=transpiled_text,
             project=query.project,
-            _language=Query.Language.RA
-            if query.language == Query.Language.SQL
-            else Query.Language.SQL,
+            _language=Language.RA if query.language == Language.SQL else Language.SQL,
         )
 
         return Response(QuerySerializer(transpiled_query).data)

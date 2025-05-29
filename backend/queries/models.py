@@ -13,11 +13,12 @@ from .services.types import QueryAST
 from .types import QueryError
 
 
-class AbstractQuery(IndexedTimeStampedModel):
-    class Language(models.TextChoices):
-        SQL = 'sql', 'SQL'
-        RA = 'ra', 'Relational Algebra'
+class Language(models.TextChoices):
+    SQL = 'sql', 'SQL'
+    RA = 'ra', 'Relational Algebra'
 
+
+class AbstractQuery(IndexedTimeStampedModel):
     text = models.TextField(blank=True, default='')
 
     @property
@@ -61,14 +62,14 @@ class AbstractQuery(IndexedTimeStampedModel):
 
     @property
     def sql_tree(self) -> SQLTree | None:
-        if self._tree and self.language == self.Language.SQL:
+        if self._tree and self.language == Language.SQL:
             return cast(SQLTree, self._tree)
         else:
             return None
 
     @property
     def ra_tree(self) -> RATree | None:
-        if self._tree and self.language == self.Language.RA:
+        if self._tree and self.language == Language.RA:
             return cast(RATree, self._tree)
         else:
             return None
