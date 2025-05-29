@@ -2,9 +2,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
 
 import { ProjectsService } from "api";
+import { QueryPageProps } from "components/query/QueryPage";
 import { useErrorToast } from "hooks/useErrorToast";
-
-import { QueryPageProps } from "../components/query/QueryPage";
 
 import ProjectsPage from "./ProjectPage";
 
