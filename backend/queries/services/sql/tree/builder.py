@@ -161,6 +161,7 @@ class SQLTreeBuilder:
             partial_query = partial_query.where(where.this)
 
             query_id, errors = self._add_subquery(partial_query)
+
             return WhereNode(
                 id=query_id,
                 validation_errors=errors,

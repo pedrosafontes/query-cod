@@ -14,14 +14,14 @@ def test_with_last_modified_returns_ordered_projects() -> None:
     project2 = baker.make(Project)
 
     baker.make(
-        'queries.Query',
+        'projects.Query',
         project=project1,
         created=timezone.now() - timedelta(days=2),
         modified=timezone.now() - timedelta(days=2),
     )
 
     baker.make(
-        'queries.Query',
+        'projects.Query',
         project=project2,
         created=timezone.now(),
         modified=timezone.now(),

@@ -1,9 +1,9 @@
 from databases.models import Database
 from databases.serializers import DatabaseSummarySerializer
-from queries.serializers import QuerySummarySerializer
 from rest_framework import serializers
 
-from .models import Project
+from ..models import Project
+from .query import QuerySummarySerializer
 
 
 class ProjectSerializer(serializers.ModelSerializer[Project]):

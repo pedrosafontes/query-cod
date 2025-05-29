@@ -6,8 +6,7 @@ from django.utils.timezone import now
 
 import queries.services.ra.ast as ra
 from databases.models import Database
-from projects.models import Project
-from queries.models import Query
+from projects.models import Project, Query
 from queries.services.ra.ast import attribute
 from queries.services.ra.ast.factory import query
 from queries.services.ra.ast.query import Aggregation, RAQuery
@@ -81,7 +80,7 @@ class Command(BaseCommand):
             for name, query_text in queries:
                 Query.objects.create(
                     name=name,
-                    language=language,
+                    _language=language,
                     text=query_text,
                     project=project,
                     created=now_time,
