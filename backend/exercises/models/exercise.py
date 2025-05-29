@@ -1,8 +1,15 @@
+from typing import TYPE_CHECKING
+
 from django.db import models
 
 from common.models import IndexedTimeStampedModel
 from databases.models.database import Database
 from queries.models import Language
+from users.models import User
+
+
+if TYPE_CHECKING:
+    from .attempt import Attempt
 
 
 class Exercise(IndexedTimeStampedModel):
@@ -25,3 +32,7 @@ class Exercise(IndexedTimeStampedModel):
     solution = models.TextField()
 
     objects: models.Manager['Exercise']
+    attempts: models.Manager['Attempt']
+
+    def completed_by(self, user: User) -> bool:
+        return self.attempts.filter(user=user, completed=True).exists()

@@ -47,6 +47,38 @@ export const $AliasNode = {
   required: ["alias", "children", "id", "sql_node_type", "validation_errors"],
 } as const;
 
+export const $Attempt = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    text: {
+      type: "string",
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+      readOnly: true,
+    },
+    completed: {
+      type: "boolean",
+    },
+    language: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/LanguageEnum",
+        },
+      ],
+      readOnly: true,
+    },
+  },
+  required: ["id", "language", "validation_errors"],
+} as const;
+
 export const $Database = {
   type: "object",
   properties: {
@@ -221,8 +253,22 @@ export const $Exercise = {
       ],
       readOnly: true,
     },
+    completed: {
+      type: "boolean",
+      readOnly: true,
+    },
+    attempt: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/Attempt",
+        },
+      ],
+      readOnly: true,
+    },
   },
   required: [
+    "attempt",
+    "completed",
     "database",
     "description",
     "difficulty",
@@ -263,8 +309,12 @@ export const $ExerciseSummary = {
       ],
       readOnly: true,
     },
+    completed: {
+      type: "boolean",
+      readOnly: true,
+    },
   },
-  required: ["database", "difficulty", "id", "language", "title"],
+  required: ["completed", "database", "difficulty", "id", "language", "title"],
 } as const;
 
 export const $GroupByNode = {

@@ -13,6 +13,14 @@ export type AliasNode = {
   alias: string;
 };
 
+export type Attempt = {
+  readonly id: number;
+  text?: string;
+  readonly validation_errors: Array<QueryError>;
+  completed?: boolean;
+  readonly language: LanguageEnum;
+};
+
 export type Database = {
   readonly id: number;
   name: string;
@@ -80,6 +88,8 @@ export type Exercise = {
   description: string;
   solution: string;
   readonly database: Database;
+  readonly completed: boolean;
+  readonly attempt: Attempt;
 };
 
 export type ExerciseSummary = {
@@ -88,6 +98,7 @@ export type ExerciseSummary = {
   difficulty: DifficultyEnum;
   readonly language: LanguageEnum;
   readonly database: DatabaseSummary;
+  readonly completed: boolean;
 };
 
 export type GroupByNode = {
