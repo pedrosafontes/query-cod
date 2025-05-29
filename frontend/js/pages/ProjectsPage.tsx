@@ -109,6 +109,7 @@ const ProjectsPage = () => {
         columns={columns}
         data={projects}
         loading={loading}
+        pageSize={8}
         onRowClick={handleRowClick}
       />
     </div>
