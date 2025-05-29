@@ -1,12 +1,12 @@
 import type { ColumnDef } from "@tanstack/react-table";
+import { Check } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
 import { DifficultyEnum, ExercisesService, type ExerciseSummary } from "api";
+import { DataTable } from "components/common/DataTable";
 import { useErrorToast } from "hooks/useErrorToast";
-
-import { DataTable } from "../components/common/DataTable";
 
 const ExercisesPage = () => {
   const [exercises, setExercises] = useState<ExerciseSummary[]>([]);
@@ -31,6 +31,12 @@ const ExercisesPage = () => {
   }, [fetchExercises]);
 
   const columns: ColumnDef<ExerciseSummary>[] = [
+    {
+      accessorKey: "completed",
+      header: "",
+      cell: ({ row }) =>
+        row.original.completed ? <Check className="text-green-600" /> : null,
+    },
     {
       accessorKey: "title",
       header: "Title",
