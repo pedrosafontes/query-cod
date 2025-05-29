@@ -6,11 +6,18 @@ from queries.models import Language
 
 
 class Exercise(IndexedTimeStampedModel):
+    class Difficulty(models.TextChoices):
+        EASY = 'easy', 'Easy'
+        MEDIUM = 'medium', 'Medium'
+        HARD = 'hard', 'Hard'
+
+    difficulty = models.CharField(
+        max_length=16,
+        choices=Difficulty,
+    )
     language = models.CharField(
         max_length=16,
         choices=Language,
-        default=Language.SQL,
-        db_column='language',
     )
     database = models.ForeignKey(Database, on_delete=models.CASCADE, related_name='exercises')
     title = models.CharField(max_length=255)
