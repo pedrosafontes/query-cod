@@ -156,6 +156,14 @@ export type PasswordResetConfirm = {
   new_password: string;
 };
 
+export type PatchedAttempt = {
+  readonly id?: number;
+  text?: string;
+  readonly validation_errors?: Array<QueryError>;
+  completed?: boolean;
+  readonly language?: LanguageEnum;
+};
+
 export type PatchedProject = {
   readonly id?: number;
   database_id?: number;
@@ -452,6 +460,45 @@ export type WhereNode = {
   condition: string;
 };
 
+export type AttemptsUpdateData = {
+  /**
+   * A unique integer value identifying this attempt.
+   */
+  id: number;
+  requestBody?: Attempt;
+};
+
+export type AttemptsUpdateResponse = Attempt;
+
+export type AttemptsPartialUpdateData = {
+  /**
+   * A unique integer value identifying this attempt.
+   */
+  id: number;
+  requestBody?: PatchedAttempt;
+};
+
+export type AttemptsPartialUpdateResponse = Attempt;
+
+export type AttemptsSubqueriesExecutionsCreateData = {
+  /**
+   * A unique integer value identifying this attempt.
+   */
+  id: number;
+  subqueryId: number;
+};
+
+export type AttemptsSubqueriesExecutionsCreateResponse = QueryExecution;
+
+export type AttemptsTreeRetrieveData = {
+  /**
+   * A unique integer value identifying this attempt.
+   */
+  id: number;
+};
+
+export type AttemptsTreeRetrieveResponse = QueryTree;
+
 export type AuthLoginCreateData = {
   requestBody: Login;
 };
@@ -735,6 +782,36 @@ export type QueriesTreeRetrieveData = {
 export type QueriesTreeRetrieveResponse = QueryTree;
 
 export type $OpenApiTs = {
+  "/api/attempts/{id}/": {
+    put: {
+      req: AttemptsUpdateData;
+      res: {
+        200: Attempt;
+      };
+    };
+    patch: {
+      req: AttemptsPartialUpdateData;
+      res: {
+        200: Attempt;
+      };
+    };
+  };
+  "/api/attempts/{id}/subqueries/{subquery_id}/executions/": {
+    post: {
+      req: AttemptsSubqueriesExecutionsCreateData;
+      res: {
+        200: QueryExecution;
+      };
+    };
+  };
+  "/api/attempts/{id}/tree/": {
+    get: {
+      req: AttemptsTreeRetrieveData;
+      res: {
+        200: QueryTree;
+      };
+    };
+  };
   "/api/auth/login/": {
     post: {
       req: AuthLoginCreateData;

@@ -553,6 +553,37 @@ export const $PasswordResetConfirm = {
   required: ["new_password", "token", "uid"],
 } as const;
 
+export const $PatchedAttempt = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    text: {
+      type: "string",
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+      readOnly: true,
+    },
+    completed: {
+      type: "boolean",
+    },
+    language: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/LanguageEnum",
+        },
+      ],
+      readOnly: true,
+    },
+  },
+} as const;
+
 export const $PatchedProject = {
   type: "object",
   properties: {

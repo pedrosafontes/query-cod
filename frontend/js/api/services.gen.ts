@@ -4,6 +4,14 @@ import type { CancelablePromise } from "./core/CancelablePromise";
 import { OpenAPI } from "./core/OpenAPI";
 import { request as __request } from "./core/request";
 import type {
+  AttemptsUpdateData,
+  AttemptsUpdateResponse,
+  AttemptsPartialUpdateData,
+  AttemptsPartialUpdateResponse,
+  AttemptsSubqueriesExecutionsCreateData,
+  AttemptsSubqueriesExecutionsCreateResponse,
+  AttemptsTreeRetrieveData,
+  AttemptsTreeRetrieveResponse,
   AuthLoginCreateData,
   AuthLoginCreateResponse,
   AuthLogoutCreateResponse,
@@ -77,6 +85,88 @@ import type {
   QueriesTreeRetrieveData,
   QueriesTreeRetrieveResponse,
 } from "./types.gen";
+
+export class AttemptsService {
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this attempt.
+   * @param data.requestBody
+   * @returns Attempt
+   * @throws ApiError
+   */
+  public static attemptsUpdate(
+    data: AttemptsUpdateData,
+  ): CancelablePromise<AttemptsUpdateResponse> {
+    return __request(OpenAPI, {
+      method: "PUT",
+      url: "/api/attempts/{id}/",
+      path: {
+        id: data.id,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this attempt.
+   * @param data.requestBody
+   * @returns Attempt
+   * @throws ApiError
+   */
+  public static attemptsPartialUpdate(
+    data: AttemptsPartialUpdateData,
+  ): CancelablePromise<AttemptsPartialUpdateResponse> {
+    return __request(OpenAPI, {
+      method: "PATCH",
+      url: "/api/attempts/{id}/",
+      path: {
+        id: data.id,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this attempt.
+   * @param data.subqueryId
+   * @returns QueryExecution
+   * @throws ApiError
+   */
+  public static attemptsSubqueriesExecutionsCreate(
+    data: AttemptsSubqueriesExecutionsCreateData,
+  ): CancelablePromise<AttemptsSubqueriesExecutionsCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/attempts/{id}/subqueries/{subquery_id}/executions/",
+      path: {
+        id: data.id,
+        subquery_id: data.subqueryId,
+      },
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this attempt.
+   * @returns QueryTree
+   * @throws ApiError
+   */
+  public static attemptsTreeRetrieve(
+    data: AttemptsTreeRetrieveData,
+  ): CancelablePromise<AttemptsTreeRetrieveResponse> {
+    return __request(OpenAPI, {
+      method: "GET",
+      url: "/api/attempts/{id}/tree/",
+      path: {
+        id: data.id,
+      },
+    });
+  }
+}
 
 export class AuthService {
   /**

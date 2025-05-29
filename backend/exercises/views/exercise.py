@@ -1,7 +1,7 @@
 from rest_framework import mixins, serializers, viewsets
 
-from .models.exercise import Exercise
-from .serializers.exercise import ExerciseSerializer, ExerciseSummarySerializer
+from ..models.exercise import Exercise
+from ..serializers.exercise import ExerciseSerializer, ExerciseSummarySerializer
 
 
 class ExerciseViewSet(

@@ -4,6 +4,116 @@ info:
   version: 0.1.0
   description: A Django project boilerplate with Vinta's best practices
 paths:
+  /api/attempts/{id}/:
+    put:
+      operationId: attempts_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this attempt.
+        required: true
+      tags:
+      - attempts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Attempt'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Attempt'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Attempt'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attempt'
+          description: ''
+    patch:
+      operationId: attempts_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this attempt.
+        required: true
+      tags:
+      - attempts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAttempt'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAttempt'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAttempt'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attempt'
+          description: ''
+  /api/attempts/{id}/subqueries/{subquery_id}/executions/:
+    post:
+      operationId: attempts_subqueries_executions_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this attempt.
+        required: true
+      - in: path
+        name: subquery_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - attempts
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryExecution'
+          description: ''
+  /api/attempts/{id}/tree/:
+    get:
+      operationId: attempts_tree_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this attempt.
+        required: true
+      tags:
+      - attempts
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueryTree'
+          description: ''
   /api/auth/login/:
     post:
       operationId: auth_login_create
@@ -1340,6 +1450,25 @@ components:
       - new_password
       - token
       - uid
+    PatchedAttempt:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        text:
+          type: string
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+          readOnly: true
+        completed:
+          type: boolean
+        language:
+          allOf:
+          - $ref: '#/components/schemas/LanguageEnum'
+          readOnly: true
     PatchedProject:
       type: object
       properties:
