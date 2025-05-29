@@ -9,6 +9,8 @@ import AuthenticatedLayout from "./components/layout/AuthenticatedLayout";
 import AuthRoute from "./components/route/AuthRoute";
 import PrivateRoute from "./components/route/PrivateRoute";
 import { AuthProvider } from "./contexts/AuthContext";
+import ExercisePage from "./pages/ExercisePage";
+import ExercisesPage from "./pages/ExercisesPage";
 import LoginPage from "./pages/LoginPage";
 import ProjectPage from "./pages/ProjectPage";
 import ProjectsPage from "./pages/ProjectsPage";
@@ -36,6 +38,8 @@ const App = () => (
             <Route element={<AuthenticatedLayout />}>
               <Route element={<ProjectsPage />} path="/projects" />
               <Route element={<ProjectPage />} path="/projects/:projectId" />
+              <Route element={<ExercisesPage />} path="/exercises" />
+              <Route element={<ExercisePage />} path="/exercises/:exerciseId" />
             </Route>
           </Route>
         </Routes>
