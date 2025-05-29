@@ -110,7 +110,7 @@ const ProjectQueryPage = ({
     if (loadingError) {
       return (
         <ErrorAlert
-          className="mx-3"
+          className="mx-3 w-auto"
           description={loadingError.message}
           title="There was a loading error"
         />
