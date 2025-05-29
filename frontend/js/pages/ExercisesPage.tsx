@@ -4,8 +4,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
-import { DifficultyEnum, ExercisesService, type ExerciseSummary } from "api";
+import { ExercisesService, type ExerciseSummary } from "api";
 import { DataTable } from "components/common/DataTable";
+import DifficultyBadge from "components/exercise/DifficultyBadge";
 import { useErrorToast } from "hooks/useErrorToast";
 
 const ExercisesPage = () => {
@@ -51,33 +52,15 @@ const ExercisesPage = () => {
     {
       accessorKey: "difficulty",
       header: "Difficulty",
-      cell: ({ row }) => renderDifficultyBadge(row.original.difficulty),
+      cell: ({ row }) => (
+        <DifficultyBadge difficulty={row.original.difficulty} />
+      ),
     },
     {
       accessorKey: "database.name",
       header: "Database",
     },
   ];
-
-  const renderDifficultyBadge = (difficulty: DifficultyEnum) => {
-    let className: string;
-
-    switch (difficulty) {
-      case "easy":
-        className = "bg-green-100 text-green-800";
-        break;
-      case "medium":
-        className = "bg-yellow-100 text-yellow-800";
-        break;
-      case "hard":
-        className = "bg-red-100 text-red-800";
-        break;
-      default:
-        className = "bg-gray-100 text-gray-800";
-    }
-
-    return <Badge className={className}>{difficulty}</Badge>;
-  };
 
   const navigate = useNavigate();
 
