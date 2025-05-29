@@ -9,6 +9,7 @@ class DatabaseSerializer(serializers.ModelSerializer[Database]):
         fields = [  # noqa: RUF012
             'id',
             'name',
+            'description',
             'schema',
         ]
 
@@ -19,4 +20,5 @@ class DatabaseSummarySerializer(serializers.ModelSerializer[Database]):
         fields = [  # noqa: RUF012
             'id',
             'name',
+            'description',
         ]

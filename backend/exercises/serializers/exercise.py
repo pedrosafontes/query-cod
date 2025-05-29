@@ -1,6 +1,6 @@
 from typing import Any, cast
 
-from databases.serializers import DatabaseSerializer, DatabaseSummarySerializer
+from databases.serializers import DatabaseSummarySerializer
 from drf_spectacular.utils import extend_schema_field
 from queries.models import Language
 from rest_framework import serializers
@@ -28,7 +28,7 @@ class BaseExerciseSerializer(serializers.ModelSerializer[Exercise]):
 
 
 class ExerciseSerializer(BaseExerciseSerializer):
-    database = DatabaseSerializer(read_only=True)
+    database = DatabaseSummarySerializer(read_only=True)
     attempt = serializers.SerializerMethodField()
 
     class Meta:

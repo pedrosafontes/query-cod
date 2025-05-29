@@ -24,6 +24,7 @@ export type Attempt = {
 export type Database = {
   readonly id: number;
   name: string;
+  description: string;
   readonly schema: {
     [key: string]: {
       [key: string]: {
@@ -58,6 +59,7 @@ export type Database = {
 export type DatabaseSummary = {
   readonly id: number;
   name: string;
+  description: string;
 };
 
 /**
@@ -87,7 +89,7 @@ export type Exercise = {
   difficulty: DifficultyEnum;
   description: string;
   solution: string;
-  readonly database: Database;
+  readonly database: DatabaseSummary;
   readonly completed: boolean;
   readonly attempt: Attempt;
 };

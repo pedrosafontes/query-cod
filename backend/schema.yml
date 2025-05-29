@@ -988,6 +988,8 @@ components:
         name:
           type: string
           maxLength: 255
+        description:
+          type: string
         schema:
           type: object
           additionalProperties:
@@ -1036,6 +1038,7 @@ components:
               - type
           readOnly: true
       required:
+      - description
       - id
       - name
       - schema
@@ -1048,7 +1051,10 @@ components:
         name:
           type: string
           maxLength: 255
+        description:
+          type: string
       required:
+      - description
       - id
       - name
     DifficultyEnum:
@@ -1118,7 +1124,7 @@ components:
           type: string
         database:
           allOf:
-          - $ref: '#/components/schemas/Database'
+          - $ref: '#/components/schemas/DatabaseSummary'
           readOnly: true
         completed:
           type: boolean

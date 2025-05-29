@@ -90,6 +90,9 @@ export const $Database = {
       type: "string",
       maxLength: 255,
     },
+    description: {
+      type: "string",
+    },
     schema: {
       type: "object",
       additionalProperties: {
@@ -144,7 +147,7 @@ export const $Database = {
       readOnly: true,
     },
   },
-  required: ["id", "name", "schema"],
+  required: ["description", "id", "name", "schema"],
 } as const;
 
 export const $DatabaseSummary = {
@@ -158,8 +161,11 @@ export const $DatabaseSummary = {
       type: "string",
       maxLength: 255,
     },
+    description: {
+      type: "string",
+    },
   },
-  required: ["id", "name"],
+  required: ["description", "id", "name"],
 } as const;
 
 export const $DifficultyEnum = {
@@ -248,7 +254,7 @@ export const $Exercise = {
     database: {
       allOf: [
         {
-          $ref: "#/components/schemas/Database",
+          $ref: "#/components/schemas/DatabaseSummary",
         },
       ],
       readOnly: true,
