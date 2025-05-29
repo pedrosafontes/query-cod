@@ -15,7 +15,7 @@ type ExecuteQueryButtonProps = {
   queryId: number;
   disabled: boolean;
   hasErrors: boolean;
-  setQueryResult: (result: QueryResultData | undefined) => void;
+  setQueryResult: (result?: QueryResultData) => void;
 };
 
 const ExecuteQueryButton = ({

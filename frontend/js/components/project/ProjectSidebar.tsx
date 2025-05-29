@@ -29,7 +29,7 @@ import QueryMenuItem from "./QueryMenuItem";
 type ProjectSidebarProps = {
   project: Project;
   currentQueryId?: number;
-  setCurrentQueryId: (id: number | undefined) => void;
+  setCurrentQueryId: (id?: number) => void;
   onSuccess: () => Promise<void>;
 };
 

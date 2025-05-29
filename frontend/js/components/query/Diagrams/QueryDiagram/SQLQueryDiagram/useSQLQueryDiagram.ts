@@ -10,7 +10,7 @@ import { QueryDiagramProps } from "../types";
 import { SQLNode } from "./SQLNode";
 
 const useSQLQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
-  const [sqlTree, setSqlTree] = useState<SQLTree | undefined>();
+  const [sqlTree, setSqlTree] = useState<SQLTree>();
   const [nodes, setNodes] = useState<SQLNode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 

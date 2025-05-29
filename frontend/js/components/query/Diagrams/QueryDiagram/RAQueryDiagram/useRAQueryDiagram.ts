@@ -10,7 +10,7 @@ import { QueryDiagramProps } from "../types";
 import { RANode } from "./RANode";
 
 const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
-  const [raTree, setRaTree] = useState<RATree | undefined>();
+  const [raTree, setRaTree] = useState<RATree>();
   const [nodes, setNodes] = useState<RANode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 

@@ -12,7 +12,7 @@ import { Spinner } from "../ui/spinner";
 type ProjectQueryProps = {
   databaseId: number;
   queryId?: number;
-  setQueryId: (queryId: number | undefined) => void;
+  setQueryId: (queryId?: number) => void;
   onTranspile: () => void;
 };
 
