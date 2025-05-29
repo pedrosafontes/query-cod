@@ -10,10 +10,11 @@ import type { Edge, Node } from "@xyflow/react";
 import React, { useEffect, useState } from "react";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Query, QueryResultData } from "api";
+import { QueryResultData } from "api";
 import "@xyflow/react/dist/style.css";
 import SchemaDiagramNode from "components/database/SchemaNode";
 import useSchemaDiagram from "components/database/useSchemaDiagram";
+import { Query } from "components/query/types";
 import { useTopCenterFitView } from "hooks/useTopCenterView";
 
 import RADiagramNode from "./QueryDiagram/RAQueryDiagram/RANode";

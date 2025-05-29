@@ -8,7 +8,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import { Query } from "api";
+import { Query } from "components/query/types";
 import { useAutosave } from "hooks/useAutosave";
 
 import AutosaveStatus from "../AutosaveStatus";

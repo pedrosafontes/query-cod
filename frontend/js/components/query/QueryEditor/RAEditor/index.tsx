@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Query } from "api";
+import { Query } from "components/query/types";
 import { useAutosave } from "hooks/useAutosave";
 
 import AutosaveStatus from "../AutosaveStatus";
