@@ -3,7 +3,6 @@ from typing import cast
 from django.db import models
 from django.utils.functional import cached_property
 
-from common.models import IndexedTimeStampedModel
 from databases.models import Database
 
 from .services.ra.tree.types import RATree
@@ -18,8 +17,10 @@ class Language(models.TextChoices):
     RA = 'ra', 'Relational Algebra'
 
 
-class AbstractQuery(IndexedTimeStampedModel):
-    text = models.TextField(blank=True, default='')
+class AbstractQuery:
+    @property
+    def query(self) -> str:
+        raise NotImplementedError()
 
     @property
     def language(self) -> Language:
@@ -78,6 +79,3 @@ class AbstractQuery(IndexedTimeStampedModel):
     def subqueries(self) -> Subqueries:
         _, subqueries = self.tree_with_subqueries
         return subqueries
-
-    class Meta:
-        abstract = True

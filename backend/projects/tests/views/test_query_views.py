@@ -25,7 +25,7 @@ class TestProjectQueries:
 
         query = Query.objects.get(name='My query')
         assert query.project == project
-        assert query.text == ''
+        assert query.query == ''
 
 
 class TestQueryCRUD:
@@ -47,7 +47,7 @@ class TestQueryCRUD:
         data = response.json()
         assert data['id'] == query.id
         assert data['name'] == query.name
-        assert data['text'] == query.text
+        assert data['text'] == query.query
         assert parse_datetime(data['created']) == query.created
         assert parse_datetime(data['modified']) == query.modified
         assert data['validation_errors'] == errors
