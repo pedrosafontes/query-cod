@@ -1,16 +1,20 @@
-import { CircleCheckBig, CircleX } from "lucide-react";
+import { CircleCheckBig } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { Attempt, AttemptsService } from "api";
+import { Attempt, AttemptsService, Feedback } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
 type SubmitAttemptButtonProps = {
   attempt?: Attempt;
+  setFeedback: (feedback?: Feedback) => void;
 };
 
-const SubmitAttemptButton = ({ attempt }: SubmitAttemptButtonProps) => {
+const SubmitAttemptButton = ({
+  attempt,
+  setFeedback,
+}: SubmitAttemptButtonProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [correct, setCorrect] = useState<boolean>();
   const toast = useErrorToast();
@@ -18,10 +22,12 @@ const SubmitAttemptButton = ({ attempt }: SubmitAttemptButtonProps) => {
   const submitAttempt = async (attempt: Attempt): Promise<void> => {
     setIsSubmitting(true);
     try {
-      const { correct } = await AttemptsService.attemptsSubmitCreate({
+      const feedback = await AttemptsService.attemptsSubmitCreate({
         id: attempt.id,
       });
-      setCorrect(correct);
+
+      setCorrect(feedback.correct);
+      setFeedback(feedback);
     } catch (err) {
       toast({
         title: "Error submitting attempt",
@@ -32,28 +38,17 @@ const SubmitAttemptButton = ({ attempt }: SubmitAttemptButtonProps) => {
   };
 
   const buttonContent = () => {
-    const isCorrect = Boolean(correct);
-
     if (isSubmitting) {
       return {
         icon: <Spinner className="text-primary-foreground" size="small" />,
       };
     }
-    if (correct === undefined) {
-      return {};
-    }
-    if (isCorrect) {
+
+    if (correct) {
       return {
-        text: "Well done!",
+        text: "Completed",
         buttonClass: "bg-green-500",
         icon: <CircleCheckBig size={16} />,
-      };
-    }
-    if (!isCorrect) {
-      return {
-        text: "Try Again",
-        buttonClass: "bg-red-500",
-        icon: <CircleX size={16} />,
       };
     }
 

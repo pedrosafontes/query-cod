@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AttemptsService, QueryResultData } from "api";
+import { AttemptsService, Feedback, QueryResultData } from "api";
 import ExerciseDetails from "components/exercise/ExerciseDetails";
+import ExerciseFeedback from "components/exercise/ExerciseFeedback";
 import SubmitAttemptButton from "components/exercise/SubmitAttemptButton";
 import { useExercise } from "components/exercise/useExercise";
 import QueryEditor from "components/query/QueryEditor";
@@ -16,6 +17,7 @@ enum Tab {
   Description = "description",
   Editor = "editor",
   Solution = "solution",
+  Feedback = "feedback",
 }
 
 const ExercisePage = () => {
@@ -23,10 +25,21 @@ const ExercisePage = () => {
   const { exercise, attempt, setAttempt, updateText } = useExercise(
     Number(exerciseId),
   );
+  const DEFAULT_TAB = Tab.Description;
 
-  const [tab, setTab] = useState<Tab>(Tab.Description);
+  const [tab, setTab] = useState<Tab>(DEFAULT_TAB);
   const [queryResult, setQueryResult] = useState<QueryResultData>();
+  const [feedback, setFeedback] = useState<Feedback>();
   const [confirmRevealSolution, setConfirmRevealSolution] = useState(false);
+
+  useEffect(() => {
+    if (feedback === undefined) {
+      return;
+    }
+
+    setQueryResult(feedback?.results);
+    setTab(Tab.Feedback);
+  }, [feedback]);
 
   const handleTabChange = (value: string) => {
     const tab = value as Tab;
@@ -49,6 +62,7 @@ const ExercisePage = () => {
           databaseId={exercise.database.id}
           executeSubquery={AttemptsService.attemptsSubqueriesExecutionsCreate}
           fetchTree={AttemptsService.attemptsTreeRetrieve}
+          minLeftWidth={500}
           query={attempt}
           queryResult={queryResult}
           setQueryResult={setQueryResult}
@@ -58,10 +72,16 @@ const ExercisePage = () => {
               <TabsList>
                 <TabsTrigger value={Tab.Description}>Description</TabsTrigger>
                 <TabsTrigger value={Tab.Editor}>Editor</TabsTrigger>
+                <TabsTrigger
+                  disabled={feedback === undefined}
+                  value={Tab.Feedback}
+                >
+                  Feedback
+                </TabsTrigger>
                 <TabsTrigger value={Tab.Solution}>Solution</TabsTrigger>
               </TabsList>
             </Tabs>
-            <SubmitAttemptButton attempt={attempt} />
+            <SubmitAttemptButton attempt={attempt} setFeedback={setFeedback} />
           </div>
           {tab === Tab.Description && (
             <ExerciseDetails className="mx-3" exercise={exercise} />
@@ -71,6 +91,12 @@ const ExercisePage = () => {
               query={attempt}
               setQuery={setAttempt}
               updateText={updateText}
+            />
+          )}
+          {tab === Tab.Feedback && feedback && (
+            <ExerciseFeedback
+              feedback={feedback}
+              solutionData={exercise.solution_data}
             />
           )}
           {tab === Tab.Solution && (
