@@ -132,6 +132,8 @@ const ProjectQueryPage = ({
   return (
     <QueryPage
       databaseId={databaseId}
+      executeSubquery={QueriesService.queriesSubqueriesExecutionsCreate}
+      fetchTree={QueriesService.queriesTreeRetrieve}
       query={query}
       queryResult={queryResult}
       setQueryResult={setQueryResult}

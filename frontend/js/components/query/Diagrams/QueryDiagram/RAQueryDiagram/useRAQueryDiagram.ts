@@ -1,7 +1,8 @@
 import { type Edge } from "@xyflow/react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
-import { QueriesService, RATree } from "api";
+import { RATree } from "api";
+import { QueryContext } from "contexts/QueryContext";
 import useLayout from "hooks/useLayout";
 
 import getLayoutedNodes from "../layout";
@@ -14,6 +15,8 @@ const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
   const [nodes, setNodes] = useState<RANode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 
+  const context = useContext(QueryContext);
+
   useEffect(() => {
     if (!query) {
       setRaTree(undefined);
@@ -21,9 +24,7 @@ const useRAQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
     }
 
     const fetchRATree = async () => {
-      const { ra_tree: raTree } = await QueriesService.queriesTreeRetrieve({
-        id: query.id,
-      });
+      const { ra_tree: raTree } = await context!.fetchTree({ id: query.id });
       setRaTree(raTree);
     };
 

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 
-import { QueriesService, QueryResultData } from "api";
+import { QueryResultData } from "api";
+import { QueryContext } from "contexts/QueryContext";
 import { useErrorToast } from "hooks/useErrorToast";
 
 type ExecuteSubqueryProps = {
@@ -22,10 +23,12 @@ const useExecuteSubquery = ({
   const [isExecuting, setIsExecuting] = useState<boolean>(false);
   const toast = useErrorToast();
 
+  const { executeSubquery: executeSubqueryService } = useContext(QueryContext)!;
+
   const executeSubquery = async () => {
     setIsExecuting(true);
     try {
-      const execution = await QueriesService.queriesSubqueriesExecutionsCreate({
+      const execution = await executeSubqueryService({
         id: queryId,
         subqueryId,
       });

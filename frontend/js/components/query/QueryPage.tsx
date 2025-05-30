@@ -2,11 +2,12 @@ import { ReactFlowProvider } from "@xyflow/react";
 import { ReactNode } from "react";
 
 import { QueryResultData } from "api";
+import { QueryContext } from "contexts/QueryContext";
 
 import Diagrams from "./Diagrams";
 import QueryPanels from "./QueryPanels";
 import QueryResult from "./QueryResult";
-import { Query } from "./types";
+import { ExecuteSubquery, FetchTree, Query } from "./types";
 
 export type QueryPageProps = {
   children: ReactNode;
@@ -14,6 +15,8 @@ export type QueryPageProps = {
   query?: Query;
   queryResult?: QueryResultData;
   setQueryResult: (result?: QueryResultData) => void;
+  fetchTree: FetchTree;
+  executeSubquery: ExecuteSubquery;
 };
 
 const QueryPage = ({
@@ -22,19 +25,21 @@ const QueryPage = ({
   query,
   queryResult,
   setQueryResult,
+  fetchTree,
+  executeSubquery,
 }: QueryPageProps) => {
   return (
     <QueryPanels
       left={children}
       right={
         <ReactFlowProvider>
-          <Diagrams
-            databaseId={databaseId}
-            query={query}
-            setQueryResult={setQueryResult}
+          <QueryContext.Provider
+            value={{ query, setQueryResult, fetchTree, executeSubquery }}
           >
-            {queryResult && <QueryResult result={queryResult} />}
-          </Diagrams>
+            <Diagrams databaseId={databaseId}>
+              {queryResult && <QueryResult result={queryResult} />}
+            </Diagrams>
+          </QueryContext.Provider>
         </ReactFlowProvider>
       }
     />

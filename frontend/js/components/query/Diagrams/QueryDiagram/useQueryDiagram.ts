@@ -1,8 +1,13 @@
+import { useContext } from "react";
+
+import { QueryContext } from "contexts/QueryContext";
+
 import useRAQueryDiagram from "./RAQueryDiagram/useRAQueryDiagram";
 import useSQLQueryDiagram from "./SQLQueryDiagram/useSQLQueryDiagram";
-import { QueryDiagramProps } from "./types";
 
-const useQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
+const useQueryDiagram = () => {
+  const { query, setQueryResult } = useContext(QueryContext)!;
+
   const raDiagram = useRAQueryDiagram({
     query,
     setQueryResult,

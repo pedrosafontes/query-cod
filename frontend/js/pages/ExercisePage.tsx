@@ -1,5 +1,5 @@
 import Markdown from "marked-react";
-import { ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 
 import {
@@ -12,7 +12,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Attempt, AttemptsService, ExercisesService } from "api";
+import {
+  Attempt,
+  AttemptsService,
+  ExercisesService,
+  QueryResultData,
+} from "api";
 import DifficultyBadge from "components/exercise/DifficultyBadge";
 import QueryEditor from "components/query/QueryEditor";
 import CodeEditor from "components/query/QueryEditor/CodeEditor";
@@ -23,6 +28,7 @@ import { useErrorToast } from "hooks/useErrorToast";
 type Tab = "description" | "editor" | "solution";
 
 const ExercisePage = () => {
+  const [queryResult, setQueryResult] = useState<QueryResultData>();
   const [tab, setTab] = useState<Tab>("description");
   const { exerciseId: exerciseParamId } = useParams<{ exerciseId: string }>();
   const [exercise, setExercise] =
@@ -50,9 +56,9 @@ const ExercisePage = () => {
     fetchExercise();
   }, []);
 
-  const renderSolution = (): ReactNode => {
+  const renderSolution = () => {
     if (!exercise) {
-      return;
+      return null;
     }
 
     if (exercise.language === "sql") {
@@ -88,9 +94,32 @@ const ExercisePage = () => {
     setAttempt(result);
   };
 
+  const submitAttempt = async () => {
+    if (!attempt) {
+      return;
+    }
+
+    try {
+      const { correct } = await AttemptsService.attemptsSubmitCreate({
+        id: attempt.id,
+      });
+    } catch (error) {
+      toast({
+        title: "Error submitting attempt",
+      });
+    }
+  };
+
   return (
     exercise && (
-      <QueryPage databaseId={exercise.database.id} setQueryResult={() => {}}>
+      <QueryPage
+        databaseId={exercise.database.id}
+        executeSubquery={AttemptsService.attemptsSubqueriesExecutionsCreate}
+        fetchTree={AttemptsService.attemptsTreeRetrieve}
+        query={attempt}
+        queryResult={queryResult}
+        setQueryResult={setQueryResult}
+      >
         <div className="flex justify-between mx-3 mb-4">
           <Tabs value={tab} onValueChange={(value) => setTab(value as Tab)}>
             <TabsList>
@@ -99,7 +128,7 @@ const ExercisePage = () => {
               <TabsTrigger value="solution">Solution</TabsTrigger>
             </TabsList>
           </Tabs>
-          <Button>Submit</Button>
+          <Button onClick={submitAttempt}>Submit</Button>
         </div>
         {tab === "description" && (
           <div className="mx-3">
