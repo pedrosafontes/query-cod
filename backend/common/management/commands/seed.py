@@ -581,7 +581,7 @@ class Command(BaseCommand):
                 )
             )
             .project('person.name', 'person.born_in')
-            .latex(),
+            .latex(pretty=True),
             language=Language.RA,
             difficulty=Exercise.Difficulty.MEDIUM,
             database=Database.objects.get(name='Family History'),
