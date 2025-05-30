@@ -1,10 +1,12 @@
-import type { ColumnDef } from "@tanstack/react-table";
+import type { ColumnFiltersState, ColumnDef } from "@tanstack/react-table";
 import {
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { Dispatch, SetStateAction } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -25,6 +27,8 @@ interface DataTableProps<TData, TValue> {
   loading?: boolean;
   cellClassName?: string;
   onRowClick?: (row: TData) => void;
+  columnFilters?: ColumnFiltersState;
+  onColumnFiltersChange?: Dispatch<SetStateAction<ColumnFiltersState>>;
 }
 
 export function DataTable<TData, TValue>({
@@ -34,6 +38,8 @@ export function DataTable<TData, TValue>({
   loading,
   cellClassName,
   onRowClick,
+  columnFilters,
+  onColumnFiltersChange,
 }: DataTableProps<TData, TValue>) {
   const paginationEnabled = !!pageSize;
 
@@ -41,6 +47,11 @@ export function DataTable<TData, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    state: {
+      columnFilters,
+    },
+    onColumnFiltersChange,
+    getFilteredRowModel: getFilteredRowModel(),
     ...(paginationEnabled && {
       getPaginationRowModel: getPaginationRowModel(),
     }),
@@ -53,9 +64,7 @@ export function DataTable<TData, TValue>({
       : {},
   });
 
-  const rows = paginationEnabled
-    ? table.getRowModel().rows
-    : table.getCoreRowModel().rows;
+  const { rows } = table.getRowModel();
 
   return (
     <div>
