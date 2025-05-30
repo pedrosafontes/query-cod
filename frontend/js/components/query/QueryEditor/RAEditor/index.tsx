@@ -84,7 +84,7 @@ const RAEditor = ({ query, updateText }: RAEditorProps) => {
 
       {mode === "code" && (
         <CodeEditor
-          className="max-h-[300px] border-y -mx-3"
+          className="min-h-[300px] border-y -mx-3"
           language="latex"
           options={{
             lineNumbers: "off",
