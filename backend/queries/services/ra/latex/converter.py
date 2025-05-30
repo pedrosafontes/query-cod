@@ -25,35 +25,47 @@ from ..ast import (
     UnaryOperation,
 )
 from . import utils as latex
-from .utils import overset, paren, subscript, text
+from .utils import multiline, overset, paren, subscript, text
 
 
-def convert(query: RAQuery) -> str:
+def convert(query: RAQuery, pretty: bool = False) -> str:
+    if pretty:
+        return multiline(_convert(query, pretty))
+    else:
+        return _convert(query)
+
+
+def _convert(query: RAQuery, pretty: bool = False) -> str:
     if isinstance(query, UnaryOperation):
-        return _convert_query(query) + '\n' + _convert_unary_operand(query.subquery)
+        code = _convert_query(query) + '\n' + _convert_unary_operand(query.subquery, pretty)
     elif isinstance(query, BinaryOperation):
-        return (
-            _convert_binary_operand(query.left)
+        code = (
+            _convert_binary_operand(query.left, pretty)
             + '\n'
             + _convert_query(query)
             + '\n'
-            + _convert_binary_operand(query.right)
+            + _convert_binary_operand(query.right, pretty)
         )
     else:
         # Relation
-        return _convert_query(query)
+        code = _convert_query(query)
+
+    if pretty:
+        code = code.replace('\n', '\\\\')
+
+    return code
 
 
-def _convert_unary_operand(subquery: RAQuery) -> str:
-    latex_query = convert(subquery)
+def _convert_unary_operand(subquery: RAQuery, pretty: bool) -> str:
+    latex_query = _convert(subquery, pretty)
     if isinstance(subquery, Relation | UnaryOperation):
         return latex_query
     else:
         return paren(latex_query)
 
 
-def _convert_binary_operand(subquery: RAQuery) -> str:
-    latex_query = convert(subquery)
+def _convert_binary_operand(subquery: RAQuery, pretty: bool) -> str:
+    latex_query = _convert(subquery, pretty)
     if isinstance(subquery, Relation):
         return latex_query
     else:
@@ -172,9 +184,7 @@ def _convert_condition(condition: BooleanExpression) -> str:
             }
             return (
                 convert_condition(condition.left, condition.precedence)
-                + '\n'
                 + bool_exprs[type(condition)]
-                + '\n'
                 + convert_condition(condition.right, condition.precedence)
             )
         case ra.Not():
