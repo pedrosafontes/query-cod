@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-
 import { QueriesService, Query, QueryResultData } from "api";
 
 import ExecuteQueryButton from "../query/ExecuteQueryButton";
@@ -9,125 +7,30 @@ import QueryPage from "../query/QueryPage";
 import TranspileQueryButton from "../query/TranspileQueryButton";
 import { Spinner } from "../ui/spinner";
 
+import { useProjectQuery } from "./useProjectQuery";
+
 type ProjectQueryProps = {
   databaseId: number;
   queryId?: number;
   setQueryId: (queryId?: number) => void;
-  onTranspile: () => void;
+  refetchProject: () => void;
 };
 
 const ProjectQueryPage = ({
   databaseId,
   queryId,
   setQueryId,
-  onTranspile,
+  refetchProject,
 }: ProjectQueryProps) => {
-  const [query, setQuery] = useState<Query>();
-
-  const [queryResult, setQueryResult] = useState<QueryResultData>();
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingError, setLoadingError] = useState<Error | null>();
-
-  useEffect(() => {
-    const fetchQuery = async () => {
-      if (!queryId) {
-        setQuery(undefined);
-        setQueryResult(undefined);
-        return;
-      }
-
-      setIsLoading(true);
-      setQuery(undefined);
-      setQueryResult(undefined);
-      try {
-        const result = await QueriesService.queriesRetrieve({
-          id: queryId,
-        });
-        setQuery(result);
-        setLoadingError(null);
-      } catch (err) {
-        if (err instanceof Error) {
-          setLoadingError(err);
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchQuery();
-  }, [queryId]);
-
-  const updateText = async (value: string) => {
-    if (!queryId) {
-      return;
-    }
-
-    const result = await QueriesService.queriesPartialUpdate({
-      id: queryId,
-      requestBody: { text: value },
-    });
-    setQuery(result);
-  };
-
-  const renderHeader = () => {
-    const hasErrors = !!query && query.validation_errors.length > 0;
-    const actionsDisabled = isLoading || !!loadingError;
-
-    return (
-      queryId && (
-        <div className="flex justify-between items-center gap-2 mb-5 w-full px-3">
-          <h1 className="truncate">{query?.name}</h1>
-          <div className="flex gap-2">
-            <TranspileQueryButton
-              disabled={actionsDisabled}
-              hasErrors={hasErrors}
-              queryId={queryId}
-              setQueryId={setQueryId}
-              onSuccess={onTranspile}
-            />
-            <ExecuteQueryButton
-              disabled={actionsDisabled}
-              hasErrors={hasErrors}
-              queryId={queryId}
-              setQueryResult={setQueryResult}
-            />
-          </div>
-        </div>
-      )
-    );
-  };
-
-  const renderEditor = () => {
-    if (isLoading) {
-      return (
-        <div className="flex justify-center items-end gap-2 pt-4 text-muted-foreground animate-pulse">
-          <Spinner className="text-inherit" size="small" />
-          <p>Loading</p>
-        </div>
-      );
-    }
-    if (loadingError) {
-      return (
-        <ErrorAlert
-          className="mx-3 w-auto"
-          description={loadingError.message}
-          title="There was a loading error"
-        />
-      );
-    }
-    if (query) {
-      return (
-        <QueryEditor
-          key={query.id}
-          query={query}
-          setQuery={(query) => setQuery(query as Query)}
-          updateText={updateText}
-        />
-      );
-    }
-    return null;
-  };
+  const {
+    query,
+    setQuery,
+    queryResult,
+    setQueryResult,
+    isLoading,
+    loadingError,
+    updateText,
+  } = useProjectQuery(queryId);
 
   return (
     <QueryPage
@@ -138,9 +41,103 @@ const ProjectQueryPage = ({
       queryResult={queryResult}
       setQueryResult={setQueryResult}
     >
-      {renderHeader()}
-      {renderEditor()}
+      <ProjectQueryHeader
+        query={query}
+        refetchProject={refetchProject}
+        setQueryId={setQueryId}
+        setQueryResult={setQueryResult}
+      />
+      <ProjectQueryEditor
+        isLoading={isLoading}
+        loadingError={loadingError || undefined}
+        query={query}
+        setQuery={setQuery}
+        updateText={updateText}
+      />
     </QueryPage>
+  );
+};
+
+type ProjectQueryEditorProps = {
+  query?: Query;
+  isLoading: boolean;
+  loadingError?: Error;
+  updateText: (text: string) => Promise<void>;
+  setQuery: (query: Query) => void;
+};
+
+const ProjectQueryEditor = ({
+  query,
+  isLoading,
+  loadingError,
+  updateText,
+  setQuery,
+}: ProjectQueryEditorProps) => {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-end gap-2 pt-4 text-muted-foreground animate-pulse">
+        <Spinner className="text-inherit" size="small" />
+        <p>Loading</p>
+      </div>
+    );
+  }
+  if (loadingError) {
+    return (
+      <ErrorAlert
+        className="mx-3 w-auto"
+        description={loadingError.message}
+        title="There was a loading error"
+      />
+    );
+  }
+  if (query) {
+    return (
+      <QueryEditor
+        key={query.id}
+        query={query}
+        setQuery={(query) => setQuery(query as Query)}
+        updateText={updateText}
+      />
+    );
+  }
+  return null;
+};
+
+type ProjectQueryHeaderProps = {
+  query?: Query;
+  setQueryId: (queryId?: number) => void;
+  setQueryResult: (result?: QueryResultData) => void;
+  refetchProject: () => void;
+};
+
+const ProjectQueryHeader = ({
+  query,
+  setQueryId,
+  setQueryResult,
+  refetchProject,
+}: ProjectQueryHeaderProps) => {
+  const hasErrors = !!query && query.validation_errors.length > 0;
+  const disabled = !query || hasErrors;
+
+  return (
+    <div className="flex justify-between items-center gap-2 mb-5 w-full px-3">
+      <h1 className="truncate">{query?.name}</h1>
+      <div className="flex gap-2">
+        <TranspileQueryButton
+          disabled={disabled}
+          query={query}
+          setQueryId={setQueryId}
+          showFixErrorsTooltip={hasErrors}
+          onSuccess={refetchProject}
+        />
+        <ExecuteQueryButton
+          disabled={disabled}
+          query={query}
+          setQueryResult={setQueryResult}
+          showFixErrorsTooltip={hasErrors}
+        />
+      </div>
+    </div>
   );
 };
 

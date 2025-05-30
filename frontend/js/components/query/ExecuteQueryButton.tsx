@@ -8,30 +8,30 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { QueriesService, QueryResultData } from "api";
+import { QueriesService, Query, QueryResultData } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
 type ExecuteQueryButtonProps = {
-  queryId: number;
+  query?: Query;
   disabled: boolean;
-  hasErrors: boolean;
+  showFixErrorsTooltip: boolean;
   setQueryResult: (result?: QueryResultData) => void;
 };
 
 const ExecuteQueryButton = ({
-  queryId,
+  query,
   disabled,
-  hasErrors,
+  showFixErrorsTooltip,
   setQueryResult,
 }: ExecuteQueryButtonProps) => {
   const [isExecuting, setIsExecuting] = useState(false);
   const toast = useErrorToast();
 
-  const executeQuery = async (): Promise<void> => {
+  const executeQuery = async (query: Query): Promise<void> => {
     setIsExecuting(true);
     try {
       const execution = await QueriesService.queriesExecutionsCreate({
-        id: queryId,
+        id: query.id,
       });
 
       setQueryResult(execution.results);
@@ -51,10 +51,10 @@ const ExecuteQueryButton = ({
           {" "}
           {/* div ensures tooltip is displayed when button is disabled */}
           <Button
-            disabled={disabled || isExecuting || hasErrors}
+            disabled={disabled || isExecuting}
             size="sm"
             variant="default"
-            onClick={executeQuery}
+            onClick={query && (() => executeQuery(query))}
           >
             {isExecuting ? (
               <Spinner className="text-primary-foreground" size="small" />
@@ -65,7 +65,7 @@ const ExecuteQueryButton = ({
           </Button>
         </div>
       </TooltipTrigger>
-      {hasErrors && (
+      {showFixErrorsTooltip && (
         <TooltipContent side="right">
           Please fix the errors before executing the query.
         </TooltipContent>

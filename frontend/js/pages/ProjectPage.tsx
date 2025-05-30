@@ -50,8 +50,8 @@ const ProjectPage = () => {
           <ProjectQueryPage
             databaseId={project.database.id}
             queryId={currentQueryId}
+            refetchProject={fetchProject}
             setQueryId={setCurrentQueryId}
-            onTranspile={fetchProject}
           />
         )}
       </SidebarInset>

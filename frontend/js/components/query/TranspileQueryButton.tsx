@@ -8,32 +8,32 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { QueriesService } from "api";
+import { QueriesService, Query } from "api";
 import { useErrorToast } from "hooks/useErrorToast";
 
 type TranspileQueryButtonProps = {
-  queryId: number;
+  query?: Query;
   disabled: boolean;
-  hasErrors: boolean;
+  showFixErrorsTooltip: boolean;
   setQueryId: (queryId: number) => void;
   onSuccess?: () => void;
 };
 
 const TranspileQueryButton = ({
-  queryId,
+  query,
   disabled,
-  hasErrors,
+  showFixErrorsTooltip,
   setQueryId,
   onSuccess,
 }: TranspileQueryButtonProps) => {
   const [isTranspiling, setIsTranspiling] = useState(false);
   const toast = useErrorToast();
 
-  const transpileQuery = async (): Promise<void> => {
+  const transpileQuery = async (query: Query): Promise<void> => {
     setIsTranspiling(true);
     try {
       const transpiled = await QueriesService.queriesTranspileCreate({
-        id: queryId,
+        id: query.id,
       });
 
       setQueryId(transpiled.id);
@@ -54,10 +54,10 @@ const TranspileQueryButton = ({
           {" "}
           {/* div ensures tooltip is displayed when button is disabled */}
           <Button
-            disabled={disabled || isTranspiling || hasErrors}
+            disabled={disabled || isTranspiling}
             size="sm"
             variant="secondary"
-            onClick={transpileQuery}
+            onClick={query && (() => transpileQuery(query))}
           >
             {isTranspiling ? (
               <Spinner className="text-secondary-foreground" size="small" />
@@ -68,7 +68,7 @@ const TranspileQueryButton = ({
           </Button>
         </div>
       </TooltipTrigger>
-      {hasErrors && (
+      {showFixErrorsTooltip && (
         <TooltipContent side="left">
           Please fix the errors before transpiling the query.
         </TooltipContent>
