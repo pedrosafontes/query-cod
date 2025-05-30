@@ -1,19 +1,15 @@
 from queries.services.execution import execute_query
 
 from ..models.attempt import Attempt
+from ..models.feedback import Feedback
 
 
-def mark_attempt(attempt: Attempt) -> bool:
-    sample_solution = Attempt(
-        text=attempt.exercise.solution,
-        exercise=attempt.exercise,
-        user=attempt.user,
-    )
-
-    is_correct = execute_query(attempt) == execute_query(sample_solution)
+def mark_attempt(attempt: Attempt) -> Feedback:
+    results = execute_query(attempt)
+    is_correct = results == attempt.exercise.solution_data
 
     if is_correct:
         attempt.completed = True
         attempt.save()
 
-    return is_correct
+    return {'correct': is_correct, 'results': results}

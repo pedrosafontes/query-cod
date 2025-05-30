@@ -134,7 +134,7 @@ export class AttemptsService {
   /**
    * @param data The data for the request.
    * @param data.id A unique integer value identifying this attempt.
-   * @returns SubmissionResponse
+   * @returns Feedback
    * @throws ApiError
    */
   public static attemptsSubmitCreate(

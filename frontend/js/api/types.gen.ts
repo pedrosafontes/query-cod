@@ -92,6 +92,7 @@ export type Exercise = {
   readonly database: DatabaseSummary;
   readonly completed: boolean;
   readonly attempt: Attempt;
+  readonly solution_data: QueryResultData;
 };
 
 export type ExerciseSummary = {
@@ -101,6 +102,11 @@ export type ExerciseSummary = {
   readonly language: LanguageEnum;
   readonly database: DatabaseSummary;
   readonly completed: boolean;
+};
+
+export type Feedback = {
+  correct: boolean;
+  results?: QueryResultData;
 };
 
 export type GroupByNode = {
@@ -410,10 +416,6 @@ export type SqlNodeTypeEnum =
   | "OrderBy"
   | "SetOp";
 
-export type SubmissionResponse = {
-  correct: boolean;
-};
-
 export type TableNode = {
   id: number;
   readonly children: Array<SQLTree>;
@@ -491,7 +493,7 @@ export type AttemptsSubmitCreateData = {
   id: number;
 };
 
-export type AttemptsSubmitCreateResponse = SubmissionResponse;
+export type AttemptsSubmitCreateResponse = Feedback;
 
 export type AttemptsSubqueriesExecutionsCreateData = {
   /**
@@ -813,7 +815,7 @@ export type $OpenApiTs = {
     post: {
       req: AttemptsSubmitCreateData;
       res: {
-        200: SubmissionResponse;
+        200: Feedback;
       };
     };
   };

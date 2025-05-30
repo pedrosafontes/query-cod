@@ -271,6 +271,14 @@ export const $Exercise = {
       ],
       readOnly: true,
     },
+    solution_data: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/QueryResultData",
+        },
+      ],
+      readOnly: true,
+    },
   },
   required: [
     "attempt",
@@ -281,6 +289,7 @@ export const $Exercise = {
     "id",
     "language",
     "solution",
+    "solution_data",
     "title",
   ],
 } as const;
@@ -321,6 +330,19 @@ export const $ExerciseSummary = {
     },
   },
   required: ["completed", "database", "difficulty", "id", "language", "title"],
+} as const;
+
+export const $Feedback = {
+  type: "object",
+  properties: {
+    correct: {
+      type: "boolean",
+    },
+    results: {
+      $ref: "#/components/schemas/QueryResultData",
+    },
+  },
+  required: ["correct"],
 } as const;
 
 export const $GroupByNode = {
@@ -1413,16 +1435,6 @@ export const $SqlNodeTypeEnum = {
 * \`Having\` - Having
 * \`OrderBy\` - OrderBy
 * \`SetOp\` - SetOp`,
-} as const;
-
-export const $SubmissionResponse = {
-  type: "object",
-  properties: {
-    correct: {
-      type: "boolean",
-    },
-  },
-  required: ["correct"],
 } as const;
 
 export const $TableNode = {

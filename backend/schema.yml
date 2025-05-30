@@ -86,7 +86,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SubmissionResponse'
+                $ref: '#/components/schemas/Feedback'
           description: ''
   /api/attempts/{id}/subqueries/{subquery_id}/executions/:
     post:
@@ -1264,6 +1264,10 @@ components:
           allOf:
           - $ref: '#/components/schemas/Attempt'
           readOnly: true
+        solution_data:
+          allOf:
+          - $ref: '#/components/schemas/QueryResultData'
+          readOnly: true
       required:
       - attempt
       - completed
@@ -1273,6 +1277,7 @@ components:
       - id
       - language
       - solution
+      - solution_data
       - title
     ExerciseSummary:
       type: object
@@ -1303,6 +1308,15 @@ components:
       - id
       - language
       - title
+    Feedback:
+      type: object
+      properties:
+        correct:
+          type: boolean
+        results:
+          $ref: '#/components/schemas/QueryResultData'
+      required:
+      - correct
     GroupByNode:
       type: object
       properties:
@@ -2068,13 +2082,6 @@ components:
         * `Having` - Having
         * `OrderBy` - OrderBy
         * `SetOp` - SetOp
-    SubmissionResponse:
-      type: object
-      properties:
-        correct:
-          type: boolean
-      required:
-      - correct
     TableNode:
       type: object
       properties:
