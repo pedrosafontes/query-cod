@@ -10,4 +10,10 @@ def mark_attempt(attempt: Attempt) -> bool:
         user=attempt.user,
     )
 
-    return execute_query(attempt) == execute_query(sample_solution)
+    is_correct = execute_query(attempt) == execute_query(sample_solution)
+
+    if is_correct:
+        attempt.completed = True
+        attempt.save()
+
+    return is_correct
