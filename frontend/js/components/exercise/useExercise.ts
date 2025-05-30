@@ -32,14 +32,5 @@ export const useExercise = (exerciseId: number) => {
     setAttempt(updated);
   };
 
-  const submitAttempt = async () => {
-    if (!attempt) return;
-    try {
-      await AttemptsService.attemptsSubmitCreate({ id: attempt.id });
-    } catch {
-      toast({ title: "Error submitting attempt" });
-    }
-  };
-
-  return { exercise, attempt, setAttempt, updateText, submitAttempt };
+  return { exercise, attempt, setAttempt, updateText };
 };

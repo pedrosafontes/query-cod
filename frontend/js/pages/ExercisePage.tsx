@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AttemptsService, QueryResultData } from "api";
 import ExerciseDetails from "components/exercise/ExerciseDetails";
+import SubmitAttemptButton from "components/exercise/SubmitAttemptButton";
 import { useExercise } from "components/exercise/useExercise";
 import QueryEditor from "components/query/QueryEditor";
 import QueryPage from "components/query/QueryPage";
@@ -19,8 +20,9 @@ enum Tab {
 
 const ExercisePage = () => {
   const { exerciseId } = useParams<{ exerciseId: string }>();
-  const { exercise, attempt, setAttempt, updateText, submitAttempt } =
-    useExercise(Number(exerciseId));
+  const { exercise, attempt, setAttempt, updateText } = useExercise(
+    Number(exerciseId),
+  );
 
   const [tab, setTab] = useState<Tab>(Tab.Description);
   const [queryResult, setQueryResult] = useState<QueryResultData>();
@@ -59,7 +61,7 @@ const ExercisePage = () => {
                 <TabsTrigger value={Tab.Solution}>Solution</TabsTrigger>
               </TabsList>
             </Tabs>
-            <Button onClick={submitAttempt}>Submit</Button>
+            <SubmitAttemptButton attempt={attempt} />
           </div>
           {tab === Tab.Description && (
             <ExerciseDetails className="mx-3" exercise={exercise} />
