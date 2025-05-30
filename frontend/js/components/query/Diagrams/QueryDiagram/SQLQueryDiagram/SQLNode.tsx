@@ -14,6 +14,7 @@ import {
   SquaresSubtract,
   SquaresExclude,
 } from "lucide-react";
+import Markdown from "marked-react";
 import { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -126,7 +127,7 @@ const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
         const hoverContent = (
           <>
             <h3>Condition</h3>
-            <p className="text-muted-foreground">{condition}</p>
+            <Markdown>{`\`\`\`${condition}\`\`\``}</Markdown>
           </>
         );
         return {
@@ -164,7 +165,7 @@ const SQLDiagramNode = ({ data }: NodeProps<SQLNode>) => {
         const hoverContent = (
           <>
             <h3>Condition</h3>
-            <p className="text-muted-foreground">{condition}</p>
+            <Markdown>{`\`\`\`${condition}\`\`\``}</Markdown>
           </>
         );
         return {
