@@ -3,6 +3,7 @@ from typing import Any, cast
 from databases.serializers import DatabaseSummarySerializer
 from drf_spectacular.utils import extend_schema_field
 from queries.models import Language
+from queries.serializers.execution import QueryResultDataSerializer
 from rest_framework import serializers
 
 from ..models import Attempt, Exercise
@@ -30,6 +31,7 @@ class BaseExerciseSerializer(serializers.ModelSerializer[Exercise]):
 class ExerciseSerializer(BaseExerciseSerializer):
     database = DatabaseSummarySerializer(read_only=True)
     attempt = serializers.SerializerMethodField()
+    solution_data = QueryResultDataSerializer(read_only=True)
 
     class Meta:
         model = Exercise
@@ -43,6 +45,7 @@ class ExerciseSerializer(BaseExerciseSerializer):
             'database',
             'completed',
             'attempt',
+            'solution_data',
         ]
 
     @extend_schema_field(AttemptSerializer)
