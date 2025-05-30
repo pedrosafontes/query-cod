@@ -48,7 +48,6 @@ const ExecuteQueryButton = ({
     <Tooltip delayDuration={200}>
       <TooltipTrigger asChild>
         <div>
-          {" "}
           {/* div ensures tooltip is displayed when button is disabled */}
           <Button
             disabled={disabled || isExecuting}
