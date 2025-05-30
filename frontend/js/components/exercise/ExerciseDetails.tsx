@@ -1,3 +1,4 @@
+import { CircleCheckBigIcon } from "lucide-react";
 import Markdown from "marked-react";
 
 import {
@@ -21,7 +22,14 @@ const ExerciseDetails = ({
 }) => {
   return (
     <div className={className}>
-      <h1 className="mb-4 font-semibold">{exercise.title}</h1>
+      <h1 className="mb-4 font-semibold flex gap-4 items-center">
+        {exercise.title}
+        {exercise.completed && (
+          <span className="flex gap-1 font-normal text-muted-foreground text-xs items-center">
+            <CircleCheckBigIcon className="size-3 text-green-500" /> Completed
+          </span>
+        )}
+      </h1>
       <div className="flex gap-2 mb-4">
         <Badge variant="secondary">{exercise.language.toUpperCase()}</Badge>
         <DifficultyBadge difficulty={exercise.difficulty} />
