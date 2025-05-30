@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { DifficultyEnum } from "js/api";
+import { DifficultyEnum } from "api";
 import { cn } from "lib/utils";
 
 const DifficultyBadge = ({ difficulty }: { difficulty: DifficultyEnum }) => {
