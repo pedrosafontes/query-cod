@@ -410,6 +410,10 @@ export type SqlNodeTypeEnum =
   | "OrderBy"
   | "SetOp";
 
+export type SubmissionResponse = {
+  correct: boolean;
+};
+
 export type TableNode = {
   id: number;
   readonly children: Array<SQLTree>;
@@ -479,6 +483,15 @@ export type AttemptsPartialUpdateData = {
 };
 
 export type AttemptsPartialUpdateResponse = Attempt;
+
+export type AttemptsSubmitCreateData = {
+  /**
+   * A unique integer value identifying this attempt.
+   */
+  id: number;
+};
+
+export type AttemptsSubmitCreateResponse = SubmissionResponse;
 
 export type AttemptsSubqueriesExecutionsCreateData = {
   /**
@@ -793,6 +806,14 @@ export type $OpenApiTs = {
       req: AttemptsPartialUpdateData;
       res: {
         200: Attempt;
+      };
+    };
+  };
+  "/api/attempts/{id}/submit/": {
+    post: {
+      req: AttemptsSubmitCreateData;
+      res: {
+        200: SubmissionResponse;
       };
     };
   };

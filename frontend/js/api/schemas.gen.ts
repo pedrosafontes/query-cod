@@ -1415,6 +1415,16 @@ export const $SqlNodeTypeEnum = {
 * \`SetOp\` - SetOp`,
 } as const;
 
+export const $SubmissionResponse = {
+  type: "object",
+  properties: {
+    correct: {
+      type: "boolean",
+    },
+  },
+  required: ["correct"],
+} as const;
+
 export const $TableNode = {
   type: "object",
   properties: {

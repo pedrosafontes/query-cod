@@ -8,6 +8,8 @@ import type {
   AttemptsUpdateResponse,
   AttemptsPartialUpdateData,
   AttemptsPartialUpdateResponse,
+  AttemptsSubmitCreateData,
+  AttemptsSubmitCreateResponse,
   AttemptsSubqueriesExecutionsCreateData,
   AttemptsSubqueriesExecutionsCreateResponse,
   AttemptsTreeRetrieveData,
@@ -126,6 +128,24 @@ export class AttemptsService {
       },
       body: data.requestBody,
       mediaType: "application/json",
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this attempt.
+   * @returns SubmissionResponse
+   * @throws ApiError
+   */
+  public static attemptsSubmitCreate(
+    data: AttemptsSubmitCreateData,
+  ): CancelablePromise<AttemptsSubmitCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/attempts/{id}/submit/",
+      path: {
+        id: data.id,
+      },
     });
   }
 
