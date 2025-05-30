@@ -17,6 +17,7 @@ export type QueryPageProps = {
   setQueryResult: (result?: QueryResultData) => void;
   fetchTree: FetchTree;
   executeSubquery: ExecuteSubquery;
+  minLeftWidth?: number;
 };
 
 const QueryPage = ({
@@ -27,10 +28,12 @@ const QueryPage = ({
   setQueryResult,
   fetchTree,
   executeSubquery,
+  minLeftWidth,
 }: QueryPageProps) => {
   return (
     <QueryPanels
       left={children}
+      minLeftWidth={minLeftWidth}
       right={
         <ReactFlowProvider>
           <QueryContext.Provider

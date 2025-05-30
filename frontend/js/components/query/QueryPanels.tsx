@@ -9,9 +9,11 @@ import {
 const QueryPanels = ({
   left,
   right,
+  minLeftWidth = 400,
 }: {
   left: ReactNode;
   right: ReactNode;
+  minLeftWidth?: number;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
@@ -36,9 +38,8 @@ const QueryPanels = ({
     };
   }, []);
 
-  const MIN_SIZE_IN_PX = 400;
   const size =
-    Math.min(1, containerWidth ? MIN_SIZE_IN_PX / containerWidth : 1 / 3) * 100;
+    Math.min(1, containerWidth ? minLeftWidth / containerWidth : 1 / 3) * 100;
 
   const renderLeft = () => {
     if (left) {
