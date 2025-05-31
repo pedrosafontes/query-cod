@@ -56,7 +56,7 @@ class TypeInferrer:
 
             case Alias() | Paren():
                 return self.infer(node.this)
-            
+
             case Distinct():
                 [expression] = node.expressions
                 return self.infer(expression)
