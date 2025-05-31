@@ -734,7 +734,7 @@ class Command(BaseCommand):
             solution=textwrap.dedent(
                 """
                 SELECT   no,
-                         SUM( amount) AS b ala n c e ,
+                         SUM( amount) AS balance,
                          AVG( amount) AS a v g t r a n s
                 FROM     movement
                 GROUP BY no
