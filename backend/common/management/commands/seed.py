@@ -573,7 +573,7 @@ class Command(BaseCommand):
         self.stdout.write('Creating exercises...')
 
         Exercise.objects.create(
-            title='Cutomers with withdrawals',
+            title='Customers with withdrawals',
             description='Write a query to return the scheme ```(cname)``` that lists the cname of all customers that have made a withdrawal from an account.',
             solution=query('account')
             .cartesian('movement')
