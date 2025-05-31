@@ -13,5 +13,5 @@ urlpatterns = [
     path('projects/', react_view, name='project-list'),
     path('projects/<int:project_id>/', react_view, name='project-detail'),
     path('exercises/', react_view, name='exercise-list'),
-    path('exercises/<int:exercise_id>', react_view, name='exercise-detail'),
+    path('exercises/<int:exercise_id>/', react_view, name='exercise-detail'),
 ]
