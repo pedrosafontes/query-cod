@@ -62,6 +62,9 @@ class Command(BaseCommand):
                 database_type=Database.DatabaseType.POSTGRESQL,
             )
 
+        bank_branch = Database.objects.get(name='Bank Branch')
+        family_history = Database.objects.get(name='Family History')
+
         database = Database.objects.create(
             name='Chinook',
             description='Digital media store, including tables for artists, albums, media tracks, invoices, and customers.',
@@ -109,7 +112,7 @@ class Command(BaseCommand):
         for user in users:
             sql_lecture = Project.objects.create(
                 name='SQL Lecture',
-                database=Database.objects.get(name='Bank Branch'),
+                database=bank_branch,
                 user=user,
             )
 
@@ -224,7 +227,7 @@ class Command(BaseCommand):
 
             ra_lecture = Project.objects.create(
                 name='Relational Algebra Lecture',
-                database=Database.objects.get(name='Bank Branch'),
+                database=bank_branch,
                 user=user,
             )
 
@@ -570,6 +573,179 @@ class Command(BaseCommand):
         self.stdout.write('Creating exercises...')
 
         Exercise.objects.create(
+            title='Cutomers with withdrawals',
+            description='Write a query to return the scheme ```(cname)``` that lists the cname of all customers that have made a withdrawal from an account.',
+            solution=query('account')
+            .cartesian('movement')
+            .select(
+                ra.And(
+                    ra.EQ(attribute('account.no'), attribute('movement.no')),
+                    ra.LT(attribute('movement.amount'), 0),
+                )
+            )
+            .project('cname')
+            .latex(pretty=True),
+            language=Language.RA,
+            difficulty=Exercise.Difficulty.EASY,
+            database=bank_branch,
+        )
+
+        Exercise.objects.create(
+            title='Deposit account holders',
+            description='Write an RA query to return the scheme (cname) that lists the cname of all customers that have made a withdrawal from an account.',
+            solution=query('account')
+            .cartesian('branch')
+            .select(
+                ra.And(
+                    ra.EQ(attribute('account.sortcode'), attribute('branch.sortcode')),
+                    ra.EQ(attribute('type'), 'deposit'),
+                )
+            )
+            .project('cname', 'bname')
+            .latex(pretty=True),
+            language=Language.RA,
+            difficulty=Exercise.Difficulty.EASY,
+            database=bank_branch,
+        )
+
+        Exercise.objects.create(
+            title='Branches with deposit accounts or less than £10,000',
+            description='Write a query to return the scheme ```(sortcode)``` that lists the sortcodes of branches that either have less than £10,000 of cash, or that hold deposit accounts.',
+            solution=query('branch')
+            .select(ra.LT(attribute('cash'), 10000))
+            .project('sortcode')
+            .union(query('account').select(ra.EQ(attribute('type'), 'deposit')).project('sortcode'))
+            .latex(pretty=True),
+            language=Language.RA,
+            difficulty=Exercise.Difficulty.EASY,
+            database=bank_branch,
+        )
+
+        Exercise.objects.create(
+            title='Branches with no deposit accounts',
+            description='Write a query to return the scheme ```(sortcode)``` that lists those branches where no deposit account is held.',
+            solution=query('branch')
+            .project('sortcode')
+            .difference(
+                query('account').select(ra.EQ(attribute('type'), 'deposit')).project('sortcode')
+            )
+            .latex(pretty=True),
+            language=Language.RA,
+            difficulty=Exercise.Difficulty.EASY,
+            database=bank_branch,
+        )
+
+        Exercise.objects.create(
+            title='Branches and their movements',
+            description='Write a query returning the scheme (bname,mid) that lists branch names, together with mids that have occurred at that branch.',
+            solution=query('branch')
+            .natural_join('account')
+            .natural_join('movement')
+            .project('bname', 'mid')
+            .latex(pretty=True),
+            language=Language.RA,
+            difficulty=Exercise.Difficulty.EASY,
+            database=bank_branch,
+        )
+
+        Exercise.objects.create(
+            title='Branches with deposit accounts',
+            description='Write a query to return the scheme ```(sortcode)``` that lists those branches where no deposit account is held.',
+            solution=query('branch')
+            .semi_join(query('account').select(ra.EQ(attribute('type'), 'deposit')))
+            .latex(pretty=True),
+            language=Language.RA,
+            difficulty=Exercise.Difficulty.MEDIUM,
+            database=bank_branch,
+        )
+
+        Exercise.objects.create(
+            title='Movements for specific accounts',
+            description='Write a query returning the scheme ```(mid,no,amount,tdate)``` listing all details of movements for accounts 100,101,103 and 107.',
+            solution=textwrap.dedent(
+                """
+                SELECT *
+                FROM   movement
+                WHERE  no IN (100, 101, 103, 107)
+                """
+            ).strip(),
+            language=Language.SQL,
+            difficulty=Exercise.Difficulty.EASY,
+            database=bank_branch,
+        )
+
+        Exercise.objects.create(
+            title='Branches without deposit accounts',
+            description='Write a query returning the scheme (sortcode) listing the sortcode of all branches without any deposit accounts.',
+            solution=textwrap.dedent(
+                """
+                SELECT sortcode
+                FROM   branch
+                WHERE  sortcode NOT IN (SELECT sortcode
+                                        FROM   account
+                                        WHERE  type = 'deposit')
+                """
+            ).strip(),
+            language=Language.SQL,
+            difficulty=Exercise.Difficulty.MEDIUM,
+            database=bank_branch,
+        )
+
+        Exercise.objects.create(
+            title='Accounts with no movements before date',
+            description='Write a query without using any negation (i.e. without the use of ```NOT``` or ```EXCEPT```) returning the scheme ```(no)``` listing accounts with no movements on or before the 11-Jan-1999.',
+            solution=textwrap.dedent(
+                """
+                SELECT no
+                FROM account
+                WHERE '11-jan-1999' < ALL (SELECT tdate
+                                           FROM   movement
+                                           WHERE  movement.no = account.no)
+                """
+            ).strip(),
+            language=Language.SQL,
+            difficulty=Exercise.Difficulty.MEDIUM,
+            database=bank_branch,
+        )
+
+        Exercise.objects.create(
+            title='Customers with all types of accounts',
+            description='Write a query returning the scheme ```(cname)``` listing customers that have every type of account that appears in ```account```.',
+            solution=textwrap.dedent(
+                """
+                SELECT DISTINCT cname
+                FROM account AS cust_account
+                WHERE NOT EXISTS (SELECT type
+                                  FROM account
+                                  EXCEPT
+                                  SELECT type
+                                  FROM account
+                                  WHERE account.cname = cust_account.cname)
+                """
+            ).strip(),
+            language=Language.SQL,
+            difficulty=Exercise.Difficulty.MEDIUM,
+            database=bank_branch,
+        )
+
+        Exercise.objects.create(
+            title='Average account transactions',
+            description='Write a query returning the scheme ```(no,balance,avg trans)``` that lists for each account that has transactions the account ```no```, the ```balance``` (computed as the sum of the movements for the account), and the average value of transactions on that account.',
+            solution=textwrap.dedent(
+                """
+                SELECT   no,
+                         SUM( amount) AS b ala n c e ,
+                         AVG( amount) AS a v g t r a n s
+                FROM     movement
+                GROUP BY no
+                """,
+            ).strip(),
+            language=Language.SQL,
+            difficulty=Exercise.Difficulty.MEDIUM,
+            database=bank_branch,
+        )
+
+        Exercise.objects.create(
             title='People born in the same place as their mother',
             description='Write a query that returns the scheme ```(name, born_in)``` containing the name and place of birth of all people known to have been born in the same place as their mother.',
             solution=query('person')
@@ -584,7 +760,25 @@ class Command(BaseCommand):
             .latex(pretty=True),
             language=Language.RA,
             difficulty=Exercise.Difficulty.MEDIUM,
-            database=Database.objects.get(name='Family History'),
+            database=family_history,
+        )
+
+        Exercise.objects.create(
+            title='People born in the same place as their mother',
+            description='Write a query that returns the scheme ```(name, born_in)``` containing the name and place of birth of all people known to have been born in the same place as their mother.',
+            solution=textwrap.dedent(
+                """
+                SELECT person.name,
+                    person.born_in
+                FROM person
+                JOIN person AS mother
+                ON person.mother=mother.name
+                AND person.born_in=mother.born_in
+                """
+            ).strip(),
+            language=Language.SQL,
+            difficulty=Exercise.Difficulty.MEDIUM,
+            database=family_history,
         )
 
         Exercise.objects.create(
@@ -595,13 +789,48 @@ class Command(BaseCommand):
                 SELECT name
                 FROM person AS child
                 WHERE EXISTS (SELECT *
-                              FROM person
-                              WHERE child.name IN (mother,father))
-            """
+                                FROM person
+                                WHERE child.name IN (mother,father))
+                """
             ).strip(),
             language=Language.SQL,
             difficulty=Exercise.Difficulty.EASY,
-            database=Database.objects.get(name='Family History'),
+            database=family_history,
+        )
+
+        Exercise.objects.create(
+            title='Men with no children',
+            description='Write a query that returns the scheme ```(name)``` containing the names of all men not known to be fathers.',
+            solution=textwrap.dedent(
+                """
+                SELECT name
+                FROM   person AS father
+                WHERE  gender='M'
+                AND NOT EXISTS (SELECT *
+                                FROM   person
+                                WHERE  father.name=father)
+                """
+            ).strip(),
+            language=Language.SQL,
+            difficulty=Exercise.Difficulty.MEDIUM,
+            database=family_history,
+        )
+
+        Exercise.objects.create(
+            title='Parents with all children of the same sex',
+            description='Write a query that returns the scheme ```(name)``` ordered by ```name``` that lists people known to be parents for whom all known children are of the same sex.',
+            solution=textwrap.dedent(
+                """
+                SELECT name
+                FROM person AS parent
+                WHERE 1=(SELECT COUNT(DISTINCT gender)
+                        FROM person
+                        WHERE parent.name IN (mother,father))
+                """
+            ).strip(),
+            language=Language.SQL,
+            difficulty=Exercise.Difficulty.HARD,
+            database=family_history,
         )
 
         self.stdout.write(self.style.SUCCESS('Seed completed.'))
