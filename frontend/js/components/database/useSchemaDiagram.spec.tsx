@@ -63,6 +63,7 @@ describe("useSchemaDiagram", () => {
     id: 1,
     name: "Test DB",
     schema: mockSchema,
+    description: "A test database",
   };
 
   beforeEach(() => {

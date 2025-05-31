@@ -36,7 +36,7 @@ jest.mock("hooks/useTopCenterView", () => ({
 describe("Diagrams", () => {
   test("switches to query diagram when 'Query' tab is clicked", async () => {
     const user = userEvent.setup();
-    render(<Diagrams databaseId={1} setQueryResult={jest.fn()} />);
+    render(<Diagrams databaseId={1} />);
 
     expect(mockSetNodes).toHaveBeenCalledWith(mockSchemaNodes);
 
@@ -48,7 +48,7 @@ describe("Diagrams", () => {
 
   test("renders children in the bottom panel", () => {
     render(
-      <Diagrams databaseId={1} setQueryResult={jest.fn()}>
+      <Diagrams databaseId={1}>
         <div data-testid="custom-child" />
       </Diagrams>,
     );
