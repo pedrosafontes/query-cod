@@ -10,9 +10,10 @@ import "@testing-library/jest-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueriesService, Query } from "api";
 
+import ProjectQuery from "../project/ProjectQuery";
+
 import { DiagramsProps } from "./Diagrams";
 import QueryEditor from "./QueryEditor";
-import QueryPage from "./QueryPage";
 import QueryResult from "./QueryResult";
 
 jest.mock("api");
@@ -39,11 +40,12 @@ jest.mock("./Diagrams", () => {
   ));
 });
 
-describe("QueryPage", () => {
+describe("ProjectQuery", () => {
   const mockQuery: Query = {
     id: 1,
     name: "Test Query",
     text: "SELECT * FROM users",
+    language: "sql",
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
     validation_errors: [],
@@ -65,9 +67,10 @@ describe("QueryPage", () => {
   const renderComponent = () =>
     render(
       <TooltipProvider>
-        <QueryPage
+        <ProjectQuery
           databaseId={0}
           queryId={mockQuery.id}
+          refetchProject={jest.fn()}
           setQueryId={mockSetQueryId}
         />
       </TooltipProvider>,

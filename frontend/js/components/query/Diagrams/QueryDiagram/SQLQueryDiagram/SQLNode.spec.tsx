@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-import { QueriesService } from "api";
+import { QueryContext } from "contexts/QueryContext";
 
 import SQLDiagramNode, { SQLNodeData } from "./SQLNode";
 
@@ -21,34 +21,42 @@ jest.mock("hooks/useErrorToast", () => ({
 
 describe("SQLNode Component", () => {
   const mockSetQueryResult = jest.fn();
+  const mockExecuteSubquery = jest.fn();
+
   const queryId = 1;
   const subqueryId = 2;
 
   const renderNode = (data: SQLNodeData) => {
     render(
-      <SQLDiagramNode
-        data={data}
-        deletable={false}
-        draggable={false}
-        dragging={false}
-        id="node-id"
-        isConnectable={false}
-        positionAbsoluteX={0}
-        positionAbsoluteY={0}
-        selectable={false}
-        selected={false}
-        type="sql"
-        zIndex={0}
-      />,
+      <QueryContext.Provider
+        value={{
+          setQueryResult: mockSetQueryResult,
+          fetchTree: jest.fn(),
+          executeSubquery: mockExecuteSubquery,
+        }}
+      >
+        <SQLDiagramNode
+          data={data}
+          deletable={false}
+          draggable={false}
+          dragging={false}
+          id="node-id"
+          isConnectable={false}
+          positionAbsoluteX={0}
+          positionAbsoluteY={0}
+          selectable={false}
+          selected={false}
+          type="sql"
+          zIndex={0}
+        />
+      </QueryContext.Provider>,
     );
   };
 
   test("calls query service and updates result on click", async () => {
     const mockResponse = { results: { rows: [{ name: "John" }] } };
 
-    (
-      QueriesService.queriesSubqueriesExecutionsCreate as jest.Mock
-    ).mockResolvedValue(mockResponse);
+    mockExecuteSubquery.mockResolvedValue(mockResponse);
 
     renderNode({
       queryId,
@@ -62,9 +70,7 @@ describe("SQLNode Component", () => {
     fireEvent.click(screen.getByRole("button"));
 
     await waitFor(() => {
-      expect(
-        QueriesService.queriesSubqueriesExecutionsCreate,
-      ).toHaveBeenCalledWith({
+      expect(mockExecuteSubquery).toHaveBeenCalledWith({
         id: queryId,
         subqueryId,
       });
@@ -73,9 +79,7 @@ describe("SQLNode Component", () => {
   });
 
   test("shows error toast on failure", async () => {
-    (
-      QueriesService.queriesSubqueriesExecutionsCreate as jest.Mock
-    ).mockRejectedValue(new Error("fail"));
+    mockExecuteSubquery.mockRejectedValue(new Error("fail"));
 
     renderNode({
       queryId,
