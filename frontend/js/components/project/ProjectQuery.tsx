@@ -9,14 +9,14 @@ import { Spinner } from "../ui/spinner";
 
 import { useProjectQuery } from "./useProjectQuery";
 
-type ProjectQueryProps = {
+export type ProjectQueryProps = {
   databaseId: number;
   queryId?: number;
   setQueryId: (queryId?: number) => void;
   refetchProject: () => void;
 };
 
-const ProjectQueryPage = ({
+const ProjectQuery = ({
   databaseId,
   queryId,
   setQueryId,
@@ -141,4 +141,4 @@ const ProjectQueryHeader = ({
   );
 };
 
-export default ProjectQueryPage;
+export default ProjectQuery;

@@ -3,7 +3,7 @@ import { useParams } from "react-router";
 
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ProjectsService } from "api";
-import ProjectQueryPage from "components/project/ProjectQueryPage";
+import ProjectQuery from "components/project/ProjectQuery";
 import ProjectSidebar from "components/project/ProjectSidebar";
 import { useErrorToast } from "hooks/useErrorToast";
 
@@ -47,7 +47,7 @@ const ProjectPage = () => {
       )}
       <SidebarInset className="h-screen overflow-auto">
         {project && (
-          <ProjectQueryPage
+          <ProjectQuery
             databaseId={project.database.id}
             queryId={currentQueryId}
             refetchProject={fetchProject}
