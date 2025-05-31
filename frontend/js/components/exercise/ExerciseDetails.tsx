@@ -47,7 +47,11 @@ const ExerciseDetails = ({
                 {exercise.database.name}
               </div>
             </AccordionTrigger>
-            <AccordionContent>{exercise.database.description}</AccordionContent>
+            <AccordionContent className="text-sm/6">
+              <Markdown>
+                {exercise.database.description}
+              </Markdown>
+            </AccordionContent>
           </AccordionItem>
         </Accordion>
       </div>
