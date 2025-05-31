@@ -4,10 +4,9 @@ from django.utils.dateparse import parse_datetime
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from model_bakery import baker
-from projects.models import Project
-from queries.models import Query
+from projects.models import Project, Query
+from projects.views import QueryViewSet
 from queries.types import QueryError
-from queries.views import QueryViewSet
 from rest_framework import status
 from rest_framework.test import APIClient
 from users.models import User
@@ -26,7 +25,7 @@ class TestProjectQueries:
 
         query = Query.objects.get(name='My query')
         assert query.project == project
-        assert query.text == ''
+        assert query.query == ''
 
 
 class TestQueryCRUD:
@@ -37,7 +36,7 @@ class TestQueryCRUD:
         query = baker.make(Query, project__user=user)
         errors = [QueryError(title='Error')]
         monkeypatch.setattr(
-            'queries.models.Query.validation_result',
+            'queries.models.AbstractQuery.validation_result',
             (None, errors),
         )
 
@@ -48,7 +47,7 @@ class TestQueryCRUD:
         data = response.json()
         assert data['id'] == query.id
         assert data['name'] == query.name
-        assert data['text'] == query.text
+        assert data['text'] == query.query
         assert parse_datetime(data['created']) == query.created
         assert parse_datetime(data['modified']) == query.modified
         assert data['validation_errors'] == errors
@@ -60,7 +59,7 @@ class TestQueryCRUD:
         query = baker.make(Query, project__user=user)
         errors = [QueryError(title='Error')]
         monkeypatch.setattr(
-            'queries.models.Query.validation_result',
+            'queries.models.AbstractQuery.validation_result',
             (None, errors),
         )
 
@@ -81,7 +80,7 @@ class TestQueryExecution:
         query = baker.make(Query, project__user=user)
 
         monkeypatch.setattr(
-            'queries.views.execute_query',
+            'projects.views.query.execute_query',
             lambda query: {
                 'success': True,
                 'results': {
@@ -94,7 +93,7 @@ class TestQueryExecution:
         def get_object(self: QueryViewSet) -> Query:
             return query
 
-        monkeypatch.setattr('queries.views.QueryViewSet.get_object', get_object)
+        monkeypatch.setattr('projects.views.QueryViewSet.get_object', get_object)
 
         url = reverse('queries-execute', kwargs={'pk': query.id})
         response = auth_client.post(url)
@@ -109,9 +108,9 @@ class TestQueryExecution:
         self, auth_client: APIClient, user: User, monkeypatch: MonkeyPatch
     ) -> None:
         query = baker.make(Query, project__user=user)
-        monkeypatch.setattr('queries.models.Query.validation_result', (None, []))
+        monkeypatch.setattr('queries.models.AbstractQuery.validation_result', (None, []))
 
-        monkeypatch.setattr('queries.views.QueryViewSet.get_object', lambda self: query)
+        monkeypatch.setattr('projects.views.QueryViewSet.get_object', lambda self: query)
 
         url = reverse('queries-execute', kwargs={'pk': query.id})
         response = auth_client.post(url)

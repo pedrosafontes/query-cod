@@ -111,6 +111,7 @@ _RPAREN: ("\\right")? ")"
 
 ESCAPED_STRING: "'" _STRING_ESC_INNER "'"
 NEWLINE: "\\\\"
+QUAD: "\\quad"
 
 %import common.CNAME
 %import common.INT
@@ -120,3 +121,4 @@ NEWLINE: "\\\\"
 %import common.WS
 %ignore WS
 %ignore NEWLINE
+%ignore QUAD

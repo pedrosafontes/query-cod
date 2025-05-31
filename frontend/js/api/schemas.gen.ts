@@ -47,6 +47,38 @@ export const $AliasNode = {
   required: ["alias", "children", "id", "sql_node_type", "validation_errors"],
 } as const;
 
+export const $Attempt = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    text: {
+      type: "string",
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+      readOnly: true,
+    },
+    completed: {
+      type: "boolean",
+    },
+    language: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/LanguageEnum",
+        },
+      ],
+      readOnly: true,
+    },
+  },
+  required: ["id", "language", "validation_errors"],
+} as const;
+
 export const $Database = {
   type: "object",
   properties: {
@@ -57,6 +89,9 @@ export const $Database = {
     name: {
       type: "string",
       maxLength: 255,
+    },
+    description: {
+      type: "string",
     },
     schema: {
       type: "object",
@@ -112,7 +147,7 @@ export const $Database = {
       readOnly: true,
     },
   },
-  required: ["id", "name", "schema"],
+  required: ["description", "id", "name", "schema"],
 } as const;
 
 export const $DatabaseSummary = {
@@ -126,8 +161,19 @@ export const $DatabaseSummary = {
       type: "string",
       maxLength: 255,
     },
+    description: {
+      type: "string",
+    },
   },
-  required: ["id", "name"],
+  required: ["description", "id", "name"],
+} as const;
+
+export const $DifficultyEnum = {
+  enum: ["easy", "medium", "hard"],
+  type: "string",
+  description: `* \`easy\` - Easy
+* \`medium\` - Medium
+* \`hard\` - Hard`,
 } as const;
 
 export const $DivisionNode = {
@@ -175,6 +221,128 @@ export const $ErrorPosition = {
     },
   },
   required: ["end_col", "line", "start_col"],
+} as const;
+
+export const $Exercise = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    language: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/LanguageEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    title: {
+      type: "string",
+      maxLength: 255,
+    },
+    difficulty: {
+      $ref: "#/components/schemas/DifficultyEnum",
+    },
+    description: {
+      type: "string",
+    },
+    solution: {
+      type: "string",
+    },
+    database: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/DatabaseSummary",
+        },
+      ],
+      readOnly: true,
+    },
+    completed: {
+      type: "boolean",
+      readOnly: true,
+    },
+    attempt: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/Attempt",
+        },
+      ],
+      readOnly: true,
+    },
+    solution_data: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/QueryResultData",
+        },
+      ],
+      readOnly: true,
+    },
+  },
+  required: [
+    "attempt",
+    "completed",
+    "database",
+    "description",
+    "difficulty",
+    "id",
+    "language",
+    "solution",
+    "solution_data",
+    "title",
+  ],
+} as const;
+
+export const $ExerciseSummary = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    title: {
+      type: "string",
+      maxLength: 255,
+    },
+    difficulty: {
+      $ref: "#/components/schemas/DifficultyEnum",
+    },
+    language: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/LanguageEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    database: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/DatabaseSummary",
+        },
+      ],
+      readOnly: true,
+    },
+    completed: {
+      type: "boolean",
+      readOnly: true,
+    },
+  },
+  required: ["completed", "database", "difficulty", "id", "language", "title"],
+} as const;
+
+export const $Feedback = {
+  type: "object",
+  properties: {
+    correct: {
+      type: "boolean",
+    },
+    results: {
+      $ref: "#/components/schemas/QueryResultData",
+    },
+  },
+  required: ["correct"],
 } as const;
 
 export const $GroupByNode = {
@@ -310,8 +478,6 @@ export const $HavingNode = {
 export const $LanguageEnum = {
   enum: ["sql", "ra"],
   type: "string",
-  description: `* \`sql\` - SQL
-* \`ra\` - Relational Algebra`,
 } as const;
 
 export const $Login = {
@@ -409,6 +575,37 @@ export const $PasswordResetConfirm = {
   required: ["new_password", "token", "uid"],
 } as const;
 
+export const $PatchedAttempt = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    text: {
+      type: "string",
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+      readOnly: true,
+    },
+    completed: {
+      type: "boolean",
+    },
+    language: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/LanguageEnum",
+        },
+      ],
+      readOnly: true,
+    },
+  },
+} as const;
+
 export const $PatchedProject = {
   type: "object",
   properties: {
@@ -472,7 +669,12 @@ export const $PatchedQuery = {
       type: "string",
     },
     language: {
-      $ref: "#/components/schemas/LanguageEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/LanguageEnum",
+        },
+      ],
+      readOnly: true,
     },
     created: {
       type: "string",
@@ -635,7 +837,12 @@ export const $Query = {
       type: "string",
     },
     language: {
-      $ref: "#/components/schemas/LanguageEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/LanguageEnum",
+        },
+      ],
+      readOnly: true,
     },
     created: {
       type: "string",
@@ -655,7 +862,14 @@ export const $Query = {
       readOnly: true,
     },
   },
-  required: ["created", "id", "modified", "name", "validation_errors"],
+  required: [
+    "created",
+    "id",
+    "language",
+    "modified",
+    "name",
+    "validation_errors",
+  ],
 } as const;
 
 export const $QueryError = {
@@ -734,10 +948,15 @@ export const $QuerySummary = {
       maxLength: 255,
     },
     language: {
-      $ref: "#/components/schemas/LanguageEnum",
+      allOf: [
+        {
+          $ref: "#/components/schemas/LanguageEnum",
+        },
+      ],
+      readOnly: true,
     },
   },
-  required: ["id", "name"],
+  required: ["id", "language", "name"],
 } as const;
 
 export const $QueryTree = {

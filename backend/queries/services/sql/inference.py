@@ -11,6 +11,7 @@ from sqlglot.expressions import (
     CurrentDate,
     CurrentTime,
     CurrentTimestamp,
+    Distinct,
     Expression,
     Length,
     Literal,
@@ -50,14 +51,15 @@ class TypeInferrer:
             case CurrentTimestamp():
                 return DataType.TIMESTAMP
 
-            case Alias():
-                return self.infer(node.this)
-
             case Column():
                 return cast(DataType, self.scope.tables.find_column_type(node))
 
             case Alias() | Paren():
                 return self.infer(node.this)
+
+            case Distinct():
+                [expression] = node.expressions
+                return self.infer(expression)
 
             case expr if isinstance(expr, Comparison | BooleanExpression | Predicate):
                 return DataType.BOOLEAN

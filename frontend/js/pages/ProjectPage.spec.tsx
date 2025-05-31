@@ -2,9 +2,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router";
 
 import { ProjectsService } from "api";
+import { ProjectQueryProps } from "components/project/ProjectQuery";
 import { useErrorToast } from "hooks/useErrorToast";
-
-import { QueryPageProps } from "../components/query/QueryPage";
 
 import ProjectsPage from "./ProjectPage";
 
@@ -18,9 +17,13 @@ jest.mock("hooks/useErrorToast", () => ({
   useErrorToast: jest.fn(),
 }));
 
-jest.mock("components/query/QueryPage", () => ({ queryId }: QueryPageProps) => (
-  <div data-testid="query-page">{queryId}</div>
-));
+jest.mock(
+  "components/project/ProjectQuery",
+  () =>
+    ({ queryId }: ProjectQueryProps) => (
+      <div data-testid="query-page">{queryId}</div>
+    ),
+);
 
 describe("ProjectPage", () => {
   const sampleProject = {

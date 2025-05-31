@@ -1,14 +1,10 @@
 import { renderHook, waitFor } from "@testing-library/react";
+import { ReactNode } from "react";
 
-import { QueriesService, Query, RATree } from "api";
+import { Query, RATree } from "api";
+import { QueryContext } from "contexts/QueryContext";
 
 import useRAQueryDiagram from "./useRAQueryDiagram";
-
-jest.mock("api", () => ({
-  QueriesService: {
-    queriesTreeRetrieve: jest.fn(),
-  },
-}));
 
 jest.mock("hooks/useLayout", () => ({
   __esModule: true,
@@ -16,6 +12,22 @@ jest.mock("hooks/useLayout", () => ({
 }));
 
 describe("useRAQueryDiagram", () => {
+  const mockFetchTree = jest.fn();
+
+  const mockExecuteSubquery = jest.fn();
+
+  const wrapper = ({ children }: { children: ReactNode }) => (
+    <QueryContext.Provider
+      value={{
+        setQueryResult: jest.fn(),
+        fetchTree: mockFetchTree,
+        executeSubquery: mockExecuteSubquery,
+      }}
+    >
+      {children}
+    </QueryContext.Provider>
+  );
+
   const mockTree: RATree = {
     id: 1,
     ra_node_type: "Projection",
@@ -43,24 +55,26 @@ describe("useRAQueryDiagram", () => {
   const mockQuery: Query = {
     id: 1,
     name: "Test Query",
-    text: "SELECT * FROM users",
+    text: "users",
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
     validation_errors: [],
+    language: "ra",
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    (QueriesService.queriesTreeRetrieve as jest.Mock).mockResolvedValue({
+    mockFetchTree.mockResolvedValue({
       ra_tree: mockTree,
     });
   });
 
   test("should generate nodes and edges from simple tree", async () => {
     const setQueryResult = jest.fn();
-    const { result } = renderHook(() =>
-      useRAQueryDiagram({ query: mockQuery, setQueryResult }),
+    const { result } = renderHook(
+      () => useRAQueryDiagram({ query: mockQuery, setQueryResult }),
+      { wrapper },
     );
 
     await waitFor(() => {
@@ -73,8 +87,9 @@ describe("useRAQueryDiagram", () => {
   });
 
   test("should handle undefined tree", () => {
-    const { result } = renderHook(() =>
-      useRAQueryDiagram({ query: undefined, setQueryResult: jest.fn() }),
+    const { result } = renderHook(
+      () => useRAQueryDiagram({ query: undefined, setQueryResult: jest.fn() }),
+      { wrapper },
     );
 
     // Should have no nodes or edges

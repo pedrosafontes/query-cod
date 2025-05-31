@@ -1,14 +1,14 @@
 from typing import Any
 
 from drf_spectacular.utils import extend_schema_field
-from queries.models import Query
+from queries.models import AbstractQuery as Query
 from rest_framework import serializers
 
 from .ra import RATreeField, RATreeSerializer
 from .sql import SQLTreeField, SQLTreeSerializer
 
 
-class QueryTreeSerializer(serializers.ModelSerializer[Query]):
+class QueryTreeSerializer(serializers.Serializer[Query]):
     sql_tree = serializers.SerializerMethodField(required=False)
     ra_tree = serializers.SerializerMethodField(required=False)
 

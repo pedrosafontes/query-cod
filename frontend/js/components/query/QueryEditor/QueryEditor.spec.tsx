@@ -18,6 +18,7 @@ jest.mock("./RAEditor", () => {
 
 describe("QueryEditor", () => {
   const mockSetQuery = jest.fn();
+  const mockUpdateText = jest.fn();
 
   const mockSQLQuery: Query = {
     id: 1,
@@ -40,7 +41,13 @@ describe("QueryEditor", () => {
   });
 
   test("renders SQLEditor when query language is sql", () => {
-    render(<QueryEditor query={mockSQLQuery} setQuery={mockSetQuery} />);
+    render(
+      <QueryEditor
+        query={mockSQLQuery}
+        setQuery={mockSetQuery}
+        updateText={mockUpdateText}
+      />,
+    );
 
     expect(screen.getByTestId("sql-editor")).toBeInTheDocument();
     expect(screen.queryByTestId("ra-editor")).not.toBeInTheDocument();
@@ -54,7 +61,13 @@ describe("QueryEditor", () => {
   });
 
   test("renders RAEditor when query language is ra", () => {
-    render(<QueryEditor query={mockRAQuery} setQuery={mockSetQuery} />);
+    render(
+      <QueryEditor
+        query={mockRAQuery}
+        setQuery={mockSetQuery}
+        updateText={mockUpdateText}
+      />,
+    );
 
     expect(screen.getByTestId("ra-editor")).toBeInTheDocument();
     expect(screen.queryByTestId("sql-editor")).not.toBeInTheDocument();

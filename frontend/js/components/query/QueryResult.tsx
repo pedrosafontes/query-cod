@@ -1,15 +1,19 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { useEffect, useState } from "react";
 
+import { cn } from "lib/utils";
+
 import { QueryResultData } from "../../api";
 import { DataTable } from "../common/DataTable";
 import { Button } from "../ui/button";
 
 type QueryResultProps = {
+  className?: string;
   result: QueryResultData;
+  pageSize?: number;
 };
 
-const QueryResult = ({ result }: QueryResultProps) => {
+const QueryResult = ({ result, pageSize = 5, className }: QueryResultProps) => {
   const [closed, setClosed] = useState(false);
   useEffect(() => {
     setClosed(false);
@@ -30,13 +34,18 @@ const QueryResult = ({ result }: QueryResultProps) => {
   );
 
   return (
-    <div className="[&_table]:text-xs [&_td]:px-3 [&_td]:py-2 [&_th]:px-3 [&_th]:py-2 [&_th]:h-auto relative">
+    <div
+      className={cn(
+        className,
+        "[&_table]:text-xs [&_td]:px-3 [&_td]:py-2 [&_th]:px-3 [&_th]:py-2 [&_th]:h-auto relative",
+      )}
+    >
       <DataTable
         key={result.columns.join()}
         cellClassName="text-nowrap"
         columns={columns}
         data={data}
-        pageSize={5}
+        pageSize={pageSize}
       />
       <Button
         className="absolute bottom-0 left-0"

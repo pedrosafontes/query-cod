@@ -1,4 +1,4 @@
-import { LogOut, Network } from "lucide-react";
+import { LibraryBig, LogOut, Network } from "lucide-react";
 import { useNavigate, useLocation } from "react-router";
 
 import {
@@ -46,6 +46,17 @@ const AppSidebar = () => {
                 >
                   <Network />
                   <span>Projects</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  isActive={isActive("/exercises")}
+                  tooltip="Exercises"
+                  variant="default"
+                  onClick={() => navigate("/exercises")}
+                >
+                  <LibraryBig />
+                  <span>Exercises</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

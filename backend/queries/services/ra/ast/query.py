@@ -74,10 +74,10 @@ class RAQuery(ASTNode):
     def top_n(self, limit: int, attr: str | Attribute) -> TopN:
         return TopN(self, limit, attribute(attr))
 
-    def latex(self) -> str:
+    def latex(self, pretty: bool = False) -> str:
         from ..latex.converter import convert
 
-        return convert(self)
+        return convert(self, pretty)
 
 
 @dataclass(frozen=True)

@@ -1,7 +1,8 @@
 import { type Edge } from "@xyflow/react";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
-import { QueriesService, SQLTree } from "api";
+import { SQLTree } from "api";
+import { QueryContext } from "contexts/QueryContext";
 import useLayout from "hooks/useLayout";
 
 import getLayoutedNodes from "../layout";
@@ -10,9 +11,11 @@ import { QueryDiagramProps } from "../types";
 import { SQLNode } from "./SQLNode";
 
 const useSQLQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
-  const [sqlTree, setSqlTree] = useState<SQLTree | undefined>();
+  const [sqlTree, setSqlTree] = useState<SQLTree>();
   const [nodes, setNodes] = useState<SQLNode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+
+  const context = useContext(QueryContext);
 
   useEffect(() => {
     if (!query) {
@@ -21,7 +24,7 @@ const useSQLQueryDiagram = ({ query, setQueryResult }: QueryDiagramProps) => {
     }
 
     const fetchRATree = async () => {
-      const { sql_tree: sqlTree } = await QueriesService.queriesTreeRetrieve({
+      const { sql_tree: sqlTree } = await context!.fetchTree({
         id: query.id,
       });
       setSqlTree(sqlTree);

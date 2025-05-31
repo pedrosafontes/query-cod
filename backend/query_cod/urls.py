@@ -8,16 +8,16 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+from exercises.routes import routes as exercises_routes
+from projects.routes import nested_routes as project_queries_routes
 from projects.routes import routes as projects_routes
-from queries.routes import nested_routes as project_queries_routes
-from queries.routes import routes as queries_routes
 from rest_framework.routers import DefaultRouter
 from rest_framework_nested.routers import NestedDefaultRouter
 
 
 router = DefaultRouter()
 
-routes = projects_routes + queries_routes + databases_routes
+routes = projects_routes + databases_routes + exercises_routes
 for route in routes:
     router.register(route['regex'], route['viewset'], basename=route['basename'])
 

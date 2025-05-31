@@ -48,10 +48,10 @@ class RASemanticAnalyzer:
 
     def validate(self, query: RAQuery) -> None:
         if isinstance(query, UnaryOperation):
-            self._validate(query.subquery)
+            self.validate(query.subquery)
         elif isinstance(query, BinaryOperation):
-            self._validate(query.left)
-            self._validate(query.right)
+            self.validate(query.left)
+            self.validate(query.right)
         return self._validate(query)
 
     @singledispatchmethod

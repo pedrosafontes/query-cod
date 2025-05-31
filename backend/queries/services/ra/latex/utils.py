@@ -28,6 +28,10 @@ def overset(top: str, bottom: str) -> str:
     return f'\\overset{{{top}}}{{{bottom}}}'
 
 
+def multiline(content: str) -> str:
+    return f'\\displaylines{{{content}}}'
+
+
 AND = '\\land'
 OR = '\\lor'
 NOT = '\\lnot'

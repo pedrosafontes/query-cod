@@ -7,7 +7,7 @@ import { cn } from "lib/utils";
 
 type CodeEditorProps = {
   value?: string;
-  onChange: (value: string | undefined) => void;
+  onChange?: (value?: string) => void;
   language?: string;
   className?: string;
   options?: editor.IStandaloneEditorConstructionOptions;

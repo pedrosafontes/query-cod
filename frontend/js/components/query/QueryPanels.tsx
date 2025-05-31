@@ -6,13 +6,21 @@ import {
   ResizablePanelGroup,
 } from "../ui/resizable";
 
+type QueryPanelsProps = {
+  left: ReactNode;
+  right: ReactNode;
+  minLeftWidth?: number;
+  collapsible?: boolean;
+  withHandle?: boolean;
+};
+
 const QueryPanels = ({
   left,
   right,
-}: {
-  left: ReactNode;
-  right: ReactNode;
-}) => {
+  minLeftWidth = 400,
+  collapsible = true,
+  withHandle = true,
+}: QueryPanelsProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
 
@@ -36,17 +44,16 @@ const QueryPanels = ({
     };
   }, []);
 
-  const MIN_SIZE_IN_PX = 400;
   const size =
-    Math.min(1, containerWidth ? MIN_SIZE_IN_PX / containerWidth : 1 / 3) * 100;
+    Math.min(1, containerWidth ? minLeftWidth / containerWidth : 1 / 3) * 100;
 
   const renderLeft = () => {
     if (left) {
       return (
         <ResizablePanel
-          className="py-5"
+          className="py-5 !overflow-y-auto"
           collapsedSize={0}
-          collapsible
+          collapsible={collapsible}
           defaultSize={size}
           minSize={size}
         >
@@ -61,7 +68,7 @@ const QueryPanels = ({
     <div ref={containerRef} className="w-full h-full">
       <ResizablePanelGroup direction="horizontal">
         {renderLeft()}
-        {left && right && <ResizableHandle withHandle />}
+        {left && right && <ResizableHandle withHandle={withHandle} />}
         <ResizablePanel className="bg-secondary">{right}</ResizablePanel>
       </ResizablePanelGroup>
     </div>

@@ -260,7 +260,8 @@ export const joinOperators: RAKeyboardItem[] = [
     details: {
       displayExpr: "R \\ ⟕ \\ S",
       name: "Left Outer Join",
-      description: "Returns all tuples from the left relation, matching tuples from the right relation, and fills with nulls where there is no match.",
+      description:
+        "Returns all tuples from the left relation, matching tuples from the right relation, and fills with nulls where there is no match.",
       args: [
         { name: "R", description: "Left-hand relation" },
         { name: "S", description: "Right-hand relation" },
@@ -273,7 +274,8 @@ export const joinOperators: RAKeyboardItem[] = [
     details: {
       displayExpr: "R \\ ⟖ \\ S",
       name: "Right Outer Join",
-      description: "Returns all tuples from the right relation, matching tuples from the left relation, and fills with nulls where there is no match.",
+      description:
+        "Returns all tuples from the right relation, matching tuples from the left relation, and fills with nulls where there is no match.",
       args: [
         { name: "R", description: "Left-hand relation" },
         { name: "S", description: "Right-hand relation" },
@@ -286,7 +288,8 @@ export const joinOperators: RAKeyboardItem[] = [
     details: {
       displayExpr: "R \\ ⟗ \\ S",
       name: "Full Outer Join",
-      description: "Returns all tuples from both relations, matching them where possible, and fills with nulls where there is no match.",
+      description:
+        "Returns all tuples from both relations, matching them where possible, and fills with nulls where there is no match.",
       args: [
         { name: "R", description: "Left-hand relation" },
         { name: "S", description: "Right-hand relation" },

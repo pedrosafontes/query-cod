@@ -8,7 +8,7 @@ export function useAutosave({
   onSave,
   delay = 1000,
 }: {
-  data: string | undefined;
+  data?: string;
   onSave: (value: string) => Promise<void>;
   delay?: number;
 }) {
