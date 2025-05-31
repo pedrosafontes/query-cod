@@ -61,6 +61,10 @@ class ExpressionValidator:
             case exp.Alias() | exp.Paren() | exp.Is():
                 self.validate(expr.this, context)
 
+            case exp.Distinct():
+                [expression] = expr.expressions
+                self.validate(expression, context)
+
             case comp if isinstance(comp, Comparison):
                 self._validate_comparison(comp, context)
 
