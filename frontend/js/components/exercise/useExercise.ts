@@ -8,19 +8,20 @@ export const useExercise = (exerciseId: number) => {
   const [attempt, setAttempt] = useState<Attempt>();
   const toast = useErrorToast();
 
+  const fetchExercise = async (id: number) => {
+    try {
+      const result = await ExercisesService.exercisesRetrieve({
+        id,
+      });
+      setExercise(result);
+      setAttempt(result.attempt);
+    } catch {
+      toast({ title: "Error loading exercise" });
+    }
+  };
+
   useEffect(() => {
-    const fetchExercise = async () => {
-      try {
-        const result = await ExercisesService.exercisesRetrieve({
-          id: exerciseId,
-        });
-        setExercise(result);
-        setAttempt(result.attempt);
-      } catch {
-        toast({ title: "Error loading exercise" });
-      }
-    };
-    fetchExercise();
+    fetchExercise(exerciseId);
   }, [exerciseId]);
 
   const updateText = async (value: string) => {
@@ -32,5 +33,5 @@ export const useExercise = (exerciseId: number) => {
     setAttempt(updated);
   };
 
-  return { exercise, attempt, setAttempt, updateText };
+  return { exercise, attempt, fetchExercise, setAttempt, updateText };
 };

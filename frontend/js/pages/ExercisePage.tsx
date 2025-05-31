@@ -22,9 +22,8 @@ enum Tab {
 
 const ExercisePage = () => {
   const { exerciseId } = useParams<{ exerciseId: string }>();
-  const { exercise, attempt, setAttempt, updateText } = useExercise(
-    Number(exerciseId),
-  );
+  const { exercise, attempt, fetchExercise, setAttempt, updateText } =
+    useExercise(Number(exerciseId));
   const DEFAULT_TAB = Tab.Description;
 
   const [tab, setTab] = useState<Tab>(DEFAULT_TAB);
@@ -39,6 +38,8 @@ const ExercisePage = () => {
 
     setQueryResult(feedback?.results);
     setTab(Tab.Feedback);
+
+    fetchExercise(Number(exerciseId));
   }, [feedback]);
 
   const handleTabChange = (value: string) => {
