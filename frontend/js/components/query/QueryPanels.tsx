@@ -51,7 +51,7 @@ const QueryPanels = ({
     if (left) {
       return (
         <ResizablePanel
-          className="py-5"
+          className="py-5 !overflow-y-auto"
           collapsedSize={0}
           collapsible={collapsible}
           defaultSize={size}
