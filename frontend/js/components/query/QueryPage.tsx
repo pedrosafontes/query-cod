@@ -18,6 +18,8 @@ export type QueryPageProps = {
   fetchTree: FetchTree;
   executeSubquery: ExecuteSubquery;
   minLeftWidth?: number;
+  collapsible?: boolean;
+  withHandle?: boolean;
 };
 
 const QueryPage = ({
@@ -29,9 +31,12 @@ const QueryPage = ({
   fetchTree,
   executeSubquery,
   minLeftWidth,
+  collapsible,
+  withHandle,
 }: QueryPageProps) => {
   return (
     <QueryPanels
+      collapsible={collapsible}
       left={children}
       minLeftWidth={minLeftWidth}
       right={
@@ -45,6 +50,7 @@ const QueryPage = ({
           </QueryContext.Provider>
         </ReactFlowProvider>
       }
+      withHandle={withHandle}
     />
   );
 };

@@ -60,6 +60,7 @@ const ExercisePage = () => {
     exercise && (
       <>
         <QueryPage
+          collapsible={false}
           databaseId={exercise.database.id}
           executeSubquery={AttemptsService.attemptsSubqueriesExecutionsCreate}
           fetchTree={AttemptsService.attemptsTreeRetrieve}
@@ -67,6 +68,7 @@ const ExercisePage = () => {
           query={attempt}
           queryResult={queryResult}
           setQueryResult={setQueryResult}
+          withHandle={false}
         >
           <div className="flex justify-between mx-3 mb-4">
             <Tabs value={tab} onValueChange={handleTabChange}>
