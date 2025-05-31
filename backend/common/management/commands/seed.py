@@ -41,19 +41,31 @@ class Command(BaseCommand):
 
         users = [test_user_1, test_user_2]
 
-        doc_databases = [
-            ('Bank Branch', 'bank_branch'),
-            ('Bank Customer', 'bank_customer'),
-            ('Family History', 'family_history'),
-            ('Mondial', 'mondial'),
-            ('1990 United States census', 'uscensus1990'),
+        doc_databases: list[tuple[str, str, str | None]] = [
+            (
+                'Bank Branch',
+                'bank_branch',
+                'This database records branches of a bank, each one of which may be identified by their sort code or by their name. Each branch may have a number of accounts, each identified by their account number (```no```), with details of the type of the account, customer name, and the interest rate for the account. Each account may have a number of movements identified by their movement identifier (```mid```).',
+            ),
+            ('Bank Customer', 'bank_customer', None),
+            (
+                'Family History',
+                'family_history',
+                'In the family history database, there is a person table, where people are identified by their name, and always have their gender, date of birth (```dob```) and place of birth (```born_in```) recorded. In addition, each person may optionally have recorded the name of their father, and the name of their mother. If the person has died, then the date of death dod must be present.',
+            ),
+            (
+                'Mondial',
+                'mondial',
+                "The mondial database is a well known example database that contains political and geographical information about all the countries in the world. A fragment of the database is listed below. \nIt contains information about continents, countries, provinces, and cities. Each city name is unique to the province it is within, each province is unique to the country it is within. Countries may span more than one continent, the association between country and continent being recorded in ```encompasses```. The ```encompasses.percent``` area records the proportion of ```country.area``` belows to a particular continent. \nFor each organization, there is a record of the city and country in which that organisation is based, which if not present indicates that the organisation has no official base. \nThe ```is_member``` table records the relationship of countries to organisations, where types of membership include 'member' for a full member, 'observer' for non-members with a right to attend meetings, 'associate' for partial members with some voting rights, etc. \nThe ```borders``` table records which countries share a land border, and the length of that border (in km). Note that each pair of neighbouring countries appears only once in ```borders```. Some countries have addition information about their economy stored in economy and politics stored in politics. The ```country_population``` table records historic population figures for some countries. The years for which those are recorded vary from country to counrty depending on when the census is conducted in each country. \nAirports are identified by their ```iata_code```, and are associated with the largest ```city``` that they serve. Where an ```airport``` is on an ```island```, the ```island``` of airport links to the name of the ```island```, and the ```island``` table gives some details about the island.",
+            ),
+            ('1990 United States census', 'uscensus1990', None),
         ]
 
         # Create databases
-        for name, db_name in doc_databases:
+        for name, db_name, description in doc_databases:
             Database.objects.get_or_create(
                 name=name,
-                description='D.O.C. educational database',
+                description=description or 'D.O.C. educational database',
                 host='db.doc.ic.ac.uk',
                 port=5432,
                 user='lab',
