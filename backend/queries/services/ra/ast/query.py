@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import ABC
 from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import Enum
@@ -10,7 +11,7 @@ from .boolean import BooleanExpression
 from .factory import attribute, query
 
 
-class RAQuery(ASTNode):
+class RAQuery(ASTNode, ABC):
     def project(
         self, *attributes: str | Attribute, append: bool = False, optimise: bool = True
     ) -> Projection:
@@ -89,12 +90,12 @@ class Relation(RAQuery):
 
 
 @dataclass(frozen=True)
-class UnaryOperation(RAQuery):
+class UnaryOperation(RAQuery, ABC):
     subquery: RAQuery
 
 
 @dataclass(frozen=True)
-class BinaryOperation(RAQuery):
+class BinaryOperation(RAQuery, ABC):
     left: RAQuery
     right: RAQuery
 
