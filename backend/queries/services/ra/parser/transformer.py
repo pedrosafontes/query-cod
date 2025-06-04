@@ -25,7 +25,7 @@ from ..ast import (
     RAQuery,
     Relation,
     Selection,
-    SetOperation,
+    SetOperator,
     ThetaJoin,
     TopN,
 )
@@ -95,19 +95,19 @@ class RATransformer(Transformer[Relation, RAQuery]):
         limit, attr, query = args
         return query.top_n(int(limit), attr)
 
-    def union(self, args: tuple[RAQuery, RAQuery]) -> SetOperation:
+    def union(self, args: tuple[RAQuery, RAQuery]) -> SetOperator:
         left, right = args
         return left.union(right)
 
-    def difference(self, args: tuple[RAQuery, RAQuery]) -> SetOperation:
+    def difference(self, args: tuple[RAQuery, RAQuery]) -> SetOperator:
         left, right = args
         return left.difference(right)
 
-    def intersection(self, args: tuple[RAQuery, RAQuery]) -> SetOperation:
+    def intersection(self, args: tuple[RAQuery, RAQuery]) -> SetOperator:
         left, right = args
         return left.intersect(right)
 
-    def cartesian(self, args: tuple[RAQuery, RAQuery]) -> SetOperation:
+    def cartesian(self, args: tuple[RAQuery, RAQuery]) -> SetOperator:
         left, right = args
         return left.cartesian(right)
 

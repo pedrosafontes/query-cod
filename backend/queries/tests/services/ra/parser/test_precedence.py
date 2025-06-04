@@ -2,11 +2,11 @@ import pytest
 from queries.services.ra.ast import (
     EQ,
     Join,
-    JoinOperator,
+    JoinKind,
     RAQuery,
     Relation,
-    SetOperation,
     SetOperator,
+    SetOperatorKind,
     attribute,
 )
 from queries.services.ra.parser import parse_ra
@@ -33,8 +33,8 @@ from queries.services.ra.parser import parse_ra
         # Test join precedence with set operations
         (
             'R \\Join S - T \\Join U',
-            SetOperation(
-                operator=SetOperator.DIFFERENCE,
+            SetOperator(
+                kind=SetOperatorKind.DIFFERENCE,
                 left=Relation('R').natural_join('S'),
                 right=Relation('T').natural_join('U'),
             ),
@@ -47,8 +47,8 @@ from queries.services.ra.parser import parse_ra
         # Test projection vs set operation precedence
         (
             '\\pi_{A,B} R \\cup \\pi_{C,D} S',
-            SetOperation(
-                operator=SetOperator.UNION,
+            SetOperator(
+                kind=SetOperatorKind.UNION,
                 left=Relation('R').project('A', 'B'),
                 right=Relation('S').project('C', 'D'),
             ),
@@ -56,8 +56,8 @@ from queries.services.ra.parser import parse_ra
         # Test division with other operators
         (
             'R \\div S \\times T',
-            SetOperation(
-                operator=SetOperator.CARTESIAN,
+            SetOperator(
+                kind=SetOperatorKind.CARTESIAN,
                 left=Relation('R').divide('S'),
                 right=Relation('T'),
             ),
@@ -66,7 +66,7 @@ from queries.services.ra.parser import parse_ra
         (
             '\\pi_{A} R \\ltimes S',
             Join(
-                operator=JoinOperator.SEMI,
+                kind=JoinKind.SEMI,
                 left=Relation('R').project('A'),
                 right=Relation('S'),
             ),
@@ -79,8 +79,8 @@ from queries.services.ra.parser import parse_ra
         # Test projection with complex set operations
         (
             '\\pi_{A} (R \\cup S) - \\pi_{B} (T \\cap U)',
-            SetOperation(
-                operator=SetOperator.DIFFERENCE,
+            SetOperator(
+                kind=SetOperatorKind.DIFFERENCE,
                 left=Relation('R').union('S').project('A'),
                 right=Relation('T').intersect('U').project('B'),
             ),
@@ -88,8 +88,8 @@ from queries.services.ra.parser import parse_ra
         # Test theta join precedence
         (
             'R \\overset{A = B}{\\bowtie} S - T',
-            SetOperation(
-                operator=SetOperator.DIFFERENCE,
+            SetOperator(
+                kind=SetOperatorKind.DIFFERENCE,
                 left=Relation('R').theta_join('S', EQ(attribute('A'), attribute('B'))),
                 right=Relation('T'),
             ),

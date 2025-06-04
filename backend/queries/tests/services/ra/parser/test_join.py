@@ -4,7 +4,7 @@ from queries.services.ra.ast import (
     GT,
     And,
     Join,
-    JoinOperator,
+    JoinKind,
     RAQuery,
     Relation,
     attribute,
@@ -40,9 +40,9 @@ from queries.services.ra.parser.errors import (
         (
             'R \\Join S \\Join T',
             Join(
-                operator=JoinOperator.NATURAL,
+                kind=JoinKind.NATURAL,
                 left=Join(
-                    operator=JoinOperator.NATURAL,
+                    kind=JoinKind.NATURAL,
                     left=Relation('R'),
                     right=Relation('S'),
                 ),

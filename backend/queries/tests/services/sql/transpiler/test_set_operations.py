@@ -6,8 +6,8 @@ from queries.services.ra.ast import (
     Projection,
     RAQuery,
     Relation,
-    SetOperation,
     SetOperator,
+    SetOperatorKind,
 )
 
 
@@ -16,24 +16,24 @@ from queries.services.ra.ast import (
     [
         (
             'SELECT * FROM department UNION SELECT * FROM department',
-            SetOperation(
-                operator=SetOperator.UNION,
+            SetOperator(
+                kind=SetOperatorKind.UNION,
                 left=Relation(name='department'),
                 right=Relation(name='department'),
             ),
         ),
         (
             'SELECT * FROM department EXCEPT SELECT * FROM department',
-            SetOperation(
-                operator=SetOperator.DIFFERENCE,
+            SetOperator(
+                kind=SetOperatorKind.DIFFERENCE,
                 left=Relation(name='department'),
                 right=Relation(name='department'),
             ),
         ),
         (
             'SELECT * FROM department INTERSECT SELECT * FROM department',
-            SetOperation(
-                operator=SetOperator.INTERSECT,
+            SetOperator(
+                kind=SetOperatorKind.INTERSECT,
                 left=Relation(name='department'),
                 right=Relation(name='department'),
             ),
@@ -52,29 +52,29 @@ from queries.services.ra.ast import (
         # ),
         (
             'SELECT dept_name FROM department UNION SELECT name FROM employee',
-            SetOperation(
-                operator=SetOperator.UNION,
+            SetOperator(
+                kind=SetOperatorKind.UNION,
                 left=Projection(
                     attributes=[Attribute(name='dept_name')],
-                    subquery=Relation(name='department'),
+                    operand=Relation(name='department'),
                 ),
                 right=Projection(
                     attributes=[Attribute(name='name')],
-                    subquery=Relation(name='employee'),
+                    operand=Relation(name='employee'),
                 ),
             ),
         ),
         (
             'SELECT dept_name FROM department EXCEPT SELECT name FROM employee',
-            SetOperation(
-                operator=SetOperator.DIFFERENCE,
+            SetOperator(
+                kind=SetOperatorKind.DIFFERENCE,
                 left=Projection(
                     attributes=[Attribute(name='dept_name')],
-                    subquery=Relation(name='department'),
+                    operand=Relation(name='department'),
                 ),
                 right=Projection(
                     attributes=[Attribute(name='name')],
-                    subquery=Relation(name='employee'),
+                    operand=Relation(name='employee'),
                 ),
             ),
         ),

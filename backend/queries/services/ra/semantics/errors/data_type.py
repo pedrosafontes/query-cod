@@ -1,7 +1,7 @@
 from abc import ABC
 from dataclasses import dataclass
 
-from queries.services.ra.ast import AggregationFunction, SetOperator
+from queries.services.ra.ast import AggregationFunction, SetOperatorKind
 from queries.services.ra.scope.types import TypedAttribute
 from queries.services.types import Attributes
 from query_cod.types import DataType
@@ -31,7 +31,7 @@ class InvalidFunctionArgumentError(RATypeError):
 
 @dataclass
 class UnionCompatibilityError(RATypeError):
-    operation: SetOperator
+    operation: SetOperatorKind
     left_attrs: list[TypedAttribute]
     right_attrs: list[TypedAttribute]
 

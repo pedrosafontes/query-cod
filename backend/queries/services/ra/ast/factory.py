@@ -52,10 +52,10 @@ def _combine_relations(
 
 
 def unnest_cartesian_operands(query: 'RAQuery') -> list['RAQuery']:
-    from .query import SetOperation, SetOperator
+    from .query import SetOperator, SetOperatorKind
 
     match query:
-        case SetOperation(operator=SetOperator.CARTESIAN):
+        case SetOperator(operator=SetOperatorKind.CARTESIAN):
             return unnest_cartesian_operands(query.left) + unnest_cartesian_operands(query.right)
         case _:
             return [query]

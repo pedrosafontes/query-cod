@@ -25,7 +25,7 @@ from queries.services.ra.ast import (
                         output='num_employees',
                     ),
                 ],
-                subquery=Relation('employee'),
+                operand=Relation('employee'),
             ),
         ),
         (
@@ -39,7 +39,7 @@ from queries.services.ra.ast import (
                         output='num_employees',
                     ),
                 ],
-                subquery=Relation('employee'),
+                operand=Relation('employee'),
             ),
         ),
         (
@@ -54,7 +54,7 @@ from queries.services.ra.ast import (
                     Aggregation(Attribute('age'), AggregationFunction.MIN, 'min_age'),
                     Aggregation(Attribute('age'), AggregationFunction.MAX, 'max_age'),
                 ],
-                subquery=Relation('employee'),
+                operand=Relation('employee'),
             ),
         ),
         (
@@ -68,7 +68,7 @@ from queries.services.ra.ast import (
                         output='avg_age',
                     ),
                 ],
-                subquery=Relation('employee'),
+                operand=Relation('employee'),
             ),
         ),
     ],
