@@ -1,60 +1,44 @@
+// Entry point
 ?query: set_op
-      | _multiline{set_op}
+     | _multiline{set_op}
 
-?set_op: join
-       | set_op _UNION join     -> union
-       | set_op _DIFF join      -> difference
-       | set_op _INTERSECT join -> intersection
-       | set_op _CARTESIAN join -> cartesian
+// Set operations (lowest precedence)
+?set_op: set_op _UNION         binary_op -> union
+       | set_op _DIFFERENCE    binary_op -> difference
+       | set_op _INTERSECTION  binary_op -> intersection
+       | binary_op
 
-?join: unary_op
-     | join _NATURAL_JOIN unary_op  -> natural_join
-     | join _theta_join_op unary_op -> theta_join
-     | join _SEMIJOIN unary_op      -> semi_join
-     | join _LEFT_JOIN unary_op     -> left_join
-     | join _RIGHT_JOIN unary_op    -> right_join
-     | join _OUTER_JOIN unary_op    -> outer_join
-     | join _ANTIJOIN unary_op      -> anti_join
-     | join _DIV unary_op           -> division
+// Binary operations
+?binary_op: binary_op _CARTESIAN     unary_op -> cartesian
+          | binary_op _NATURAL_JOIN  unary_op -> natural_join
+          | binary_op _theta_join_op unary_op -> theta_join
+          | binary_op _SEMI_JOIN     unary_op -> semi_join
+          | binary_op _LEFT_JOIN     unary_op -> left_join
+          | binary_op _RIGHT_JOIN    unary_op -> right_join
+          | binary_op _OUTER_JOIN    unary_op -> outer_join
+          | binary_op _ANTI_JOIN     unary_op -> anti_join
+          | binary_op _DIV           unary_op -> division
+          | unary_op
+  
+_theta_join_op: _overset{bool_expr, _THETA_JOIN}
 
+// Unary operations (highest precedence)
 ?unary_op: projection
          | selection
-         | grouped_aggregation
-         | topn
          | rename
-         | subquery
+         | grouped_aggregation
+         | top_n
+         | relation
+         | _grouped_expr
 
-?subquery: relation
-          | _LPAREN query _RPAREN
+_grouped_expr: _LPAREN query _RPAREN
 
+// Unary operation rules
 projection: _PI _subscript{nonempty_list{attribute}} unary_op
 
 selection: _SIGMA _subscript{bool_expr} unary_op
 
 rename: _RHO _subscript{_identifier} unary_op
-
-?bool_expr: and_expr
-          | bool_expr "\\lor" and_expr -> or_
-
-?and_expr: bool_atom
-         | and_expr "\\land" bool_atom -> and_
-
-?bool_atom: "\\lnot" bool_atom -> not_
-          | _LPAREN bool_expr _RPAREN
-          | comparison
-          | attribute
-
-comparison: value "=" value -> eq
-          | value "\\neq" value -> neq
-          | value ("<" | "\\lt") value -> lt
-          | value "\\leq" value -> leq
-          | value (">" | "\\gt") value -> gt
-          | value "\\geq" value -> geq
-
-?value: SIGNED_FLOAT  -> float
-      | SIGNED_INT -> int
-      | _text{ESCAPED_STRING} -> string
-      | attribute
 
 grouped_aggregation: _GAMMA _subscript{_grouped_aggregation_params} unary_op
 _grouped_aggregation_params: _LPAREN _grouping_attrs "," _aggregations _RPAREN
@@ -67,43 +51,83 @@ aggregation_function: "count" -> count
                     | "min" -> min
                     | "max" -> max
 
-topn: _TOPN _subscript{_topn_params} unary_op
-_topn_params: _LPAREN INT "," attribute _RPAREN
+top_n: _TOPN _subscript{_top_n_params} unary_op
+_top_n_params: _LPAREN INT "," attribute _RPAREN
 
-_theta_join_op: _overset{bool_expr, "\\bowtie"}
-
+// Relational atoms
 relation: _identifier
+
 attribute: (relation ".")? _identifier
 _identifier: CNAME | _text{IDENT}
 
-placeholder: "\\placeholder" "{" CNAME? "}"
+// Boolean expressions
+?bool_expr: bool_expr _OR and_expr -> or_
+          | and_expr
+
+?and_expr: and_expr _AND bool_atom -> and_
+         | not_expr
+
+?not_expr: _NOT bool_atom -> not_
+         | bool_atom
+
+?bool_atom: _LPAREN bool_expr _RPAREN
+          | comparison
+          | attribute
+
+comparison: value _EQ  value -> eq
+          | value _NEQ value -> neq
+          | value _LT  value -> lt
+          | value _LEQ value -> leq
+          | value _GT  value -> gt
+          | value _GEQ value -> geq
+
+?value: SIGNED_FLOAT  -> float
+      | SIGNED_INT -> int
+      | _text{ESCAPED_STRING} -> string
+      | attribute
+
+// List helpers
+nonempty_list{item}: _nonempty_list{item} -> list
+list{item}: _nonempty_list{item}? -> list
+_nonempty_list{item}: item ("," item)*
+
+// LaTeX helpers
+_subscript{content}: "_" "{" content "}"
+_overset{superscript, operator}: "\\overset" "{" superscript "}" "{" operator "}"
+_text{content}: "\\text" "{" content "}"
+_multiline{content}: "\\displaylines" "{" content "}"
+
+// Tokens
+_UNION: "\\cup"
+_DIFFERENCE: "-"
+_INTERSECTION: "\\cap"
+_CARTESIAN: "\\times"
+
+_NATURAL_JOIN: "\\Join"
+_THETA_JOIN: "\\bowtie"
+_SEMI_JOIN: "\\ltimes"
+_ANTI_JOIN: "\\overline{\\Join}"
+_LEFT_JOIN: "⟕"
+_RIGHT_JOIN: "⟖"
+_OUTER_JOIN: "⟗"
+_DIV: "\\div"
 
 _PI: "\\pi"
 _SIGMA: "\\sigma"
 _RHO: "\\rho"
 _GAMMA: "\\Gamma"
 _TOPN: "\\operatorname{T}"
-_UNION: "\\cup"
-_DIFF: "-"
-_INTERSECT: "\\cap"
-_CARTESIAN: "\\times"
-_NATURAL_JOIN: "\\Join"
-_SEMIJOIN: "\\ltimes"
-_ANTIJOIN: "\\overline{\\Join}"
-_LEFT_JOIN: "⟕"
-_RIGHT_JOIN: "⟖"
-_OUTER_JOIN: "⟗"
-_DIV: "\\div"
 
-nonempty_list{item}: _nonempty_list_helper{item} -> item_list
-list{item}: -> item_list
-          | _nonempty_list_helper{item} -> item_list
-_nonempty_list_helper{item}: item ("," item)*
+_AND: "\\land"
+_OR: "\\lor"
+_NOT: "\\lnot"
 
-_subscript{content}: "_" "{" content "}"
-_overset{superscript, operator}: "\\overset" "{" superscript "}" "{" operator "}"
-_text{content}: "\\text" "{" content "}"
-_multiline{content}: "\\displaylines" "{" content "}"
+_EQ: "="
+_NEQ: "\\neq"
+_LT: "<" | "\\lt"
+_LEQ: "\\leq"
+_GT: ">" | "\\gt"
+_GEQ: "\\geq"
 
 IDENT: /[a-zA-Z_][a-zA-Z0-9_\\]*/
 _LPAREN: ("\\left")? "("

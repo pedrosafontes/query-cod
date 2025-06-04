@@ -91,7 +91,7 @@ class RATransformer(Transformer[Relation, RAQuery]):
     def max(self, _: tuple[()]) -> AggregationFunction:
         return AggregationFunction.MAX
 
-    def topn(self, args: tuple[Token, Attribute, RAQuery]) -> TopN:
+    def top_n(self, args: tuple[Token, Attribute, RAQuery]) -> TopN:
         limit, attr, query = args
         return query.top_n(int(limit), attr)
 
@@ -179,7 +179,7 @@ class RATransformer(Transformer[Relation, RAQuery]):
     def string(self, args: list[Token]) -> str:
         return args[0]
 
-    def item_list(self, args: list[Any]) -> list[Any]:
+    def list(self, args: list[Any]) -> list[Any]:
         return args
 
     def query(self, args: tuple[RAQuery]) -> RAQuery:
