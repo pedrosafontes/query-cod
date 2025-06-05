@@ -73,9 +73,7 @@ class SchemaInferrer:
         right = self.infer(op.right)
 
         if op.kind == SetOperatorKind.CARTESIAN:
-            return ResultSchema(
-                merge_schemas(left.schema, right.schema), left.attrs + right.attrs
-            )
+            return ResultSchema(merge_schemas(left.schema, right.schema), left.attrs + right.attrs)
         else:
             # Union-compatible operations
             flat_schema: RelationalSchema = {None: flatten(left.schema)}

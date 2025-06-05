@@ -41,7 +41,7 @@ from .errors import (
 )
 
 
-class RASemanticAnalyzer:
+class RASemanticValidator:
     def __init__(self, schema: RelationalSchema):
         self.schema = schema
         self._schema_inferrer = SchemaInferrer(schema)
