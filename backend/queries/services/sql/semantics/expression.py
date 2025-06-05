@@ -18,6 +18,7 @@ from ..utils import convert_sqlglot_type
 from .context import ValidationContext
 from .errors import (
     AggregateInWhereError,
+    AmbiguousColumnReferenceError,
     ArithmeticTypeMismatchError,
     ColumnCountMismatchError,
     ColumnNotFoundError,
@@ -112,8 +113,11 @@ class ExpressionValidator:
                 raise NonScalarExpressionError(expr)
 
     def _validate_column(self, column: exp.Column, context: ValidationContext) -> None:
-        if not self.scope.tables.can_resolve(column):
+        tables = self.scope.tables.resolve_column(column)
+        if not tables:
             raise ColumnNotFoundError.from_column(column)
+        if len(tables) > 1:
+            raise AmbiguousColumnReferenceError(column, [t for t in tables if t])
 
         if (
             # Scenario: Grouped HAVING, SELECT, or ORDER BY
