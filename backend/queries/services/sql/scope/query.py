@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from typing import cast
 
 from queries.services.types import Attributes, RelationalSchema, SQLQuery
@@ -26,16 +26,19 @@ class SQLScope(ABC):
         self.db_schema = db_schema
 
     @property
+    @abstractmethod
     def query(self) -> SQLQuery:
-        raise NotImplementedError('Subclasses must implement this method')
+        ...
 
     @property
+    @abstractmethod
     def tables(self) -> TablesScope:
-        raise NotImplementedError('Subclasses must implement this method')
+        ...
 
     @property
+    @abstractmethod
     def projections(self) -> ProjectionsScope:
-        raise NotImplementedError('Subclasses must implement this method')
+        ...
 
     def find(self, expr: Expression) -> SQLScope | None:
         if isinstance(expr, SQLQuery):
@@ -45,8 +48,9 @@ class SQLScope(ABC):
 
         return self._find(query)
 
+    @abstractmethod
     def _find(self, query: SQLQuery) -> SQLScope | None:
-        raise NotImplementedError('Subclasses must implement this method')
+        ...
 
 
 class SelectScope(SQLScope):
