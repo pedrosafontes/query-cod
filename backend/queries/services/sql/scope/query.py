@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import ABC
 from typing import cast
 
 from queries.services.types import Attributes, RelationalSchema, SQLQuery
@@ -20,7 +21,7 @@ from .projections import ProjectionsScope
 from .tables import TablesScope
 
 
-class SQLScope:
+class SQLScope(ABC):
     def __init__(self, db_schema: RelationalSchema):
         self.db_schema = db_schema
 
