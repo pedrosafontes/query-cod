@@ -1,6 +1,6 @@
 import pytest
 from queries.services.sql.parser import parse_sql
-from queries.services.sql.semantics import SQLSemanticAnalyzer
+from queries.services.sql.semantics import SQLSemanticValidator
 from queries.services.types import RelationalSchema
 from query_cod.types import DataType
 
@@ -38,11 +38,11 @@ def schema() -> RelationalSchema:
 def assert_valid(query: str, schema: RelationalSchema) -> None:
     select = parse_sql(query)
     print(select.to_s())
-    SQLSemanticAnalyzer(schema).validate(select)
+    SQLSemanticValidator(schema).validate(select)
 
 
 def assert_invalid(query: str, schema: RelationalSchema, exc: type[Exception]) -> None:
     select = parse_sql(query)
     print(select.to_s())
     with pytest.raises(exc):
-        SQLSemanticAnalyzer(schema).validate(select)
+        SQLSemanticValidator(schema).validate(select)

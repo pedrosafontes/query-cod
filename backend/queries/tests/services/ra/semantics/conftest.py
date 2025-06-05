@@ -2,10 +2,9 @@ from collections.abc import Callable
 
 import pytest
 from queries.services.ra.ast import RAQuery
+from queries.services.ra.semantics.validator import RASemanticValidator
 from queries.services.types import RelationalSchema
 from query_cod.types import DataType
-
-from queries.services.ra.semantics.validator import RASemanticValidator
 
 
 @pytest.fixture
