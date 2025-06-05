@@ -15,7 +15,7 @@ Match = tuple[RelationName | None, DataType]
 
 
 @dataclass
-class RelationOutput:
+class ResultSchema:
     schema: RelationalSchema
     attrs: list[TypedAttribute]
 

@@ -27,7 +27,7 @@ from ..ast import (
 )
 from ..inference import type_of_function, type_of_value
 from ..scope.schema import SchemaInferrer
-from ..scope.types import Match, RelationOutput
+from ..scope.types import Match, ResultSchema
 from .errors import (
     AmbiguousAttributeReferenceError,
     AttributeNotFoundError,
@@ -146,7 +146,7 @@ class RASemanticAnalyzer:
         input_ = self._schema_inferrer.infer(top.operand)
         self._validate_attribute(top.attribute, [input_])
 
-    def _validate_condition(self, cond: BooleanExpression, inputs: list[RelationOutput]) -> None:
+    def _validate_condition(self, cond: BooleanExpression, inputs: list[ResultSchema]) -> None:
         match cond:
             case Attribute():
                 t = self._validate_attribute(cond, inputs)
@@ -160,7 +160,7 @@ class RASemanticAnalyzer:
             case Not(expression=inner):
                 self._validate_condition(inner, inputs)
 
-    def _validate_comparison(self, cond: Comparison, inputs: list[RelationOutput]) -> None:
+    def _validate_comparison(self, cond: Comparison, inputs: list[ResultSchema]) -> None:
         types = []
         for side in (cond.left, cond.right):
             if isinstance(side, Attribute):
@@ -172,7 +172,7 @@ class RASemanticAnalyzer:
             raise TypeMismatchError(cond, left_type, right_type)
 
     def _validate_attribute(
-        self, attr: Attribute, inputs: list[RelationOutput], source: ASTNode | None = None
+        self, attr: Attribute, inputs: list[ResultSchema], source: ASTNode | None = None
     ) -> DataType:
         if source is None:
             source = attr
