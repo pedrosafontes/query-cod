@@ -55,7 +55,7 @@ def unnest_cartesian_operands(query: 'RAQuery') -> list['RAQuery']:
     from .query import SetOperator, SetOperatorKind
 
     match query:
-        case SetOperator(operator=SetOperatorKind.CARTESIAN):
+        case SetOperator(kind=SetOperatorKind.CARTESIAN):
             return unnest_cartesian_operands(query.left) + unnest_cartesian_operands(query.right)
         case _:
             return [query]
