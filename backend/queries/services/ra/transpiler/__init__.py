@@ -3,6 +3,7 @@ from typing import cast
 
 import queries.services.ra.ast as ra
 import sqlglot.expressions as sql
+from queries.services.sql.types import aggregate_functions
 from queries.services.types import (
     RelationalSchema,
     SQLQuery,
@@ -233,7 +234,11 @@ class RAtoSQLTranspiler:
     def _(self, agg: ra.GroupedAggregation) -> Select:
         query = self._transpile_select(agg.operand)
 
-        if not isinstance(agg.operand, Relation):
+        if (
+            query.args.get('group')
+            or query.args.get('having')
+            or any([expr.find(*aggregate_functions) for expr in query.expressions])
+        ):
             query = subquery(query, 'sub')
 
         attrs = [self._transpile_attribute(attr) for attr in agg.group_by]
