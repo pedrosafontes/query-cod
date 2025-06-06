@@ -4,7 +4,7 @@ from queries.services.ra.ast import (
     cartesian,
 )
 from queries.services.ra.ast import (
-    SetOperation as RASetOperation,
+    SetOperator as RASetOperation,
 )
 from queries.services.sql.transpiler.context import ContextRelationInferrer
 from sqlglot.expressions import Except, Intersect, Union

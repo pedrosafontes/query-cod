@@ -3,7 +3,7 @@ from __future__ import annotations
 from sqlglot.expressions import Expression
 
 
-class GroupByScope:
+class GroupByExpressions:
     def __init__(self, exprs: list[Expression]) -> None:
         self.exprs = exprs
 

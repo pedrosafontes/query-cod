@@ -7,7 +7,7 @@ from ..ast import (
     ASTNode,
     Attribute,
     BinaryBooleanExpression,
-    BinaryOperation,
+    BinaryOperator,
     BooleanExpression,
     Comparison,
     Division,
@@ -19,15 +19,15 @@ from ..ast import (
     Relation,
     Rename,
     Selection,
-    SetOperation,
     SetOperator,
+    SetOperatorKind,
     ThetaJoin,
     TopN,
-    UnaryOperation,
+    UnaryOperator,
 )
 from ..inference import type_of_function, type_of_value
 from ..scope.schema import SchemaInferrer
-from ..scope.types import Match, RelationOutput
+from ..scope.types import Match, ResultSchema
 from .errors import (
     AmbiguousAttributeReferenceError,
     AttributeNotFoundError,
@@ -41,15 +41,15 @@ from .errors import (
 )
 
 
-class RASemanticAnalyzer:
+class RASemanticValidator:
     def __init__(self, schema: RelationalSchema):
         self.schema = schema
         self._schema_inferrer = SchemaInferrer(schema)
 
     def validate(self, query: RAQuery) -> None:
-        if isinstance(query, UnaryOperation):
-            self.validate(query.subquery)
-        elif isinstance(query, BinaryOperation):
+        if isinstance(query, UnaryOperator):
+            self.validate(query.operand)
+        elif isinstance(query, BinaryOperator):
             self.validate(query.left)
             self.validate(query.right)
         return self._validate(query)
@@ -65,13 +65,13 @@ class RASemanticAnalyzer:
 
     @_validate.register
     def _(self, proj: Projection) -> None:
-        input_ = self._schema_inferrer.infer(proj.subquery)
+        input_ = self._schema_inferrer.infer(proj.operand)
         for attr in proj.attributes:
             self._validate_attribute(attr, [input_])
 
     @_validate.register
     def _(self, sel: Selection) -> None:
-        input_ = self._schema_inferrer.infer(sel.subquery)
+        input_ = self._schema_inferrer.infer(sel.operand)
         self._validate_condition(sel.condition, [input_])
 
     @_validate.register
@@ -79,14 +79,14 @@ class RASemanticAnalyzer:
         pass
 
     @_validate.register
-    def _(self, op: SetOperation) -> None:
+    def _(self, op: SetOperator) -> None:
         left = self._schema_inferrer.infer(op.left)
         right = self._schema_inferrer.infer(op.right)
-        if op.operator != SetOperator.CARTESIAN:
+        if op.kind != SetOperatorKind.CARTESIAN:
             if not all(
                 a.data_type == b.data_type for a, b in zip(left.attrs, right.attrs, strict=True)
             ):
-                raise UnionCompatibilityError(op, op.operator, left.attrs, right.attrs)
+                raise UnionCompatibilityError(op, op.kind, left.attrs, right.attrs)
 
     @_validate.register
     def _(self, join: Join) -> None:
@@ -125,7 +125,7 @@ class RASemanticAnalyzer:
 
     @_validate.register
     def _(self, agg: GroupedAggregation) -> None:
-        input_ = self._schema_inferrer.infer(agg.subquery)
+        input_ = self._schema_inferrer.infer(agg.operand)
 
         for attr in agg.group_by:
             self._validate_attribute(attr, [input_])
@@ -143,10 +143,10 @@ class RASemanticAnalyzer:
 
     @_validate.register
     def _(self, top: TopN) -> None:
-        input_ = self._schema_inferrer.infer(top.subquery)
+        input_ = self._schema_inferrer.infer(top.operand)
         self._validate_attribute(top.attribute, [input_])
 
-    def _validate_condition(self, cond: BooleanExpression, inputs: list[RelationOutput]) -> None:
+    def _validate_condition(self, cond: BooleanExpression, inputs: list[ResultSchema]) -> None:
         match cond:
             case Attribute():
                 t = self._validate_attribute(cond, inputs)
@@ -160,7 +160,7 @@ class RASemanticAnalyzer:
             case Not(expression=inner):
                 self._validate_condition(inner, inputs)
 
-    def _validate_comparison(self, cond: Comparison, inputs: list[RelationOutput]) -> None:
+    def _validate_comparison(self, cond: Comparison, inputs: list[ResultSchema]) -> None:
         types = []
         for side in (cond.left, cond.right):
             if isinstance(side, Attribute):
@@ -172,7 +172,7 @@ class RASemanticAnalyzer:
             raise TypeMismatchError(cond, left_type, right_type)
 
     def _validate_attribute(
-        self, attr: Attribute, inputs: list[RelationOutput], source: ASTNode | None = None
+        self, attr: Attribute, inputs: list[ResultSchema], source: ASTNode | None = None
     ) -> DataType:
         if source is None:
             source = attr

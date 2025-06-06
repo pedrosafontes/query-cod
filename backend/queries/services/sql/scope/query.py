@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from typing import cast
 
 from queries.services.types import Attributes, RelationalSchema, SQLQuery
@@ -15,26 +16,29 @@ from sqlglot.expressions import (
     column,
 )
 
-from .group_by import GroupByScope
-from .projections import ProjectionsScope
+from .group_by import GroupByExpressions
+from .projections import Projections
 from .tables import TablesScope
 
 
-class SQLScope:
+class SQLScope(ABC):
     def __init__(self, db_schema: RelationalSchema):
         self.db_schema = db_schema
 
     @property
+    @abstractmethod
     def query(self) -> SQLQuery:
-        raise NotImplementedError('Subclasses must implement this method')
+        ...
 
     @property
+    @abstractmethod
     def tables(self) -> TablesScope:
-        raise NotImplementedError('Subclasses must implement this method')
+        ...
 
     @property
-    def projections(self) -> ProjectionsScope:
-        raise NotImplementedError('Subclasses must implement this method')
+    @abstractmethod
+    def projections(self) -> Projections:
+        ...
 
     def find(self, expr: Expression) -> SQLScope | None:
         if isinstance(expr, SQLQuery):
@@ -44,8 +48,9 @@ class SQLScope:
 
         return self._find(query)
 
+    @abstractmethod
     def _find(self, query: SQLQuery) -> SQLScope | None:
-        raise NotImplementedError('Subclasses must implement this method')
+        ...
 
 
 class SelectScope(SQLScope):
@@ -53,8 +58,8 @@ class SelectScope(SQLScope):
         super().__init__(db_schema)
         self.select = select
         self._tables: TablesScope = TablesScope(self, parent.tables if parent else None)
-        self._projections = ProjectionsScope()
-        self.group_by = GroupByScope(select.args.get('group', []))
+        self._projections = Projections()
+        self.group_by = GroupByExpressions(select.args.get('group', []))
         self.subquery_scopes: dict[SQLQuery, SQLScope] = {}
         self.joined_left_cols: dict[Join, Attributes] = {}
 
@@ -67,7 +72,7 @@ class SelectScope(SQLScope):
         return self._tables
 
     @property
-    def projections(self) -> ProjectionsScope:
+    def projections(self) -> Projections:
         return self._projections
 
     @property
@@ -153,7 +158,7 @@ class SetOperationScope(SQLScope):
         return self.left.tables
 
     @property
-    def projections(self) -> ProjectionsScope:
+    def projections(self) -> Projections:
         return self.left.projections
 
     def _find(self, query: SQLQuery) -> SQLScope | None:
@@ -177,7 +182,7 @@ class DerivedTableScope(SQLScope):
         return self.child.tables
 
     @property
-    def projections(self) -> ProjectionsScope:
+    def projections(self) -> Projections:
         return self.child.projections
 
     def _find(self, query: SQLQuery) -> SQLScope | None:

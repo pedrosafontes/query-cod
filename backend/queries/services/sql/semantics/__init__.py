@@ -8,7 +8,7 @@ from .query import validate_query
 
 def validate_sql_semantics(query: SQLQuery, schema: RelationalSchema) -> list[QueryError]:
     try:
-        SQLSemanticAnalyzer(schema).validate(query)
+        SQLSemanticValidator(schema).validate(query)
     except SQLSemanticError as e:
         semantic_error: QueryError = {'title': e.title}
         if e.description:
@@ -20,7 +20,7 @@ def validate_sql_semantics(query: SQLQuery, schema: RelationalSchema) -> list[Qu
     return []
 
 
-class SQLSemanticAnalyzer:
+class SQLSemanticValidator:
     def __init__(self, schema: RelationalSchema):
         self.schema = schema
 

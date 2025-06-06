@@ -21,7 +21,7 @@ from queries.services.ra.semantics.errors import (
         GroupedAggregation(
             group_by=[Attribute('A')],
             aggregations=[Aggregation(Attribute('B'), AggregationFunction.COUNT, 'X')],
-            subquery=Relation('R'),
+            operand=Relation('R'),
         ),
     ],
 )
@@ -36,7 +36,7 @@ def test_valid_grouped_aggregation(query: RAQuery, assert_valid: Callable[[RAQue
             GroupedAggregation(
                 group_by=[Attribute('Z')],
                 aggregations=[Aggregation(Attribute('A'), AggregationFunction.SUM, 'X')],
-                subquery=Relation('R'),
+                operand=Relation('R'),
             ),
             AttributeNotFoundError,
         ),
@@ -44,7 +44,7 @@ def test_valid_grouped_aggregation(query: RAQuery, assert_valid: Callable[[RAQue
             GroupedAggregation(
                 group_by=[Attribute('A')],
                 aggregations=[Aggregation(Attribute('Z'), AggregationFunction.SUM, 'X')],
-                subquery=Relation('R'),
+                operand=Relation('R'),
             ),
             AttributeNotFoundError,
         ),
@@ -58,7 +58,7 @@ def test_valid_grouped_aggregation(query: RAQuery, assert_valid: Callable[[RAQue
                         output='X',
                     )
                 ],
-                subquery=Relation('R'),
+                operand=Relation('R'),
             ),
             InvalidFunctionArgumentError,
         ),
@@ -86,7 +86,7 @@ def test_aggregation_function_invalid_on_VARCHAR(
     query = GroupedAggregation(
         group_by=[Attribute('A')],
         aggregations=[Aggregation(Attribute('B'), function, 'X')],  # B is VARCHAR
-        subquery=Relation('R'),
+        operand=Relation('R'),
     )
     assert_invalid(query, InvalidFunctionArgumentError)
 
@@ -113,7 +113,7 @@ def test_aggregation_function_valid_on_compatible_types(
     query = GroupedAggregation(
         group_by=[Attribute('B')],
         aggregations=[Aggregation(Attribute(attribute_name), function, 'X')],
-        subquery=Relation('R'),
+        operand=Relation('R'),
     )
 
     assert_valid(query)

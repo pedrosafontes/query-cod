@@ -2,7 +2,7 @@ from collections.abc import Callable
 
 import pytest
 from queries.services.ra.ast import RAQuery
-from queries.services.ra.semantics.analyzer import RASemanticAnalyzer
+from queries.services.ra.semantics.validator import RASemanticValidator
 from queries.services.types import RelationalSchema
 from query_cod.types import DataType
 
@@ -32,7 +32,7 @@ def schema() -> RelationalSchema:
 @pytest.fixture
 def assert_valid(schema: RelationalSchema) -> Callable[[RAQuery], None]:
     def _assert_valid(query: RAQuery) -> None:
-        RASemanticAnalyzer(schema).validate(query)
+        RASemanticValidator(schema).validate(query)
 
     return _assert_valid
 
@@ -41,6 +41,6 @@ def assert_valid(schema: RelationalSchema) -> Callable[[RAQuery], None]:
 def assert_invalid(schema: RelationalSchema) -> Callable[[RAQuery, type[Exception]], None]:
     def _assert_invalid(query: RAQuery, expected_exception: type[Exception]) -> None:
         with pytest.raises(expected_exception):
-            RASemanticAnalyzer(schema).validate(query)
+            RASemanticValidator(schema).validate(query)
 
     return _assert_invalid

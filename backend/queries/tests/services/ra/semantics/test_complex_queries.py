@@ -7,7 +7,7 @@ from queries.services.ra.ast import (
     Relation,
     attribute,
 )
-from queries.services.ra.semantics.analyzer import RASemanticAnalyzer
+from queries.services.ra.semantics.validator import RASemanticValidator
 from queries.services.types import RelationalSchema
 
 
@@ -20,5 +20,5 @@ from queries.services.types import RelationalSchema
     ],
 )
 def test_valid_complex_queries(query: RAQuery, schema: RelationalSchema) -> None:
-    analyzer = RASemanticAnalyzer(schema)
+    analyzer = RASemanticValidator(schema)
     analyzer.validate(query)

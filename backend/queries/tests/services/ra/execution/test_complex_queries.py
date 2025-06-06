@@ -50,7 +50,7 @@ from queries.services.ra.ast import (
         (
             Relation('employee').natural_join('department').top_n(2, 'age'),
             """
-            SELECT DISTINCT *
+            SELECT *
             FROM employee NATURAL JOIN department
             ORDER BY age DESC
             LIMIT 2
@@ -69,7 +69,7 @@ from queries.services.ra.ast import (
             .select(EQ(attribute('department.dept_name'), 'HR'))
             .top_n(1, 'age'),
             """
-            SELECT DISTINCT * FROM employee
+            SELECT * FROM employee
             CROSS JOIN department
             ON employee.dept_id = department.dept_id
             WHERE department.dept_name = 'HR'
@@ -90,7 +90,7 @@ from queries.services.ra.ast import (
                 )
             ),
             """
-            SELECT DISTINCT * FROM employee
+            SELECT * FROM employee
             WHERE (age = 25 OR age = 30)
                   AND NOT name = 'Carol'
             """,

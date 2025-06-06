@@ -25,7 +25,7 @@ from ..ast import (
     RAQuery,
     Relation,
     Selection,
-    SetOperation,
+    SetOperator,
     ThetaJoin,
     TopN,
 )
@@ -91,23 +91,23 @@ class RATransformer(Transformer[Relation, RAQuery]):
     def max(self, _: tuple[()]) -> AggregationFunction:
         return AggregationFunction.MAX
 
-    def topn(self, args: tuple[Token, Attribute, RAQuery]) -> TopN:
+    def top_n(self, args: tuple[Token, Attribute, RAQuery]) -> TopN:
         limit, attr, query = args
         return query.top_n(int(limit), attr)
 
-    def union(self, args: tuple[RAQuery, RAQuery]) -> SetOperation:
+    def union(self, args: tuple[RAQuery, RAQuery]) -> SetOperator:
         left, right = args
         return left.union(right)
 
-    def difference(self, args: tuple[RAQuery, RAQuery]) -> SetOperation:
+    def difference(self, args: tuple[RAQuery, RAQuery]) -> SetOperator:
         left, right = args
         return left.difference(right)
 
-    def intersection(self, args: tuple[RAQuery, RAQuery]) -> SetOperation:
+    def intersection(self, args: tuple[RAQuery, RAQuery]) -> SetOperator:
         left, right = args
         return left.intersect(right)
 
-    def cartesian(self, args: tuple[RAQuery, RAQuery]) -> SetOperation:
+    def cartesian(self, args: tuple[RAQuery, RAQuery]) -> SetOperator:
         left, right = args
         return left.cartesian(right)
 
@@ -179,7 +179,7 @@ class RATransformer(Transformer[Relation, RAQuery]):
     def string(self, args: list[Token]) -> str:
         return args[0]
 
-    def item_list(self, args: list[Any]) -> list[Any]:
+    def list(self, args: list[Any]) -> list[Any]:
         return args
 
     def query(self, args: tuple[RAQuery]) -> RAQuery:

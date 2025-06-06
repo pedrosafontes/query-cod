@@ -9,7 +9,7 @@ from queries.services.ra.ast import (
     Relation,
     Rename,
     Selection,
-    SetOperation,
+    SetOperator,
     ThetaJoin,
     TopN,
 )
@@ -74,7 +74,7 @@ class RATreeBuilder:
             id=query_id,
             validation_errors=errors,
             attributes=attributes,
-            children=[self._build(proj.subquery)],
+            children=[self._build(proj.operand)],
         )
 
     @_build.register
@@ -84,7 +84,7 @@ class RATreeBuilder:
             id=query_id,
             validation_errors=errors,
             condition=latex_converter.convert_condition(sel.condition),
-            children=[self._build(sel.subquery)],
+            children=[self._build(sel.operand)],
         )
 
     @_build.register
@@ -94,7 +94,7 @@ class RATreeBuilder:
             id=query_id,
             validation_errors=errors,
             alias=text(rename.alias),
-            children=[self._build(rename.subquery)],
+            children=[self._build(rename.operand)],
         )
 
     @_build.register
@@ -107,12 +107,12 @@ class RATreeBuilder:
         )
 
     @_build.register
-    def _(self, set_op: SetOperation) -> SetOperationNode:
+    def _(self, set_op: SetOperator) -> SetOperationNode:
         query_id, errors = self._add_subquery(set_op)
         return SetOperationNode(
             id=query_id,
             validation_errors=errors,
-            operator=set_op.operator.value,
+            operator=set_op.kind.value,
             children=[self._build(set_op.left), self._build(set_op.right)],
         )
 
@@ -122,7 +122,7 @@ class RATreeBuilder:
         return JoinNode(
             id=query_id,
             validation_errors=errors,
-            operator=join.operator.value,
+            operator=join.kind.value,
             children=[self._build(join.left), self._build(join.right)],
         )
 
@@ -154,7 +154,7 @@ class RATreeBuilder:
             validation_errors=errors,
             group_by=group_by,
             aggregations=aggregations,
-            children=[self._build(agg.subquery)],
+            children=[self._build(agg.operand)],
         )
 
     @_build.register
@@ -165,5 +165,5 @@ class RATreeBuilder:
             validation_errors=errors,
             limit=top_n.limit,
             attribute=latex_converter.convert_attribute(top_n.attribute),
-            children=[self._build(top_n.subquery)],
+            children=[self._build(top_n.operand)],
         )

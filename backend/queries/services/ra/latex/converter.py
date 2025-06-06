@@ -4,7 +4,7 @@ from .. import ast as ra
 from ..ast import (
     Attribute,
     BinaryBooleanExpression,
-    BinaryOperation,
+    BinaryOperator,
     BooleanExpression,
     BooleanOperation,
     Comparison,
@@ -12,17 +12,17 @@ from ..ast import (
     Division,
     GroupedAggregation,
     Join,
-    JoinOperator,
+    JoinKind,
     Projection,
     RAQuery,
     Relation,
     Rename,
     Selection,
-    SetOperation,
     SetOperator,
+    SetOperatorKind,
     ThetaJoin,
     TopN,
-    UnaryOperation,
+    UnaryOperator,
 )
 from . import utils as latex
 from .utils import multiline, overset, paren, subscript, text
@@ -36,9 +36,9 @@ def convert(query: RAQuery, pretty: bool = False) -> str:
 
 
 def _convert(query: RAQuery, pretty: bool = False) -> str:
-    if isinstance(query, UnaryOperation):
-        code = _convert_query(query) + '\n' + _convert_unary_operand(query.subquery, pretty)
-    elif isinstance(query, BinaryOperation):
+    if isinstance(query, UnaryOperator):
+        code = _convert_query(query) + '\n' + _convert_unary_operand(query.operand, pretty)
+    elif isinstance(query, BinaryOperator):
         code = (
             _convert_binary_operand(query.left, pretty)
             + '\n'
@@ -58,7 +58,7 @@ def _convert(query: RAQuery, pretty: bool = False) -> str:
 
 def _convert_unary_operand(subquery: RAQuery, pretty: bool) -> str:
     latex_query = _convert(subquery, pretty)
-    if isinstance(subquery, Relation | UnaryOperation):
+    if isinstance(subquery, Relation | UnaryOperator):
         return latex_query
     else:
         return paren(latex_query)
@@ -100,27 +100,27 @@ def _(rename: Rename) -> str:
 
 
 @_convert_query.register
-def _(set_op: SetOperation) -> str:
-    operators: dict[SetOperator, str] = {
-        SetOperator.UNION: latex.CUP,
-        SetOperator.DIFFERENCE: '-',
-        SetOperator.INTERSECT: latex.CAP,
-        SetOperator.CARTESIAN: latex.TIMES,
+def _(set_op: SetOperator) -> str:
+    operators: dict[SetOperatorKind, str] = {
+        SetOperatorKind.UNION: latex.CUP,
+        SetOperatorKind.DIFFERENCE: '-',
+        SetOperatorKind.INTERSECT: latex.CAP,
+        SetOperatorKind.CARTESIAN: latex.TIMES,
     }
-    return operators[set_op.operator]
+    return operators[set_op.kind]
 
 
 @_convert_query.register
 def _(join: Join) -> str:
-    operators: dict[JoinOperator, str] = {
-        JoinOperator.NATURAL: latex.JOIN,
-        JoinOperator.SEMI: latex.LTIMES,
-        JoinOperator.ANTI: latex.ANTIJOIN,
-        JoinOperator.LEFT: latex.LEFTJOIN,
-        JoinOperator.RIGHT: latex.RIGHTJOIN,
-        JoinOperator.OUTER: latex.OUTERJOIN,
+    operators: dict[JoinKind, str] = {
+        JoinKind.NATURAL: latex.JOIN,
+        JoinKind.SEMI: latex.LTIMES,
+        JoinKind.ANTI: latex.ANTIJOIN,
+        JoinKind.LEFT: latex.LEFTJOIN,
+        JoinKind.RIGHT: latex.RIGHTJOIN,
+        JoinKind.OUTER: latex.OUTERJOIN,
     }
-    return operators[join.operator]
+    return operators[join.kind]
 
 
 @_convert_query.register

@@ -18,7 +18,7 @@ class TestProjectQueries:
         project = baker.make(Project, user=user)
         url = reverse('project-queries-list', kwargs={'project_pk': project.id})
 
-        payload = {'name': 'My query'}
+        payload = {'name': 'My query', 'language': 'sql'}
 
         response = auth_client.post(url, payload)
         assert response.status_code == status.HTTP_201_CREATED

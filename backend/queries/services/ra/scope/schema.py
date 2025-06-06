@@ -14,75 +14,73 @@ from ..ast import (
     Relation,
     Rename,
     Selection,
-    SetOperation,
     SetOperator,
+    SetOperatorKind,
     ThetaJoin,
     TopN,
 )
 from ..inference import type_of_function
-from .types import RelationOutput, TypedAttribute
+from .types import ResultSchema, TypedAttribute
 from .utils import merge_schemas
 
 
 class SchemaInferrer:
     def __init__(self, schema: RelationalSchema):
         self.schema = schema
-        self._cache: dict[int, RelationOutput] = {}
+        self._cache: dict[int, ResultSchema] = {}
 
-    def infer(self, query: RAQuery) -> RelationOutput:
+    def infer(self, query: RAQuery) -> ResultSchema:
         key = id(query)
         if key not in self._cache:
             self._cache[key] = self._infer(query)
         return self._cache[key]
 
     @singledispatchmethod
-    def _infer(self, query: RAQuery) -> RelationOutput:
+    def _infer(self, query: RAQuery) -> ResultSchema:
         raise NotImplementedError(f'No inference method for {type(query).__name__}')
 
     @_infer.register
-    def _(self, rel: Relation) -> RelationOutput:
+    def _(self, rel: Relation) -> ResultSchema:
         attributes = self.schema[rel.name]
-        return RelationOutput(
+        return ResultSchema(
             {rel.name: attributes}, [TypedAttribute(attr, t) for attr, t in attributes.items()]
         )
 
     @_infer.register
-    def _(self, proj: Projection) -> RelationOutput:
-        input_ = self.infer(proj.subquery)
+    def _(self, proj: Projection) -> ResultSchema:
+        input_ = self.infer(proj.operand)
         output_schema: RelationalSchema = defaultdict(Attributes)
         output_attrs = []
         for attr in proj.attributes:
             [(_, t)] = input_.resolve(attr)
             output_schema[attr.relation][attr.name] = t
             output_attrs.append(TypedAttribute(attr.name, t))
-        return RelationOutput(output_schema, output_attrs)
+        return ResultSchema(output_schema, output_attrs)
 
     @_infer.register
-    def _(self, sel: Selection) -> RelationOutput:
-        return self.infer(sel.subquery)
+    def _(self, sel: Selection) -> ResultSchema:
+        return self.infer(sel.operand)
 
     @_infer.register
-    def _(self, rename: Rename) -> RelationOutput:
-        input_ = self.infer(rename.subquery)
+    def _(self, rename: Rename) -> ResultSchema:
+        input_ = self.infer(rename.operand)
         renamed_schema: RelationalSchema = {rename.alias: flatten(input_.schema)}
-        return RelationOutput(renamed_schema, input_.attrs)
+        return ResultSchema(renamed_schema, input_.attrs)
 
     @_infer.register
-    def _(self, op: SetOperation) -> RelationOutput:
+    def _(self, op: SetOperator) -> ResultSchema:
         left = self.infer(op.left)
         right = self.infer(op.right)
 
-        if op.operator == SetOperator.CARTESIAN:
-            return RelationOutput(
-                merge_schemas(left.schema, right.schema), left.attrs + right.attrs
-            )
+        if op.kind == SetOperatorKind.CARTESIAN:
+            return ResultSchema(merge_schemas(left.schema, right.schema), left.attrs + right.attrs)
         else:
             # Union-compatible operations
             flat_schema: RelationalSchema = {None: flatten(left.schema)}
-            return RelationOutput(flat_schema, left.attrs)
+            return ResultSchema(flat_schema, left.attrs)
 
     @_infer.register
-    def _(self, join: Join) -> RelationOutput:
+    def _(self, join: Join) -> ResultSchema:
         left = self.infer(join.left)
         right = self.infer(join.right)
         merged_schema = merge_schemas(left.schema, right.schema)
@@ -100,16 +98,16 @@ class SchemaInferrer:
 
         left_unique = [a for a in left.attrs if a.name not in shared_names]
         right_unique = [a for a in right.attrs if a.name not in shared_names]
-        return RelationOutput(merged_schema, left_unique + shared_attrs + right_unique)
+        return ResultSchema(merged_schema, left_unique + shared_attrs + right_unique)
 
     @_infer.register
-    def _(self, join: ThetaJoin) -> RelationOutput:
+    def _(self, join: ThetaJoin) -> ResultSchema:
         left = self.infer(join.left)
         right = self.infer(join.right)
-        return RelationOutput(merge_schemas(left.schema, right.schema), left.attrs + right.attrs)
+        return ResultSchema(merge_schemas(left.schema, right.schema), left.attrs + right.attrs)
 
     @_infer.register
-    def _(self, div: Division) -> RelationOutput:
+    def _(self, div: Division) -> ResultSchema:
         dividend = self.infer(div.dividend)
         divisor = self.infer(div.divisor)
 
@@ -119,11 +117,11 @@ class SchemaInferrer:
         output_schema: RelationalSchema = {
             None: {attr.name: attr.data_type for attr in output_attrs}
         }
-        return RelationOutput(output_schema, output_attrs)
+        return ResultSchema(output_schema, output_attrs)
 
     @_infer.register
-    def _(self, agg: GroupedAggregation) -> RelationOutput:
-        input_ = self.infer(agg.subquery)
+    def _(self, agg: GroupedAggregation) -> ResultSchema:
+        input_ = self.infer(agg.operand)
         output_schema: RelationalSchema = defaultdict(Attributes)
         output_attrs = []
 
@@ -138,8 +136,8 @@ class SchemaInferrer:
             output_schema[None][a.output] = output_type
             output_attrs.append(TypedAttribute(a.output, output_type))
 
-        return RelationOutput(output_schema, output_attrs)
+        return ResultSchema(output_schema, output_attrs)
 
     @_infer.register
-    def _(self, top: TopN) -> RelationOutput:
-        return self.infer(top.subquery)
+    def _(self, top: TopN) -> ResultSchema:
+        return self.infer(top.operand)

@@ -9,7 +9,7 @@ from queries.services.ra.ast import RAQuery, Relation
     [
         (
             Relation('employee'),
-            'SELECT DISTINCT * FROM employee',
+            'SELECT * FROM employee',
         ),
     ],
 )

@@ -7,7 +7,7 @@ from query_cod.types import DataType
 from sqlglot.expressions import Expression
 
 
-class ProjectionsScope:
+class Projections:
     def __init__(self) -> None:
         self.schema: RelationalSchema = defaultdict(dict)  # Track projections by alias
         self.expressions: list[Expression] = []  # Track projections by expression

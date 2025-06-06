@@ -14,9 +14,6 @@ from queries.services.types import (
 from query_cod.types import DataType
 from sqlglot.expressions import Column, Table, select, table_
 
-from ..semantics.errors import (
-    AmbiguousColumnReferenceError,
-)
 from ..types import SQLTable
 
 
@@ -59,45 +56,44 @@ class TablesScope:
 
     def find_column_type(self, column: Column) -> DataType | None:
         return self._resolve_column(
-            column, lambda scope, table, column: scope._joined_schema[table][column.name]
+            column,
+            lambda scope, tables: scope._joined_schema[tables[0]][column.name]
+            if len(tables) == 1
+            else None,
         )
 
     def find_column_source(self, column: Column) -> Source | None:
-        return self._resolve_column(column, lambda scope, table, column: scope._get_source(table))
+        return self._resolve_column(column, lambda scope, tables: scope._get_source(tables[0]))
 
-    def can_resolve(self, column: Column) -> bool:
-        return (
-            self._resolve_column(column, lambda scope, table, column: True, validate=True)
-            is not None
-        )
+    def resolve_column(self, column: Column) -> list[str | None] | None:
+        return self._resolve_column(column, lambda scope, tables: tables)
 
     T = TypeVar('T')
 
     def _resolve_column(
         self,
         column: Column,
-        func: Callable[[TablesScope, str | None, Column], T],
-        validate: bool = True,
+        func: Callable[[TablesScope, list[str | None]], T],
     ) -> T | None:
         return (
             self._resolve_qualified(column, func)
             if column.table
-            else self._resolve_unqualified(column, func, validate)
+            else self._resolve_unqualified(column, func)
         )
 
     def _resolve_qualified(
-        self, column: Column, func: Callable[[TablesScope, str | None, Column], T]
+        self, column: Column, func: Callable[[TablesScope, list[str | None]], T]
     ) -> T | None:
         if column in self:
             # Column is in the current scope
             table = column.table
-            return func(self, table, column)
+            return func(self, [table])
         else:
             # Check if the table is in the parent scope
             return self.parent._resolve_qualified(column, func) if self.parent else None
 
     def _resolve_unqualified(
-        self, column: Column, func: Callable[[TablesScope, str | None, Column], T], validate: bool
+        self, column: Column, func: Callable[[TablesScope, list[str | None]], T]
     ) -> T | None:
         tables = [
             table for table, attributes in self._joined_schema.items() if column.name in attributes
@@ -105,19 +101,9 @@ class TablesScope:
 
         if not tables:
             # Check if the column is in the parent scope
-            return self.parent._resolve_unqualified(column, func, validate) if self.parent else None
+            return self.parent._resolve_unqualified(column, func) if self.parent else None
 
-        # Check for ambiguous column
-        if len(tables) > 1:
-            if validate:
-                raise AmbiguousColumnReferenceError(column, [t for t in tables if t])
-            else:
-                return None
-
-        # There is only one match
-        [table] = tables
-
-        return func(self, table, column)
+        return func(self, tables)
 
     def merge_column(self, col: str) -> None:
         merge_common_column(self._joined_schema, col)

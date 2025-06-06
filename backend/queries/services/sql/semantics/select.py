@@ -16,12 +16,12 @@ from .table import TableValidator
 
 
 def validate_select(select: SelectScope) -> None:
+    validate_projection(select)
     validate_from(select)
     validate_joins(select)
     validate_where(select)
     validate_group_by(select)
     validate_having(select)
-    validate_projection(select)
     validate_order_by(select)
 
 
