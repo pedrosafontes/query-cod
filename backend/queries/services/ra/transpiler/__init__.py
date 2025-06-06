@@ -3,7 +3,6 @@ from typing import cast
 
 import queries.services.ra.ast as ra
 import sqlglot.expressions as sql
-from queries.services.sql.types import aggregate_functions
 from queries.services.types import (
     RelationalSchema,
     SQLQuery,
@@ -38,14 +37,21 @@ class RAtoSQLTranspiler:
     def _(self, proj: ra.Projection) -> Select:
         query = self._transpile_select(proj.operand)
 
-        if any(
-            [expr.find(*aggregate_functions) for expr in cast(list[Expression], query.expressions)]
-        ):
-            query = subquery(query, 'sub')
+        existing_exprs = cast(list[Expression], query.expressions)
+        expressions: list[Expression] = []
 
-        query.select(
-            *[self._transpile_attribute(attr) for attr in proj.attributes], append=False, copy=False
-        )
+        for attr in proj.attributes:
+            matched_expr: Expression | None = None
+
+            if attr.relation is None:
+                matched_expr = next(
+                    (expr for expr in existing_exprs if expr.alias and expr.alias == attr.name),
+                    None,
+                )
+
+            expressions.append(matched_expr or self._transpile_attribute(attr))
+
+        query.select(*expressions, append=False, copy=False)
 
         if not self._bag:
             query.distinct(copy=False)
