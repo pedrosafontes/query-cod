@@ -13,27 +13,27 @@ from queries.services.ra.ast import (
         # Union
         (
             Relation('department').union('department'),
-            'SELECT DISTINCT * FROM department UNION SELECT DISTINCT * FROM department',
+            'SELECT * FROM department UNION SELECT * FROM department',
         ),
         # Difference
         (
             Relation('employee').difference('employee'),
-            'SELECT DISTINCT * FROM employee EXCEPT SELECT DISTINCT * FROM employee',
+            'SELECT * FROM employee EXCEPT SELECT * FROM employee',
         ),
         # Intersect
         (
             Relation('department').intersect('department'),
-            'SELECT DISTINCT * FROM department INTERSECT SELECT DISTINCT * FROM department',
+            'SELECT * FROM department INTERSECT SELECT * FROM department',
         ),
         # Cartesian product
         (
             Relation('department').cartesian('employee'),
-            'SELECT DISTINCT * FROM department CROSS JOIN employee',
+            'SELECT * FROM department CROSS JOIN employee',
         ),
         # Chained operations
         (
             Relation('department').difference('department').union('department'),
-            'SELECT DISTINCT * FROM department UNION (SELECT DISTINCT * FROM department EXCEPT SELECT DISTINCT * FROM department)',
+            'SELECT * FROM department UNION (SELECT * FROM department EXCEPT SELECT * FROM department)',
         ),
         # Union after projection
         (
@@ -50,7 +50,7 @@ from queries.services.ra.ast import (
         # Cartesian product
         (
             Relation('employee').cartesian('department'),
-            'SELECT DISTINCT * FROM employee CROSS JOIN department',
+            'SELECT * FROM employee CROSS JOIN department',
         ),
     ],
 )

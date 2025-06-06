@@ -24,8 +24,6 @@ class RAtoSQLTranspiler:
 
     def transpile(self, query: RAQuery) -> SQLQuery:
         transpiled = self._transpile(query)
-        if isinstance(transpiled, Select) and not self._bag:
-            return transpiled.distinct()
         return transpiled
 
     @singledispatchmethod
@@ -45,9 +43,14 @@ class RAtoSQLTranspiler:
         ):
             query = subquery(query, 'sub')
 
-        return query.select(
-            *[self._transpile_attribute(attr) for attr in proj.attributes], append=False
+        query.select(
+            *[self._transpile_attribute(attr) for attr in proj.attributes], append=False, copy=False
         )
+
+        if not self._bag:
+            query.distinct(copy=False)
+
+        return query
 
     @_transpile.register
     def _(self, selection: ra.Selection) -> Select:
@@ -106,7 +109,7 @@ class RAtoSQLTranspiler:
         divisor = self._transpile(div.divisor)
         missing_divisors = divisor.except_(found_divisors)
 
-        candidates = dividend.select(*output_attrs, append=False)
+        candidates = dividend.select(*output_attrs, append=False).distinct()
         return candidates.where(sql.not_(Exists(this=missing_divisors)))
 
     def _transpile_attribute(self, attr: ra.Attribute) -> Expression:
@@ -136,12 +139,14 @@ class RAtoSQLTranspiler:
                 return left.except_(right)
             case ra.SetOperatorKind.CARTESIAN:
                 left = self._transpile_select(op.left)
-                if isinstance(op.right, Relation):
-                    # op.right is a base table
-                    return left.join(op.right.name, join_type='CROSS')
-                else:
-                    # right is a derived relation
-                    return left.join(right, join_type='CROSS', join_alias='r')
+                match op.right:
+                    case Relation() as relation:
+                        return left.join(relation.name, join_type='CROSS')
+                    case ra.Rename(Relation() as relation, alias=alias):
+                        return left.join(relation.name, join_type='CROSS', join_alias=alias)
+                    case _:
+                        # right is a derived relation
+                        return left.join(right, join_type='CROSS', join_alias='r')
 
     @_transpile.register
     def _(self, join: ra.Join) -> Select:
@@ -250,14 +255,18 @@ class RAtoSQLTranspiler:
 
     def _transpile_relation(self, relation: RAQuery, alias: str) -> tuple[Select, str]:
         select = self._transpile_select(relation)
-        if isinstance(relation, Relation):
-            # relation is a base table
-            return select, relation.name
-        elif isinstance(relation, ra.Rename):
-            return select, relation.alias
-        else:
-            # relation is a derived relation; therefore, it needs to be aliased
-            return subquery(select, alias).select('*'), alias
+        match relation:
+            case Relation():
+                # relation is a base table
+                return select, relation.name
+            case ra.Rename(Relation(), alias=alias):
+                # relation is a renamed base table
+                return select, alias
+            case ra.Rename():
+                return select, relation.alias
+            case _:
+                # relation is a derived relation; therefore, it needs to be aliased
+                return subquery(select, alias).select('*'), alias
 
     def _transpile_select(self, query: RAQuery) -> Select:
         sql_query = self._transpile(query)

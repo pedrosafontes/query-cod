@@ -21,14 +21,14 @@ from queries.services.ra.ast import (
         # Basic numeric condition
         (
             Relation('employee').select(GT(attribute('age'), 30)),
-            'SELECT DISTINCT * FROM employee WHERE age > 30',
+            'SELECT * FROM employee WHERE age > 30',
         ),
         # Basic string equality
         (
             Relation('department').select(
                 EQ(attribute('dept_name'), 'Engineering'),
             ),
-            "SELECT DISTINCT * FROM department WHERE dept_name = 'Engineering'",
+            "SELECT * FROM department WHERE dept_name = 'Engineering'",
         ),
         # Logical AND
         (
@@ -38,7 +38,7 @@ from queries.services.ra.ast import (
                     LTE(attribute('age'), 40),
                 )
             ),
-            'SELECT DISTINCT * FROM employee WHERE age >= 30 AND age <= 40',
+            'SELECT * FROM employee WHERE age >= 30 AND age <= 40',
         ),
         # Logical OR
         (
@@ -48,12 +48,12 @@ from queries.services.ra.ast import (
                     EQ(attribute('name'), 'Carol'),
                 )
             ),
-            "SELECT DISTINCT * FROM employee WHERE name = 'Alice' OR name = 'Carol'",
+            "SELECT * FROM employee WHERE name = 'Alice' OR name = 'Carol'",
         ),
         # Logical NOT
         (
             Relation('employee').select(Not(EQ(attribute('name'), 'Bob'))),
-            "SELECT DISTINCT * FROM employee WHERE NOT (name = 'Bob')",
+            "SELECT * FROM employee WHERE NOT (name = 'Bob')",
         ),
         # Grouped (a AND b) OR c
         (
@@ -66,12 +66,12 @@ from queries.services.ra.ast import (
                     EQ(attribute('name'), 'Bob'),
                 )
             ),
-            "SELECT DISTINCT * FROM employee WHERE (dept_id = 1 AND age > 30) OR name = 'Bob'",
+            "SELECT * FROM employee WHERE (dept_id = 1 AND age > 30) OR name = 'Bob'",
         ),
         # Attribute condition
         (
             Relation('employee').select(attribute('senior')),
-            'SELECT DISTINCT * FROM employee WHERE senior = TRUE',
+            'SELECT * FROM employee WHERE senior = TRUE',
         ),
     ],
 )

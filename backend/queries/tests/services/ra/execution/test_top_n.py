@@ -15,17 +15,17 @@ from queries.services.ra.ast import (
         # Top 2 oldest employees
         (
             Relation('employee').top_n(2, 'age'),
-            'SELECT DISTINCT * FROM employee ORDER BY age DESC LIMIT 2',
+            'SELECT * FROM employee ORDER BY age DESC LIMIT 2',
         ),
         # Top 10 departments by name
         (
             Relation('department').top_n(10, 'dept_name'),
-            'SELECT DISTINCT * FROM department ORDER BY dept_name DESC LIMIT 10',
+            'SELECT * FROM department ORDER BY dept_name DESC LIMIT 10',
         ),
         # Top 2 oldest employees in dept 1
         (
             Relation('employee').select(EQ(attribute('dept_id'), 1)).top_n(2, 'age'),
-            'SELECT DISTINCT * FROM (SELECT * FROM employee WHERE dept_id = 1) ORDER BY age DESC LIMIT 2',
+            'SELECT * FROM (SELECT * FROM employee WHERE dept_id = 1) ORDER BY age DESC LIMIT 2',
         ),
     ],
 )
