@@ -62,7 +62,11 @@ class RAtoSQLTranspiler:
     def _(self, selection: ra.Selection) -> Select:
         query = self._transpile_select(selection.operand)
         condition = self._transpile_condition(selection.condition)
-        if query.args.get('group') or self._refers_to(condition, query.expressions):
+
+        if self._refers_to(condition, query.expressions):
+            query = subquery(query, 'sub').select('*')
+
+        if query.args.get('group'):
             return query.having(condition)
         else:
             return query.where(condition)
