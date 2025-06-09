@@ -51,7 +51,7 @@ const QueryPanels = ({
     if (left) {
       return (
         <ResizablePanel
-          className="py-5 flex flex-col"
+          className="py-5 flex flex-col max-h-screen"
           collapsedSize={0}
           collapsible={collapsible}
           defaultSize={size}

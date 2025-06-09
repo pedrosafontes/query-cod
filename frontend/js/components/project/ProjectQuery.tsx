@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QueriesService, Query, QueryResultData } from "api";
 
+import Assistant from "../assistant/Assistant";
 import ExecuteQueryButton from "../query/ExecuteQueryButton";
 import QueryEditor from "../query/QueryEditor";
 import ErrorAlert from "../query/QueryEditor/ErrorAlert";
@@ -10,7 +11,6 @@ import QueryPage from "../query/QueryPage";
 import TranspileQueryButton from "../query/TranspileQueryButton";
 import { Spinner } from "../ui/spinner";
 
-import Assistant from "./Assistant";
 import { useProjectQuery } from "./useProjectQuery";
 
 export type ProjectQueryProps = {
@@ -69,7 +69,11 @@ const ProjectQuery = ({
         />
       )}
       {tab === Tab.Assistant && query && (
-        <Assistant key={query.id} query={query} />
+        <Assistant
+          key={query.id}
+          query={query}
+          sendMessageApi={QueriesService.queriesMessagesCreate}
+        />
       )}
     </QueryPage>
   );

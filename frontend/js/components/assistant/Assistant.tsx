@@ -1,15 +1,19 @@
 import { useState } from "react";
 
-import { Message, QueriesService, Query } from "api";
+import { Attempt, Message, Query } from "api";
 
 import { Chat } from "../ui/chat";
 import { Message as ChatMessage } from "../ui/chat-message";
 
 type AssistantProps = {
-  query: Query;
+  query: Query | Attempt;
+  sendMessageApi: (args: {
+    id: number;
+    requestBody: Message;
+  }) => Promise<Message>;
 };
 
-const Assistant = ({ query }: AssistantProps) => {
+const Assistant = ({ query, sendMessageApi }: AssistantProps) => {
   const toChatMessage = ({ id, content, author }: Message): ChatMessage => ({
     id: id.toString(),
     content,
@@ -29,7 +33,7 @@ const Assistant = ({ query }: AssistantProps) => {
   const sendMessage = async (message: string) => {
     addMessage({ id: 0, content: message, author: "user" } as Message);
     setIsGenerating(true);
-    const reply = await QueriesService.queriesMessagesCreate({
+    const reply = await sendMessageApi({
       id: query.id,
       requestBody: {
         content: input,

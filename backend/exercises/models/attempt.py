@@ -1,5 +1,6 @@
 from typing import cast
 
+from django.contrib.contenttypes.fields import GenericRelation
 from django.db import models
 
 from common.models import IndexedTimeStampedModel
@@ -31,3 +32,9 @@ class Attempt(AbstractQuery, IndexedTimeStampedModel):
         return cast(Database, self.exercise.database)
 
     objects: models.Manager['Attempt']
+
+    assistant_messages = GenericRelation(
+        'assistant.Message',
+        content_type_field='object_type',
+        object_id_field='object_id',
+    )

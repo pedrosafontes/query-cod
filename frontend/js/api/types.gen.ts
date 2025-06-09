@@ -19,6 +19,7 @@ export type Attempt = {
   readonly validation_errors: Array<QueryError>;
   completed?: boolean;
   readonly language: LanguageEnum;
+  readonly assistant_messages: Array<Message>;
 };
 
 /**
@@ -185,6 +186,7 @@ export type PatchedAttempt = {
   readonly validation_errors?: Array<QueryError>;
   completed?: boolean;
   readonly language?: LanguageEnum;
+  readonly assistant_messages?: Array<Message>;
 };
 
 export type PatchedProject = {
@@ -504,6 +506,16 @@ export type AttemptsPartialUpdateData = {
 };
 
 export type AttemptsPartialUpdateResponse = Attempt;
+
+export type AttemptsMessagesCreateData = {
+  /**
+   * A unique integer value identifying this attempt.
+   */
+  id: number;
+  requestBody: Message;
+};
+
+export type AttemptsMessagesCreateResponse = Message;
 
 export type AttemptsSubmitCreateData = {
   /**
@@ -837,6 +849,14 @@ export type $OpenApiTs = {
       req: AttemptsPartialUpdateData;
       res: {
         200: Attempt;
+      };
+    };
+  };
+  "/api/attempts/{id}/messages/": {
+    post: {
+      req: AttemptsMessagesCreateData;
+      res: {
+        200: Message;
       };
     };
   };

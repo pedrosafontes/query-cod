@@ -75,8 +75,15 @@ export const $Attempt = {
       ],
       readOnly: true,
     },
+    assistant_messages: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/Message",
+      },
+      readOnly: true,
+    },
   },
-  required: ["id", "language", "validation_errors"],
+  required: ["assistant_messages", "id", "language", "validation_errors"],
 } as const;
 
 export const $AuthorEnum = {
@@ -627,6 +634,13 @@ export const $PatchedAttempt = {
           $ref: "#/components/schemas/LanguageEnum",
         },
       ],
+      readOnly: true,
+    },
+    assistant_messages: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/Message",
+      },
       readOnly: true,
     },
   },
