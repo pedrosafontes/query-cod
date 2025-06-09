@@ -14,8 +14,8 @@ import {
   SquaresSubtract,
   SquaresExclude,
 } from "lucide-react";
-import Markdown from "marked-react";
 import { ReactNode } from "react";
+import Markdown from "react-markdown";
 
 import { Button } from "@/components/ui/button";
 import {

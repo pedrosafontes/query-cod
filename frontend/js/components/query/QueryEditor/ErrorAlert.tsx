@@ -1,5 +1,5 @@
 import { AlertCircle, Info } from "lucide-react";
-import Markdown from "marked-react";
+import Markdown from "react-markdown";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "lib/utils";
