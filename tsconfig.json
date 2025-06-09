@@ -2,7 +2,7 @@
   "compilerOptions": {
     "outDir": "build",
     "module": "esnext",
-    "target": "ES2021",
+    "target": "ES2023",
 
     "allowJs": true,
     "baseUrl": "./",
