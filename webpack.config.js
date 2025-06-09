@@ -35,9 +35,37 @@ module.exports = (env, argv) => {
     module: {
       rules: [
         {
-          test: /\.(js|mjs|jsx|ts|tsx)$/,
+          test: /\.js$/,
+          include: path.resolve(__dirname, "node_modules/property-information"),
+          use: {
+            loader: "babel-loader",
+            options: {
+              presets: [
+                ["@babel/preset-env", { modules: false }]
+              ],
+            },
+          },
+        },
+        {
+          test: /\.[jt]sx?$/,
+          exclude: /node_modules/,
           use: {
             loader: "swc-loader",
+            options: {
+              jsc: {
+                parser: {
+                  syntax: "typescript",
+                  tsx: true,
+                },
+                transform: {
+                  react: {
+                    runtime: "automatic",
+                    development: isDev,
+                    refresh: isDev,
+                  },
+                },
+              },
+            },
           },
         },
         {
@@ -101,23 +129,13 @@ module.exports = (env, argv) => {
       extensions: [".js", ".jsx", ".ts", ".tsx"],
       alias: {
         '@': path.resolve(__dirname, 'frontend/js/')
-      },
-      fullySpecified: false,
+      }
     },
     optimization: {
       minimize: !isDev,
-      innerGraph: false,
-      usedExports: false,
-      sideEffects: false,
       splitChunks: {
+        // include all types of chunks
         chunks: "all",
-        cacheGroups: {
-          vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name: 'vendors',
-            chunks: 'all',
-          },
-        },
       },
     },
   };

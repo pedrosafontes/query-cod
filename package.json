@@ -74,6 +74,8 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@babel/core": "^7.27.4",
+    "@babel/preset-env": "^7.27.2",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.13",
     "@swc/cli": "^0.3.12",
     "@swc/core": "^1.5.6",
@@ -91,6 +93,7 @@
     "@typescript-eslint/parser": "^6.21.0",
     "ajv": "~8.13.0",
     "autoprefixer": "^10.4.21",
+    "babel-loader": "^10.0.0",
     "circular-dependency-plugin": "~5.2.2",
     "css-loader": "~7.1.1",
     "eslint": "~8.57.0",
