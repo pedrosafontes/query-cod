@@ -981,6 +981,39 @@ paths:
               schema:
                 $ref: '#/components/schemas/QueryExecution'
           description: ''
+  /api/queries/{id}/messages/:
+    post:
+      operationId: queries_messages_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this query.
+        required: true
+      tags:
+      - queries
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Message'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Message'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
   /api/queries/{id}/subqueries/{subquery_id}/executions/:
     post:
       operationId: queries_subqueries_executions_create
@@ -1110,6 +1143,14 @@ components:
       - id
       - language
       - validation_errors
+    AuthorEnum:
+      enum:
+      - user
+      - assistant
+      type: string
+      description: |-
+        * `user` - User
+        * `assistant` - Assistant
     Database:
       type: object
       properties:
@@ -1420,6 +1461,27 @@ components:
       required:
       - password
       - username
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        author:
+          allOf:
+          - $ref: '#/components/schemas/AuthorEnum'
+          readOnly: true
+        content:
+          type: string
+        created:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - author
+      - content
+      - created
+      - id
     OrderByNode:
       type: object
       properties:
@@ -1562,6 +1624,11 @@ components:
           items:
             $ref: '#/components/schemas/QueryError'
           readOnly: true
+        assistant_messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+          readOnly: true
     PatchedUser:
       type: object
       properties:
@@ -1676,7 +1743,13 @@ components:
           items:
             $ref: '#/components/schemas/QueryError'
           readOnly: true
+        assistant_messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+          readOnly: true
       required:
+      - assistant_messages
       - created
       - id
       - language

@@ -79,6 +79,13 @@ export const $Attempt = {
   required: ["id", "language", "validation_errors"],
 } as const;
 
+export const $AuthorEnum = {
+  enum: ["user", "assistant"],
+  type: "string",
+  description: `* \`user\` - User
+* \`assistant\` - Assistant`,
+} as const;
+
 export const $Database = {
   type: "object",
   properties: {
@@ -485,6 +492,33 @@ export const $Login = {
   required: ["password", "username"],
 } as const;
 
+export const $Message = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    author: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/AuthorEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    content: {
+      type: "string",
+    },
+    created: {
+      type: "string",
+      format: "date-time",
+      readOnly: true,
+    },
+  },
+  required: ["author", "content", "created", "id"],
+} as const;
+
 export const $OrderByNode = {
   type: "object",
   properties: {
@@ -680,6 +714,13 @@ export const $PatchedQuery = {
       },
       readOnly: true,
     },
+    assistant_messages: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/Message",
+      },
+      readOnly: true,
+    },
   },
 } as const;
 
@@ -843,8 +884,16 @@ export const $Query = {
       },
       readOnly: true,
     },
+    assistant_messages: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/Message",
+      },
+      readOnly: true,
+    },
   },
   required: [
+    "assistant_messages",
     "created",
     "id",
     "language",

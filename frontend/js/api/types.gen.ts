@@ -21,6 +21,12 @@ export type Attempt = {
   readonly language: LanguageEnum;
 };
 
+/**
+ * * `user` - User
+ * * `assistant` - Assistant
+ */
+export type AuthorEnum = "user" | "assistant";
+
 export type Database = {
   readonly id: number;
   name: string;
@@ -145,6 +151,13 @@ export type Login = {
   password: string;
 };
 
+export type Message = {
+  readonly id: number;
+  readonly author: AuthorEnum;
+  content: string;
+  readonly created: string;
+};
+
 export type OrderByNode = {
   id: number;
   readonly children: Array<SQLTree>;
@@ -193,6 +206,7 @@ export type PatchedQuery = {
   readonly created?: string;
   readonly modified?: string;
   readonly validation_errors?: Array<QueryError>;
+  readonly assistant_messages?: Array<Message>;
 };
 
 export type PatchedUser = {
@@ -229,6 +243,7 @@ export type Query = {
   readonly created: string;
   readonly modified: string;
   readonly validation_errors: Array<QueryError>;
+  readonly assistant_messages: Array<Message>;
 };
 
 export type QueryError = {
@@ -772,6 +787,16 @@ export type QueriesExecutionsCreateData = {
 
 export type QueriesExecutionsCreateResponse = QueryExecution;
 
+export type QueriesMessagesCreateData = {
+  /**
+   * A unique integer value identifying this query.
+   */
+  id: number;
+  requestBody: Message;
+};
+
+export type QueriesMessagesCreateResponse = Message;
+
 export type QueriesSubqueriesExecutionsCreateData = {
   /**
    * A unique integer value identifying this query.
@@ -1105,6 +1130,14 @@ export type $OpenApiTs = {
       req: QueriesExecutionsCreateData;
       res: {
         200: QueryExecution;
+      };
+    };
+  };
+  "/api/queries/{id}/messages/": {
+    post: {
+      req: QueriesMessagesCreateData;
+      res: {
+        200: Message;
       };
     };
   };

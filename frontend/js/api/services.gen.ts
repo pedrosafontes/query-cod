@@ -80,6 +80,8 @@ import type {
   QueriesDestroyResponse,
   QueriesExecutionsCreateData,
   QueriesExecutionsCreateResponse,
+  QueriesMessagesCreateData,
+  QueriesMessagesCreateResponse,
   QueriesSubqueriesExecutionsCreateData,
   QueriesSubqueriesExecutionsCreateResponse,
   QueriesTranspileCreateData,
@@ -810,6 +812,27 @@ export class QueriesService {
       path: {
         id: data.id,
       },
+    });
+  }
+
+  /**
+   * @param data The data for the request.
+   * @param data.id A unique integer value identifying this query.
+   * @param data.requestBody
+   * @returns Message
+   * @throws ApiError
+   */
+  public static queriesMessagesCreate(
+    data: QueriesMessagesCreateData,
+  ): CancelablePromise<QueriesMessagesCreateResponse> {
+    return __request(OpenAPI, {
+      method: "POST",
+      url: "/api/queries/{id}/messages/",
+      path: {
+        id: data.id,
+      },
+      body: data.requestBody,
+      mediaType: "application/json",
     });
   }
 

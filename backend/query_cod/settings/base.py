@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'databases',
     'exercises',
     'djoser',
+    'assistant',
 ]
 
 MIDDLEWARE = [
@@ -196,6 +197,9 @@ CELERY_EVENT_QUEUE_TTL = config('CELERY_EVENT_QUEUE_TTL', cast=float, default=5.
 # Sentry
 SENTRY_DSN = config('SENTRY_DSN', default='')
 COMMIT_SHA = config('RENDER_GIT_COMMIT', default='')
+
+# ChatGPT
+OPENAI_API_KEY = config('OPENAI_API_KEY')
 
 # Fix for Safari 12 compatibility issues, please check:
 # https://github.com/vintasoftware/safari-samesite-cookie-issue
