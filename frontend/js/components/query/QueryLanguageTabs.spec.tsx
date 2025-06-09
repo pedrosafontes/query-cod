@@ -26,6 +26,7 @@ describe("QueryLanguageTabs", () => {
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
     validation_errors: [],
+    assistant_messages: [],
   };
 
   const mockSetQuery = jest.fn();

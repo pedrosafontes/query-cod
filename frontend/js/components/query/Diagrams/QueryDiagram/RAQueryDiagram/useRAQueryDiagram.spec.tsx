@@ -60,6 +60,7 @@ describe("useRAQueryDiagram", () => {
     modified: new Date().toISOString(),
     validation_errors: [],
     language: "ra",
+    assistant_messages: [],
   };
 
   beforeEach(() => {

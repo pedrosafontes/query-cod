@@ -68,7 +68,9 @@ const ProjectQuery = ({
           updateText={updateText}
         />
       )}
-      {tab === Tab.Assistant && query && <Assistant query={query} key={query.id} />}
+      {tab === Tab.Assistant && query && (
+        <Assistant key={query.id} query={query} />
+      )}
     </QueryPage>
   );
 };
