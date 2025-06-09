@@ -1,5 +1,6 @@
 from django.db.models import QuerySet
 
+from assistant.views import MessagesMixin
 from drf_spectacular.utils import extend_schema
 from exercises.serializers.feedback import FeedbackSerializer
 from queries.views import SubqueriesMixin
@@ -14,6 +15,7 @@ from ..services.mark_attempt import mark_attempt
 
 
 class AttemptViewSet(
+    MessagesMixin,
     SubqueriesMixin,
     mixins.UpdateModelMixin,
     viewsets.GenericViewSet[Attempt],

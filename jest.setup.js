@@ -32,3 +32,5 @@ class ResizeObserver {
 }
 
 global.ResizeObserver = ResizeObserver;
+
+jest.mock("react-markdown");

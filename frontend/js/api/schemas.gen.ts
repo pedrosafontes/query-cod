@@ -75,8 +75,22 @@ export const $Attempt = {
       ],
       readOnly: true,
     },
+    assistant_messages: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/Message",
+      },
+      readOnly: true,
+    },
   },
-  required: ["id", "language", "validation_errors"],
+  required: ["assistant_messages", "id", "language", "validation_errors"],
+} as const;
+
+export const $AuthorEnum = {
+  enum: ["user", "assistant"],
+  type: "string",
+  description: `* \`user\` - User
+* \`assistant\` - Assistant`,
 } as const;
 
 export const $Database = {
@@ -231,12 +245,7 @@ export const $Exercise = {
       readOnly: true,
     },
     language: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/LanguageEnum",
-        },
-      ],
-      readOnly: true,
+      $ref: "#/components/schemas/LanguageEnum",
     },
     title: {
       type: "string",
@@ -309,12 +318,7 @@ export const $ExerciseSummary = {
       $ref: "#/components/schemas/DifficultyEnum",
     },
     language: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/LanguageEnum",
-        },
-      ],
-      readOnly: true,
+      $ref: "#/components/schemas/LanguageEnum",
     },
     database: {
       allOf: [
@@ -478,6 +482,8 @@ export const $HavingNode = {
 export const $LanguageEnum = {
   enum: ["sql", "ra"],
   type: "string",
+  description: `* \`sql\` - SQL
+* \`ra\` - Relational Algebra`,
 } as const;
 
 export const $Login = {
@@ -491,6 +497,33 @@ export const $Login = {
     },
   },
   required: ["password", "username"],
+} as const;
+
+export const $Message = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+      readOnly: true,
+    },
+    author: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/AuthorEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    content: {
+      type: "string",
+    },
+    created: {
+      type: "string",
+      format: "date-time",
+      readOnly: true,
+    },
+  },
+  required: ["author", "content", "created", "id"],
 } as const;
 
 export const $OrderByNode = {
@@ -603,6 +636,13 @@ export const $PatchedAttempt = {
       ],
       readOnly: true,
     },
+    assistant_messages: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/Message",
+      },
+      readOnly: true,
+    },
   },
 } as const;
 
@@ -669,12 +709,7 @@ export const $PatchedQuery = {
       type: "string",
     },
     language: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/LanguageEnum",
-        },
-      ],
-      readOnly: true,
+      $ref: "#/components/schemas/LanguageEnum",
     },
     created: {
       type: "string",
@@ -690,6 +725,13 @@ export const $PatchedQuery = {
       type: "array",
       items: {
         $ref: "#/components/schemas/QueryError",
+      },
+      readOnly: true,
+    },
+    assistant_messages: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/Message",
       },
       readOnly: true,
     },
@@ -837,12 +879,7 @@ export const $Query = {
       type: "string",
     },
     language: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/LanguageEnum",
-        },
-      ],
-      readOnly: true,
+      $ref: "#/components/schemas/LanguageEnum",
     },
     created: {
       type: "string",
@@ -861,8 +898,16 @@ export const $Query = {
       },
       readOnly: true,
     },
+    assistant_messages: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/Message",
+      },
+      readOnly: true,
+    },
   },
   required: [
+    "assistant_messages",
     "created",
     "id",
     "language",
@@ -948,12 +993,7 @@ export const $QuerySummary = {
       maxLength: 255,
     },
     language: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/LanguageEnum",
-        },
-      ],
-      readOnly: true,
+      $ref: "#/components/schemas/LanguageEnum",
     },
   },
   required: ["id", "language", "name"],

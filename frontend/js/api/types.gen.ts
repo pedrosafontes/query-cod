@@ -19,7 +19,14 @@ export type Attempt = {
   readonly validation_errors: Array<QueryError>;
   completed?: boolean;
   readonly language: LanguageEnum;
+  readonly assistant_messages: Array<Message>;
 };
+
+/**
+ * * `user` - User
+ * * `assistant` - Assistant
+ */
+export type AuthorEnum = "user" | "assistant";
 
 export type Database = {
   readonly id: number;
@@ -84,7 +91,7 @@ export type ErrorPosition = {
 
 export type Exercise = {
   readonly id: number;
-  readonly language: LanguageEnum;
+  language: LanguageEnum;
   title: string;
   difficulty: DifficultyEnum;
   description: string;
@@ -99,7 +106,7 @@ export type ExerciseSummary = {
   readonly id: number;
   title: string;
   difficulty: DifficultyEnum;
-  readonly language: LanguageEnum;
+  language: LanguageEnum;
   readonly database: DatabaseSummary;
   readonly completed: boolean;
 };
@@ -134,11 +141,22 @@ export type HavingNode = {
   condition: string;
 };
 
+/**
+ * * `sql` - SQL
+ * * `ra` - Relational Algebra
+ */
 export type LanguageEnum = "sql" | "ra";
 
 export type Login = {
   username: string;
   password: string;
+};
+
+export type Message = {
+  readonly id: number;
+  readonly author: AuthorEnum;
+  content: string;
+  readonly created: string;
 };
 
 export type OrderByNode = {
@@ -168,6 +186,7 @@ export type PatchedAttempt = {
   readonly validation_errors?: Array<QueryError>;
   completed?: boolean;
   readonly language?: LanguageEnum;
+  readonly assistant_messages?: Array<Message>;
 };
 
 export type PatchedProject = {
@@ -185,10 +204,11 @@ export type PatchedQuery = {
   readonly id?: number;
   name?: string;
   text?: string;
-  readonly language?: LanguageEnum;
+  language?: LanguageEnum;
   readonly created?: string;
   readonly modified?: string;
   readonly validation_errors?: Array<QueryError>;
+  readonly assistant_messages?: Array<Message>;
 };
 
 export type PatchedUser = {
@@ -221,10 +241,11 @@ export type Query = {
   readonly id: number;
   name: string;
   text?: string;
-  readonly language: LanguageEnum;
+  language: LanguageEnum;
   readonly created: string;
   readonly modified: string;
   readonly validation_errors: Array<QueryError>;
+  readonly assistant_messages: Array<Message>;
 };
 
 export type QueryError = {
@@ -259,7 +280,7 @@ export type QueryResultData = {
 export type QuerySummary = {
   readonly id: number;
   name: string;
-  readonly language: LanguageEnum;
+  language: LanguageEnum;
 };
 
 export type QueryTree = {
@@ -485,6 +506,16 @@ export type AttemptsPartialUpdateData = {
 };
 
 export type AttemptsPartialUpdateResponse = Attempt;
+
+export type AttemptsMessagesCreateData = {
+  /**
+   * A unique integer value identifying this attempt.
+   */
+  id: number;
+  requestBody: Message;
+};
+
+export type AttemptsMessagesCreateResponse = Message;
 
 export type AttemptsSubmitCreateData = {
   /**
@@ -768,6 +799,16 @@ export type QueriesExecutionsCreateData = {
 
 export type QueriesExecutionsCreateResponse = QueryExecution;
 
+export type QueriesMessagesCreateData = {
+  /**
+   * A unique integer value identifying this query.
+   */
+  id: number;
+  requestBody: Message;
+};
+
+export type QueriesMessagesCreateResponse = Message;
+
 export type QueriesSubqueriesExecutionsCreateData = {
   /**
    * A unique integer value identifying this query.
@@ -808,6 +849,14 @@ export type $OpenApiTs = {
       req: AttemptsPartialUpdateData;
       res: {
         200: Attempt;
+      };
+    };
+  };
+  "/api/attempts/{id}/messages/": {
+    post: {
+      req: AttemptsMessagesCreateData;
+      res: {
+        200: Message;
       };
     };
   };
@@ -1101,6 +1150,14 @@ export type $OpenApiTs = {
       req: QueriesExecutionsCreateData;
       res: {
         200: QueryExecution;
+      };
+    };
+  };
+  "/api/queries/{id}/messages/": {
+    post: {
+      req: QueriesMessagesCreateData;
+      res: {
+        200: Message;
       };
     };
   };

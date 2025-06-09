@@ -46,6 +46,7 @@ describe("SQLEditor", () => {
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
     validation_errors: [],
+    assistant_messages: [],
   };
 
   const mockUpdateText = jest.fn();

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AttemptsService, Feedback, QueryResultData } from "api";
+import Assistant from "components/assistant/Assistant";
 import ExerciseDetails from "components/exercise/ExerciseDetails";
 import ExerciseFeedback from "components/exercise/ExerciseFeedback";
 import SubmitAttemptButton from "components/exercise/SubmitAttemptButton";
@@ -18,6 +19,7 @@ enum Tab {
   Editor = "editor",
   Solution = "solution",
   Feedback = "feedback",
+  Assistant = "assistant",
 }
 
 const ExercisePage = () => {
@@ -64,7 +66,7 @@ const ExercisePage = () => {
           databaseId={exercise.database.id}
           executeSubquery={AttemptsService.attemptsSubqueriesExecutionsCreate}
           fetchTree={AttemptsService.attemptsTreeRetrieve}
-          minLeftWidth={500}
+          minLeftWidth={550}
           query={attempt}
           queryResult={queryResult}
           setQueryResult={setQueryResult}
@@ -75,6 +77,7 @@ const ExercisePage = () => {
               <TabsList>
                 <TabsTrigger value={Tab.Description}>Description</TabsTrigger>
                 <TabsTrigger value={Tab.Editor}>Editor</TabsTrigger>
+                <TabsTrigger value={Tab.Assistant}>Assistant</TabsTrigger>
                 <TabsTrigger
                   disabled={feedback === undefined}
                   value={Tab.Feedback}
@@ -94,6 +97,12 @@ const ExercisePage = () => {
               query={attempt}
               setQuery={setAttempt}
               updateText={updateText}
+            />
+          )}
+          {tab === Tab.Assistant && attempt && (
+            <Assistant
+              query={attempt}
+              sendMessageApi={AttemptsService.attemptsMessagesCreate}
             />
           )}
           {tab === Tab.Feedback && feedback && (

@@ -76,6 +76,7 @@ jobs:
           SENDGRID_USERNAME: "test"
           SENDGRID_PASSWORD: "test"
           REDIS_URL: "redis://"
+          OPENAI_API_KEY: "test"
       - run: poetry run pre-commit run --all-files
         env:
           SKIP: ruff,eslint,missing-migrations,backend-schema
@@ -88,6 +89,7 @@ jobs:
           SENDGRID_USERNAME: "test"
           SENDGRID_PASSWORD: "test"
           REDIS_URL: "redis://"
+          OPENAI_API_KEY: "test"
         working-directory: backend
       - run: poetry run python manage.py check --deploy
         env:
@@ -98,6 +100,7 @@ jobs:
           SENDGRID_USERNAME: "test"
           SENDGRID_PASSWORD: "test"
           REDIS_URL: "redis://"
+          OPENAI_API_KEY: "test"
         working-directory: backend
       - run: |
           poetry run coverage run -m pytest --junitxml=junit/test-results.xml

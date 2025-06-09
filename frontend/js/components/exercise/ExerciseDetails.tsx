@@ -1,5 +1,5 @@
 import { CircleCheckBigIcon } from "lucide-react";
-import Markdown from "marked-react";
+import Markdown from "react-markdown";
 
 import {
   Accordion,
@@ -48,9 +48,7 @@ const ExerciseDetails = ({
               </div>
             </AccordionTrigger>
             <AccordionContent className="text-sm/6">
-              <Markdown>
-                {exercise.database.description}
-              </Markdown>
+              <Markdown>{exercise.database.description}</Markdown>
             </AccordionContent>
           </AccordionItem>
         </Accordion>

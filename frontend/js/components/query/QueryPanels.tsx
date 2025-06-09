@@ -17,7 +17,7 @@ type QueryPanelsProps = {
 const QueryPanels = ({
   left,
   right,
-  minLeftWidth = 400,
+  minLeftWidth = 500,
   collapsible = true,
   withHandle = true,
 }: QueryPanelsProps) => {
@@ -51,7 +51,7 @@ const QueryPanels = ({
     if (left) {
       return (
         <ResizablePanel
-          className="py-5 !overflow-y-auto"
+          className="py-5 flex flex-col max-h-screen"
           collapsedSize={0}
           collapsible={collapsible}
           defaultSize={size}

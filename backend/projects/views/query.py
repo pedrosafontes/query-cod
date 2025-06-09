@@ -1,8 +1,8 @@
 from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 
+from assistant.views import MessagesMixin
 from drf_spectacular.utils import OpenApiParameter, extend_schema
-from projects.models import Project
 from queries.models import Language
 from queries.serializers.execution import QueryExecutionSerializer
 from queries.services.execution import execute_query
@@ -14,7 +14,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import BaseSerializer
 
-from ..models import Query
+from ..models import Project, Query
 from ..serializers import QuerySerializer
 
 
@@ -37,6 +37,7 @@ class ProjectQueryViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet[Query
 
 
 class QueryViewSet(
+    MessagesMixin,
     SubqueriesMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,

@@ -28,6 +28,7 @@ describe("QueryEditor", () => {
     created: new Date().toISOString(),
     modified: new Date().toISOString(),
     validation_errors: [],
+    assistant_messages: [],
   };
 
   const mockRAQuery: Query = {
