@@ -5,7 +5,7 @@ module.exports = {
     "^.+\\.(css|scss|png|svg|jpg|jpeg|gif|webp)$": "jest-transform-stub",
     "^@/(.*)$": "<rootDir>/frontend/js/$1",
   },
-  transformIgnorePatterns: ["node_modules/*"],
+  transformIgnorePatterns: ["node_modules/(?!(remark.*|devlop|decode-named-character-reference|mdast.*|micromark.*|unist.*|zwitch|longest-streak|markdown-table|ccount|escape-string-regexp)/)"],
   modulePaths: ["frontend", "frontend/js", "frontend/js/app"],
   setupFilesAfterEnv: ["./jest.setup.js"],
   testEnvironment: "jsdom",
