@@ -199,7 +199,7 @@ SENTRY_DSN = config('SENTRY_DSN', default='')
 COMMIT_SHA = config('RENDER_GIT_COMMIT', default='')
 
 # ChatGPT
-OPENAI_API_KEY = config('OPENAI_API_KEY')
+OPENAI_API_KEY = config('OPENAI_API_KEY', default='')
 
 # Fix for Safari 12 compatibility issues, please check:
 # https://github.com/vintasoftware/safari-samesite-cookie-issue
