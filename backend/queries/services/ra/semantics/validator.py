@@ -84,7 +84,8 @@ class RASemanticValidator:
         right = self._schema_inferrer.infer(op.right)
         if op.kind != SetOperatorKind.CARTESIAN:
             if not all(
-                a.data_type == b.data_type for a, b in zip(left.attrs, right.attrs, strict=True)
+                a.data_type.is_comparable_with(b.data_type)
+                for a, b in zip(left.attrs, right.attrs, strict=True)
             ):
                 raise UnionCompatibilityError(op, op.kind, left.attrs, right.attrs)
 
