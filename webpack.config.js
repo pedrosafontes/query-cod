@@ -101,13 +101,23 @@ module.exports = (env, argv) => {
       extensions: [".js", ".jsx", ".ts", ".tsx"],
       alias: {
         '@': path.resolve(__dirname, 'frontend/js/')
-      }
+      },
+      fullySpecified: false,
     },
     optimization: {
       minimize: !isDev,
+      innerGraph: false,
+      usedExports: false,
+      sideEffects: false,
       splitChunks: {
-        // include all types of chunks
         chunks: "all",
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
+        },
       },
     },
   };
