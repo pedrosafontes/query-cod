@@ -44,21 +44,20 @@ def alias_tables(query: SQLQuery) -> SQLQuery:
             if col.table == name:
                 col.replace(column(col=col.name, table=alias))
 
-    def get_unique_alias(name: str) -> str:
+    def get_unique_alias(node: Table) -> str:
+        name = node.alias_or_name
+        table_counters[name] += 1
+
+        if table_counters[name] == 1:
+            return name
+
         while (alias := f'{name}{table_counters[name] - 1}') in table_counters:
             table_counters[name] += 1
         return alias
 
     def assign_aliases(node: Expression) -> Expression:
-        if isinstance(node, Table):
-            name = node.alias_or_name
-            table_counters[name] += 1
-
-            if table_counters[name] == 1:
-                return node
-
-            alias = get_unique_alias(name)
-            update_column_references(cast(Select, node.parent_select), name, alias)
+        if isinstance(node, Table) and (alias := get_unique_alias(node)) != node.alias_or_name:
+            update_column_references(cast(Select, node.parent_select), node.alias_or_name, alias)
 
             return node.as_(alias)
 
