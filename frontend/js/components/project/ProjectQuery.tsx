@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { QueriesService, Query, QueryResultData } from "api";
 
 import ExecuteQueryButton from "../query/ExecuteQueryButton";
@@ -7,6 +10,7 @@ import QueryPage from "../query/QueryPage";
 import TranspileQueryButton from "../query/TranspileQueryButton";
 import { Spinner } from "../ui/spinner";
 
+import Assistant from "./Assistant";
 import { useProjectQuery } from "./useProjectQuery";
 
 export type ProjectQueryProps = {
@@ -32,6 +36,12 @@ const ProjectQuery = ({
     updateText,
   } = useProjectQuery(queryId);
 
+  const [tab, setTab] = useState<Tab>(Tab.Editor);
+
+  useEffect(() => {
+    setTab(Tab.Editor);
+  }, [queryId]);
+
   return (
     <QueryPage
       databaseId={databaseId}
@@ -46,14 +56,19 @@ const ProjectQuery = ({
         refetchProject={refetchProject}
         setQueryId={setQueryId}
         setQueryResult={setQueryResult}
+        setTab={setTab}
+        tab={tab}
       />
-      <ProjectQueryEditor
-        isLoading={isLoading}
-        loadingError={loadingError || undefined}
-        query={query}
-        setQuery={setQuery}
-        updateText={updateText}
-      />
+      {tab === Tab.Editor && (
+        <ProjectQueryEditor
+          isLoading={isLoading}
+          loadingError={loadingError || undefined}
+          query={query}
+          setQuery={setQuery}
+          updateText={updateText}
+        />
+      )}
+      {tab === Tab.Assistant && query && <Assistant query={query} key={query.id} />}
     </QueryPage>
   );
 };
@@ -105,23 +120,37 @@ const ProjectQueryEditor = ({
 
 type ProjectQueryHeaderProps = {
   query?: Query;
+  tab: Tab;
   setQueryId: (queryId?: number) => void;
   setQueryResult: (result?: QueryResultData) => void;
+  setTab: (tab: Tab) => void;
   refetchProject: () => void;
 };
 
+enum Tab {
+  Editor = "editor",
+  Assistant = "assistant",
+}
+
 const ProjectQueryHeader = ({
   query,
+  tab,
   setQueryId,
   setQueryResult,
+  setTab,
   refetchProject,
 }: ProjectQueryHeaderProps) => {
   const hasErrors = !!query && query.validation_errors.length > 0;
   const disabled = !query || hasErrors;
 
   return (
-    <div className="flex justify-between items-center gap-2 mb-5 w-full px-3">
-      <h1 className="truncate">{query?.name}</h1>
+    <div className="flex justify-between gap-2 mb-5 w-full px-3">
+      <Tabs value={tab} onValueChange={(v) => setTab(v as Tab)}>
+        <TabsList>
+          <TabsTrigger value="editor">Editor</TabsTrigger>
+          <TabsTrigger value="assistant">Assistant</TabsTrigger>
+        </TabsList>
+      </Tabs>
       <div className="flex gap-2">
         <TranspileQueryButton
           disabled={disabled}
