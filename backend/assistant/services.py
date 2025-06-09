@@ -4,20 +4,21 @@ from django.contrib.contenttypes.models import ContentType
 from exercises.models.attempt import Attempt
 from openai import OpenAI
 from projects.models.query import Query
+from queries.services.ra.parser import grammar
 
 from .models import Message
-from queries.services.ra.parser import grammar
 
 
 client = OpenAI(api_key=settings.OPENAI_API_KEY)  # type: ignore[misc]
 
+
 def build_assistant_prompt(query: Query | Attempt, user_message: str) -> str:
     lines = [
-        f"You are a {query.language.upper()} instructor in the Query Cod educational app.",
-        "The database schema is:",
-        f"{query.database.schema}",
+        f'You are a {query.language.upper()} instructor in the Query Cod educational app.',
+        'The database schema is:',
+        f'{query.database.schema}',
         "The student's query is:",
-        f"{query.query}",
+        f'{query.query}',
     ]
 
     if query.validation_errors:
@@ -26,15 +27,15 @@ def build_assistant_prompt(query: Query | Attempt, user_message: str) -> str:
             str(query.validation_errors),
         ]
 
-    if query.language == "sql":
-        lines.append("The supported SQL dialect is SQL-92.")
-    elif query.language == "ra":
+    if query.language == 'sql':
+        lines.append('The supported SQL dialect is SQL-92.')
+    elif query.language == 'ra':
         lines += [
-            "The Relational Algebra LaTeX grammar supported by the app is:",
+            'The Relational Algebra LaTeX grammar supported by the app is:',
             grammar,
         ]
 
-    return "\n".join(lines)
+    return '\n'.join(lines)
 
 
 def assist(query: Query | Attempt, user_message: str) -> Message:
@@ -49,7 +50,7 @@ def assist(query: Query | Attempt, user_message: str) -> Message:
     prompt = build_assistant_prompt(query, user_message)
 
     response = client.responses.create(
-        model="gpt-4o",
+        model='gpt-4o',
         instructions=prompt,
         input=user_message,
     )

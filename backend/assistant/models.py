@@ -24,4 +24,4 @@ class Message(IndexedTimeStampedModel):
     objects: models.Manager['Message']
 
     class Meta:
-        ordering = ['created']
+        ordering = ['created']  # noqa: RUF012
