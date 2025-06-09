@@ -98,8 +98,8 @@ class RAtoSQLTranspiler:
     @_transpile.register
     def _(self, div: ra.Division) -> Select:
         # Get tables with aliases
-        dividend, dividend_alias = self._transpile_relation(div.dividend, 'dividend')
-        dividend_sub, dividend_sub_alias = self._transpile_relation(div.dividend, 'missing_divisor')
+        dividend, dividend_alias = self._transpile_table(div.dividend, 'dividend')
+        dividend_sub, dividend_sub_alias = self._transpile_table(div.dividend, 'missing_divisor')
 
         output_attrs = [a.name for a in self._schema_inferrer.infer(div).attrs]
         divisor_attrs = [a.name for a in self._schema_inferrer.infer(div.divisor).attrs]
@@ -161,11 +161,11 @@ class RAtoSQLTranspiler:
 
     @_transpile.register
     def _(self, join: ra.Join) -> Select:
-        left, left_alias = self._transpile_relation(join.left, alias='l')
+        left, left_alias = self._transpile_table(join.left, alias='l')
 
         match join.kind:
             case ra.JoinKind.SEMI | ra.JoinKind.ANTI:
-                right, right_alias = self._transpile_relation(join.right, 'r')
+                right, right_alias = self._transpile_table(join.right, 'r')
                 common = self._common_attrs(join.left, join.right)
 
                 condition: Expression = Exists(
@@ -201,7 +201,7 @@ class RAtoSQLTranspiler:
 
     @_transpile.register
     def _(self, join: ra.ThetaJoin) -> Select:
-        left, left_alias = self._transpile_relation(join.left, 'l')
+        left, left_alias = self._transpile_table(join.left, 'l')
 
         # rename the attributes in the left relation to use the alias
         left_schema = self._schema_inferrer.infer(join.left).schema
@@ -268,7 +268,7 @@ class RAtoSQLTranspiler:
                 query = self._transpile(rename.operand)
                 return subquery(query, rename.alias).select('*')
 
-    def _transpile_relation(self, relation: RAQuery, alias: str) -> tuple[Select, str]:
+    def _transpile_table(self, relation: RAQuery, alias: str) -> tuple[Select, str]:
         select = self._transpile_select(relation)
         match relation:
             case Relation():
