@@ -17,7 +17,7 @@ class Message(IndexedTimeStampedModel):
 
     author = models.CharField(
         max_length=10,
-        choices=Author.choices,
+        choices=Author,
     )
     content = models.TextField()
 
