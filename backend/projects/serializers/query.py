@@ -23,6 +23,8 @@ class QuerySerializer(serializers.ModelSerializer[Query]):
 
 
 class QuerySummarySerializer(serializers.ModelSerializer[Query]):
+    language = serializers.ChoiceField(source='_language', choices=Language.choices)
+
     class Meta:
         model = Query
         fields = [  # noqa: RUF012

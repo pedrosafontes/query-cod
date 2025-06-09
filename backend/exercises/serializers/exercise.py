@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any
 
 from databases.serializers import DatabaseSummarySerializer
 from drf_spectacular.utils import extend_schema_field
@@ -11,7 +11,7 @@ from .attempt import AttemptSerializer
 
 
 class BaseExerciseSerializer(serializers.ModelSerializer[Exercise]):
-    language = serializers.SerializerMethodField()
+    language = serializers.ChoiceField(choices=Language.choices)
     completed = serializers.SerializerMethodField()
 
     class Meta:
@@ -20,9 +20,6 @@ class BaseExerciseSerializer(serializers.ModelSerializer[Exercise]):
             'language',
             'completed',
         ]
-
-    def get_language(self, obj: Exercise) -> Language:
-        return cast(Language, obj.language)
 
     def get_completed(self, obj: Exercise) -> bool:
         return obj.completed_by(self.context['request'].user)

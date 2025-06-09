@@ -135,6 +135,9 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': "A Django project boilerplate with Vinta's best practices",
     'VERSION': '0.1.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'ENUM_NAME_OVERRIDES': {
+        'LanguageEnum': 'queries.models.Language',
+    },
 }
 
 LANGUAGE_CODE = 'en-us'

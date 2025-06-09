@@ -231,12 +231,7 @@ export const $Exercise = {
       readOnly: true,
     },
     language: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/LanguageEnum",
-        },
-      ],
-      readOnly: true,
+      $ref: "#/components/schemas/LanguageEnum",
     },
     title: {
       type: "string",
@@ -309,12 +304,7 @@ export const $ExerciseSummary = {
       $ref: "#/components/schemas/DifficultyEnum",
     },
     language: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/LanguageEnum",
-        },
-      ],
-      readOnly: true,
+      $ref: "#/components/schemas/LanguageEnum",
     },
     database: {
       allOf: [
@@ -478,6 +468,8 @@ export const $HavingNode = {
 export const $LanguageEnum = {
   enum: ["sql", "ra"],
   type: "string",
+  description: `* \`sql\` - SQL
+* \`ra\` - Relational Algebra`,
 } as const;
 
 export const $Login = {
@@ -669,12 +661,7 @@ export const $PatchedQuery = {
       type: "string",
     },
     language: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/LanguageEnum",
-        },
-      ],
-      readOnly: true,
+      $ref: "#/components/schemas/LanguageEnum",
     },
     created: {
       type: "string",
@@ -837,12 +824,7 @@ export const $Query = {
       type: "string",
     },
     language: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/LanguageEnum",
-        },
-      ],
-      readOnly: true,
+      $ref: "#/components/schemas/LanguageEnum",
     },
     created: {
       type: "string",
@@ -948,12 +930,7 @@ export const $QuerySummary = {
       maxLength: 255,
     },
     language: {
-      allOf: [
-        {
-          $ref: "#/components/schemas/LanguageEnum",
-        },
-      ],
-      readOnly: true,
+      $ref: "#/components/schemas/LanguageEnum",
     },
   },
   required: ["id", "language", "name"],

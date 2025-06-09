@@ -84,7 +84,7 @@ export type ErrorPosition = {
 
 export type Exercise = {
   readonly id: number;
-  readonly language: LanguageEnum;
+  language: LanguageEnum;
   title: string;
   difficulty: DifficultyEnum;
   description: string;
@@ -99,7 +99,7 @@ export type ExerciseSummary = {
   readonly id: number;
   title: string;
   difficulty: DifficultyEnum;
-  readonly language: LanguageEnum;
+  language: LanguageEnum;
   readonly database: DatabaseSummary;
   readonly completed: boolean;
 };
@@ -134,6 +134,10 @@ export type HavingNode = {
   condition: string;
 };
 
+/**
+ * * `sql` - SQL
+ * * `ra` - Relational Algebra
+ */
 export type LanguageEnum = "sql" | "ra";
 
 export type Login = {
@@ -185,7 +189,7 @@ export type PatchedQuery = {
   readonly id?: number;
   name?: string;
   text?: string;
-  readonly language?: LanguageEnum;
+  language?: LanguageEnum;
   readonly created?: string;
   readonly modified?: string;
   readonly validation_errors?: Array<QueryError>;
@@ -221,7 +225,7 @@ export type Query = {
   readonly id: number;
   name: string;
   text?: string;
-  readonly language: LanguageEnum;
+  language: LanguageEnum;
   readonly created: string;
   readonly modified: string;
   readonly validation_errors: Array<QueryError>;
@@ -259,7 +263,7 @@ export type QueryResultData = {
 export type QuerySummary = {
   readonly id: number;
   name: string;
-  readonly language: LanguageEnum;
+  language: LanguageEnum;
 };
 
 export type QueryTree = {
