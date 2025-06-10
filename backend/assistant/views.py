@@ -22,6 +22,10 @@ class MessagesMixin:
         assistant_msg = assist(
             parent,
             user_message=serializer.validated_data['content'],
+            system_prompt=self._system_prompt(),
         )
 
         return Response(MessageSerializer(assistant_msg).data, status=status.HTTP_201_CREATED)
+
+    def _system_prompt(self) -> str | None:
+        return None
