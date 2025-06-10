@@ -130,7 +130,7 @@ export const unaryOperators: RAKeyboardItem[] = [
 export const binaryOperators: RAKeyboardItem[] = [
   {
     label: "\\cup",
-    expr: "(#@)\\cup(\\placeholder{rrel})",
+    expr: "#@\\cup\\placeholder{rrel}",
     details: {
       displayExpr: "R \\cup S",
       name: "Union",
@@ -143,7 +143,7 @@ export const binaryOperators: RAKeyboardItem[] = [
   },
   {
     label: "-",
-    expr: "(#@)-(\\placeholder{rrel})",
+    expr: "#@-\\placeholder{rrel}",
     details: {
       displayExpr: "R - S",
       name: "Difference",
@@ -157,7 +157,7 @@ export const binaryOperators: RAKeyboardItem[] = [
   },
   {
     label: "\\cap",
-    expr: "(#@)\\cap(\\placeholder{rrel})",
+    expr: "#@\\cap\\placeholder{rrel}",
     details: {
       displayExpr: "R \\cap S",
       name: "Intersection",
@@ -170,7 +170,7 @@ export const binaryOperators: RAKeyboardItem[] = [
   },
   {
     label: "\\div",
-    expr: "(#@)\\div(\\placeholder{rrel})",
+    expr: "#@\\div\\placeholder{rrel}",
     details: {
       displayExpr: "R \\div S",
       name: "Division",
@@ -187,7 +187,7 @@ export const binaryOperators: RAKeyboardItem[] = [
 export const joinOperators: RAKeyboardItem[] = [
   {
     label: "\\times",
-    expr: "(#@)\\times(\\placeholder{rrel})",
+    expr: "#@\\times\\placeholder{rrel}",
     details: {
       displayExpr: "R \\times S",
       name: "Cartesian Product",
@@ -200,7 +200,7 @@ export const joinOperators: RAKeyboardItem[] = [
   },
   {
     label: "\\Join",
-    expr: "(#@)\\Join(\\placeholder{rrel})",
+    expr: "#@\\Join\\placeholder{rrel}",
     details: {
       displayExpr: "R \\Join S",
       name: "Natural Join",
@@ -213,7 +213,7 @@ export const joinOperators: RAKeyboardItem[] = [
   },
   {
     label: "\\ltimes",
-    expr: "(#@)\\ltimes(\\placeholder{rrel})",
+    expr: "#@\\ltimes\\placeholder{rrel}",
     details: {
       displayExpr: "R \\ltimes S",
       name: "Left Semi Join",
@@ -227,7 +227,7 @@ export const joinOperators: RAKeyboardItem[] = [
   },
   {
     label: "\\overset\\theta\\bowtie",
-    expr: "(#@)\\overset{\\placeholder{cond}}{\\bowtie}(\\placeholder{rrel})",
+    expr: "#@\\overset{\\placeholder{cond}}{\\bowtie}\\placeholder{rrel}",
     details: {
       displayExpr: "R \\overset{\\theta}{\\bowtie} S",
       name: "Theta Join",
@@ -242,7 +242,7 @@ export const joinOperators: RAKeyboardItem[] = [
   },
   {
     label: "\\overline{\\Join}",
-    expr: "(#@)\\overline{\\Join}(\\placeholder{rrel})",
+    expr: "#@\\overline{\\Join}\\placeholder{rrel}",
     details: {
       displayExpr: "R \\ \\overline{\\Join} \\ S",
       name: "Anti Join",
@@ -256,7 +256,7 @@ export const joinOperators: RAKeyboardItem[] = [
   },
   {
     label: "⟕",
-    expr: "(#@)⟕(\\placeholder{rrel})",
+    expr: "#@⟕\\placeholder{rrel}",
     details: {
       displayExpr: "R \\ ⟕ \\ S",
       name: "Left Outer Join",
@@ -270,7 +270,7 @@ export const joinOperators: RAKeyboardItem[] = [
   },
   {
     label: "⟖",
-    expr: "(#@)⟖(\\placeholder{rrel})",
+    expr: "#@⟖\\placeholder{rrel}",
     details: {
       displayExpr: "R \\ ⟖ \\ S",
       name: "Right Outer Join",
@@ -284,7 +284,7 @@ export const joinOperators: RAKeyboardItem[] = [
   },
   {
     label: "⟗",
-    expr: "(#@)⟗(\\placeholder{rrel})",
+    expr: "#@⟗\\placeholder{rrel}",
     details: {
       displayExpr: "R \\ ⟗ \\ S",
       name: "Full Outer Join",
@@ -301,11 +301,11 @@ export const joinOperators: RAKeyboardItem[] = [
 export const extendedOperators: RAKeyboardItem[] = [
   {
     label: "\\Gamma",
-    expr: "\\Gamma_{(\\placeholder{grp_attrs}), ((\\placeholder{in}, \\placeholder{fn}, \\placeholder{out}))}(#0)",
+    expr: "\\Gamma_{((\\placeholder{grp_attrs}), ((\\placeholder{in}, \\placeholder{fn}, \\placeholder{out})))}(#0)",
     details: {
-      displayExpr: "\\Gamma_{(group), ((in, fn, out))}(R)",
+      displayExpr: "\\Gamma_{((group), ((in, fn, out)))}(R)",
       name: "Aggregation",
-      description: "Performs aggregation on grouped attributes.",
+      description: "Performs aggregation on grouped attributes. Aggregation functions include: avg, sum, count, min, max.",
       args: [
         { name: "group", description: "attributes to group by" },
         {
