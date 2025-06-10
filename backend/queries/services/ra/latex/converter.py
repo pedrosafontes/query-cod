@@ -151,7 +151,7 @@ def _(agg: GroupedAggregation) -> str:
             for a in agg.aggregations
         ]
     )
-    return subscript(latex.GAMMA, paren(f'{paren(group_by)}, {paren(aggregations)}'))
+    return subscript(latex.GAMMA, f'{paren(group_by)}, {paren(aggregations)}')
 
 
 @_convert_query.register

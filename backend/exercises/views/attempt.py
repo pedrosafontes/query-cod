@@ -34,3 +34,15 @@ class AttemptViewSet(
     def submit(self, request: Request, pk: str) -> Response:
         attempt = self.get_object()
         return Response(mark_attempt(attempt), status=200)
+
+    def _system_prompt(self) -> str | None:
+        exercise = self.get_object().exercise
+        lines = [
+            'The student is attempting the following exercise:',
+            exercise.title,
+            exercise.description,
+            'The solution is:',
+            exercise.solution,
+            'Please do not directly reveal the solution to the student.',
+        ]
+        return '\n'.join(lines)

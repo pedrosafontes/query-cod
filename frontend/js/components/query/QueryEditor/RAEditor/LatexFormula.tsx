@@ -8,10 +8,6 @@ type LatexFormulaProps = {
 };
 
 function convertDisplayLinesToAligned(input: string): string {
-  if (!input.startsWith("\\displaylines{")) return input;
-
-  console.log(input);
-
   const content = input.slice(14, -1); // Extract content inside \displaylines{}
 
   const alignedContent = content
@@ -27,9 +23,15 @@ function LatexFormula({ expression, className }: LatexFormulaProps) {
 
   useEffect(() => {
     if (containerRef.current) {
-      const processed = convertDisplayLinesToAligned(expression);
-      katex.render(processed, containerRef.current, {
-        displayMode: true,
+      let displayMode = false;
+
+      if (expression.startsWith("\\displaylines{")) {
+        expression = convertDisplayLinesToAligned(expression);
+        displayMode = true;
+      }
+
+      katex.render(expression, containerRef.current, {
+        displayMode,
         throwOnError: false,
       });
     }

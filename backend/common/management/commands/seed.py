@@ -88,6 +88,17 @@ class Command(BaseCommand):
             database_type=Database.DatabaseType.POSTGRESQL,
         )
 
+        challenge_database = Database.objects.create(
+            name='Chinook',
+            description='Digital media store, including tables for artists, albums, media tracks, invoices, and customers.',
+            host='aws-0-eu-west-2.pooler.supabase.com',
+            port=6543,
+            user='postgres.lqihhrdcqvifqnqejofp',
+            password='RE4TM3v7qfDKlh7t',  # noqa: S106
+            database_name='postgres',
+            database_type=Database.DatabaseType.POSTGRESQL,
+        )
+
         # Create projects and queries
         now_time = now()
 
@@ -843,6 +854,60 @@ class Command(BaseCommand):
             language=Language.SQL,
             difficulty=Exercise.Difficulty.HARD,
             database=family_history,
+        )
+
+        Exercise.objects.create(
+            title='Challenge 1',
+            description='Write a query to return the scheme ```(country)``` that lists the country of all locations that have both customers and employees.',
+            solution=query('customer')
+            .project('country')
+            .intersect(query('employee').project('country'))
+            .latex(pretty=True),
+            language=Language.RA,
+            difficulty=Exercise.Difficulty.MEDIUM,
+            database=challenge_database,
+        )
+
+        Exercise.objects.create(
+            title='Challenge 2',
+            description='Write a query to return the scheme ```(name, title)``` that lists the track name and album title of all tracks that are longer than 4 minutes (240000 milliseconds).',
+            solution=textwrap.dedent(
+                """
+                SELECT name, title
+                FROM track 
+                NATURAL JOIN album
+                WHERE milliseconds > 240000
+                """
+            ).strip(),
+            language=Language.SQL,
+            difficulty=Exercise.Difficulty.MEDIUM,
+            database=challenge_database,
+        )
+
+        Exercise.objects.create(
+            title='Challenge 3.A',
+            description='Write a query to return the scheme ```(albumid, tracks)``` that lists the album ID and total number of tracks in each album.',
+            solution=query('track')
+            .grouped_aggregation(
+                ['albumid'],
+                [Aggregation(attribute('trackid'), ra.AggregationFunction.COUNT, 'tracks')],
+            )
+            .latex(pretty=True),
+            language=Language.RA,
+            difficulty=Exercise.Difficulty.HARD,
+            database=challenge_database,
+        )
+
+        Exercise.objects.create(
+            title='Challenge 3.B',
+            description='Write a query to return the scheme ```(name, title)``` that lists the artist name and album title for all artists, including artists without albums.',
+            solution=query('artist')
+            .right_join('album')
+            .project('name', 'title')
+            .latex(pretty=True),
+            language=Language.RA,
+            difficulty=Exercise.Difficulty.HARD,
+            database=challenge_database,
         )
 
         self.stdout.write(self.style.SUCCESS('Seed completed.'))

@@ -43,16 +43,19 @@ const Assistant = ({ query, sendMessageApi }: AssistantProps) => {
     addMessage(reply);
   };
 
+  const handleSubmit = (event?: { preventDefault?: () => void }) => {
+    event?.preventDefault?.();
+    sendMessage(input);
+    setInput("");
+  };
+
   return (
     <Chat
       className="mx-3 flex-1 min-h-0"
       handleInputChange={(e) => {
         setInput(e.target.value);
       }}
-      handleSubmit={(event) => {
-        event?.preventDefault?.();
-        sendMessage(input);
-      }}
+      handleSubmit={handleSubmit}
       input={input}
       isGenerating={isGenerating}
       messages={messages}

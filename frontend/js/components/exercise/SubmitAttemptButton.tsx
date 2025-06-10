@@ -46,7 +46,7 @@ const SubmitAttemptButton = ({
 
     if (correct) {
       return {
-        text: "Completed",
+        text: "Correct",
         buttonClass: "bg-green-500",
         icon: <CircleCheckBig size={16} />,
       };

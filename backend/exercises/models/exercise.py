@@ -52,3 +52,7 @@ class Exercise(IndexedTimeStampedModel):
             cache.set(cache_key, result)
 
         return result
+
+    @property
+    def is_order_significant(self) -> bool:
+        return False
