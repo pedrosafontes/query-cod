@@ -303,7 +303,7 @@ export const extendedOperators: RAKeyboardItem[] = [
     label: "\\Gamma",
     expr: "\\Gamma_{((\\placeholder{grp_attrs}), ((\\placeholder{in}, \\placeholder{fn}, \\placeholder{out})))}(#0)",
     details: {
-      displayExpr: "\\Gamma_{((group), ((in, fn, out)))}(R)",
+      displayExpr: "\\Gamma_{(group), ((in, fn, out))}(R)",
       name: "Aggregation",
       description:
         "Performs aggregation on grouped attributes. Aggregation functions include: avg, sum, count, min, max.",
@@ -315,7 +315,7 @@ export const extendedOperators: RAKeyboardItem[] = [
         },
         { name: "R", description: "input relation" },
       ],
-      example: "\\Gamma_{((dept), ((salary, avg, avg_salary)))}(Employee)",
+      example: "\\Gamma_{(dept), ((salary, avg, avg_salary))}(Employee)",
     },
   },
   {
