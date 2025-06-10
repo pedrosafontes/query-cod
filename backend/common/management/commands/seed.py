@@ -886,13 +886,12 @@ class Command(BaseCommand):
 
         Exercise.objects.create(
             title='Challenge 3.A',
-            description='Write a query to return the scheme ```(albumid, tracks)``` that lists the album ID and total number of tracks in each album, but only for albums with more than 10 tracks.',
+            description='Write a query to return the scheme ```(albumid, tracks)``` that lists the album ID and total number of tracks in each album.',
             solution=query('track')
             .grouped_aggregation(
                 ['albumid'],
                 [Aggregation(attribute('trackid'), ra.AggregationFunction.COUNT, 'tracks')],
             )
-            .select(ra.GT(attribute('tracks'), 10))
             .latex(pretty=True),
             language=Language.RA,
             difficulty=Exercise.Difficulty.HARD,
