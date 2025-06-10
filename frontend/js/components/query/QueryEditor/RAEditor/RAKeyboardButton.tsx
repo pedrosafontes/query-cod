@@ -42,12 +42,12 @@ const RAKeyboardButton = ({
   return (
     <HoverCard openDelay={800}>
       <HoverCardTrigger asChild>{renderButton()}</HoverCardTrigger>
-      <HoverCardContent side="top">
+      <HoverCardContent className="w-auto min-w-64 max-w-80" side="top">
         <div className="text-xs">
           <h3 className="text-sm font-medium">{name}</h3>
           <p className="mt-1 text-muted-foreground">{description}</p>
           <LatexFormula
-            className="my-2 bg-muted px-2 py-1 rounded-sm"
+            className="my-2 bg-muted px-2 py-1 rounded-sm text-center"
             expression={displayExpr}
           />
           <ul className="pl-4 list-disc">
@@ -65,7 +65,7 @@ const RAKeyboardButton = ({
             <div className="mt-2">
               <span className="text-muted-foreground">Example:</span>
               <LatexFormula
-                className="mt-1 bg-muted px-2 py-1 rounded-sm"
+                className="mt-1 bg-muted px-2 py-1 rounded-sm text-center"
                 expression={example}
               />
             </div>

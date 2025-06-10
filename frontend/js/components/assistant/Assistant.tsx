@@ -43,9 +43,7 @@ const Assistant = ({ query, sendMessageApi }: AssistantProps) => {
     addMessage(reply);
   };
 
-  const handleSubmit = (
-    event?: { preventDefault?: () => void; },
-  ) => {
+  const handleSubmit = (event?: { preventDefault?: () => void }) => {
     event?.preventDefault?.();
     sendMessage(input);
     setInput("");
