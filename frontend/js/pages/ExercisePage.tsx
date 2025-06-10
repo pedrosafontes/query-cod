@@ -66,7 +66,7 @@ const ExercisePage = () => {
           databaseId={exercise.database.id}
           executeSubquery={AttemptsService.attemptsSubqueriesExecutionsCreate}
           fetchTree={AttemptsService.attemptsTreeRetrieve}
-          minLeftWidth={550}
+          minLeftWidth={600}
           query={attempt}
           queryResult={queryResult}
           setQueryResult={setQueryResult}
