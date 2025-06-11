@@ -36,6 +36,7 @@ const CodeEditor = ({
       tabSize: 2,
       formatOnType: true,
       formatOnPaste: true,
+      fixedOverflowWidgets: true,
       ...options,
     }}
     theme="vs-light"
