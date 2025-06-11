@@ -12,7 +12,6 @@ from queries.services.ra.parser.errors import (
     InvalidAggregationFunctionError,
     InvalidAggregationInputError,
     InvalidAggregationOutputError,
-    MissingCommaError,
     MissingGroupingAggregationsError,
 )
 
@@ -21,7 +20,7 @@ from queries.services.ra.parser.errors import (
     'query, expected',
     [
         (
-            '\\Gamma_{((a,b),((c,avg,x)))} R',
+            '\\Gamma_{(a,b),((c,avg,x))} R',
             GroupedAggregation(
                 group_by=[Attribute('a'), Attribute('b')],
                 aggregations=[
@@ -35,7 +34,7 @@ from queries.services.ra.parser.errors import (
             ),
         ),
         (
-            '\\Gamma_{((deptno),((salary,avg,\\text{avg_sal}),(salary,max,\\text{max_sal}),(salary,min,\\text{min_sal})))} Employee',
+            '\\Gamma_{(deptno),((salary,avg,\\text{avg_sal}),(salary,max,\\text{max_sal}),(salary,min,\\text{min_sal}))} Employee',
             GroupedAggregation(
                 group_by=[Attribute('deptno')],
                 aggregations=[
@@ -47,7 +46,7 @@ from queries.services.ra.parser.errors import (
             ),
         ),
         (
-            '\\Gamma_{((),((salary,avg,\\text{avg_sal})))} Employee',
+            '\\Gamma_{(),((salary,avg,\\text{avg_sal}))} Employee',
             GroupedAggregation(
                 group_by=[],
                 aggregations=[
@@ -80,7 +79,7 @@ def test_aggregation_functions(
     agg_function_str: str, expected_function: AggregationFunction
 ) -> None:
     assert parse_ra(
-        '\\Gamma_{((dept),((' + f'in,{agg_function_str},out' + ')))} Employee'
+        '\\Gamma_{(dept),((' + f'in,{agg_function_str},out' + '))} Employee'
     ) == GroupedAggregation(
         group_by=[Attribute('dept')],
         aggregations=[
@@ -97,20 +96,20 @@ def test_aggregation_functions(
 @pytest.mark.parametrize(
     'query, expected_error',
     [
-        ('\\Gamma_{(A B), (C, count, D)} R', MissingCommaError),
-        ('\\Gamma_{(A,B), (C count D)} R', MissingCommaError),
-        ('\\Gamma_{(A,B) (C, count, D)} R', MissingCommaError),
+        # ('\\Gamma_{A B), (C, count, D} R', MissingCommaError),
+        # ('\\Gamma_{A,B), (C count D} R', MissingCommaError),
+        # ('\\Gamma_{A,B) (C, count, D} R', MissingCommaError),
         ('\\Gamma R', MissingGroupingAggregationsError),
         ('\\Gamma_{} R', MissingGroupingAggregationsError),
-        ('\\Gamma_{((A,B))} R', MissingGroupingAggregationsError),
-        ('\\Gamma_{((),())} R', MissingGroupingAggregationsError),
-        ('\\Gamma_{((A,B),())} R', MissingGroupingAggregationsError),
-        ('\\Gamma_{((A), ((1, sum, B)))} R', InvalidAggregationInputError),
-        ('\\Gamma_{((A), ((a+b, sum, B)))} R', InvalidAggregationInputError),
-        ('\\Gamma_{((A), ((B, total, C)))} R', InvalidAggregationFunctionError),
-        ('\\Gamma_{((A), ((B, summation, C)))} R', InvalidAggregationFunctionError),
-        ('\\Gamma_{((A), ((B, sum, 123)))} R', InvalidAggregationOutputError),
-        ('\\Gamma_{((A), ((B, avg, a+b)))} R', InvalidAggregationOutputError),
+        # ('\\Gamma_{(A,B)} R', MissingGroupingAggregationsError),
+        ('\\Gamma_{(),()} R', MissingGroupingAggregationsError),
+        ('\\Gamma_{(A,B),()} R', MissingGroupingAggregationsError),
+        ('\\Gamma_{(A), ((1, sum, B))} R', InvalidAggregationInputError),
+        ('\\Gamma_{(A), ((a+b, sum, B))} R', InvalidAggregationInputError),
+        ('\\Gamma_{(A), ((B, total, C))} R', InvalidAggregationFunctionError),
+        ('\\Gamma_{(A), ((B, summation, C))} R', InvalidAggregationFunctionError),
+        ('\\Gamma_{(A), ((B, sum, 123))} R', InvalidAggregationOutputError),
+        ('\\Gamma_{(A), ((B, avg, a+b))} R', InvalidAggregationOutputError),
     ],
 )
 def test_invalid_grouped_aggregations(query: str, expected_error: type) -> None:

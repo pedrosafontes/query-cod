@@ -23,7 +23,7 @@ from queries.services.ra.parser import parse_ra
             .project('name', 'title'),
         ),
         (
-            "\\Gamma_{((deptno),((salary,avg,\\text{avg_sal})))} (\\pi_{deptno, salary} (\\sigma_{location = \\text{'HQ'}} Employee))",
+            "\\Gamma_{(deptno),((salary,avg,\\text{avg_sal}))} (\\pi_{deptno, salary} (\\sigma_{location = \\text{'HQ'}} Employee))",
             Relation('Employee')
             .select(EQ(attribute('location'), 'HQ'))
             .project('deptno', 'salary')

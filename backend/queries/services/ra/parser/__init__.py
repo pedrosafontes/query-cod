@@ -119,21 +119,21 @@ EXAMPLE_SYNTAX_ERRORS: dict[type[RASyntaxError], list[str]] = {
     MissingGroupingAggregationsError: [
         '\\Gamma R',
         '\\Gamma_{} R',
-        '\\Gamma_{((A,B))} R',
-        '\\Gamma_{((),())} R',
-        '\\Gamma_{((A,B),())} R',
+        '\\Gamma_{(A,B),} R',
+        '\\Gamma_{(),()} R',
+        '\\Gamma_{(A,B),()} R',
     ],
     InvalidAggregationInputError: [
-        '\\Gamma_{((A), ((1, sum, B)))} R',
-        '\\Gamma_{((A), ((a+b, sum, B)))} R',
+        '\\Gamma_{(A), ((1, sum, B))} R',
+        '\\Gamma_{(A), ((a+b, sum, B))} R',
     ],
     InvalidAggregationFunctionError: [
-        '\\Gamma_{((A), ((B, total, C)))} R',
-        '\\Gamma_{((A), ((B, summation, C)))} R',
+        '\\Gamma_{(A), ((B, total, C))} R',
+        '\\Gamma_{(A), ((B, summation, C))} R',
     ],
     InvalidAggregationOutputError: [
-        '\\Gamma_{((A), ((B, sum, 123)))} R',
-        '\\Gamma_{((A), ((B, avg, a+b)))} R',
+        '\\Gamma_{(A), ((B, sum, 123))} R',
+        '\\Gamma_{(A), ((B, avg, a+b))} R',
     ],
     InvalidTopNLimitError: [
         '\\operatorname{T}_{(abc, A)} R',
