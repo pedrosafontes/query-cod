@@ -23,9 +23,10 @@ enum Tab {
 }
 
 const ExercisePage = () => {
-  const { exerciseId } = useParams<{ exerciseId: string }>();
+  const { exerciseId: exerciseIdParam } = useParams<{ exerciseId: string }>();
+  const exerciseId = Number(exerciseIdParam);
   const { exercise, attempt, fetchExercise, setAttempt, updateText } =
-    useExercise(Number(exerciseId));
+    useExercise(exerciseId);
   const DEFAULT_TAB = Tab.Description;
 
   const [tab, setTab] = useState<Tab>(DEFAULT_TAB);
@@ -38,10 +39,9 @@ const ExercisePage = () => {
       return;
     }
 
-    setQueryResult(feedback?.results);
+    setQueryResult(feedback.results);
     setTab(Tab.Feedback);
-
-    fetchExercise(Number(exerciseId));
+    fetchExercise();
   }, [feedback]);
 
   const handleTabChange = (value: string) => {
@@ -103,6 +103,8 @@ const ExercisePage = () => {
             <Assistant
               query={attempt}
               sendMessageApi={AttemptsService.attemptsMessagesCreate}
+              suggestions={["How can I approach this problem?"]}
+              onUnmount={fetchExercise}
             />
           )}
           {tab === Tab.Feedback && feedback && (
