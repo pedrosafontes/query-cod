@@ -8,10 +8,10 @@ export const useExercise = (exerciseId: number) => {
   const [attempt, setAttempt] = useState<Attempt>();
   const toast = useErrorToast();
 
-  const fetchExercise = async (id: number) => {
+  const fetchExercise = async () => {
     try {
       const result = await ExercisesService.exercisesRetrieve({
-        id,
+        id: exerciseId,
       });
       setExercise(result);
       setAttempt(result.attempt);
@@ -21,7 +21,7 @@ export const useExercise = (exerciseId: number) => {
   };
 
   useEffect(() => {
-    fetchExercise(exerciseId);
+    fetchExercise();
   }, [exerciseId]);
 
   const updateText = async (value: string) => {

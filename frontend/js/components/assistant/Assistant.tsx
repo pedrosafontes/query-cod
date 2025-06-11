@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Attempt, Message, Query } from "api";
 
@@ -11,9 +11,16 @@ type AssistantProps = {
     id: number;
     requestBody: Message;
   }) => Promise<Message>;
+  suggestions?: string[];
+  onUnmount?: () => Promise<void>;
 };
 
-const Assistant = ({ query, sendMessageApi }: AssistantProps) => {
+const Assistant = ({
+  query,
+  sendMessageApi,
+  onUnmount,
+  suggestions = [],
+}: AssistantProps) => {
   const toChatMessage = ({ id, content, author }: Message): ChatMessage => ({
     id: id.toString(),
     content,
@@ -23,6 +30,13 @@ const Assistant = ({ query, sendMessageApi }: AssistantProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>(
     query.assistant_messages.map((message) => toChatMessage(message)),
   );
+
+  useEffect(() => {
+    return () => {
+      onUnmount?.();
+    };
+  }, [onUnmount]);
+
   const [input, setInput] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
 
@@ -36,11 +50,20 @@ const Assistant = ({ query, sendMessageApi }: AssistantProps) => {
     const reply = await sendMessageApi({
       id: query.id,
       requestBody: {
-        content: input,
+        content: message,
       } as Message,
     });
     setIsGenerating(false);
     addMessage(reply);
+  };
+
+  const handleSuggestionClick = ({
+    content,
+  }: {
+    role: "user";
+    content: string;
+  }) => {
+    sendMessage(content);
   };
 
   const handleSubmit = (event?: { preventDefault?: () => void }) => {
@@ -51,6 +74,7 @@ const Assistant = ({ query, sendMessageApi }: AssistantProps) => {
 
   return (
     <Chat
+      append={handleSuggestionClick}
       className="mx-3 flex-1 min-h-0"
       handleInputChange={(e) => {
         setInput(e.target.value);
@@ -59,6 +83,11 @@ const Assistant = ({ query, sendMessageApi }: AssistantProps) => {
       input={input}
       isGenerating={isGenerating}
       messages={messages}
+      suggestions={[
+        ...suggestions,
+        "How can I improve my query?",
+        "Why is this query giving the wrong result?",
+      ]}
     />
   );
 };
