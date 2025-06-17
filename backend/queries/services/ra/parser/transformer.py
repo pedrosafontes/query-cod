@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import Any, cast
 
 from lark import Token, Transformer, Tree
@@ -21,6 +22,7 @@ from ..ast import (
     Join,
     Not,
     Or,
+    OuterJoin,
     Projection,
     RAQuery,
     Relation,
@@ -123,17 +125,37 @@ class RATransformer(Transformer[Relation, RAQuery]):
         left, right = args
         return left.anti_join(right)
 
-    def left_join(self, args: tuple[RAQuery, RAQuery]) -> Join:
-        left, right = args
-        return left.left_join(right)
+    def left_join(
+        self, args: tuple[RAQuery, RAQuery] | tuple[RAQuery, BooleanExpression, RAQuery]
+    ) -> OuterJoin:
+        return self._transform_outer_join(
+            args, lambda left, cond, right: left.left_join(right, cond)
+        )
 
-    def right_join(self, args: tuple[RAQuery, RAQuery]) -> Join:
-        left, right = args
-        return left.right_join(right)
+    def right_join(
+        self, args: tuple[RAQuery, RAQuery] | tuple[RAQuery, BooleanExpression, RAQuery]
+    ) -> OuterJoin:
+        return self._transform_outer_join(
+            args, lambda left, cond, right: left.right_join(right, cond)
+        )
 
-    def outer_join(self, args: tuple[RAQuery, RAQuery]) -> Join:
-        left, right = args
-        return left.outer_join(right)
+    def outer_join(
+        self, args: tuple[RAQuery, RAQuery] | tuple[RAQuery, BooleanExpression, RAQuery]
+    ) -> OuterJoin:
+        return self._transform_outer_join(
+            args, lambda left, cond, right: left.outer_join(right, cond)
+        )
+
+    def _transform_outer_join(  # type: ignore[return]
+        self,
+        args: tuple[RAQuery, RAQuery] | tuple[RAQuery, BooleanExpression, RAQuery],
+        join: Callable[[RAQuery, BooleanExpression | None, RAQuery], OuterJoin],
+    ) -> OuterJoin:
+        match args:
+            case (left, condition, right):
+                return join(left, condition, right)  # type: ignore[arg-type]
+            case (left, right):
+                return join(left, None, right)  # type: ignore[arg-type]
 
     def theta_join(self, args: tuple[RAQuery, BooleanExpression, RAQuery]) -> ThetaJoin:
         left, condition, right = args

@@ -13,14 +13,18 @@
           | binary_op _NATURAL_JOIN  unary_op -> natural_join
           | binary_op _theta_join_op unary_op -> theta_join
           | binary_op _SEMI_JOIN     unary_op -> semi_join
-          | binary_op _LEFT_JOIN     unary_op -> left_join
-          | binary_op _RIGHT_JOIN    unary_op -> right_join
-          | binary_op _OUTER_JOIN    unary_op -> outer_join
+          | binary_op _left_join_op  unary_op -> left_join
+          | binary_op _right_join_op unary_op -> right_join
+          | binary_op _outer_join_op unary_op -> outer_join
           | binary_op _ANTI_JOIN     unary_op -> anti_join
           | binary_op _DIV           unary_op -> division
           | unary_op
   
 _theta_join_op: _overset{bool_expr, _THETA_JOIN}
+
+_left_join_op: _LEFT_JOIN _subscript{bool_expr}?
+_right_join_op: _RIGHT_JOIN _subscript{bool_expr}?
+_outer_join_op: _OUTER_JOIN _subscript{bool_expr}?
 
 // Unary operations (highest precedence)
 ?unary_op: projection
