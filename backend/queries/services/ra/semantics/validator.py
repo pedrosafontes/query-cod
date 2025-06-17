@@ -14,6 +14,7 @@ from ..ast import (
     GroupedAggregation,
     Join,
     Not,
+    OuterJoin,
     Projection,
     RAQuery,
     Relation,
@@ -102,6 +103,13 @@ class RASemanticValidator:
             right_type = self._validate_attribute(Attribute(name), [right], source=join)
             if left_type != right_type:
                 raise JoinAttributeTypeMismatchError(join, name, left_type, right_type)
+
+    @_validate.register
+    def _(self, join: OuterJoin) -> None:
+        left = self._schema_inferrer.infer(join.left)
+        right = self._schema_inferrer.infer(join.right)
+        if join.condition:
+            self._validate_condition(join.condition, [left, right])
 
     @_validate.register
     def _(self, join: ThetaJoin) -> None:

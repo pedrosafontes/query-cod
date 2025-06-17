@@ -9,6 +9,8 @@ from ..ast import (
     Division,
     GroupedAggregation,
     Join,
+    JoinKind,
+    OuterJoin,
     Projection,
     RAQuery,
     Relation,
@@ -52,8 +54,8 @@ class SchemaInferrer:
         output_schema: RelationalSchema = defaultdict(Attributes)
         output_attrs = []
         for attr in proj.attributes:
-            [(_, t)] = input_.resolve(attr)
-            output_schema[attr.relation][attr.name] = t
+            [(relation, t)] = input_.resolve(attr)
+            output_schema[relation][attr.name] = t
             output_attrs.append(TypedAttribute(attr.name, t))
         return ResultSchema(output_schema, output_attrs)
 
@@ -82,7 +84,13 @@ class SchemaInferrer:
     @_infer.register
     def _(self, join: Join) -> ResultSchema:
         left = self.infer(join.left)
+        if join.kind in {JoinKind.SEMI, JoinKind.ANTI}:
+            return left
+
         right = self.infer(join.right)
+        return self._infer_natural_join_schema(left, right)
+
+    def _infer_natural_join_schema(self, left: ResultSchema, right: ResultSchema) -> ResultSchema:
         merged_schema = merge_schemas(left.schema, right.schema)
 
         left_names = {attr.name for attr in left.attrs}
@@ -104,7 +112,20 @@ class SchemaInferrer:
     def _(self, join: ThetaJoin) -> ResultSchema:
         left = self.infer(join.left)
         right = self.infer(join.right)
+        return self._infer_theta_join_schema(left, right)
+
+    def _infer_theta_join_schema(self, left: ResultSchema, right: ResultSchema) -> ResultSchema:
         return ResultSchema(merge_schemas(left.schema, right.schema), left.attrs + right.attrs)
+
+    @_infer.register
+    def _(self, join: OuterJoin) -> ResultSchema:
+        left = self.infer(join.left)
+        right = self.infer(join.right)
+
+        if join.condition:
+            return self._infer_theta_join_schema(left, right)
+        else:
+            return self._infer_natural_join_schema(left, right)
 
     @_infer.register
     def _(self, div: Division) -> ResultSchema:
