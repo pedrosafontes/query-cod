@@ -161,10 +161,9 @@ class RAtoSQLTranspiler:
 
     @_transpile.register
     def _(self, join: ra.Join) -> Select:
-        left, left_alias = self._transpile_relation(join.left, alias='l')
-
         match join.kind:
             case ra.JoinKind.SEMI | ra.JoinKind.ANTI:
+                left, left_alias = self._transpile_relation(join.left, alias='l')
                 right, right_alias = self._transpile_relation(join.right, 'r')
                 common = self._common_attrs(join.left, join.right)
 
@@ -184,51 +183,88 @@ class RAtoSQLTranspiler:
                     condition = sql.not_(condition)
 
                 return left.where(condition)
-            case _:
-                using = []
-                if join.kind != ra.JoinKind.NATURAL:
-                    using = self._common_attrs(join.left, join.right)
+            case ra.JoinKind.NATURAL:
+                return self._transpile_natural_join(join.left, join.right)
 
-                if isinstance(join.right, Relation):
-                    # join.right is a base table
-                    return left.join(join.right.name, join_type=join.kind.value, using=using)
-                else:
-                    # right is a derived relation
-                    right_query = self._transpile(join.right)
-                    return left.join(
-                        right_query, join_type=join.kind.value, join_alias='r', using=using
-                    )
+    @_transpile.register
+    def _(self, join: ra.OuterJoin) -> Select:
+        if join.condition:
+            return self._transpile_conditional_join(
+                join.left, join.right, join.condition, join.kind.value
+            )
+        else:
+            return self._transpile_natural_join(join.left, join.right, outer_join_kind=join.kind)
 
     @_transpile.register
     def _(self, join: ra.ThetaJoin) -> Select:
-        left, left_alias = self._transpile_relation(join.left, 'l')
+        return self._transpile_conditional_join(join.left, join.right, join.condition, 'INNER')
 
-        # rename the attributes in the left relation to use the alias
-        left_schema = self._schema_inferrer.infer(join.left).schema
-        renamings: dict[str, str] = {}
-        for table in left_schema.keys():
-            if table:
-                renamings[table] = left_alias
-
-        right: sql.ExpOrStr
-        if isinstance(join.right, Relation):
-            # right is a base table
-            right = join.right.name
-            right_alias = None
+    def _transpile_join_left(self, operand: RAQuery) -> tuple[Select, str | None]:
+        transpiled = self.transpile(operand)
+        if not isinstance(transpiled, Select) or any(
+            transpiled.args.get(clause) for clause in ('group', 'having', 'order')
+        ):
+            subquery_alias = 'l'
+            return subquery(transpiled, subquery_alias).select('*'), subquery_alias
         else:
-            # right is a derived relation
-            right = self._transpile(join.right)
-            right_alias = 'r'
+            return transpiled, None
 
-            # rename the attributes in the right relation to use the alias
-            right_schema = self._schema_inferrer.infer(join.right).schema
-            for table in right_schema.keys():
-                if table:
-                    renamings[table] = right_alias
+    def _transpile_join_right(self, operand: RAQuery) -> tuple[sql.ExpOrStr, str | None]:
+        match operand:
+            case Relation():
+                return operand.name, None
+            case ra.Rename(Relation() as base_relation, alias=alias):
+                return base_relation.name, alias
+            case ra.Rename():
+                return self.transpile(operand), operand.alias
+            case _:
+                return self.transpile(operand), 'r'
 
-        renamed_condition = RAExpressionRenamer(renamings).rename_condition(join.condition)
-        condition = self._transpile_condition(renamed_condition)
-        return left.join(right, join_alias=right_alias, on=condition)
+    def _transpile_natural_join(
+        self,
+        left_operand: RAQuery,
+        right_operand: RAQuery,
+        outer_join_kind: ra.OuterJoinKind | None = None,
+    ) -> Select:
+        # Determine the join type
+        join_type = 'NATURAL'
+        if outer_join_kind:
+            join_type += f' {outer_join_kind.value}'
+
+        left, _ = self._transpile_join_left(left_operand)
+        right, right_alias = self._transpile_join_right(right_operand)
+
+        return left.join(right, join_type=join_type, join_alias=right_alias)
+
+    def _transpile_conditional_join(
+        self,
+        left_operand: RAQuery,
+        right_operand: RAQuery,
+        ra_condition: ra.BooleanExpression,
+        join_type: str,
+    ) -> Select:
+        left, left_alias = self._transpile_join_left(left_operand)
+        right, right_alias = self._transpile_join_right(right_operand)
+
+        # rename the condition to use the new aliases
+        renamings: dict[str, str] = {}
+        if left_alias:
+            # Left operand was aliased
+            left_schema = self._schema_inferrer.infer(left_operand).schema
+            renamings.update({tbl: left_alias for tbl in left_schema.keys() if tbl})
+        if right_alias and isinstance(right, SQLQuery):
+            # Right operand is aliased
+            right_schema = self._schema_inferrer.infer(right_operand).schema
+            renamings.update({tbl: right_alias for tbl in right_schema.keys() if tbl})
+        ra_condition = RAExpressionRenamer(renamings).rename_condition(ra_condition)
+
+        # Apply the join
+        return left.join(
+            right,
+            join_type=join_type,
+            on=self._transpile_condition(ra_condition),
+            join_alias=right_alias,
+        )
 
     @_transpile.register
     def _(self, agg: ra.GroupedAggregation) -> Select:
@@ -274,9 +310,9 @@ class RAtoSQLTranspiler:
             case Relation():
                 # relation is a base table
                 return select, relation.name
-            case ra.Rename(Relation(), alias=alias):
+            case ra.Rename(Relation(), alias=existing_alias):
                 # relation is a renamed base table
-                return select, alias
+                return select, existing_alias
             case ra.Rename():
                 return select, relation.alias
             case _:
