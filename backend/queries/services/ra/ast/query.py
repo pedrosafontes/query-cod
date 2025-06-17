@@ -49,14 +49,20 @@ class RAQuery(ASTNode, ABC):
     def anti_join(self, other: RAQuery | str) -> Join:
         return Join(self, query(other), JoinKind.ANTI)
 
-    def left_join(self, other: RAQuery | str) -> Join:
-        return Join(self, query(other), JoinKind.LEFT)
+    def left_join(
+        self, other: RAQuery | str, condition: BooleanExpression | None = None
+    ) -> OuterJoin:
+        return OuterJoin(self, query(other), OuterJoinKind.LEFT, condition)
 
-    def right_join(self, other: RAQuery | str) -> Join:
-        return Join(self, query(other), JoinKind.RIGHT)
+    def right_join(
+        self, other: RAQuery | str, condition: BooleanExpression | None = None
+    ) -> OuterJoin:
+        return OuterJoin(self, query(other), OuterJoinKind.RIGHT, condition)
 
-    def outer_join(self, other: RAQuery | str) -> Join:
-        return Join(self, query(other), JoinKind.OUTER)
+    def outer_join(
+        self, other: RAQuery | str, condition: BooleanExpression | None = None
+    ) -> OuterJoin:
+        return OuterJoin(self, query(other), OuterJoinKind.OUTER, condition)
 
     def theta_join(self, other: RAQuery | str, condition: BooleanExpression) -> ThetaJoin:
         return ThetaJoin(self, query(other), condition)
@@ -122,9 +128,6 @@ class JoinKind(Enum):
     NATURAL = 'NATURAL'
     SEMI = 'SEMI'
     ANTI = 'ANTI'
-    LEFT = 'LEFT'
-    RIGHT = 'RIGHT'
-    OUTER = 'FULL OUTER'
 
     def __str__(self) -> str:
         return f'{self.value} JOIN'
@@ -136,6 +139,18 @@ class Join(BinaryOperator):
 
     def __str__(self) -> str:
         return f'({self.left}\n{self.kind}\n{self.right})'
+
+
+class OuterJoinKind(Enum):
+    LEFT = 'LEFT'
+    RIGHT = 'RIGHT'
+    OUTER = 'FULL OUTER'
+
+
+@dataclass(frozen=True)
+class OuterJoin(BinaryOperator):
+    kind: OuterJoinKind
+    condition: BooleanExpression | None
 
 
 @dataclass(frozen=True)

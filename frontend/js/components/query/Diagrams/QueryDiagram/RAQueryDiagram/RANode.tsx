@@ -13,6 +13,7 @@ import {
   SelectionNode,
   SetOperationNode,
   ThetaJoinNode,
+  OuterJoinNode,
   TopNNode,
 } from "api";
 import LatexFormula from "components/query/QueryEditor/RAEditor/LatexFormula";
@@ -129,6 +130,24 @@ const RADiagramNode = ({ data }: NodeProps<RANode>) => {
         };
         return {
           latex: operatorLatex[operator as keyof typeof operatorLatex],
+          borderClass: "border-pink-300",
+          bgClass: "bg-pink-50",
+        };
+      }
+      case "OuterJoin": {
+        const { operator, condition } = props as OuterJoinNode;
+        const operatorLatex = {
+          LEFT: `⟕`,
+          RIGHT: `⟖`,
+          "FULL OUTER": `⟗`,
+        };
+        const operatorSymbol =
+          operatorLatex[operator as keyof typeof operatorLatex];
+
+        return {
+          latex: condition
+            ? `${operatorSymbol}_{${condition}}`
+            : operatorSymbol,
           borderClass: "border-pink-300",
           bgClass: "bg-pink-50",
         };

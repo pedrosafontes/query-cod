@@ -1549,6 +1549,34 @@ components:
       - keys
       - sql_node_type
       - validation_errors
+    OuterJoinNode:
+      type: object
+      properties:
+        id:
+          type: integer
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/RATree'
+          readOnly: true
+        ra_node_type:
+          allOf:
+          - $ref: '#/components/schemas/RaNodeTypeEnum'
+          readOnly: true
+        validation_errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/QueryError'
+        operator:
+          type: string
+        condition:
+          type: string
+      required:
+      - children
+      - id
+      - operator
+      - ra_node_type
+      - validation_errors
     PaginatedUserList:
       type: object
       required:
@@ -1909,6 +1937,7 @@ components:
       - $ref: '#/components/schemas/DivisionNode'
       - $ref: '#/components/schemas/SetOperationNode'
       - $ref: '#/components/schemas/RAJoinNode'
+      - $ref: '#/components/schemas/OuterJoinNode'
       - $ref: '#/components/schemas/ThetaJoinNode'
       - $ref: '#/components/schemas/GroupedAggregationNode'
       - $ref: '#/components/schemas/TopNNode'
@@ -1921,6 +1950,7 @@ components:
       - Division
       - SetOperation
       - Join
+      - OuterJoin
       - ThetaJoin
       - GroupedAggregation
       - TopN
@@ -1933,6 +1963,7 @@ components:
         * `Division` - Division
         * `SetOperation` - SetOperation
         * `Join` - Join
+        * `OuterJoin` - OuterJoin
         * `ThetaJoin` - ThetaJoin
         * `GroupedAggregation` - GroupedAggregation
         * `TopN` - TopN

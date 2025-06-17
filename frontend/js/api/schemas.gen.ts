@@ -563,6 +563,43 @@ export const $OrderByNode = {
   required: ["children", "id", "keys", "sql_node_type", "validation_errors"],
 } as const;
 
+export const $OuterJoinNode = {
+  type: "object",
+  properties: {
+    id: {
+      type: "integer",
+    },
+    children: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/RATree",
+      },
+      readOnly: true,
+    },
+    ra_node_type: {
+      allOf: [
+        {
+          $ref: "#/components/schemas/RaNodeTypeEnum",
+        },
+      ],
+      readOnly: true,
+    },
+    validation_errors: {
+      type: "array",
+      items: {
+        $ref: "#/components/schemas/QueryError",
+      },
+    },
+    operator: {
+      type: "string",
+    },
+    condition: {
+      type: "string",
+    },
+  },
+  required: ["children", "id", "operator", "ra_node_type", "validation_errors"],
+} as const;
+
 export const $PaginatedUserList = {
   type: "object",
   required: ["count", "results"],
@@ -1080,6 +1117,9 @@ export const $RATree = {
       $ref: "#/components/schemas/RAJoinNode",
     },
     {
+      $ref: "#/components/schemas/OuterJoinNode",
+    },
+    {
       $ref: "#/components/schemas/ThetaJoinNode",
     },
     {
@@ -1100,6 +1140,7 @@ export const $RaNodeTypeEnum = {
     "Division",
     "SetOperation",
     "Join",
+    "OuterJoin",
     "ThetaJoin",
     "GroupedAggregation",
     "TopN",
@@ -1112,6 +1153,7 @@ export const $RaNodeTypeEnum = {
 * \`Division\` - Division
 * \`SetOperation\` - SetOperation
 * \`Join\` - Join
+* \`OuterJoin\` - OuterJoin
 * \`ThetaJoin\` - ThetaJoin
 * \`GroupedAggregation\` - GroupedAggregation
 * \`TopN\` - TopN`,

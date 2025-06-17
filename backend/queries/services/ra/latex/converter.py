@@ -13,6 +13,7 @@ from ..ast import (
     GroupedAggregation,
     Join,
     JoinKind,
+    OuterJoinKind,
     Projection,
     RAQuery,
     Relation,
@@ -116,11 +117,18 @@ def _(join: Join) -> str:
         JoinKind.NATURAL: latex.JOIN,
         JoinKind.SEMI: latex.LTIMES,
         JoinKind.ANTI: latex.ANTIJOIN,
-        JoinKind.LEFT: latex.LEFTJOIN,
-        JoinKind.RIGHT: latex.RIGHTJOIN,
-        JoinKind.OUTER: latex.OUTERJOIN,
     }
     return operators[join.kind]
+
+
+@_convert_query.register
+def _(outer_join: ra.OuterJoin) -> str:
+    operators: dict[ra.OuterJoinKind, str] = {
+        OuterJoinKind.LEFT: latex.LEFTJOIN,
+        OuterJoinKind.RIGHT: latex.RIGHTJOIN,
+        OuterJoinKind.OUTER: latex.OUTERJOIN,
+    }
+    return operators[outer_join.kind]
 
 
 @_convert_query.register
