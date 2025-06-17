@@ -7,6 +7,7 @@ from queries.services.ra.tree.types import (
     DivisionNode,
     GroupedAggregationNode,
     JoinNode,
+    OuterJoinNode,
     ProjectionNode,
     RATree,
     RelationNode,
@@ -29,6 +30,7 @@ class RANodeType(str, Enum):
     DIVISION = 'Division'
     SET_OPERATION = 'SetOperation'
     JOIN = 'Join'
+    OUTER_JOIN = 'OuterJoin'
     THETA_JOIN = 'ThetaJoin'
     GROUPED_AGGREGATION = 'GroupedAggregation'
     TOP_N = 'TopN'
@@ -59,6 +61,7 @@ class RATreeNodeSerializer(serializers.Serializer[RATree]):
                 lazy_serializer('DivisionNodeSerializer'),
                 lazy_serializer('SetOperationNodeSerializer'),
                 lazy_serializer('JoinNodeSerializer'),
+                lazy_serializer('OuterJoinNodeSerializer'),
                 lazy_serializer('ThetaJoinNodeSerializer'),
                 lazy_serializer('GroupedAggregationNodeSerializer'),
                 lazy_serializer('TopNNodeSerializer'),
@@ -99,6 +102,11 @@ class RAJoinNodeSerializer(RATreeNodeSerializer):
     operator = serializers.CharField()
 
 
+class OuterJoinNodeSerializer(RATreeNodeSerializer):
+    operator = serializers.CharField()
+    condition = serializers.CharField(required=False, allow_blank=True, default=None)
+
+
 class ThetaJoinNodeSerializer(RATreeNodeSerializer):
     condition = serializers.CharField()
 
@@ -132,6 +140,8 @@ class RATreeSerializer(serializers.Serializer[RATree]):
                 return SetOperationNodeSerializer(obj).data
             case JoinNode():
                 return RAJoinNodeSerializer(obj).data
+            case OuterJoinNode():
+                return OuterJoinNodeSerializer(obj).data
             case ThetaJoinNode():
                 return ThetaJoinNodeSerializer(obj).data
             case GroupedAggregationNode():
@@ -152,6 +162,7 @@ RATreeField = PolymorphicProxySerializer(
         DivisionNodeSerializer,
         SetOperationNodeSerializer,
         RAJoinNodeSerializer,
+        OuterJoinNodeSerializer,
         ThetaJoinNodeSerializer,
         GroupedAggregationNodeSerializer,
         TopNNodeSerializer,

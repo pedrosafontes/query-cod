@@ -4,6 +4,7 @@ from queries.services.ra.ast import (
     Division,
     GroupedAggregation,
     Join,
+    OuterJoin,
     Projection,
     RAQuery,
     Relation,
@@ -25,6 +26,7 @@ from .types import (
     DivisionNode,
     GroupedAggregationNode,
     JoinNode,
+    OuterJoinNode,
     ProjectionNode,
     RATree,
     RelationNode,
@@ -123,6 +125,17 @@ class RATreeBuilder:
             id=query_id,
             validation_errors=errors,
             operator=join.kind.value,
+            children=[self._build(join.left), self._build(join.right)],
+        )
+
+    @_build.register
+    def _(self, join: OuterJoin) -> OuterJoinNode:
+        query_id, errors = self._add_subquery(join)
+        return OuterJoinNode(
+            id=query_id,
+            validation_errors=errors,
+            operator=join.kind.value,
+            condition=latex_converter.convert_condition(join.condition) if join.condition else None,
             children=[self._build(join.left), self._build(join.right)],
         )
 

@@ -52,6 +52,12 @@ class ThetaJoinNode(RATree):
 
 
 @dataclass
+class OuterJoinNode(RATree):
+    operator: str
+    condition: str | None = None
+
+
+@dataclass
 class GroupedAggregationNode(RATree):
     group_by: list[str]
     aggregations: list[tuple[str, str, str]]  # (input, function, output)
