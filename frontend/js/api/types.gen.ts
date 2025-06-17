@@ -167,6 +167,15 @@ export type OrderByNode = {
   keys: Array<string>;
 };
 
+export type OuterJoinNode = {
+  id: number;
+  readonly children: Array<RATree>;
+  readonly ra_node_type: RaNodeTypeEnum;
+  validation_errors: Array<QueryError>;
+  operator: string;
+  condition?: string;
+};
+
 export type PaginatedUserList = {
   count: number;
   next?: string | null;
@@ -304,6 +313,7 @@ export type RATree =
   | DivisionNode
   | SetOperationNode
   | RAJoinNode
+  | OuterJoinNode
   | ThetaJoinNode
   | GroupedAggregationNode
   | TopNNode;
@@ -316,6 +326,7 @@ export type RATree =
  * * `Division` - Division
  * * `SetOperation` - SetOperation
  * * `Join` - Join
+ * * `OuterJoin` - OuterJoin
  * * `ThetaJoin` - ThetaJoin
  * * `GroupedAggregation` - GroupedAggregation
  * * `TopN` - TopN
@@ -328,6 +339,7 @@ export type RaNodeTypeEnum =
   | "Division"
   | "SetOperation"
   | "Join"
+  | "OuterJoin"
   | "ThetaJoin"
   | "GroupedAggregation"
   | "TopN";
