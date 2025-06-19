@@ -42,7 +42,7 @@ const RAKeyboardButton = ({
   return (
     <HoverCard openDelay={800}>
       <HoverCardTrigger asChild>{renderButton()}</HoverCardTrigger>
-      <HoverCardContent className="w-auto min-w-64 max-w-80" side="top">
+      <HoverCardContent className="w-auto min-w-64 max-w-80" side="bottom">
         <div className="text-xs">
           <h3 className="text-sm font-medium">{name}</h3>
           <p className="mt-1 text-muted-foreground">{description}</p>
