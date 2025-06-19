@@ -200,30 +200,30 @@ class Command(BaseCommand):
                                 WHERE amount > 500)
                     """,
                 ),
-                (
-                    'Set Operations: EXISTS',
-                    """
-                    SELECT DISTINCT cname
-                    FROM   account
-                    WHERE NOT EXISTS
-                        (SELECT cname
-                        FROM   account AS deposit_account
-                        WHERE  type = 'deposit'
-                        AND    account.cname = deposit_account.cname)
-                    """,
-                ),
-                (
-                    'Unqualified Correlated Subquery',
-                    """
-                    SELECT DISTINCT cname
-                    FROM   account
-                    WHERE NOT EXISTS
-                        (SELECT *
-                        FROM   account AS deposit_account
-                        WHERE  type = 'deposit'
-                        AND    account.cname = cname)
-                    """,
-                ),
+                # (
+                #     'Set Operations: EXISTS',
+                #     """
+                #     SELECT DISTINCT cname
+                #     FROM   account
+                #     WHERE NOT EXISTS
+                #         (SELECT cname
+                #         FROM   account AS deposit_account
+                #         WHERE  type = 'deposit'
+                #         AND    account.cname = deposit_account.cname)
+                #     """,
+                # ),
+                # (
+                #     'Unqualified Correlated Subquery',
+                #     """
+                #     SELECT DISTINCT cname
+                #     FROM   account
+                #     WHERE NOT EXISTS
+                #         (SELECT *
+                #         FROM   account AS deposit_account
+                #         WHERE  type = 'deposit'
+                #         AND    account.cname = cname)
+                #     """,
+                # ),
                 (
                     'Set Operations: SOME',
                     """
@@ -255,6 +255,14 @@ class Command(BaseCommand):
             )
 
             ra_lecture_queries: list[tuple[str, RAQuery | str]] = [
+                (
+                    'Demo',
+                    query('movement')
+                    .natural_join('account')
+                    .natural_join('branch')
+                    .select(ra.EQ(attribute('bname'), 'Wimbledon'))
+                    .project('mid'),
+                ),
                 ('Project', query('account').project('no', 'type')),
                 ('Select', query('account').select(ra.GT(attribute('rate'), 0))),
                 (
@@ -354,9 +362,9 @@ class Command(BaseCommand):
                     """
                     SELECT t.name
                     FROM track t
-                    WHERE EXISTS (SELECT 1
-                                FROM invoice_line il
-                                WHERE il.track_id = t.track_id)
+                    WHERE EXISTS (SELECT *
+                                  FROM invoice_line il
+                                  WHERE il.track_id = t.track_id)
                     """,
                 ),
                 ('Most expensive tracks', 'SELECT * FROM track ORDER BY unit_price DESC LIMIT 5'),
